@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package writerService;
+package product_service;
 
-option go_package = "./;writerService";
+option go_package = "./;product_service";
 
 import "product-messages.proto";
 
-service writerService {
+service ProductsService {
   rpc CreateProduct(CreateProductReq) returns (CreateProductRes);
   rpc UpdateProduct(UpdateProductReq) returns (UpdateProductRes);
   rpc GetProductById(GetProductByIdReq) returns (GetProductByIdRes);

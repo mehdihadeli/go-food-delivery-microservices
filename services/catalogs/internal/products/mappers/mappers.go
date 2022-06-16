@@ -1,13 +1,15 @@
-package products
+package mappers
 
 import (
+	kafka_messages "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/grpc/proto/kafka-messages"
+	product_service "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/grpc/proto/product-service"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/models"
 	uuid "github.com/satori/go.uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func ProductToGrpcMessage(product *models.Product) *kafkaMessages.Product {
-	return &kafkaMessages.Product{
+func ProductToGrpcMessage(product *models.Product) *kafka_messages.Product {
+	return &kafka_messages.Product{
 		ProductID:   product.ProductID.String(),
 		Name:        product.Name,
 		Description: product.Description,
@@ -17,7 +19,7 @@ func ProductToGrpcMessage(product *models.Product) *kafkaMessages.Product {
 	}
 }
 
-func ProductFromGrpcMessage(product *kafkaMessages.Product) (*models.Product, error) {
+func ProductFromGrpcMessage(product *kafka_messages.Product) (*models.Product, error) {
 
 	proUUID, err := uuid.FromString(product.GetProductID())
 	if err != nil {
@@ -34,8 +36,8 @@ func ProductFromGrpcMessage(product *kafkaMessages.Product) (*models.Product, er
 	}, nil
 }
 
-func WriterProductToGrpc(product *models.Product) *models.Product {
-	return &models.Product{
+func WriterProductToGrpc(product *models.Product) *product_service.Product {
+	return &product_service.Product{
 		ProductID:   product.ProductID.String(),
 		Name:        product.Name,
 		Description: product.Description,

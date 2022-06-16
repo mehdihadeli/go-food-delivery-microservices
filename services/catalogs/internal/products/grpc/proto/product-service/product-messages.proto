@@ -2,9 +2,9 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
-package writerService;
+package product_service;
 
-option go_package = "./;writerService";
+option go_package = "./;product_service";
 
 message Product {
   string ProductID = 1;
