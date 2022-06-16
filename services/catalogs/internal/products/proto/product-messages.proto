@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package writerService;
+
+option go_package = "./;writerService";
+
+message Product {
+  string ProductID = 1;
+  string Name = 2;
+  string Description = 3;
+  double Price = 4;
+  google.protobuf.Timestamp CreatedAt = 6;
+  google.protobuf.Timestamp UpdatedAt = 7;
+}
+
+message CreateProductReq {
+  string ProductID = 1;
+  string Name = 2;
+  string Description = 3;
+  double Price = 4;
+}
+
+message CreateProductRes {
+  string ProductID = 1;
+}
+
+message UpdateProductReq {
+  string ProductID = 1;
+  string Name = 2;
+  string Description = 3;
+  double Price = 4;
+}
+
+message UpdateProductRes {}
+
+message GetProductByIdReq {
+  string ProductID = 1;
+}
+
+message GetProductByIdRes {
+  Product Product = 1;
+}

@@ -1,0 +1,62 @@
+serviceName: writer_service
+grpc:
+  port: :5002
+  development: true
+probes:
+  readinessPath: /ready
+  livenessPath: /live
+  port: :3002
+  pprof: :6002
+  prometheusPath: /metrics
+  prometheusPort: :8002
+  checkIntervalSeconds: 10
+logger:
+  level: debug
+  devMode: false
+  encoder: json
+postgres:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  dbName: products
+  sslMode: false
+kafka:
+  brokers: [ "localhost:9092" ]
+  groupID: writer_microservice_consumer
+  initTopics: true
+kafkaTopics:
+  productCreate:
+    topicName: product_create
+    partitions: 10
+    replicationFactor: 1
+  productUpdate:
+    topicName: product_update
+    partitions: 10
+    replicationFactor: 1
+  productCreated:
+    topicName: product_created
+    partitions: 10
+    replicationFactor: 1
+  productUpdated:
+    topicName: product_updated
+    partitions: 10
+    replicationFactor: 1
+  productDelete:
+    topicName: product_delete
+    partitions: 10
+    replicationFactor: 1
+  productDeleted:
+    topicName: product_deleted
+    partitions: 10
+    replicationFactor: 1
+redis:
+  addr: "localhost:6379"
+  password: ""
+  db: 0
+  poolSize: 300
+jaeger:
+  enable: true
+  serviceName: writer_service
+  hostPort: "localhost:6831"
+  logSpans: false

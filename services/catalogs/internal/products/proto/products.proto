@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package writerService;
+
+option go_package = "./;writerService";
+
+import "product-messages.proto";
+
+service writerService {
+  rpc CreateProduct(CreateProductReq) returns (CreateProductRes);
+  rpc UpdateProduct(UpdateProductReq) returns (UpdateProductRes);
+  rpc GetProductById(GetProductByIdReq) returns (GetProductByIdRes);
+}
