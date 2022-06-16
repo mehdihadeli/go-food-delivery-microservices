@@ -4,16 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/store-golang-microservice-sample/pkg/must"
-	"github.com/store-golang-microservice-sample/pkg/shutdown"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/must"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/shutdown"
 	"io"
 	nethttp "net/http"
 	"os"
 	"time"
 
 	"github.com/spf13/viper"
-	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 // @title Order Application
@@ -64,7 +62,6 @@ func run(w io.Writer) (func(), error) {
 func buildServer(w io.Writer) (*http.Server, error) {
 	var cfg http.Config
 	readConfig(&cfg)
-
 
 }
 

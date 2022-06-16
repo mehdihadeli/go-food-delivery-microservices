@@ -1,3 +1,3 @@
-module github.com/store-golang-microservice-sample/services/identity
+module github.com/mehdihadeli/store-golang-microservice-sample/services/identity
 
 go 1.18
