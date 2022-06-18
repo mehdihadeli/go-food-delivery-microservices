@@ -1,7 +1,7 @@
 .PHONY:
 
 run_catalogs_service:
-	go run ./services/catalogs/cmd/main.go -config=./services/catalogs/config/config.yaml
+	go run ./cmd/main.go -config=./config/config.yaml
 
 # ==============================================================================
 # Modules
@@ -81,3 +81,20 @@ mongo:
 swagger:
 	@echo Starting swagger generating
 	swag init -g **/**/*.go
+
+
+# ==============================================================================
+# Proto
+
+proto_product_kafka_messages:
+	@echo Generating kafka messages proto
+	cd internal/products/proto/product_kafka_messages && protoc --go_out=. --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=. *.proto
+
+proto_product_service_message:
+	@echo Generating product_service messages microservice proto
+	cd internal/products/proto/product_service && protoc --go_out=. --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=. product_service_messages.proto
+
+proto_product_service:
+	@echo Generating product_service proto
+	cd internal/products/proto/product_service && protoc --go_out=. --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=. product_service.proto
+

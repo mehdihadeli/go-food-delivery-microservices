@@ -3,7 +3,8 @@ package main
 import (
 	"flag"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/prometheus/common/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/server"
 	"log"
 )
 
@@ -17,7 +18,7 @@ func main() {
 
 	appLogger := logger.NewAppLogger(cfg.Logger)
 	appLogger.InitLogger()
-	appLogger.WithName("WriterService")
+	appLogger.WithName("catalogs-services")
 
 	s := server.NewServer(appLogger, cfg)
 	appLogger.Fatal(s.Run())

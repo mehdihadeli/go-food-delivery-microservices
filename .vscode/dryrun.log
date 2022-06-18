@@ -1,3 +1,4 @@
+make.exe --dry-run --always-make --keep-going --print-directory
 make: Entering directory 'd:/Github/GOLANG/store-golang-microservice-sample'
 make: Leaving directory 'd:/Github/GOLANG/store-golang-microservice-sample'
  

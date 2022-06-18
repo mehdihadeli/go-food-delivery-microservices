@@ -6,8 +6,8 @@ import (
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/grpc/proto/product_service"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/grpc/services"
+	grpc_delivery "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/delivery/grpc"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/proto/product_service"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -46,7 +46,7 @@ func (s *Server) newCatalogsServiceGrpcServer() (func() error, *grpc.Server, err
 		),
 	)
 
-	productGrpcService := services.NewProductGrpcService(s.log, s.cfg, s.v, s.mediator, s.metrics)
+	productGrpcService := grpc_delivery.NewProductGrpcService(s.log, s.cfg, s.v, s.mediator, s.metrics)
 	product_service.RegisterProductsServiceServer(grpcServer, productGrpcService)
 	grpc_prometheus.Register(grpcServer)
 

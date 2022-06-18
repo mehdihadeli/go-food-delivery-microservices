@@ -6,10 +6,10 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/grpc/proto/product_kafka_messages"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/mappers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/models"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/proto/product_kafka_messages"
 	"github.com/opentracing/opentracing-go"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
@@ -27,8 +27,8 @@ type CreateProductHandler struct {
 	kafkaProducer kafkaClient.Producer
 }
 
-func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository repositories.ProductRepository, kafkaProducer kafkaClient.Producer) *CreateProductHandler {
-	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
+func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository repositories.ProductRepository, kafkaProducer kafkaClient.Producer) CreateProductHandler {
+	return CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
 }
 
 func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct) error {

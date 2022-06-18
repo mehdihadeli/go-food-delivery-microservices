@@ -1,4 +1,4 @@
-package services
+package grpc
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/creating_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/getting_product_by_id"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/updating_product"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/grpc/proto/product_service"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/mappers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/models"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/proto/product_service"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared"
 	uuid "github.com/satori/go.uuid"
 	"google.golang.org/grpc/codes"

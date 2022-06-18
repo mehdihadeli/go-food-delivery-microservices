@@ -1,9 +1,9 @@
 serviceName: catalogs_service
 server:
-  port: ":8080"
+  port: 8080
   timeout: 30
 context:
-  "timeout":20
+  timeout: 20
 grpc:
   port: :5002
   development: true
@@ -24,11 +24,11 @@ postgres:
   port: 5432
   user: postgres
   password: postgres
-  dbName: products
+  dbName: catalogs.service
   sslMode: false
 kafka:
   brokers: [ "localhost:9092" ]
-  groupID: writer_microservice_consumer
+  groupID: catalogs_service_consumer
   initTopics: true
 kafkaTopics:
   productCreate:
@@ -62,6 +62,6 @@ redis:
   poolSize: 300
 jaeger:
   enable: true
-  serviceName: writer_service
+  serviceName: catalogs_service
   hostPort: "localhost:6831"
   logSpans: false
