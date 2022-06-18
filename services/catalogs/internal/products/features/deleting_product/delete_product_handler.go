@@ -2,8 +2,6 @@ package deleting_product
 
 import (
 	"context"
-	"github.com/eyazici90/go-mediator/mediator"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/errors"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -16,10 +14,6 @@ import (
 	"time"
 )
 
-//type DeleteProductCmdHandler interface {
-//	Handle(ctx context.Context, command *DeleteProduct) error
-//}
-
 type DeleteProductHandler struct {
 	log           logger.Logger
 	cfg           *config.Config
@@ -31,12 +25,7 @@ func NewDeleteProductHandler(log logger.Logger, cfg *config.Config, pgRepo repos
 	return &DeleteProductHandler{log: log, cfg: cfg, pgRepo: pgRepo, kafkaProducer: kafkaProducer}
 }
 
-func (c *DeleteProductHandler) Handle(ctx context.Context, msg mediator.Message) error {
-
-	command, ok := msg.(DeleteProduct)
-	if err := errors.CheckType(ok); err != nil {
-		return err
-	}
+func (c *DeleteProductHandler) Handle(ctx context.Context, command DeleteProduct) error {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "deleteProductHandler.Handle")
 	defer span.Finish()

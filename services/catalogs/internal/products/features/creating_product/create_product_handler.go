@@ -16,10 +16,6 @@ import (
 	"time"
 )
 
-//type CreateProductCmdHandler interface {
-//	Handle(ctx context.Context, command *CreateProduct) error
-//}
-
 type CreateProductHandler struct {
 	log           logger.Logger
 	cfg           *config.Config
@@ -27,8 +23,8 @@ type CreateProductHandler struct {
 	kafkaProducer kafkaClient.Producer
 }
 
-func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository repositories.ProductRepository, kafkaProducer kafkaClient.Producer) CreateProductHandler {
-	return CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
+func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository repositories.ProductRepository, kafkaProducer kafkaClient.Producer) *CreateProductHandler {
+	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
 }
 
 func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct) error {

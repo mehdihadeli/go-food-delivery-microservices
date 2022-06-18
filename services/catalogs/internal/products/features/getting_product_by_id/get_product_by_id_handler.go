@@ -2,8 +2,6 @@ package getting_product_by_id
 
 import (
 	"context"
-	"github.com/eyazici90/go-mediator/mediator"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/repositories"
@@ -24,11 +22,6 @@ func NewGetProductByIdHandler(log logger.Logger, cfg *config.Config, pgRepo repo
 	return &GetProductByIdHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 
-func (q *GetProductByIdHandler) Handle(ctx context.Context, msg mediator.Message) (*models.Product, error) {
-	query, ok := msg.(GetProductById)
-	if err := errors.CheckType(ok); err != nil {
-		return nil, err
-	}
-
+func (q *GetProductByIdHandler) Handle(ctx context.Context, query GetProductById) (*models.Product, error) {
 	return q.pgRepo.GetProductById(ctx, query.ProductID)
 }
