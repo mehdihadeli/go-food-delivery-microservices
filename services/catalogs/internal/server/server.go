@@ -2,50 +2,91 @@ package server
 
 import (
 	"context"
+	"github.com/adzeitor/mediatr"
+	"github.com/go-playground/validator"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/interceptors"
+	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
-	"net/http"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared"
+	"github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
+	"github.com/segmentio/kafka-go"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/go-playground/validator"
-	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
-	v7 "github.com/olivere/elastic/v7"
-	"github.com/opentracing/opentracing-go"
-	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type server struct {
-	cfg           *config.Config
-	log           logger.Logger
-	im            interceptors.InterceptorManager
-	mw            middlewares.MiddlewareManager
-	os            *service.OrderService
-	v             *validator.Validate
-	mongoClient   *mongo.Client
-	elasticClient *v7.Client
-	echo          *echo.Echo
-	metrics       *metrics.ESMicroserviceMetrics
-	ps            *http.Server
-	doneCh        chan struct{}
+type Server struct {
+	log       logger.Logger
+	cfg       *config.Config
+	v         *validator.Validate
+	kafkaConn *kafka.Conn
+	mediator  *mediatr.Mediator
+	im        interceptors.InterceptorManager
+	pgConn    *pgxpool.Pool
+	metrics   *shared.CatalogsServiceMetrics
+	echo      *echo.Echo
 }
 
-func NewServer(cfg *config.Config, log logger.Logger) *server {
-	return &server{cfg: cfg, log: log, v: validator.New(), echo: echo.New(), doneCh: make(chan struct{})}
+func NewServer(log logger.Logger, cfg *config.Config) *Server {
+	return &Server{log: log, cfg: cfg, v: validator.New()}
 }
 
-func (s *server) Run() error {
+func (s *Server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	if err := s.v.StructCtx(ctx, s.cfg); err != nil {
-		return errors.Wrap(err, "cfg validate")
+	s.im = interceptors.NewInterceptorManager(s.log)
+	s.metrics = shared.NewCatalogsServiceMetrics(s.cfg)
+
+	pgxConn, err := postgres.NewPgxConn(s.cfg.Postgresql)
+	if err != nil {
+		return errors.Wrap(err, "postgresql.NewPgxConn")
 	}
+	s.pgConn = pgxConn
+	s.log.Infof("postgres connected: %v", pgxConn.Stat().TotalConns())
+	defer pgxConn.Close()
+
+	kafkaProducer := kafkaClient.NewProducer(s.log, s.cfg.Kafka.Brokers)
+	defer kafkaProducer.Close() // nolint: errcheck
+
+	productRepo := repositories.NewProductRepository(s.log, s.cfg, pgxConn)
+	m, err := shared.NewMediator(s.log, s.cfg, productRepo, kafkaProducer)
+
+	if err != nil {
+		return err
+	}
+
+	s.mediator = m
+
+	//productMessageProcessor := kafkaConsumer.NewProductMessageProcessor(s.log, s.cfg, s.v, s.ps, s.metrics)
+	//s.log.Info("Starting Writer Kafka consumers")
+	//cg := kafkaClient.NewConsumerGroup(s.cfg.Kafka.Brokers, s.cfg.Kafka.GroupID, s.log)
+	//go cg.ConsumeTopic(ctx, s.getConsumerGroupTopics(), kafkaConsumer.PoolSize, productMessageProcessor.ProcessMessages)
+
+	closeGrpcServer, grpcServer, err := s.newCatalogsServiceGrpcServer()
+	if err != nil {
+		return errors.Wrap(err, "NewScmGrpcServer")
+	}
+	defer closeGrpcServer() // nolint: errcheck
+
+	if err := s.connectKafkaBrokers(ctx); err != nil {
+		return errors.Wrap(err, "s.connectKafkaBrokers")
+	}
+	defer s.kafkaConn.Close() // nolint: errcheck
+
+	if s.cfg.Kafka.InitTopics {
+		s.initKafkaTopics(ctx)
+	}
+
+	s.runHealthCheck(ctx)
+	s.runMetrics(cancel)
 
 	if s.cfg.Jaeger.Enable {
 		tracer, closer, err := tracing.NewJaegerTracer(s.cfg.Jaeger)
@@ -56,88 +97,21 @@ func (s *server) Run() error {
 		opentracing.SetGlobalTracer(tracer)
 	}
 
-	s.metrics = metrics.NewESMicroserviceMetrics(s.cfg)
-	s.im = interceptors.NewInterceptorManager(s.log, s.getGrpcMetricsCb())
-	s.mw = middlewares.NewMiddlewareManager(s.log, s.cfg, s.getHttpMetricsCb())
-
-	mongoDBConn, err := mongodb.NewMongoDBConn(ctx, s.cfg.Mongo)
-	if err != nil {
-		return errors.Wrap(err, "NewMongoDBConn")
-	}
-	s.mongoClient = mongoDBConn
-	defer mongoDBConn.Disconnect(ctx) // nolint: errcheck
-	s.log.Infof("(Mongo connected) SessionsInProgress: {%v}", mongoDBConn.NumberSessionsInProgress())
-
-	if err := s.initElasticClient(ctx); err != nil {
-		s.log.Errorf("(initElasticClient) err: {%v}", err)
-		return err
-	}
-
-	mongoRepository := repository.NewMongoRepository(s.log, s.cfg, s.mongoClient)
-	elasticRepository := repository.NewElasticRepository(s.log, s.cfg, s.elasticClient)
-
-	db, err := eventstroredb.NewEventStoreDB(s.cfg.EventStoreConfig)
-	if err != nil {
-		return err
-	}
-	defer db.Close() // nolint: errcheck
-
-	aggregateStore := store.NewAggregateStore(s.log, db)
-	s.os = service.NewOrderService(s.log, s.cfg, aggregateStore, mongoRepository, elasticRepository)
-
-	mongoProjection := mongo_projection.NewOrderProjection(s.log, db, mongoRepository, s.cfg)
-	elasticProjection := elastic_projection.NewElasticProjection(s.log, db, elasticRepository, s.cfg)
-
-	go func() {
-		err := mongoProjection.Subscribe(ctx, []string{s.cfg.Subscriptions.OrderPrefix}, s.cfg.Subscriptions.PoolSize, mongoProjection.ProcessEvents)
-		if err != nil {
-			s.log.Errorf("(orderProjection.Subscribe) err: {%v}", err)
-			cancel()
-		}
-	}()
-
-	go func() {
-		err := elasticProjection.Subscribe(ctx, []string{s.cfg.Subscriptions.OrderPrefix}, s.cfg.Subscriptions.PoolSize, elasticProjection.ProcessEvents)
-		if err != nil {
-			s.log.Errorf("(elasticProjection.Subscribe) err: {%v}", err)
-			cancel()
-		}
-	}()
-
-	orderHandlers := orderHttp.NewOrderHandlers(s.echo.Group(s.cfg.Http.OrdersPath), s.log, s.mw, s.cfg, s.v, s.os, s.metrics)
-	orderHandlers.MapRoutes()
-
-	s.initMongoDBCollections(ctx)
-	s.runMetrics(cancel)
-	s.runHealthCheck(ctx)
-
-	go func() {
-		if err := s.runHttpServer(); err != nil {
-			s.log.Errorf("(s.runHttpServer) err: {%v}", err)
-			cancel()
-		}
-	}()
-	s.log.Infof("%s is listening on PORT: {%s}", GetMicroserviceName(s.cfg), s.cfg.Http.Port)
-
-	closeGrpcServer, grpcServer, err := s.newOrderGrpcServer()
-	if err != nil {
-		cancel()
-		return err
-	}
-	defer closeGrpcServer() // nolint: errcheck
-
 	<-ctx.Done()
-	s.waitShootDown(waitShotDownDuration)
-
 	grpcServer.GracefulStop()
-	if err := s.shutDownHealthCheckServer(ctx); err != nil {
-		s.log.Warnf("(shutDownHealthCheckServer) err: {%v}", err)
-	}
-	if err := s.echo.Shutdown(ctx); err != nil {
-		s.log.Warnf("(Shutdown) err: {%v}", err)
-	}
 
-	<-s.doneCh
-	s.log.Infof("%s server exited properly", GetMicroserviceName(s.cfg))
 	return nil
 }
+
+func (s *Server) Start() error {
+	port := s.cfg.Server.Port
+	return s.echo.Start(port)
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.echo.Shutdown(ctx)
+}
+
+func (s *Server) Fatal(err error) { s.echo.Logger.Fatal(err) }
+
+func (s *Server) Config() *config.Config { return s.cfg }

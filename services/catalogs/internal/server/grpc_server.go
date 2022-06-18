@@ -6,7 +6,8 @@ import (
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	product_service "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/grpc/proto/product-service"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/grpc/proto/product_service"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/grpc/services"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -22,7 +23,7 @@ const (
 	gRPCTime          = 10
 )
 
-func (s *server) newWriterGrpcServer() (func() error, *grpc.Server, error) {
+func (s *Server) newCatalogsServiceGrpcServer() (func() error, *grpc.Server, error) {
 	l, err := net.Listen("tcp", s.cfg.GRPC.Port)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "net.Listen")
@@ -45,8 +46,8 @@ func (s *server) newWriterGrpcServer() (func() error, *grpc.Server, error) {
 		),
 	)
 
-	writerGrpcWriter := grpc2.NewWriterGrpcService(s.log, s.cfg, s.v, s.ps, s.metrics)
-	product_service.RegisterProductsServiceServer(grpcServer, writerGrpcWriter)
+	productGrpcService := services.NewProductGrpcService(s.log, s.cfg, s.v, s.mediator, s.metrics)
+	product_service.RegisterProductsServiceServer(grpcServer, productGrpcService)
 	grpc_prometheus.Register(grpcServer)
 
 	if s.cfg.GRPC.Development {

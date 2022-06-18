@@ -25,10 +25,21 @@ type Config struct {
 	Logger      *logger.Config      `mapstructure:"logger"`
 	KafkaTopics KafkaTopics         `mapstructure:"kafkaTopics"`
 	GRPC        GRPC                `mapstructure:"grpc"`
+	Server      Server              `mapstructure:"server"`
+	Context     Context             `mapstructure:"context"`
 	Postgresql  *postgres.Config    `mapstructure:"postgres"`
 	Kafka       *kafkaClient.Config `mapstructure:"kafka"`
 	Probes      probes.Config       `mapstructure:"probes"`
 	Jaeger      *tracing.Config     `mapstructure:"jaeger"`
+}
+
+type Server struct {
+	Port    string `mapstructure:"port"`
+	Timeout int    `mapstructure:"timeout"`
+}
+
+type Context struct {
+	Timeout int `mapstructure:"timeout"`
 }
 
 type GRPC struct {

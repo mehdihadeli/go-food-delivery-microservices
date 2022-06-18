@@ -1,4 +1,9 @@
-serviceName: writer_service
+serviceName: catalogs_service
+server:
+  port: ":8080"
+  timeout: 30
+context:
+  "timeout":20
 grpc:
   port: :5002
   development: true
