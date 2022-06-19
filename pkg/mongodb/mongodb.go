@@ -2,10 +2,10 @@ package mongodb
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -20,18 +20,23 @@ type Config struct {
 	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
 	Db       string `mapstructure:"db"`
+	UseAuth  bool   `mapstructure:"useAuth"`
 }
 
 // NewMongoDBConn Create new MongoDB client
 func NewMongoDBConn(ctx context.Context, cfg *Config) (*mongo.Client, error) {
 
-	client, err := mongo.NewClient(
-		options.Client().ApplyURI(cfg.URI).
-			SetAuth(options.Credential{Username: cfg.User, Password: cfg.Password}).
-			SetConnectTimeout(connectTimeout).
-			SetMaxConnIdleTime(maxConnIdleTime).
-			SetMinPoolSize(minPoolSize).
-			SetMaxPoolSize(maxPoolSize))
+	opt := options.Client().ApplyURI(cfg.URI).
+		SetConnectTimeout(connectTimeout).
+		SetMaxConnIdleTime(maxConnIdleTime).
+		SetMinPoolSize(minPoolSize).
+		SetMaxPoolSize(maxPoolSize)
+
+	if cfg.UseAuth {
+		opt = opt.SetAuth(options.Credential{Username: cfg.User, Password: cfg.Password})
+	}
+
+	client, err := mongo.NewClient(opt)
 	if err != nil {
 		return nil, err
 	}

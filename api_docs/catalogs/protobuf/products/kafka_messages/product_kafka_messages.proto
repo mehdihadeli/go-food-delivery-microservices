@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package kafka_messages;
+
+option go_package = "./;kafka_messages";
+
+
+message ProductCreate {
+  string ProductID = 1;
+  string Name = 2;
+  string Description = 3;
+  double Price = 4;
+}
+
+message ProductUpdate {
+  string ProductID = 1;
+  string Name = 2;
+  string Description = 3;
+  double Price = 4;
+}
+
+message Product {
+  string ProductID = 1;
+  string Name = 2;
+  string Description = 3;
+  double Price = 4;
+  google.protobuf.Timestamp CreatedAt = 6;
+  google.protobuf.Timestamp UpdatedAt = 7;
+}
+
+message ProductCreated {
+  Product Product = 1;
+}
+
+message ProductUpdated {
+  Product Product = 1;
+}
+
+message ProductDelete {
+  string ProductID = 1;
+}
+
+message ProductDeleted {
+  string ProductID = 1;
+}

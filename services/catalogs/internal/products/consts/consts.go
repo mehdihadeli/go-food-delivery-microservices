@@ -6,3 +6,8 @@ const (
 	DeleteProductKey
 	GetProductByIdKey
 )
+
+const (
+	ProductIdIndex    = "productId"
+	ProductId         = "productId"
+)

@@ -2,22 +2,29 @@ package server
 
 import (
 	"context"
-	"github.com/heptiolabs/healthcheck"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/consts"
+	catalog_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/constants"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/segmentio/kafka-go"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"net"
-	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
 const (
-	stackSize = 1 << 10 // 1 KB
+	waitShotDownDuration = 3 * time.Second
 )
 
 func (s *Server) connectKafkaBrokers(ctx context.Context) error {
@@ -116,31 +123,64 @@ func (s *Server) getConsumerGroupTopics() []string {
 	}
 }
 
-func (s *Server) runHealthCheck(ctx context.Context) {
-	health := healthcheck.NewHandler()
-
-	health.AddLivenessCheck(s.cfg.ServiceName, healthcheck.AsyncWithContext(ctx, func() error {
-		return nil
-	}, time.Duration(s.cfg.Probes.CheckIntervalSeconds)*time.Second))
-
-	health.AddReadinessCheck(constants.Postgres, healthcheck.AsyncWithContext(ctx, func() error {
-		return s.pgConn.Ping(ctx)
-	}, time.Duration(s.cfg.Probes.CheckIntervalSeconds)*time.Second))
-
-	health.AddReadinessCheck(constants.Kafka, healthcheck.AsyncWithContext(ctx, func() error {
-		_, err := s.kafkaConn.Brokers()
-		if err != nil {
-			return err
+func (s *Server) initMongoDBCollections(ctx context.Context) {
+	err := s.mongoClient.Database(s.cfg.Mongo.Db).CreateCollection(ctx, s.cfg.MongoCollections.Products)
+	if err != nil {
+		if !utils.CheckErrMessages(err, catalog_constants.ErrMsgMongoCollectionAlreadyExists) {
+			s.log.Warnf("(CreateCollection) err: {%v}", err)
 		}
-		return nil
-	}, time.Duration(s.cfg.Probes.CheckIntervalSeconds)*time.Second))
+	}
 
-	go func() {
-		s.log.Infof("Writer microservice Kubernetes probes listening on port: %s", s.cfg.Probes.Port)
-		if err := http.ListenAndServe(s.cfg.Probes.Port, health); err != nil {
-			s.log.WarnMsg("ListenAndServe", err)
+	indexOptions := options.Index().SetSparse(true).SetUnique(true)
+	index, err := s.mongoClient.Database(s.cfg.Mongo.Db).Collection(s.cfg.MongoCollections.Products).Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bson.D{{Key: consts.ProductIdIndex, Value: 1}},
+		Options: indexOptions,
+	})
+	if err != nil && !utils.CheckErrMessages(err, catalog_constants.ErrMsgAlreadyExists) {
+		s.log.Warnf("(CreateOne) err: {%v}", err)
+	}
+	s.log.Infof("(CreatedIndex) index: {%s}", index)
+
+	list, err := s.mongoClient.Database(s.cfg.Mongo.Db).Collection(s.cfg.MongoCollections.Products).Indexes().List(ctx)
+	if err != nil {
+		s.log.Warnf("(initMongoDBCollections) [List] err: {%v}", err)
+	}
+
+	if list != nil {
+		var results []bson.M
+		if err := list.All(ctx, &results); err != nil {
+			s.log.Warnf("(All) err: {%v}", err)
 		}
-	}()
+		s.log.Infof("(indexes) results: {%#v}", results)
+	}
+
+	collections, err := s.mongoClient.Database(s.cfg.Mongo.Db).ListCollectionNames(ctx, bson.M{})
+	if err != nil {
+		s.log.Warnf("(ListCollections) err: {%v}", err)
+	}
+	s.log.Infof("(Collections) created collections: {%v}", collections)
+}
+
+func (s *Server) initElasticClient(ctx context.Context) error {
+	elasticClient, err := elasticsearch.NewElasticClient(s.cfg.Elastic)
+	if err != nil {
+		return err
+	}
+	s.elasticClient = elasticClient
+
+	info, code, err := s.elasticClient.Ping(s.cfg.Elastic.URL).Do(ctx)
+	if err != nil {
+		return errors.Wrap(err, "client.Ping")
+	}
+	s.log.Infof("Elasticsearch returned with code {%d} and version {%s}", code, info.Version.Number)
+
+	esVersion, err := s.elasticClient.ElasticsearchVersion(s.cfg.Elastic.URL)
+	if err != nil {
+		return errors.Wrap(err, "client.ElasticsearchVersion")
+	}
+	s.log.Infof("Elasticsearch version {%s}", esVersion)
+
+	return nil
 }
 
 func (s *Server) runMetrics(cancel context.CancelFunc) {
@@ -158,4 +198,35 @@ func (s *Server) runMetrics(cancel context.CancelFunc) {
 			cancel()
 		}
 	}()
+}
+
+func (s *Server) getHttpMetricsCb() func(err error) {
+	return func(err error) {
+		if err != nil {
+			s.metrics.ErrorHttpRequests.Inc()
+		} else {
+			s.metrics.SuccessHttpRequests.Inc()
+		}
+	}
+}
+
+func (s *Server) getGrpcMetricsCb() func(err error) {
+	return func(err error) {
+		if err != nil {
+			s.metrics.ErrorGrpcRequests.Inc()
+		} else {
+			s.metrics.SuccessGrpcRequests.Inc()
+		}
+	}
+}
+
+func (s *Server) waitShootDown(duration time.Duration) {
+	go func() {
+		time.Sleep(duration)
+		s.doneCh <- struct{}{}
+	}()
+}
+
+func GetMicroserviceName(cfg *config.Config) string {
+	return fmt.Sprintf("(%s)", strings.ToUpper(cfg.ServiceName))
 }

@@ -6,10 +6,10 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/grpc/kafka_messages"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/mappers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/models"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/proto/product_kafka_messages"
 	"github.com/opentracing/opentracing-go"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
@@ -39,7 +39,7 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command UpdateProduct
 		return err
 	}
 
-	evt := &product_kafka_messages.ProductUpdated{Product: mappers.ProductToGrpcMessage(product)}
+	evt := &kafka_messages.ProductUpdated{Product: mappers.ProductToGrpcMessage(product)}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
 		return err

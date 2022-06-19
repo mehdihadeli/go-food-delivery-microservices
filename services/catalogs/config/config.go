@@ -4,8 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -21,21 +24,22 @@ func init() {
 }
 
 type Config struct {
-	ServiceName string              `mapstructure:"serviceName"`
-	Logger      *logger.Config      `mapstructure:"logger"`
-	KafkaTopics KafkaTopics         `mapstructure:"kafkaTopics"`
-	GRPC        GRPC                `mapstructure:"grpc"`
-	Server      Server              `mapstructure:"server"`
-	Context     Context             `mapstructure:"context"`
-	Postgresql  *postgres.Config    `mapstructure:"postgres"`
-	Kafka       *kafkaClient.Config `mapstructure:"kafka"`
-	Probes      probes.Config       `mapstructure:"probes"`
-	Jaeger      *tracing.Config     `mapstructure:"jaeger"`
-}
-
-type Server struct {
-	Port    string `mapstructure:"port"`
-	Timeout int    `mapstructure:"timeout"`
+	ServiceName      string                         `mapstructure:"serviceName"`
+	Logger           *logger.Config                 `mapstructure:"logger"`
+	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics"`
+	GRPC             GRPC                           `mapstructure:"grpc"`
+	Http             Http                           `mapstructure:"http"`
+	Context          Context                        `mapstructure:"context"`
+	Postgresql       *postgres.Config               `mapstructure:"postgres"`
+	Kafka            *kafkaClient.Config            `mapstructure:"kafka"`
+	Probes           probes.Config                  `mapstructure:"probes"`
+	Jaeger           *tracing.Config                `mapstructure:"jaeger"`
+	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
+	Subscriptions    Subscriptions                  `mapstructure:"subscriptions"`
+	Elastic          elasticsearch.Config           `mapstructure:"elastic"`
+	ElasticIndexes   ElasticIndexes                 `mapstructure:"elasticIndexes"`
+	Mongo            *mongodb.Config                `mapstructure:"mongo"`
+	MongoCollections MongoCollections               `mapstructure:"mongoCollections"`
 }
 
 type Context struct {
@@ -45,6 +49,31 @@ type Context struct {
 type GRPC struct {
 	Port        string `mapstructure:"port"`
 	Development bool   `mapstructure:"development"`
+}
+
+type Http struct {
+	Port                string   `mapstructure:"port" validate:"required"`
+	Development         bool     `mapstructure:"development"`
+	BasePath            string   `mapstructure:"basePath" validate:"required"`
+	ProductsPath        string   `mapstructure:"ordersPath" validate:"required"`
+	DebugErrorsResponse bool     `mapstructure:"debugErrorsResponse"`
+	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls"`
+	Timeout             int      `mapstructure:"timeout"`
+}
+
+type MongoCollections struct {
+	Products string `mapstructure:"products" validate:"required"`
+}
+
+type Subscriptions struct {
+	PoolSize                   int    `mapstructure:"poolSize" validate:"required,gte=0"`
+	OrderPrefix                string `mapstructure:"orderPrefix" validate:"required,gte=0"`
+	MongoProjectionGroupName   string `mapstructure:"mongoProjectionGroupName" validate:"required,gte=0"`
+	ElasticProjectionGroupName string `mapstructure:"elasticProjectionGroupName" validate:"required,gte=0"`
+}
+
+type ElasticIndexes struct {
+	Orders string `mapstructure:"orders" validate:"required"`
 }
 
 type KafkaTopics struct {

@@ -114,3 +114,8 @@ func GetKafkaTracingHeadersFromSpanCtx(spanCtx opentracing.SpanContext) []kafka.
 	kafkaMessageHeaders := TextMapCarrierToKafkaMessageHeaders(textMapCarrier)
 	return kafkaMessageHeaders
 }
+
+func TraceErr(span opentracing.Span, err error) {
+	span.SetTag("error", true)
+	span.LogKV("error_code", err.Error())
+}

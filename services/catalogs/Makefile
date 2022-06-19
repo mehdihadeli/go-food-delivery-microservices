@@ -4,7 +4,7 @@ run_catalogs_service:
 	go run ./cmd/main.go -config=./config/config.yaml
 
 # ==============================================================================
-# Modules
+# Golang Helpers
 
 tidy:
 	go mod tidy
@@ -19,7 +19,6 @@ deps-upgrade:
 
 deps-cleancache:
 	go clean -modcache
-
 
 # ==============================================================================
 # Linters https://golangci-lint.run/usage/install/
@@ -82,32 +81,8 @@ migrate_down:
 
 
 # ==============================================================================
-# MongoDB
-
-mongo:
-	cd ./scripts && mongo admin -u admin -p admin < init.js
-
-
-# ==============================================================================
 # Swagger
 
 swagger:
 	@echo Starting swagger generating
 	swag init -g **/**/*.go
-
-
-# ==============================================================================
-# Proto
-
-proto_product_kafka_messages:
-	@echo Generating kafka messages proto
-	cd internal/products/proto/product_kafka_messages && protoc --go_out=. --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=. *.proto
-
-proto_product_service_message:
-	@echo Generating product_service messages microservice proto
-	cd internal/products/proto/product_service && protoc --go_out=. --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=. product_service_messages.proto
-
-proto_product_service:
-	@echo Generating product_service proto
-	cd internal/products/proto/product_service && protoc --go_out=. --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=. product_service.proto
-

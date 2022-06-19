@@ -1,0 +1,175 @@
+version: "3.8"
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: on-failure
+    ports:
+      - "9090:9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - store
+
+  node_exporter:
+    container_name: node_exporter
+    restart: on-failure
+    image: prom/node-exporter
+    ports:
+      - '9101:9100'
+    networks:
+      - store
+
+  grafana:
+    container_name: grafana
+    restart: on-failure
+    image: grafana/grafana
+    ports:
+      - '3005:3000'
+    networks:
+      - store
+
+  postgres:
+    image: postgres:13-alpine
+    container_name: postgres
+    restart: on-failure
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - store
+
+  redis:
+    image: redis:6-alpine
+    restart: on-failure
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - store
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - store
+
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    hostname: kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_HOSTNAME: 127.0.0.1
+    networks:
+      - store
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: on-failure
+    # environment:
+    #   - MONGO_INITDB_ROOT_USERNAME=admin
+    #   - MONGO_INITDB_ROOT_PASSWORD=admin
+    ports:
+      - ${MONGO_PORT}:${MONGO_PORT}
+    networks:
+      - store
+
+  jaeger:
+    container_name: jaeger
+    restart: on-failure
+    image: jaegertracing/all-in-one:1.21
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+    networks:
+      - store
+
+  eventstore:
+    image: eventstore/eventstore:latest
+    container_name: eventstore
+    restart: on-failure
+    environment:
+      - EVENTSTORE_CLUSTER_SIZE=1
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=false
+      - EVENTSTORE_EXT_TCP_PORT=1113
+      - EVENTSTORE_HTTP_PORT=2113
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+      - EVENTSTORE_MEM_DB=true
+    ports:
+      - "1113:1113"
+      - "2113:2113"
+    networks:
+      - store
+  
+  # elasticsearch:
+  #   container_name: elastic_search
+  #   restart: on-failure
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+  #   environment:
+  #     - discovery.type=single-node
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - elastic-data:/usr/share/elasticsearch/data
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   networks:
+  #     - store
+
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:7.13.3
+  #   restart: on-failure
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elastic_search:9200
+  #   ports:
+  #     - "5601:5601"
+  #   networks:
+  #     - store
+  #   depends_on:
+  #     - elasticsearch
+
+  # volumes:
+  #   elastic-data:
+
+
+networks:
+  store:
+    name: store

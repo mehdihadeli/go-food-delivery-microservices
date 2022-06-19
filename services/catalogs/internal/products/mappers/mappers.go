@@ -1,15 +1,15 @@
 package mappers
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/grpc/kafka_messages"
+	product_service "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/grpc/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/models"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/proto/product_kafka_messages"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/proto/product_service"
 	uuid "github.com/satori/go.uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func ProductToGrpcMessage(product *models.Product) *product_kafka_messages.Product {
-	return &product_kafka_messages.Product{
+func ProductToGrpcMessage(product *models.Product) *kafka_messages.Product {
+	return &kafka_messages.Product{
 		ProductID:   product.ProductID.String(),
 		Name:        product.Name,
 		Description: product.Description,
@@ -19,7 +19,7 @@ func ProductToGrpcMessage(product *models.Product) *product_kafka_messages.Produ
 	}
 }
 
-func ProductFromGrpcMessage(product *product_kafka_messages.Product) (*models.Product, error) {
+func ProductFromGrpcMessage(product *kafka_messages.Product) (*models.Product, error) {
 
 	proUUID, err := uuid.FromString(product.GetProductID())
 	if err != nil {

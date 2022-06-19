@@ -63,14 +63,16 @@ func (m Mediator) Send(ctx context.Context, command interface{}) (interface{}, e
 		reflect.ValueOf(command),
 	}
 
-	if handler.Type().NumIn() == 2 {
+	var handleMethod = handler.MethodByName("Handle")
+
+	if handleMethod.Type().NumIn() == 2 {
 		arguments = append(
 			[]reflect.Value{reflect.ValueOf(ctx)},
 			arguments...,
 		)
 	}
 
-	result := handler.Call(arguments)
+	result := handleMethod.Call(arguments)
 	switch len(result) {
 	case 0:
 		return nil, nil
