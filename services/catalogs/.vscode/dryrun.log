@@ -1,0 +1,5 @@
+make: Entering directory 'd:/Github/GOLANG/store-golang-microservice-sample/services/catalogs'
+make: Leaving directory 'd:/Github/GOLANG/store-golang-microservice-sample/services/catalogs'
+ 
+Makefile:67: *** missing separator.  Stop.
+
