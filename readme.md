@@ -4,4 +4,5 @@
 
 > A practical store sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Driven Architecture**. For communication between independent services, We use asynchronous messaging with using kafka, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
 
-🌀 This Application is in-progress and I will add new feature and thecnologies over time. 
+🌀 This Application is in-progress and I will add new features and thecnologies over time. 
+
