@@ -3,6 +3,12 @@
 run_catalogs_service:
 	go run ./cmd/main.go -config=./config/config.yaml
 
+build_catalogs_service:
+	go build ./cmd/main.go
+
+test_catalogs_service:
+	go test -cover ./...
+
 # ==============================================================================
 # Golang Helpers
 
@@ -26,19 +32,6 @@ deps-cleancache:
 run-linter:
 	@echo Starting linters
 	golangci-lint run ./...
-
-# ==============================================================================
-# PPROF
-
-pprof_heap:
-	go tool pprof -http :8006 http://localhost:6060/debug/pprof/heap?seconds=10
-
-pprof_cpu:
-	go tool pprof -http :8006 http://localhost:6060/debug/pprof/profile?seconds=10
-
-pprof_allocs:
-	go tool pprof -http :8006 http://localhost:6060/debug/pprof/allocs?seconds=10
-
 
 # ==============================================================================
 # Go migrate postgresql https://github.com/golang-migrate/migrate
@@ -79,10 +72,3 @@ migrate_up:
 migrate_down:
 	migrate -database postgres://postgres:postgres@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(SSL_MODE) -verbose -path migrations down
 
-
-# ==============================================================================
-# Swagger
-
-swagger:
-	@echo Starting swagger generating
-	swag init -g **/**/*.go

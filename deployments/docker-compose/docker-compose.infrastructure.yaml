@@ -57,6 +57,7 @@ services:
     image: confluentinc/cp-zookeeper:7.0.1
     hostname: zookeeper
     container_name: zookeeper
+    restart: on-failure
     ports:
       - "2181:2181"
     environment:
@@ -69,6 +70,7 @@ services:
     image: confluentinc/cp-kafka:7.0.1
     hostname: kafka
     container_name: kafka
+    restart: on-failure
     depends_on:
       - zookeeper
     ports:

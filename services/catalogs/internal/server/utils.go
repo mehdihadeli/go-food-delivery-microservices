@@ -227,6 +227,24 @@ func (s *Server) waitShootDown(duration time.Duration) {
 	}()
 }
 
+func (s *Server) applyVersioningFromHeader() {
+	s.echo.Pre(apiVersion)
+}
+
 func GetMicroserviceName(cfg *config.Config) string {
 	return fmt.Sprintf("(%s)", strings.ToUpper(cfg.ServiceName))
+}
+
+// APIVersion Header Based Versioning
+func apiVersion(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		req := c.Request()
+		headers := req.Header
+
+		apiVersion := headers.Get("version")
+
+		req.URL.Path = fmt.Sprintf("/%s%s", apiVersion, req.URL.Path)
+
+		return next(c)
+	}
 }

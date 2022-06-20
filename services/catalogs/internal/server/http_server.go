@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/swaggo/echo-swagger/example/docs"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/docs"
 	"strings"
 	"time"
 
@@ -20,7 +20,8 @@ const (
 )
 
 func (s *Server) runHttpServer() error {
-	s.mapRoutes()
+
+	s.configSwagger()
 
 	s.echo.Server.ReadTimeout = readTimeout
 	s.echo.Server.WriteTimeout = writeTimeout
@@ -29,13 +30,12 @@ func (s *Server) runHttpServer() error {
 	return s.echo.Start(s.cfg.Http.Port)
 }
 
-func (s *Server) mapRoutes() {
-	docs.SwaggerInfo_swagger.Version = "1.0"
-	docs.SwaggerInfo_swagger.Title = "EventSourcing Microservice"
-	docs.SwaggerInfo_swagger.Description = "EventSourcing CQRS Microservice."
-	docs.SwaggerInfo_swagger.Version = "1.0"
-	docs.SwaggerInfo_swagger.BasePath = "/api/v1"
-
+func (s *Server) configSwagger() {
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Title = "Catalogs Service Api"
+	docs.SwaggerInfo.Description = "Catalogs Service Api."
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.BasePath = "/api/v1"
 	s.echo.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	s.echo.Use(s.mw.RequestLoggerMiddleware)

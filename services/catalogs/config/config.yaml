@@ -9,9 +9,10 @@ http:
   development: true
   timeout: 30
   basePath: /api/v1
-  productsPath: /api/v1/products
-  debugHeaders: false
-  httpClientDebug: false
+  host: http://localhost
+  productsPath: products
+  debugHeaders: true
+  httpClientDebug: true
   debugErrorsResponse: true
   ignoreLogUrls: [ "metrics" ]
 probes:

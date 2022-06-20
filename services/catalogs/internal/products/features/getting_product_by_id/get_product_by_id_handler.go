@@ -5,6 +5,8 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/dto"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/mappers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/models"
 )
 
@@ -22,6 +24,12 @@ func NewGetProductByIdHandler(log logger.Logger, cfg *config.Config, pgRepo repo
 	return &GetProductByIdHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 
-func (q *GetProductByIdHandler) Handle(ctx context.Context, query GetProductById) (*models.Product, error) {
-	return q.pgRepo.GetProductById(ctx, query.ProductID)
+func (q *GetProductByIdHandler) Handle(ctx context.Context, query GetProductById) (*dto.GetProductResponseDto, error) {
+	product, err := q.pgRepo.GetProductById(ctx, query.ProductID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return mappers.ProductToGetProductResponseDto(product), nil
 }

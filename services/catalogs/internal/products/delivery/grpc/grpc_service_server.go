@@ -40,26 +40,20 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 	ctx, span := tracing.StartGrpcServerTracerSpan(ctx, "grpcService.CreateProduct")
 	defer span.Finish()
 
-	productUUID, err := uuid.FromString(req.GetProductID())
-	if err != nil {
-		s.log.WarnMsg("uuid.FromString", err)
-		return nil, s.errResponse(codes.InvalidArgument, err)
-	}
-
-	command := creating_product.NewCreateProduct(productUUID, req.GetName(), req.GetDescription(), req.GetPrice())
+	command := creating_product.NewCreateProduct(req.GetName(), req.GetDescription(), req.GetPrice())
 	if err := s.v.StructCtx(ctx, command); err != nil {
 		s.log.WarnMsg("validate", err)
 		return nil, s.errResponse(codes.InvalidArgument, err)
 	}
 
-	_, err = s.md.Send(ctx, command)
+	_, err := s.md.Send(ctx, command)
 	if err != nil {
 		s.log.WarnMsg("CreateProduct.Handle", err)
 		return nil, s.errResponse(codes.Internal, err)
 	}
 
 	s.metrics.SuccessGrpcRequests.Inc()
-	return &product_service.CreateProductRes{ProductID: productUUID.String()}, nil
+	return &product_service.CreateProductRes{ProductID: command.ProductID.String()}, nil
 }
 
 func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *product_service.UpdateProductReq) (*product_service.UpdateProductRes, error) {

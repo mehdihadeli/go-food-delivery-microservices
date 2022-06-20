@@ -102,7 +102,7 @@ func (s *Server) Run() error {
 	kafkaProducer := kafkaClient.NewProducer(s.log, s.cfg.Kafka.Brokers)
 	defer kafkaProducer.Close() // nolint: errcheck
 
-	productRepo := repositories.NewProductRepository(s.log, s.cfg, pgxConn)
+	productRepo := repositories.NewPostgresProductRepository(s.log, s.cfg, pgxConn)
 
 	m, err := shared.NewMediator(s.log, s.cfg, productRepo, kafkaProducer)
 
@@ -121,7 +121,8 @@ func (s *Server) Run() error {
 	s.runMetrics(cancel)
 	s.runHealthCheck(ctx)
 
-	productHandlers := v1.NewProductsHandlers(s.echo.Group(s.cfg.Http.ProductsPath), s.log, s.mw, s.cfg, s.mediator, s.v, s.metrics)
+	//s.applyVersioningFromHeader()
+	productHandlers := v1.NewProductsHandlers(s.echo, s.log, s.mw, s.cfg, s.mediator, s.v, s.metrics)
 	productHandlers.MapRoutes()
 
 	go func() {

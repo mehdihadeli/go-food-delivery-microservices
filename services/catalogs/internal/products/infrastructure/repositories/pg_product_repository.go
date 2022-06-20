@@ -11,17 +11,17 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type productRepository struct {
+type postgresProductRepository struct {
 	log logger.Logger
 	cfg *config.Config
 	db  *pgxpool.Pool
 }
 
-func NewProductRepository(log logger.Logger, cfg *config.Config, db *pgxpool.Pool) *productRepository {
-	return &productRepository{log: log, cfg: cfg, db: db}
+func NewPostgresProductRepository(log logger.Logger, cfg *config.Config, db *pgxpool.Pool) *postgresProductRepository {
+	return &postgresProductRepository{log: log, cfg: cfg, db: db}
 }
 
-func (p *productRepository) CreateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
+func (p *postgresProductRepository) CreateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "productRepository.CreateProduct")
 	defer span.Finish()
 
@@ -37,13 +37,13 @@ func (p *productRepository) CreateProduct(ctx context.Context, product *models.P
 		&created.CreatedAt,
 		&created.UpdatedAt,
 	); err != nil {
-		return nil, errors.Wrap(err, "db.QueryRow")
+		return nil, errors.Wrap(err, "error in the insert product into the database")
 	}
 
 	return &created, nil
 }
 
-func (p *productRepository) UpdateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
+func (p *postgresProductRepository) UpdateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "productRepository.UpdateProduct")
 	defer span.Finish()
 
@@ -70,7 +70,7 @@ func (p *productRepository) UpdateProduct(ctx context.Context, product *models.P
 	return &prod, nil
 }
 
-func (p *productRepository) GetProductById(ctx context.Context, uuid uuid.UUID) (*models.Product, error) {
+func (p *postgresProductRepository) GetProductById(ctx context.Context, uuid uuid.UUID) (*models.Product, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "productRepository.GetProductById")
 	defer span.Finish()
 
@@ -92,7 +92,7 @@ func (p *productRepository) GetProductById(ctx context.Context, uuid uuid.UUID) 
 	return &product, nil
 }
 
-func (p *productRepository) DeleteProductByID(ctx context.Context, uuid uuid.UUID) error {
+func (p *postgresProductRepository) DeleteProductByID(ctx context.Context, uuid uuid.UUID) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "productRepository.DeleteProductByID")
 	defer span.Finish()
 

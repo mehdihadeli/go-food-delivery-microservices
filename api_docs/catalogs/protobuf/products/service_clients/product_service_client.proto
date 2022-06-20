@@ -22,10 +22,9 @@ message Product {
 }
 
 message CreateProductReq {
-  string ProductID = 1;
-  string Name = 2;
-  string Description = 3;
-  double Price = 4;
+  string Name = 1;
+  string Description = 2;
+  double Price = 3;
 }
 
 message CreateProductRes {

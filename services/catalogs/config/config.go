@@ -55,10 +55,11 @@ type Http struct {
 	Port                string   `mapstructure:"port" validate:"required"`
 	Development         bool     `mapstructure:"development"`
 	BasePath            string   `mapstructure:"basePath" validate:"required"`
-	ProductsPath        string   `mapstructure:"ordersPath" validate:"required"`
+	ProductsPath        string   `mapstructure:"productsPath" validate:"required"`
 	DebugErrorsResponse bool     `mapstructure:"debugErrorsResponse"`
 	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls"`
 	Timeout             int      `mapstructure:"timeout"`
+	Host                string   `mapstructure:"host"`
 }
 
 type MongoCollections struct {

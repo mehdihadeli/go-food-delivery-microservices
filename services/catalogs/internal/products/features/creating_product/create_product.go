@@ -1,7 +1,6 @@
 package creating_product
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/consts"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -12,8 +11,6 @@ type CreateProduct struct {
 	Price       float64   `json:"price" validate:"required,gte=0"`
 }
 
-func (CreateProduct) Key() int { return consts.CreateProductKey }
-
-func NewCreateProduct(productID uuid.UUID, name string, description string, price float64) *CreateProduct {
-	return &CreateProduct{ProductID: productID, Name: name, Description: description, Price: price}
+func NewCreateProduct(name string, description string, price float64) *CreateProduct {
+	return &CreateProduct{ProductID: uuid.NewV4(), Name: name, Description: description, Price: price}
 }

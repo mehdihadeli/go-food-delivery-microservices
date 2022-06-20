@@ -8,6 +8,8 @@ import (
 	"log"
 )
 
+// @contact.name Mehdi Hadeli
+// @contact.url https://github.com/mehdihadeli
 func main() {
 	flag.Parse()
 

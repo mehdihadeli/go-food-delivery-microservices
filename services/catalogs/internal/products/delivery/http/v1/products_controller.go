@@ -21,8 +21,8 @@ import (
 	"net/http"
 )
 
-type productsHandlers struct {
-	group   *echo.Group
+type productsController struct {
+	e       *echo.Echo
 	log     logger.Logger
 	mw      middlewares.MiddlewareManager
 	cfg     *config.Config
@@ -32,15 +32,27 @@ type productsHandlers struct {
 }
 
 func NewProductsHandlers(
-	group *echo.Group,
+	e *echo.Echo,
 	log logger.Logger,
 	mw middlewares.MiddlewareManager,
 	cfg *config.Config,
 	m *mediatr.Mediator,
 	v *validator.Validate,
 	metrics *shared.CatalogsServiceMetrics,
-) *productsHandlers {
-	return &productsHandlers{group: group, log: log, mw: mw, cfg: cfg, m: m, v: v, metrics: metrics}
+) *productsController {
+	return &productsController{e: e, log: log, mw: mw, cfg: cfg, m: m, v: v, metrics: metrics}
+}
+
+// GetAllProducts
+// @Tags Products
+// @Summary Get all product
+// @Description Get all products
+// @Accept json
+// @Produce json
+// @Success 200
+// @Router /products [get]
+func (h *productsController) GetAllProducts() echo.HandlerFunc {
+	return nil
 }
 
 // CreateProduct
@@ -49,11 +61,12 @@ func NewProductsHandlers(
 // @Description Create new product item
 // @Accept json
 // @Produce json
+// @Param CreateProductRequestDto body dto.CreateProductRequestDto true "Product data"
 // @Success 201 {object} dto.CreateProductResponseDto
 // @Router /products [post]
-func (h *productsHandlers) CreateProduct() echo.HandlerFunc {
+func (h *productsController) CreateProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		//h.metrics.CreateProductHttpRequests.Inc()
+		h.metrics.CreateProductHttpRequests.Inc()
 
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "productsHandlers.CreateProduct")
 		defer span.Finish()
@@ -71,20 +84,18 @@ func (h *productsHandlers) CreateProduct() echo.HandlerFunc {
 			return httpErrors.ErrorCtxResponse(c, err, h.cfg.Http.DebugErrorsResponse)
 		}
 
-		id := uuid.NewV4()
-
-		command := creating_product.NewCreateProduct(id, request.Name, request.Description, request.Price)
-		_, err := h.m.Send(ctx, command)
+		command := creating_product.NewCreateProduct(request.Name, request.Description, request.Price)
+		_, err := h.m.Send(ctx, *command)
 
 		if err != nil {
-			h.log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", id, err)
+			h.log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", command.ProductID, err)
 			tracing.TraceErr(span, err)
 			return httpErrors.ErrorCtxResponse(c, err, h.cfg.Http.DebugErrorsResponse)
 		}
 
-		h.log.Infof("(order created) id: {%s}", id)
+		h.log.Infof("(order created) id: {%s}", command.ProductID)
 		//h.metrics.SuccessHttpRequests.Inc()
-		return c.JSON(http.StatusCreated, dto.CreateProductResponseDto{ProductID: id})
+		return c.JSON(http.StatusCreated, dto.CreateProductResponseDto{ProductID: command.ProductID})
 	}
 }
 
@@ -95,9 +106,9 @@ func (h *productsHandlers) CreateProduct() echo.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.ProductResponse
+// @Success 200
 // @Router /products/{id} [get]
-func (h *productsHandlers) GetProductByID() echo.HandlerFunc {
+func (h *productsController) GetProductByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		h.metrics.GetProductByIdHttpRequests.Inc()
 
@@ -113,6 +124,7 @@ func (h *productsHandlers) GetProductByID() echo.HandlerFunc {
 
 		query := getting_product_by_id.NewGetProductById(productUUID)
 		response, err := h.m.Send(ctx, query)
+
 		if err != nil {
 			h.log.WarnMsg("GetProductById", err)
 			h.metrics.ErrorHttpRequests.Inc()
@@ -131,9 +143,9 @@ func (h *productsHandlers) GetProductByID() echo.HandlerFunc {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} dto.UpdateProductDto
+// @Success 200 {object} dto.UpdateProductResponseDto
 // @Router /products/{id} [put]
-func (h *productsHandlers) UpdateProduct() echo.HandlerFunc {
+func (h *productsController) UpdateProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		h.metrics.UpdateProductHttpRequests.Inc()
 
@@ -185,7 +197,7 @@ func (h *productsHandlers) UpdateProduct() echo.HandlerFunc {
 // @Success 200 ""
 // @Param id path string true "Product ID"
 // @Router /products/{id} [delete]
-func (h *productsHandlers) DeleteProduct() echo.HandlerFunc {
+func (h *productsController) DeleteProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		h.metrics.DeleteProductHttpRequests.Inc()
 
@@ -213,7 +225,7 @@ func (h *productsHandlers) DeleteProduct() echo.HandlerFunc {
 	}
 }
 
-func (h *productsHandlers) traceErr(span opentracing.Span, err error) {
+func (h *productsController) traceErr(span opentracing.Span, err error) {
 	span.SetTag("error", true)
 	span.LogKV("error_code", err.Error())
 	h.metrics.ErrorHttpRequests.Inc()
