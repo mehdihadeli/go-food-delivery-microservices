@@ -1,4 +1,4 @@
-package server
+package configurations
 
 import (
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -23,10 +23,10 @@ const (
 	gRPCTime          = 10
 )
 
-func (s *Server) newCatalogsServiceGrpcServer() (func() error, *grpc.Server, error) {
-	l, err := net.Listen("tcp", s.cfg.GRPC.Port)
+func (s *Server) newCatalogsServiceGrpcServer() (error, func()) {
+	l, err := net.Listen("tcp", s.Cfg.GRPC.Port)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "net.Listen")
+		return errors.Wrap(err, "net.Listen"), nil
 	}
 
 	grpcServer := grpc.NewServer(
@@ -41,23 +41,26 @@ func (s *Server) newCatalogsServiceGrpcServer() (func() error, *grpc.Server, err
 			grpc_opentracing.UnaryServerInterceptor(),
 			grpc_prometheus.UnaryServerInterceptor,
 			grpc_recovery.UnaryServerInterceptor(),
-			s.im.Logger,
+			s.Im.Logger,
 		),
 		),
 	)
 
-	productGrpcService := grpc_delivery.NewProductGrpcService(s.log, s.cfg, s.v, s.mediator, s.metrics)
+	productGrpcService := grpc_delivery.NewProductGrpcService(s.Log, s.Cfg, s.Validator, s.Mediator, s.Metrics)
 	product_service.RegisterProductsServiceServer(grpcServer, productGrpcService)
 	grpc_prometheus.Register(grpcServer)
 
-	if s.cfg.GRPC.Development {
+	if s.Cfg.GRPC.Development {
 		reflection.Register(grpcServer)
 	}
 
 	go func() {
-		s.log.Infof("Writer gRPC server is listening on port: %s", s.cfg.GRPC.Port)
-		s.log.Fatal(grpcServer.Serve(l))
+		s.Log.Infof("Writer gRPC server is listening on port: %s", s.cfg.GRPC.Port)
+		s.Log.Fatal(grpcServer.Serve(l))
 	}()
 
-	return l.Close, grpcServer, nil
+	return nil, func() {
+		l.Close()
+		grpcServer.GracefulStop()
+	}
 }
