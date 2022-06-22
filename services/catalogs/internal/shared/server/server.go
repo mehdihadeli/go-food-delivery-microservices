@@ -1,40 +1,45 @@
 package server
 
 import (
-	"context"
-	"github.com/go-playground/validator"
-	"github.com/jackc/pgx/v4/pgxpool"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/heptiolabs/healthcheck"
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/interceptors"
-	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/web/middlewares"
-	v7 "github.com/olivere/elastic/v7"
-	"github.com/segmentio/kafka-go"
-	"go.mongodb.org/mongo-driver/mongo"
-	"net/http"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
+	"time"
 )
 
 type Server struct {
-	Log               logger.Logger
-	Cfg               *config.Config
-	HttpServer        *http.Server
-	Validator         *validator.Validate
-	KafkaConn         *kafka.Conn
-	KafkaProducer     kafkaClient.Producer
-	Im                interceptors.InterceptorManager
-	PgConn            *pgxpool.Pool
-	Metrics           *shared.CatalogsServiceMetrics
-	Echo              *echo.Echo
-	MongoClient       *mongo.Client
-	ElasticClient     *v7.Client
-	Ctx               context.Context
-	MiddlewareManager middlewares.MiddlewareManager
-	DoneCh            chan struct{}
+	Log         logger.Logger
+	Cfg         *config.Config
+	Echo        *echo.Echo
+	DoneCh      chan struct{}
+	healthCheck healthcheck.Handler
+	GrpcServer  *grpc.Server
 }
 
 func NewServer(log logger.Logger, cfg *config.Config) *Server {
-	return &Server{Log: log, Cfg: cfg}
+
+	grpcServer := grpc.NewServer(
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle: maxConnectionIdle * time.Minute,
+			Timeout:           gRPCTimeout * time.Second,
+			MaxConnectionAge:  maxConnectionAge * time.Minute,
+			Time:              gRPCTime * time.Minute,
+		}),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			grpc_ctxtags.UnaryServerInterceptor(),
+			grpc_opentracing.UnaryServerInterceptor(),
+			grpc_prometheus.UnaryServerInterceptor,
+			grpc_recovery.UnaryServerInterceptor()),
+		),
+	)
+
+	return &Server{Log: log, Cfg: cfg, Echo: echo.New(), GrpcServer: grpcServer}
 }
