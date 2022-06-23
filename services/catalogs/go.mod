@@ -7,7 +7,7 @@ require (
 	github.com/heptiolabs/healthcheck v0.0.0-20211123025425-613501dd5deb
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/labstack/echo/v4 v4.7.2
-	github.com/mehdihadeli/store-golang-microservice-sample/pkg v0.0.0-00010101000000-000000000000
+	github.com/mehdihadeli/store-golang-microservice-sample/pkg v0.0.0-20220623103410-1cf5d7727d54
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -15,6 +15,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.32
 	github.com/spf13/viper v1.12.0
 	github.com/swaggo/echo-swagger v1.3.3
+	github.com/swaggo/swag v1.8.1
 	go.mongodb.org/mongo-driver v1.9.1
 	google.golang.org/grpc v1.47.0
 )
@@ -53,7 +54,6 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect
 	github.com/prometheus/common v0.34.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
-	github.com/swaggo/swag v1.8.1 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -104,4 +104,4 @@ require (
 )
 
 // https://go.dev/doc/tutorial/call-module-code
-replace github.com/mehdihadeli/store-golang-microservice-sample/pkg => ../../pkg
+replace github.com/mehdihadeli/store-golang-microservice-sample => ../../pkg
