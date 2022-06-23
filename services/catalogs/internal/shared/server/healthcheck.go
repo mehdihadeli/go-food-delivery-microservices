@@ -3,33 +3,38 @@ package server
 import (
 	"context"
 	"github.com/heptiolabs/healthcheck"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
 	web_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/constants"
 	"net/http"
 )
 
-func (s *Server) RunHealthCheck(ctx context.Context) func() {
-	health := healthcheck.NewHandler()
-	s.healthCheck = health
-
+func NewHealthCheckServer(config *config.Config) *http.Server {
 	mux := http.NewServeMux()
+	health := healthcheck.NewHandler()
+	mux.HandleFunc(config.Probes.LivenessPath, health.LiveEndpoint)
+	mux.HandleFunc(config.Probes.ReadinessPath, health.ReadyEndpoint)
+
 	httpServer := &http.Server{
 		Handler:      mux,
-		Addr:         s.Cfg.Probes.Port,
+		Addr:         config.Probes.Port,
 		WriteTimeout: web_constants.WriteTimeout,
 		ReadTimeout:  web_constants.ReadTimeout,
 	}
-	mux.HandleFunc(s.Cfg.Probes.LivenessPath, health.LiveEndpoint)
-	mux.HandleFunc(s.Cfg.Probes.ReadinessPath, health.ReadyEndpoint)
+
+	return httpServer
+}
+
+func (s *Server) RunHealthCheck(ctx context.Context) func() {
 
 	go func() {
 		s.Log.Infof("(%s) Kubernetes probes listening on port: {%s}", s.Cfg.ServiceName, s.Cfg.Probes.Port)
-		if err := httpServer.ListenAndServe(); err != nil {
+		if err := s.HealthServer.ListenAndServe(); err != nil {
 			s.Log.Errorf("(ListenAndServe) err: {%v}", err)
 		}
 	}()
 
 	return func() {
-		_ = shutDownHealthCheckServer(httpServer, ctx)
+		_ = shutDownHealthCheckServer(s.HealthServer, ctx)
 	}
 }
 

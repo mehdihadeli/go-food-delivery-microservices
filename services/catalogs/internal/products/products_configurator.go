@@ -5,7 +5,7 @@ import (
 	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/creating_product/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/infrastructure/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/server/configurations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/configurations"
 )
 
 type ProductsModuleConfigurator interface {
@@ -13,17 +13,17 @@ type ProductsModuleConfigurator interface {
 }
 
 type productsModuleConfigurator struct {
-	server *configurations.Server
+	infrastructure *configurations.Infrastructure
 }
 
-func NewProductsModuleConfigurator(server *configurations.Server) *productsModuleConfigurator {
-	return &productsModuleConfigurator{server: server}
+func NewProductsModuleConfigurator(infrastructure *configurations.Infrastructure) *productsModuleConfigurator {
+	return &productsModuleConfigurator{infrastructure: infrastructure}
 }
 
 func (p *productsModuleConfigurator) ConfigureProductsModule() error {
 
-	productRepo := repositories.NewPostgresProductRepository(p.server.Log, p.server.Cfg, p.server.PgConn)
-	m, err := shared.NewMediator(p.server.Log, p.server.Cfg, productRepo, p.server.KafkaProducer)
+	productRepo := repositories.NewPostgresProductRepository(p.infrastructure.Log, p.infrastructure.Cfg, p.infrastructure.PgConn)
+	m, err := shared.NewMediator(p.infrastructure.Log, p.infrastructure.Cfg, productRepo, p.infrastructure.KafkaProducer)
 
 	if err != nil {
 		return err
@@ -36,5 +36,5 @@ func (p *productsModuleConfigurator) ConfigureProductsModule() error {
 
 func (p *productsModuleConfigurator) configEndpoints(m *mediatr.Mediator) {
 
-	v1.NewCreteProductEndpoint(p.server.Echo, p.server.Log, p.server.Cfg, m, p.server.Validator, p.server.Metrics)
+	v1.NewCreteProductEndpoint(p.infrastructure.Echo, p.infrastructure.Log, p.infrastructure.Cfg, m, p.infrastructure.Validator, p.infrastructure.Metrics)
 }

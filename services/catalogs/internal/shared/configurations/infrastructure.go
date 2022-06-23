@@ -20,6 +20,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/docs"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/consts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared"
 	catalog_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/constants"
@@ -29,6 +30,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/segmentio/kafka-go"
+	echoSwagger "github.com/swaggo/echo-swagger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -54,7 +56,6 @@ type Infrastructure struct {
 	ElasticClient     *v7.Client
 	Ctx               context.Context
 	MiddlewareManager middlewares.MiddlewareManager
-	healthCheck       healthcheck.Handler
 }
 
 var infrastructure *Infrastructure
@@ -78,7 +79,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context,
 	infrastructure.Im = interceptors.NewInterceptorManager(ic.server.Log)
 	infrastructure.Metrics = shared.NewCatalogsServiceMetrics(ic.server.Cfg)
 
-	infrastructure.MiddlewareManager = middlewares.NewMiddlewareManager(ic.server.Log, ic.server.Cfg, getHttpMetricsCb(infrastructure.Metrics))
+	//infrastructure.MiddlewareManager = middlewares.NewMiddlewareManager(ic.server.Log, ic.server.Cfg, getHttpMetricsCb(infrastructure.Metrics))
 
 	cleanup := []func(){}
 
@@ -100,10 +101,10 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context,
 	}
 	cleanup = append(cleanup, postgresCleanup)
 
-	err, _ = infrastructure.configElasticSearch(ctx)
-	if err != nil {
-		return err, nil, nil
-	}
+	//err, _ = infrastructure.configElasticSearch(ctx)
+	//if err != nil {
+	//	return err, nil, nil
+	//}
 
 	err, eventStoreCleanup := infrastructure.configEventStore()
 	if err != nil {
@@ -123,6 +124,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context,
 	}
 	cleanup = append(cleanup, kafkaConsumerCleanup)
 
+	infrastructure.configSwagger()
 	infrastructure.configMiddlewares()
 	infrastructure.configureHealthCheckEndpoints(ctx)
 
@@ -131,15 +133,17 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context,
 	}
 
 	return nil, infrastructure, func() {
-		for _, deferFunc := range cleanup {
-			defer deferFunc()
+		for _, c := range cleanup {
+			defer c()
 		}
 	}
 }
 
 func (i *Infrastructure) configureHealthCheckEndpoints(ctx context.Context) {
 
-	i.healthCheck.AddReadinessCheck(constants.MongoDB, healthcheck.AsyncWithContext(ctx, func() error {
+	health := healthcheck.NewHandler()
+
+	health.AddReadinessCheck(constants.MongoDB, healthcheck.AsyncWithContext(ctx, func() error {
 		if err := i.MongoClient.Ping(ctx, nil); err != nil {
 			i.Log.Warnf("(MongoDB Readiness Check) err: {%v}", err)
 			return err
@@ -147,7 +151,7 @@ func (i *Infrastructure) configureHealthCheckEndpoints(ctx context.Context) {
 		return nil
 	}, time.Duration(i.Cfg.Probes.CheckIntervalSeconds)*time.Second))
 
-	//i.healthCheck.AddReadinessCheck(constants.ElasticSearch, healthcheck.AsyncWithContext(ctx, func() error {
+	//health.AddReadinessCheck(constants.ElasticSearch, healthcheck.AsyncWithContext(ctx, func() error {
 	//	_, _, err := s.elasticClient.Ping(s.cfg.Elastic.URL).Do(ctx)
 	//	if err != nil {
 	//		s.log.Warnf("(ElasticSearch Readiness Check) err: {%v}", err)
@@ -168,7 +172,7 @@ func (i *Infrastructure) configureHealthCheckEndpoints(ctx context.Context) {
 
 func (i *Infrastructure) configMiddlewares() {
 
-	i.Echo.Use(i.MiddlewareManager.RequestLoggerMiddleware)
+	//i.Echo.Use(i.MiddlewareManager.RequestLoggerMiddleware)
 	i.Echo.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize:         catalog_constants.StackSize,
 		DisablePrintStack: true,
@@ -183,6 +187,16 @@ func (i *Infrastructure) configMiddlewares() {
 	}))
 
 	i.Echo.Use(middleware.BodyLimit(catalog_constants.BodyLimit))
+}
+
+func (s *Infrastructure) configSwagger() {
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Title = "Catalogs Service Api"
+	docs.SwaggerInfo.Description = "Catalogs Service Api."
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.BasePath = "/api/v1"
+
+	s.Echo.GET("/swagger/*", echoSwagger.WrapHandler)
 }
 
 func (i *Infrastructure) configEventStore() (error, func()) {

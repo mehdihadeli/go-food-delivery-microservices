@@ -40,7 +40,7 @@ func Run(log logger.Logger, cfg *config.Config) error {
 	s := server.NewServer(log, cfg)
 
 	ic := configurations.NewInfrastructureConfigurator(s)
-	err, _, defers := ic.ConfigInfrastructures(ctx, cancel)
+	err, infrastructure, defers := ic.ConfigInfrastructures(ctx, cancel)
 
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func Run(log logger.Logger, cfg *config.Config) error {
 
 	defer defers()
 
-	pc := products.NewProductsModuleConfigurator(s)
+	pc := products.NewProductsModuleConfigurator(infrastructure)
 	err = pc.ConfigureProductsModule()
 	if err != nil {
 		return err
