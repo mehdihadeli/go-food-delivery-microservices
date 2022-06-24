@@ -31,6 +31,7 @@ go.work
 .go/
 .go-cache/
 
+.vscode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
