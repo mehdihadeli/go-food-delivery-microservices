@@ -3,6 +3,7 @@ package configurations
 import (
 	"context"
 	"fmt"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/go-playground/validator"
 	"github.com/heptiolabs/healthcheck"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -24,7 +25,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/consts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared"
 	catalog_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/constants"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/server"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/web/middlewares"
 	v7 "github.com/olivere/elastic/v7"
 	"github.com/opentracing/opentracing-go"
@@ -52,6 +52,7 @@ type Infrastructure struct {
 	Metrics           *shared.CatalogsServiceMetrics
 	Echo              *echo.Echo
 	GrpcServer        *grpc.Server
+	Esdb              *esdb.Client
 	MongoClient       *mongo.Client
 	ElasticClient     *v7.Client
 	MiddlewareManager middlewares.MiddlewareManager
@@ -64,91 +65,100 @@ type InfrastructureConfigurator interface {
 }
 
 type infrastructureConfigurator struct {
-	server *server.Server
+	log        logger.Logger
+	cfg        *config.Config
+	echo       *echo.Echo
+	grpcServer *grpc.Server
 }
 
-func NewInfrastructureConfigurator(server *server.Server) *infrastructureConfigurator {
-	return &infrastructureConfigurator{server: server}
+func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config, echo *echo.Echo, grpcServer *grpc.Server) *infrastructureConfigurator {
+	return &infrastructureConfigurator{log: log, cfg: cfg, echo: echo, grpcServer: grpcServer}
 }
 
-func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (error, *Infrastructure, func()) {
+func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*Infrastructure, error, func()) {
 
-	infrastructure = &Infrastructure{Cfg: ic.server.Cfg, Echo: ic.server.Echo, GrpcServer: ic.server.GrpcServer, Log: ic.server.Log}
+	infrastructure = &Infrastructure{Cfg: ic.cfg, Echo: ic.echo, GrpcServer: ic.grpcServer, Log: ic.log}
 
-	infrastructure.Im = interceptors.NewInterceptorManager(ic.server.Log)
-	infrastructure.Metrics = shared.NewCatalogsServiceMetrics(ic.server.Cfg)
+	infrastructure.Im = interceptors.NewInterceptorManager(ic.log)
+	infrastructure.Metrics = shared.NewCatalogsServiceMetrics(ic.cfg)
 
 	//infrastructure.MiddlewareManager = middlewares.NewMiddlewareManager(ic.server.Log, ic.server.Cfg, getHttpMetricsCb(infrastructure.Metrics))
 
 	cleanup := []func(){}
 
-	var err, jaegerCleanup = infrastructure.configJaeger()
+	var err, jaegerCleanup = ic.configJaeger()
 	if err != nil {
-		return err, nil, nil
+		return nil, err, nil
 	}
 	cleanup = append(cleanup, jaegerCleanup)
 
-	err, mongoDeferCallback := infrastructure.configMongo(ctx)
+	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
 	if err != nil {
-		return err, nil, nil
+		return nil, err, nil
 	}
-	cleanup = append(cleanup, mongoDeferCallback)
+	cleanup = append(cleanup, mongoCleanup)
+	infrastructure.MongoClient = mongoClient
 
-	err, postgresCleanup := infrastructure.configPostgres()
+	pgx, err, postgresCleanup := ic.configPostgres()
 	if err != nil {
-		return err, nil, nil
+		return nil, err, nil
 	}
 	cleanup = append(cleanup, postgresCleanup)
+	infrastructure.PgConn = pgx
 
-	//err, _ = infrastructure.configElasticSearch(ctx)
+	//el, err, _ := ic.configElasticSearch(ctx)
 	//if err != nil {
-	//	return err, nil, nil
+	//	return nil, err, nil
 	//}
+	//infrastructure.ElasticClient = el
 
-	err, eventStoreCleanup := infrastructure.configEventStore()
+	es, err, eventStoreCleanup := ic.configEventStore()
 	if err != nil {
-		return err, nil, nil
+		return nil, err, nil
 	}
 	cleanup = append(cleanup, eventStoreCleanup)
+	infrastructure.Esdb = es
 
-	err, kafkaCleanup := infrastructure.configKafka(ctx)
+	kafkaConn, kafkaProducer, err, kafkaCleanup := ic.configKafka(ctx)
 	if err != nil {
-		return err, nil, nil
+		return nil, err, nil
 	}
 	cleanup = append(cleanup, kafkaCleanup)
+	infrastructure.KafkaConn = kafkaConn
+	infrastructure.KafkaProducer = kafkaProducer
 
-	err, kafkaConsumerCleanup := infrastructure.configKafkaConsumers(ctx)
+	err, kafkaConsumerCleanup := ic.configKafkaConsumers(ctx)
 	if err != nil {
-		return err, nil, nil
+		return nil, err, nil
 	}
 	cleanup = append(cleanup, kafkaConsumerCleanup)
 
-	infrastructure.configSwagger()
-	infrastructure.configMiddlewares()
-	infrastructure.configureHealthCheckEndpoints(ctx)
+	ic.configSwagger()
+	ic.configMiddlewares()
+	ic.configureHealthCheckEndpoints(ctx, mongoClient)
 
 	if err != nil {
-		return err, nil, nil
+		return nil, err, nil
 	}
 
-	return nil, infrastructure, func() {
+	return infrastructure, nil, func() {
 		for _, c := range cleanup {
 			defer c()
 		}
 	}
 }
 
-func (i *Infrastructure) configureHealthCheckEndpoints(ctx context.Context) {
+func (ic *infrastructureConfigurator) configureHealthCheckEndpoints(ctx context.Context, mongoClient *mongo.Client) {
 
 	health := healthcheck.NewHandler()
 
 	health.AddReadinessCheck(constants.MongoDB, healthcheck.AsyncWithContext(ctx, func() error {
-		if err := i.MongoClient.Ping(ctx, nil); err != nil {
-			i.Log.Warnf("(MongoDB Readiness Check) err: {%v}", err)
+		if err := mongoClient.Ping(ctx, nil); err != nil {
+			ic.log.Warnf("(MongoDB Readiness Check) err: {%v}", err)
 			return err
 		}
 		return nil
-	}, time.Duration(i.Cfg.Probes.CheckIntervalSeconds)*time.Second))
+	}, time.Duration(ic.cfg.Probes.CheckIntervalSeconds)*time.Second))
 
 	//health.AddReadinessCheck(constants.ElasticSearch, healthcheck.AsyncWithContext(ctx, func() error {
 	//	_, _, err := s.elasticClient.Ping(s.cfg.Elastic.URL).Do(ctx)
@@ -169,50 +179,50 @@ func (i *Infrastructure) configureHealthCheckEndpoints(ctx context.Context) {
 	//}, time.Duration(s.cfg.Probes.CheckIntervalSeconds)*time.Second))
 }
 
-func (i *Infrastructure) configMiddlewares() {
+func (ic *infrastructureConfigurator) configMiddlewares() {
 
 	//i.Echo.Use(i.MiddlewareManager.RequestLoggerMiddleware)
-	i.Echo.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
+	ic.echo.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize:         catalog_constants.StackSize,
 		DisablePrintStack: true,
 		DisableStackAll:   true,
 	}))
-	i.Echo.Use(middleware.RequestID())
-	i.Echo.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+	ic.echo.Use(middleware.RequestID())
+	ic.echo.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: catalog_constants.GzipLevel,
 		Skipper: func(c echo.Context) bool {
 			return strings.Contains(c.Request().URL.Path, "swagger")
 		},
 	}))
 
-	i.Echo.Use(middleware.BodyLimit(catalog_constants.BodyLimit))
+	ic.echo.Use(middleware.BodyLimit(catalog_constants.BodyLimit))
 }
 
-func (i *Infrastructure) configSwagger() {
+func (ic *infrastructureConfigurator) configSwagger() {
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Title = "Catalogs Service Api"
 	docs.SwaggerInfo.Description = "Catalogs Service Api."
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
-	i.Echo.GET("/swagger/*", echoSwagger.WrapHandler)
+	ic.echo.GET("/swagger/*", echoSwagger.WrapHandler)
 }
 
-func (i *Infrastructure) configEventStore() (error, func()) {
-	db, err := eventstroredb.NewEventStoreDB(i.Cfg.EventStoreConfig)
+func (ic *infrastructureConfigurator) configEventStore() (*esdb.Client, error, func()) {
+	db, err := eventstroredb.NewEventStoreDB(ic.cfg.EventStoreConfig)
 	if err != nil {
-		return err, nil
+		return nil, err, nil
 	}
 
-	aggregateStore := store.NewAggregateStore(i.Log, db)
+	aggregateStore := store.NewAggregateStore(ic.log, db)
 	fmt.Print(aggregateStore)
 
-	return nil, func() {
-		db.Close() // nolint: errcheck
+	return db, nil, func() {
+		_ = db.Close() // nolint: errcheck
 	}
 }
 
-func (i *Infrastructure) configKafkaConsumers(ctx context.Context) (error, func()) {
+func (ic *infrastructureConfigurator) configKafkaConsumers(ctx context.Context) (error, func()) {
 	//productMessageProcessor := NewProductMessageProcessor(s.Log, s.cfg, s.v, s.ps, s.metrics)
 	//s.Log.Info("Starting Writer Kafka consumers")
 	//cg := kafkaClient.NewConsumerGroup(s.cfg.Kafka.Brokers, s.cfg.Kafka.GroupID, s.Log)
@@ -221,162 +231,162 @@ func (i *Infrastructure) configKafkaConsumers(ctx context.Context) (error, func(
 	return nil, func() {}
 }
 
-func (i *Infrastructure) configKafka(ctx context.Context) (error, func()) {
+func (ic *infrastructureConfigurator) configKafka(ctx context.Context) (*kafka.Conn, kafkaClient.Producer, error, func()) {
 
-	if err := i.connectKafkaBrokers(ctx); err != nil {
-		return errors.Wrap(err, "i.connectKafkaBrokers"), nil
+	kafkaConn, err, kafkaConnCleanup := ic.connectKafkaBrokers(ctx)
+
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "i.connectKafkaBrokers"), nil
 	}
 
-	if i.Cfg.Kafka.InitTopics {
-		i.initKafkaTopics(ctx)
+	if ic.cfg.Kafka.InitTopics {
+		ic.initKafkaTopics(ctx, kafkaConn)
 	}
 
-	kafkaProducer := kafkaClient.NewProducer(i.Log, i.Cfg.Kafka.Brokers)
+	kafkaProducer := kafkaClient.NewProducer(ic.log, ic.cfg.Kafka.Brokers)
 
-	i.KafkaProducer = kafkaProducer
-
-	return nil, func() {
-		kafkaProducer.Close() // nolint: errcheck
-		i.KafkaConn.Close()   // nolint: errcheck
+	return kafkaConn, kafkaProducer, nil, func() {
+		_ = kafkaProducer.Close() // nolint:
+		kafkaConnCleanup()
 	}
 }
 
-func (i *Infrastructure) configJaeger() (error, func()) {
-	if i.Cfg.Jaeger.Enable {
-		tracer, closer, err := tracing.NewJaegerTracer(i.Cfg.Jaeger)
+func (ic *infrastructureConfigurator) configJaeger() (error, func()) {
+	if ic.cfg.Jaeger.Enable {
+		tracer, closer, err := tracing.NewJaegerTracer(ic.cfg.Jaeger)
 		if err != nil {
 			return err, nil
 		}
-		//defer closer.Close() // nolint: errcheck
 		opentracing.SetGlobalTracer(tracer)
-		return nil, func() { closer.Close() }
+		return nil, func() {
+			_ = closer.Close()
+		}
 	}
 
 	return nil, func() {}
 }
 
-func (i *Infrastructure) configMongo(ctx context.Context) (error, func()) {
-	mongoDBConn, err := mongodb.NewMongoDBConn(ctx, i.Cfg.Mongo)
+func (ic *infrastructureConfigurator) configMongo(ctx context.Context) (*mongo.Client, error, func()) {
+	mongoClient, err := mongodb.NewMongoDBConn(ctx, ic.cfg.Mongo)
 	if err != nil {
-		return errors.Wrap(err, "NewMongoDBConn"), nil
+		return nil, errors.Wrap(err, "NewMongoDBConn"), nil
 	}
-	i.MongoClient = mongoDBConn
-	i.Log.Infof("(Mongo connected) SessionsInProgress: {%v}", mongoDBConn.NumberSessionsInProgress())
 
-	i.initMongoDBCollections(ctx)
+	ic.log.Infof("(Mongo connected) SessionsInProgress: {%v}", mongoClient.NumberSessionsInProgress())
 
-	return nil, func() {
-		_ = mongoDBConn.Disconnect(ctx) // nolint: errcheck
+	ic.initMongoDBCollections(ctx, mongoClient)
+
+	return mongoClient, nil, func() {
+		_ = mongoClient.Disconnect(ctx) // nolint: errcheck
 	}
 }
 
-func (i *Infrastructure) configPostgres() (error, func()) {
-	pgxConn, err := postgres.NewPgxConn(i.Cfg.Postgresql)
+func (ic *infrastructureConfigurator) configPostgres() (*pgxpool.Pool, error, func()) {
+	pgxConn, err := postgres.NewPgxConn(ic.cfg.Postgresql)
 	if err != nil {
-		return errors.Wrap(err, "postgresql.NewPgxConn"), nil
+		return nil, errors.Wrap(err, "postgresql.NewPgxConn"), nil
 	}
-	i.PgConn = pgxConn
-	i.Log.Infof("postgres connected: %v", pgxConn.Stat().TotalConns())
 
-	return nil, func() {
+	ic.log.Infof("postgres connected: %v", pgxConn.Stat().TotalConns())
+
+	return pgxConn, nil, func() {
 		pgxConn.Close()
 	}
 }
 
-func (i *Infrastructure) configElasticSearch(ctx context.Context) (error, func()) {
+func (ic *infrastructureConfigurator) configElasticSearch(ctx context.Context) (*v7.Client, error, func()) {
 
-	elasticClient, err := elasticsearch.NewElasticClient(i.Cfg.Elastic)
+	elasticClient, err := elasticsearch.NewElasticClient(ic.cfg.Elastic)
 	if err != nil {
-		return err, nil
+		return nil, err, nil
 	}
-	i.ElasticClient = elasticClient
 
-	info, code, err := elasticClient.Ping(i.Cfg.Elastic.URL).Do(ctx)
+	info, code, err := elasticClient.Ping(ic.cfg.Elastic.URL).Do(ctx)
 	if err != nil {
-		return errors.Wrap(err, "client.Ping"), nil
+		return nil, errors.Wrap(err, "client.Ping"), nil
 	}
-	i.Log.Infof("Elasticsearch returned with code {%d} and version {%s}", code, info.Version.Number)
+	ic.log.Infof("Elasticsearch returned with code {%d} and version {%s}", code, info.Version.Number)
 
-	esVersion, err := elasticClient.ElasticsearchVersion(i.Cfg.Elastic.URL)
+	esVersion, err := elasticClient.ElasticsearchVersion(ic.cfg.Elastic.URL)
 	if err != nil {
-		return errors.Wrap(err, "client.ElasticsearchVersion"), nil
+		return nil, errors.Wrap(err, "client.ElasticsearchVersion"), nil
 	}
-	i.Log.Infof("Elasticsearch version {%s}", esVersion)
+	ic.log.Infof("Elasticsearch version {%s}", esVersion)
 
-	return nil, func() {}
+	return elasticClient, nil, func() {}
 }
 
-func (i *Infrastructure) connectKafkaBrokers(ctx context.Context) error {
-	kafkaConn, err := kafkaClient.NewKafkaConn(ctx, i.Cfg.Kafka)
+func (ic *infrastructureConfigurator) connectKafkaBrokers(ctx context.Context) (*kafka.Conn, error, func()) {
+	kafkaConn, err := kafkaClient.NewKafkaConn(ctx, ic.cfg.Kafka)
 	if err != nil {
-		return errors.Wrap(err, "kafka.NewKafkaCon")
+		return nil, errors.Wrap(err, "kafka.NewKafkaCon"), nil
 	}
-
-	i.KafkaConn = kafkaConn
 
 	brokers, err := kafkaConn.Brokers()
 	if err != nil {
-		return errors.Wrap(err, "kafkaConn.Brokers")
+		return nil, errors.Wrap(err, "kafkaConn.Brokers"), nil
 	}
 
-	i.Log.Infof("kafka connected to brokers: %+v", brokers)
+	ic.log.Infof("kafka connected to brokers: %+v", brokers)
 
-	return nil
+	return kafkaConn, nil, func() {
+		_ = kafkaConn.Close() // nolint: errcheck
+	}
 }
 
-func (i *Infrastructure) initKafkaTopics(ctx context.Context) {
-	controller, err := i.KafkaConn.Controller()
+func (ic *infrastructureConfigurator) initKafkaTopics(ctx context.Context, kafkaConn *kafka.Conn) {
+	controller, err := kafkaConn.Controller()
 	if err != nil {
-		i.Log.WarnMsg("kafkaConn.Controller", err)
+		ic.log.WarnMsg("kafkaConn.Controller", err)
 		return
 	}
 
 	controllerURI := net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port))
-	i.Log.Infof("kafka controller uri: %s", controllerURI)
+	ic.log.Infof("kafka controller uri: %s", controllerURI)
 
 	conn, err := kafka.DialContext(ctx, "tcp", controllerURI)
 	if err != nil {
-		i.Log.WarnMsg("initKafkaTopics.DialContext", err)
+		ic.log.WarnMsg("initKafkaTopics.DialContext", err)
 		return
 	}
 	defer conn.Close() // nolint: errcheck
 
-	i.Log.Infof("established new kafka controller connection: %s", controllerURI)
+	ic.log.Infof("established new kafka controller connection: %s", controllerURI)
 
 	productCreateTopic := kafka.TopicConfig{
-		Topic:             i.Cfg.KafkaTopics.ProductCreate.TopicName,
-		NumPartitions:     i.Cfg.KafkaTopics.ProductCreate.Partitions,
-		ReplicationFactor: i.Cfg.KafkaTopics.ProductCreate.ReplicationFactor,
+		Topic:             ic.cfg.KafkaTopics.ProductCreate.TopicName,
+		NumPartitions:     ic.cfg.KafkaTopics.ProductCreate.Partitions,
+		ReplicationFactor: ic.cfg.KafkaTopics.ProductCreate.ReplicationFactor,
 	}
 
 	productCreatedTopic := kafka.TopicConfig{
-		Topic:             i.Cfg.KafkaTopics.ProductCreated.TopicName,
-		NumPartitions:     i.Cfg.KafkaTopics.ProductCreated.Partitions,
-		ReplicationFactor: i.Cfg.KafkaTopics.ProductCreated.ReplicationFactor,
+		Topic:             ic.cfg.KafkaTopics.ProductCreated.TopicName,
+		NumPartitions:     ic.cfg.KafkaTopics.ProductCreated.Partitions,
+		ReplicationFactor: ic.cfg.KafkaTopics.ProductCreated.ReplicationFactor,
 	}
 
 	productUpdateTopic := kafka.TopicConfig{
-		Topic:             i.Cfg.KafkaTopics.ProductUpdate.TopicName,
-		NumPartitions:     i.Cfg.KafkaTopics.ProductUpdate.Partitions,
-		ReplicationFactor: i.Cfg.KafkaTopics.ProductUpdate.ReplicationFactor,
+		Topic:             ic.cfg.KafkaTopics.ProductUpdate.TopicName,
+		NumPartitions:     ic.cfg.KafkaTopics.ProductUpdate.Partitions,
+		ReplicationFactor: ic.cfg.KafkaTopics.ProductUpdate.ReplicationFactor,
 	}
 
 	productUpdatedTopic := kafka.TopicConfig{
-		Topic:             i.Cfg.KafkaTopics.ProductUpdated.TopicName,
-		NumPartitions:     i.Cfg.KafkaTopics.ProductUpdated.Partitions,
-		ReplicationFactor: i.Cfg.KafkaTopics.ProductUpdated.ReplicationFactor,
+		Topic:             ic.cfg.KafkaTopics.ProductUpdated.TopicName,
+		NumPartitions:     ic.cfg.KafkaTopics.ProductUpdated.Partitions,
+		ReplicationFactor: ic.cfg.KafkaTopics.ProductUpdated.ReplicationFactor,
 	}
 
 	productDeleteTopic := kafka.TopicConfig{
-		Topic:             i.Cfg.KafkaTopics.ProductDelete.TopicName,
-		NumPartitions:     i.Cfg.KafkaTopics.ProductDelete.Partitions,
-		ReplicationFactor: i.Cfg.KafkaTopics.ProductDelete.ReplicationFactor,
+		Topic:             ic.cfg.KafkaTopics.ProductDelete.TopicName,
+		NumPartitions:     ic.cfg.KafkaTopics.ProductDelete.Partitions,
+		ReplicationFactor: ic.cfg.KafkaTopics.ProductDelete.ReplicationFactor,
 	}
 
 	productDeletedTopic := kafka.TopicConfig{
-		Topic:             i.Cfg.KafkaTopics.ProductDeleted.TopicName,
-		NumPartitions:     i.Cfg.KafkaTopics.ProductDeleted.Partitions,
-		ReplicationFactor: i.Cfg.KafkaTopics.ProductDeleted.ReplicationFactor,
+		Topic:             ic.cfg.KafkaTopics.ProductDeleted.TopicName,
+		NumPartitions:     ic.cfg.KafkaTopics.ProductDeleted.Partitions,
+		ReplicationFactor: ic.cfg.KafkaTopics.ProductDeleted.ReplicationFactor,
 	}
 
 	if err := conn.CreateTopics(
@@ -387,56 +397,56 @@ func (i *Infrastructure) initKafkaTopics(ctx context.Context) {
 		productDeleteTopic,
 		productDeletedTopic,
 	); err != nil {
-		i.Log.WarnMsg("kafkaConn.CreateTopics", err)
+		ic.log.WarnMsg("kafkaConn.CreateTopics", err)
 		return
 	}
 
-	i.Log.Infof("kafka topics created or already exists: %+v", []kafka.TopicConfig{productCreateTopic, productUpdateTopic, productCreatedTopic, productUpdatedTopic, productDeleteTopic, productDeletedTopic})
+	ic.log.Infof("kafka topics created or already exists: %+v", []kafka.TopicConfig{productCreateTopic, productUpdateTopic, productCreatedTopic, productUpdatedTopic, productDeleteTopic, productDeletedTopic})
 }
 
-func (i *Infrastructure) initMongoDBCollections(ctx context.Context) {
-	err := i.MongoClient.Database(i.Cfg.Mongo.Db).CreateCollection(ctx, i.Cfg.MongoCollections.Products)
+func (ic *infrastructureConfigurator) initMongoDBCollections(ctx context.Context, mongoClient *mongo.Client) {
+	err := mongoClient.Database(ic.cfg.Mongo.Db).CreateCollection(ctx, ic.cfg.MongoCollections.Products)
 	if err != nil {
 		if !utils.CheckErrMessages(err, catalog_constants.ErrMsgMongoCollectionAlreadyExists) {
-			i.Log.Warnf("(CreateCollection) err: {%v}", err)
+			ic.log.Warnf("(CreateCollection) err: {%v}", err)
 		}
 	}
 
 	indexOptions := options.Index().SetSparse(true).SetUnique(true)
-	index, err := i.MongoClient.Database(i.Cfg.Mongo.Db).Collection(i.Cfg.MongoCollections.Products).Indexes().CreateOne(ctx, mongo.IndexModel{
+	index, err := mongoClient.Database(ic.cfg.Mongo.Db).Collection(ic.cfg.MongoCollections.Products).Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys:    bson.D{{Key: consts.ProductIdIndex, Value: 1}},
 		Options: indexOptions,
 	})
 	if err != nil && !utils.CheckErrMessages(err, catalog_constants.ErrMsgAlreadyExists) {
-		i.Log.Warnf("(CreateOne) err: {%v}", err)
+		ic.log.Warnf("(CreateOne) err: {%v}", err)
 	}
-	i.Log.Infof("(CreatedIndex) index: {%s}", index)
+	ic.log.Infof("(CreatedIndex) index: {%s}", index)
 
-	list, err := i.MongoClient.Database(i.Cfg.Mongo.Db).Collection(i.Cfg.MongoCollections.Products).Indexes().List(ctx)
+	list, err := mongoClient.Database(ic.cfg.Mongo.Db).Collection(ic.cfg.MongoCollections.Products).Indexes().List(ctx)
 	if err != nil {
-		i.Log.Warnf("(initMongoDBCollections) [List] err: {%v}", err)
+		ic.log.Warnf("(initMongoDBCollections) [List] err: {%v}", err)
 	}
 
 	if list != nil {
 		var results []bson.M
 		if err := list.All(ctx, &results); err != nil {
-			i.Log.Warnf("(All) err: {%v}", err)
+			ic.log.Warnf("(All) err: {%v}", err)
 		}
-		i.Log.Infof("(indexes) results: {%#v}", results)
+		ic.log.Infof("(indexes) results: {%#v}", results)
 	}
 
-	collections, err := i.MongoClient.Database(i.Cfg.Mongo.Db).ListCollectionNames(ctx, bson.M{})
+	collections, err := mongoClient.Database(ic.cfg.Mongo.Db).ListCollectionNames(ctx, bson.M{})
 	if err != nil {
-		i.Log.Warnf("(ListCollections) err: {%v}", err)
+		ic.log.Warnf("(ListCollections) err: {%v}", err)
 	}
-	i.Log.Infof("(Collections) created collections: {%v}", collections)
+	ic.log.Infof("(Collections) created collections: {%v}", collections)
 }
 
-func (i *Infrastructure) getConsumerGroupTopics() []string {
+func (ic *infrastructureConfigurator) getConsumerGroupTopics() []string {
 	return []string{
-		i.Cfg.KafkaTopics.ProductCreate.TopicName,
-		i.Cfg.KafkaTopics.ProductUpdate.TopicName,
-		i.Cfg.KafkaTopics.ProductDelete.TopicName,
+		ic.cfg.KafkaTopics.ProductCreate.TopicName,
+		ic.cfg.KafkaTopics.ProductUpdate.TopicName,
+		ic.cfg.KafkaTopics.ProductDelete.TopicName,
 	}
 }
 

@@ -40,15 +40,15 @@ func NewGrpcServer() *grpc.Server {
 	return grpcServer
 }
 
-func (s Server) RunGrpcServer(registerServiceServer func(grpcServer *grpc.Server)) (error, func()) {
+func (s Server) RunGrpcServer(configGrpc func(grpcServer *grpc.Server)) error {
 
 	l, err := net.Listen("tcp", s.Cfg.GRPC.Port)
 	if err != nil {
-		return errors.Wrap(err, "net.Listen"), nil
+		return errors.Wrap(err, "net.Listen")
 	}
 
-	if registerServiceServer != nil {
-		registerServiceServer(s.GrpcServer)
+	if configGrpc != nil {
+		configGrpc(s.GrpcServer)
 	}
 
 	grpc_prometheus.Register(s.GrpcServer)
@@ -57,15 +57,11 @@ func (s Server) RunGrpcServer(registerServiceServer func(grpcServer *grpc.Server
 		reflection.Register(s.GrpcServer)
 	}
 
-	go func() {
-		s.Log.Infof("Writer gRPC server is listening on port: %s", s.Cfg.GRPC.Port)
-		s.Log.Fatal(s.GrpcServer.Serve(l))
-	}()
+	s.Log.Infof("Writer gRPC server is listening on port: %s", s.Cfg.GRPC.Port)
+	err = s.GrpcServer.Serve(l)
+	s.Log.Fatal(err)
 
-	return nil, func() {
-		l.Close()
-		s.GrpcServer.GracefulStop()
-	}
+	return err
 }
 
 //func (s *Server) newCatalogsServiceGrpcServer() (error, func()) {

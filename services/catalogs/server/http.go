@@ -8,10 +8,14 @@ import (
 	"time"
 )
 
-func (s *Server) RunHttpServer() error {
+func (s *Server) RunHttpServer(configEcho func(echoServer *echo.Echo)) error {
 	s.Echo.Server.ReadTimeout = constants.ReadTimeout
 	s.Echo.Server.WriteTimeout = constants.WriteTimeout
 	s.Echo.Server.MaxHeaderBytes = constants.MaxHeaderBytes
+
+	if configEcho != nil {
+		configEcho(s.Echo)
+	}
 
 	return s.Echo.Start(s.Cfg.Http.Port)
 }
@@ -26,6 +30,7 @@ func (s *Server) WaitShootDown(duration time.Duration) {
 func (s *Server) ApplyVersioningFromHeader() {
 	s.Echo.Pre(apiVersion)
 }
+
 // APIVersion Header Based Versioning
 func apiVersion(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
