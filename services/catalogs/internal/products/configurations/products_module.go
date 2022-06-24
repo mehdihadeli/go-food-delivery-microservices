@@ -6,7 +6,7 @@ import (
 	repositories_contract "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/repositories"
 	repositories_imp "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/data/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/delivery/grpc"
-	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/creating_product/v1"
+	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/creating_product/endpoints/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/configurations"
 )
@@ -53,7 +53,11 @@ func (c *productsModuleConfigurator) ConfigureProductsModule() error {
 
 func (pm *ProductModule) configEndpoints() {
 
-	v1.NewCreteProductEndpoint(pm.Infrastructure, pm.Mediator, pm.ProductRepository)
+	// CreateNewProduct
+	createProductEndpoint := v1.NewCreteProductEndpoint(pm.Infrastructure, pm.Mediator, pm.ProductRepository)
+	createProductEndpoint.MapRoute()
+
+	// UpdateProduct
 }
 
 func (pm *ProductModule) configGrpc() {

@@ -77,7 +77,7 @@ func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config, echo *
 
 func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*Infrastructure, error, func()) {
 
-	infrastructure = &Infrastructure{Cfg: ic.cfg, Echo: ic.echo, GrpcServer: ic.grpcServer, Log: ic.log}
+	infrastructure = &Infrastructure{Cfg: ic.cfg, Echo: ic.echo, GrpcServer: ic.grpcServer, Log: ic.log, Validator: validator.New()}
 
 	infrastructure.Im = interceptors.NewInterceptorManager(ic.log)
 	infrastructure.Metrics = shared.NewCatalogsServiceMetrics(ic.cfg)
@@ -188,6 +188,8 @@ func (ic *infrastructureConfigurator) configMiddlewares() {
 		DisableStackAll:   true,
 	}))
 	ic.echo.Use(middleware.RequestID())
+	ic.echo.Use(middleware.Logger())
+	ic.echo.Use(middleware.CORS())
 	ic.echo.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: catalog_constants.GzipLevel,
 		Skipper: func(c echo.Context) bool {
@@ -196,6 +198,15 @@ func (ic *infrastructureConfigurator) configMiddlewares() {
 	}))
 
 	ic.echo.Use(middleware.BodyLimit(catalog_constants.BodyLimit))
+
+	ic.echo.HideBanner = true
+	ic.echo.HTTPErrorHandler = func(err error, c echo.Context) {
+		// Take required information from error and context and send it to a service like New Relic
+		fmt.Println(c.Path(), c.QueryParams(), err.Error())
+
+		// Call the default handler to return the HTTP response
+		ic.echo.DefaultHTTPErrorHandler(err, c)
+	}
 }
 
 func (ic *infrastructureConfigurator) configSwagger() {

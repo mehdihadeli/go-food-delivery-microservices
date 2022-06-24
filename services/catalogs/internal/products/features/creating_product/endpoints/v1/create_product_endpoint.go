@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/repositories"
@@ -22,7 +22,7 @@ func NewCreteProductEndpoint(infra *shared_configurations.Infrastructure, mediat
 	return &createProductEndpoint{mediator: mediator, productRepository: productRepository, infrastructure: infra}
 }
 
-func (ep *createProductEndpoint) MapCreateProductEndpoint() {
+func (ep *createProductEndpoint) MapRoute() {
 	v1 := ep.infrastructure.Echo.Group("/api/v1")
 	products := v1.Group("/" + ep.infrastructure.Cfg.Http.ProductsPath)
 	products.POST("", ep.createProduct())

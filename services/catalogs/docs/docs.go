@@ -20,24 +20,6 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/products": {
-            "get": {
-                "description": "Get all products",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Get all product",
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
-            },
             "post": {
                 "description": "Create new product item",
                 "consumes": [
@@ -67,92 +49,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/dto.CreateProductResponseDto"
                         }
-                    }
-                }
-            }
-        },
-        "/products/{id}": {
-            "get": {
-                "description": "Get product by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Get product",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Product ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
-                    }
-                }
-            },
-            "put": {
-                "description": "Update existing product",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Update product",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Product ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateProductResponseDto"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete existing product",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Delete product",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Product ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": ""
                     }
                 }
             }
@@ -186,23 +82,6 @@ const docTemplate = `{
         "dto.CreateProductResponseDto": {
             "type": "object",
             "properties": {
-                "productId": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UpdateProductResponseDto": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                },
                 "productId": {
                     "type": "string"
                 }

@@ -4,7 +4,7 @@ import (
 	"flag"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/server"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/server"
 	"log"
 )
 
