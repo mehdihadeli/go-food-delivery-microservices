@@ -13,6 +13,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/store"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/interceptors"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -23,6 +24,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/docs"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/consts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/models"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared"
 	catalog_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/web/middlewares"
@@ -35,6 +37,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
+	"gorm.io/gorm"
 	"net"
 	"strconv"
 	"strings"
@@ -49,6 +52,7 @@ type Infrastructure struct {
 	KafkaProducer     kafkaClient.Producer
 	Im                interceptors.InterceptorManager
 	PgConn            *pgxpool.Pool
+	Gorm              *gorm.DB
 	Metrics           *shared.CatalogsServiceMetrics
 	Echo              *echo.Echo
 	GrpcServer        *grpc.Server
@@ -86,7 +90,13 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 
 	cleanup := []func(){}
 
-	var err, jaegerCleanup = ic.configJaeger()
+	gorm, err := ic.configGorm()
+	if err != nil {
+		return nil, err, nil
+	}
+	infrastructure.Gorm = gorm
+
+	err, jaegerCleanup := ic.configJaeger()
 	if err != nil {
 		return nil, err, nil
 	}
@@ -207,6 +217,20 @@ func (ic *infrastructureConfigurator) configMiddlewares() {
 		// Call the default handler to return the HTTP response
 		ic.echo.DefaultHTTPErrorHandler(err, c)
 	}
+}
+
+func (ic *infrastructureConfigurator) configGorm() (*gorm.DB, error) {
+	gorm, err := gorm_postgres.NewGorm(ic.cfg.GormPostgres)
+	if err != nil {
+		return nil, err
+	}
+
+	err = gorm.AutoMigrate(&models.Product{})
+	if err != nil {
+		return nil, err
+	}
+
+	return gorm, nil
 }
 
 func (ic *infrastructureConfigurator) configSwagger() {

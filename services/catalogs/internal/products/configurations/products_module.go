@@ -33,7 +33,7 @@ func (c *productsModuleConfigurator) ConfigureProductsModule() error {
 
 	pm := ProductModule{Infrastructure: c.infrastructure}
 
-	pm.ProductRepository = repositories_imp.NewPostgresProductRepository(c.infrastructure.Log, c.infrastructure.Cfg, c.infrastructure.PgConn)
+	pm.ProductRepository = repositories_imp.NewPostgresProductRepository(c.infrastructure.Log, c.infrastructure.Cfg, c.infrastructure.PgConn, c.infrastructure.Gorm)
 	m, err := shared.NewCatalogsMediator(c.infrastructure.Log, c.infrastructure.Cfg, pm.ProductRepository, c.infrastructure.KafkaProducer)
 
 	if err != nil {

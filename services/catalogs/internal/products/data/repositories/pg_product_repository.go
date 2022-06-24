@@ -9,35 +9,29 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 type postgresProductRepository struct {
-	log logger.Logger
-	cfg *config.Config
-	db  *pgxpool.Pool
+	log  logger.Logger
+	cfg  *config.Config
+	db   *pgxpool.Pool
+	gorm *gorm.DB
 }
 
-func NewPostgresProductRepository(log logger.Logger, cfg *config.Config, db *pgxpool.Pool) *postgresProductRepository {
-	return &postgresProductRepository{log: log, cfg: cfg, db: db}
+func NewPostgresProductRepository(log logger.Logger, cfg *config.Config, db *pgxpool.Pool, gorm *gorm.DB) *postgresProductRepository {
+	return &postgresProductRepository{log: log, cfg: cfg, db: db, gorm: gorm}
 }
 
 func (p *postgresProductRepository) CreateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
+
 	span, ctx := opentracing.StartSpanFromContext(ctx, "productRepository.CreateProduct")
 	defer span.Finish()
 
-	const createProductQuery = `INSERT INTO products (product_id, name, description, price, created_at, updated_at) 
-	VALUES ($1, $2, $3, $4, now(), now()) RETURNING product_id, name, description, price, created_at, updated_at`
-
 	var created models.Product
-	if err := p.db.QueryRow(ctx, createProductQuery, &product.ProductID, &product.Name, &product.Description, &product.Price).Scan(
-		&created.ProductID,
-		&created.Name,
-		&created.Description,
-		&created.Price,
-		&created.CreatedAt,
-		&created.UpdatedAt,
-	); err != nil {
-		return nil, errors.Wrap(err, "error in the insert product into the database")
+
+	if result := p.gorm.Create(&product).Scan(&created); result.Error != nil {
+		return nil, errors.Wrap(result.Error, "error in the insert product into the database")
 	}
 
 	return &created, nil

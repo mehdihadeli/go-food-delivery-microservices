@@ -3,11 +3,12 @@ module github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs
 go 1.18
 
 require (
+	github.com/EventStore/EventStore-Client-Go v1.0.2
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/heptiolabs/healthcheck v0.0.0-20211123025425-613501dd5deb
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/labstack/echo/v4 v4.7.2
-	github.com/mehdihadeli/store-golang-microservice-sample/pkg v0.0.0-20220623103410-1cf5d7727d54
+	github.com/mehdihadeli/store-golang-microservice-sample v0.0.0-00010101000000-000000000000
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -15,13 +16,12 @@ require (
 	github.com/segmentio/kafka-go v0.4.32
 	github.com/spf13/viper v1.12.0
 	github.com/swaggo/echo-swagger v1.3.3
-	github.com/swaggo/swag v1.8.1
+	github.com/swaggo/swag v1.8.3
 	go.mongodb.org/mongo-driver v1.9.1
 	google.golang.org/grpc v1.47.0
 )
 
 require (
-	github.com/EventStore/EventStore-Client-Go v1.0.2 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
@@ -44,6 +44,8 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.11.0 // indirect
 	github.com/jackc/puddle v1.2.1 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.14.2 // indirect
 	github.com/labstack/gommon v0.3.1 // indirect
@@ -72,6 +74,8 @@ require (
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
 	golang.org/x/tools v0.1.10 // indirect
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
+	gorm.io/driver/postgres v1.3.7 // indirect
+	gorm.io/gorm v1.23.6 // indirect
 )
 
 require (
@@ -104,4 +108,4 @@ require (
 )
 
 // https://go.dev/doc/tutorial/call-module-code
-replace github.com/mehdihadeli/store-golang-microservice-sample => ../../pkg
+replace github.com/mehdihadeli/store-golang-microservice-sample => ../../
