@@ -1,38 +1,30 @@
 package v1
 
 import (
-	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/creating_product"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/web"
+	shared_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/configurations"
 	"net/http"
 )
 
-type CreateProductEndpoint struct {
-	web.CatalogsEndpointBase
+type createProductEndpoint struct {
+	mediator          *mediatr.Mediator
+	productRepository repositories.ProductRepository
+	infrastructure    *shared_configurations.Infrastructure
 }
 
-func NewCreteProductEndpoint(
-	echo *echo.Echo,
-	log logger.Logger,
-	cfg *config.Config,
-	mediator *mediatr.Mediator,
-	validator *validator.Validate,
-	metrics *shared.CatalogsServiceMetrics,
-) *CreateProductEndpoint {
-	return &CreateProductEndpoint{web.CatalogsEndpointBase{echo, log, cfg, mediator, validator, metrics}}
+func NewCreteProductEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productRepository repositories.ProductRepository) *createProductEndpoint {
+	return &createProductEndpoint{mediator: mediator, productRepository: productRepository, infrastructure: infra}
 }
 
-func (ep *CreateProductEndpoint) MapCreateProductEndpoint() {
-	v1 := ep.Echo.Group("/api/v1")
-	products := v1.Group("/" + ep.Cfg.Http.ProductsPath)
+func (ep *createProductEndpoint) MapCreateProductEndpoint() {
+	v1 := ep.infrastructure.Echo.Group("/api/v1")
+	products := v1.Group("/" + ep.infrastructure.Cfg.Http.ProductsPath)
 	products.POST("", ep.createProduct())
 }
 
@@ -45,37 +37,37 @@ func (ep *CreateProductEndpoint) MapCreateProductEndpoint() {
 // @Param CreateProductRequestDto body dto.CreateProductRequestDto true "Product data"
 // @Success 201 {object} dto.CreateProductResponseDto
 // @Router /products [post]
-func (ep *CreateProductEndpoint) createProduct() echo.HandlerFunc {
+func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ep.Metrics.CreateProductHttpRequests.Inc()
+		ep.infrastructure.Metrics.CreateProductHttpRequests.Inc()
 
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "productsHandlers.CreateProduct")
 		defer span.Finish()
 
 		request := &dto.CreateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
-			ep.Log.WarnMsg("Bind", err)
-			ep.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.Cfg.Http.DebugErrorsResponse)
+			ep.infrastructure.Log.WarnMsg("Bind", err)
+			ep.infrastructure.TraceErr(span, err)
+			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
-		if err := ep.Validator.StructCtx(ctx, request); err != nil {
-			ep.Log.Errorf("(validate) err: {%v}", err)
+		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
+			ep.infrastructure.Log.Errorf("(validate) err: {%v}", err)
 			tracing.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		command := creating_product.NewCreateProduct(request.Name, request.Description, request.Price)
-		_, err := ep.Mediator.Send(ctx, *command)
+		_, err := ep.mediator.Send(ctx, *command)
 
 		if err != nil {
-			ep.Log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", command.ProductID, err)
+			ep.infrastructure.Log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", command.ProductID, err)
 			tracing.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
-		ep.Log.Infof("(order created) id: {%s}", command.ProductID)
-		ep.Metrics.SuccessHttpRequests.Inc()
+		ep.infrastructure.Log.Infof("(order created) id: {%s}", command.ProductID)
+		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()
 		return c.JSON(http.StatusCreated, dto.CreateProductResponseDto{ProductID: command.ProductID})
 	}
 }

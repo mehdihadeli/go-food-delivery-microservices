@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products"
+	products_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/server"
@@ -40,7 +40,7 @@ func Run(log logger.Logger, cfg *config.Config) error {
 	s := server.NewServer(log, cfg)
 
 	ic := configurations.NewInfrastructureConfigurator(s)
-	err, infrastructure, defers := ic.ConfigInfrastructures(ctx, cancel)
+	err, infrastructure, defers := ic.ConfigInfrastructures(ctx)
 
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func Run(log logger.Logger, cfg *config.Config) error {
 
 	defer defers()
 
-	pc := products.NewProductsModuleConfigurator(infrastructure)
+	pc := products_configurations.NewProductsModuleConfigurator(infrastructure)
 	err = pc.ConfigureProductsModule()
 	if err != nil {
 		return err
@@ -71,12 +71,12 @@ func Run(log logger.Logger, cfg *config.Config) error {
 			s.Log.Infof("%s is listening on Http PORT: {%s}", configurations.GetMicroserviceName(s.Cfg), s.Cfg.Http.Port)
 
 		case "grpc":
-			err, grpcderfer := s.RunGrpcServer(nil)
+			err, grpcCleanup := s.RunGrpcServer(nil)
 			if err != nil {
 				return
 			}
 			s.Log.Infof("%s is listening on Grpc PORT: {%s}", configurations.GetMicroserviceName(s.Cfg), s.Cfg.GRPC.Port)
-			defer grpcderfer()
+			defer grpcCleanup()
 		default:
 			fmt.Sprintf("server type %s is not supported", deliveryType)
 			//panic()

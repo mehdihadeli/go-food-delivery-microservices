@@ -34,8 +34,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"google.golang.org/grpc"
 	"net"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -44,7 +44,6 @@ import (
 type Infrastructure struct {
 	Log               logger.Logger
 	Cfg               *config.Config
-	HttpServer        *http.Server
 	Validator         *validator.Validate
 	KafkaConn         *kafka.Conn
 	KafkaProducer     kafkaClient.Producer
@@ -52,9 +51,9 @@ type Infrastructure struct {
 	PgConn            *pgxpool.Pool
 	Metrics           *shared.CatalogsServiceMetrics
 	Echo              *echo.Echo
+	GrpcServer        *grpc.Server
 	MongoClient       *mongo.Client
 	ElasticClient     *v7.Client
-	Ctx               context.Context
 	MiddlewareManager middlewares.MiddlewareManager
 }
 
@@ -72,9 +71,9 @@ func NewInfrastructureConfigurator(server *server.Server) *infrastructureConfigu
 	return &infrastructureConfigurator{server: server}
 }
 
-func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context, cancelFunc context.CancelFunc) (error, *Infrastructure, func()) {
+func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (error, *Infrastructure, func()) {
 
-	infrastructure = &Infrastructure{Cfg: ic.server.Cfg, Echo: ic.server.Echo, Log: ic.server.Log}
+	infrastructure = &Infrastructure{Cfg: ic.server.Cfg, Echo: ic.server.Echo, GrpcServer: ic.server.GrpcServer, Log: ic.server.Log}
 
 	infrastructure.Im = interceptors.NewInterceptorManager(ic.server.Log)
 	infrastructure.Metrics = shared.NewCatalogsServiceMetrics(ic.server.Cfg)
@@ -189,14 +188,14 @@ func (i *Infrastructure) configMiddlewares() {
 	i.Echo.Use(middleware.BodyLimit(catalog_constants.BodyLimit))
 }
 
-func (s *Infrastructure) configSwagger() {
+func (i *Infrastructure) configSwagger() {
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Title = "Catalogs Service Api"
 	docs.SwaggerInfo.Description = "Catalogs Service Api."
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
-	s.Echo.GET("/swagger/*", echoSwagger.WrapHandler)
+	i.Echo.GET("/swagger/*", echoSwagger.WrapHandler)
 }
 
 func (i *Infrastructure) configEventStore() (error, func()) {
@@ -267,7 +266,7 @@ func (i *Infrastructure) configMongo(ctx context.Context) (error, func()) {
 	i.initMongoDBCollections(ctx)
 
 	return nil, func() {
-		mongoDBConn.Disconnect(ctx) // nolint: errcheck
+		_ = mongoDBConn.Disconnect(ctx) // nolint: errcheck
 	}
 }
 

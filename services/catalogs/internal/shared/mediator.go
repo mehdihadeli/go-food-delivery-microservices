@@ -13,7 +13,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewMediator(log logger.Logger, cfg *config.Config, pgRepo repositories.ProductRepository, kafkaProducer kafkaClient.Producer) (*mediatr.Mediator, error) {
+func NewCatalogsMediator(log logger.Logger, cfg *config.Config, pgRepo repositories.ProductRepository, kafkaProducer kafkaClient.Producer) (*mediatr.Mediator, error) {
 
 	md := mediatr.New()
 

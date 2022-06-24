@@ -1,5 +1,5 @@
 serviceName: catalogs_service
-deliveryType: http
+deliveryType: grpc
 context:
   timeout: 20
 grpc:
