@@ -11,6 +11,6 @@ type CreateProduct struct {
 	Price       float64   `json:"price" validate:"required,gte=0"`
 }
 
-func NewCreateProduct(name string, description string, price float64) *CreateProduct {
-	return &CreateProduct{ProductID: uuid.NewV4(), Name: name, Description: description, Price: price}
+func NewCreateProduct(name string, description string, price float64) CreateProduct {
+	return CreateProduct{ProductID: uuid.NewV4(), Name: name, Description: description, Price: price}
 }

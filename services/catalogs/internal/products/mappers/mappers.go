@@ -48,8 +48,8 @@ func WriterProductToGrpc(product *models.Product) *product_service.Product {
 	}
 }
 
-func ProductToGetProductResponseDto(product *models.Product) *dto.GetProductResponseDto {
-	return &dto.GetProductResponseDto{
+func ProductToProductDto(product *models.Product) *dto.ProductDto {
+	return &dto.ProductDto{
 		ProductID:   product.ProductID,
 		Name:        product.Name,
 		Description: product.Description,
@@ -57,4 +57,13 @@ func ProductToGetProductResponseDto(product *models.Product) *dto.GetProductResp
 		CreatedAt:   product.CreatedAt,
 		UpdatedAt:   product.UpdatedAt,
 	}
+}
+
+func ProductsToProductsDto(products []*models.Product) []*dto.ProductDto {
+	dtos := make([]*dto.ProductDto, 0)
+	for _, product := range products {
+		dtos = append(dtos, ProductToProductDto(product))
+	}
+
+	return dtos
 }

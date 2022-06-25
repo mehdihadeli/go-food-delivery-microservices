@@ -1,6 +1,4 @@
-package dto
-
-import uuid "github.com/satori/go.uuid"
+package dtos
 
 type CreateProductRequestDto struct {
 	Name        string  `json:"name" validate:"required,gte=0,lte=255"`
@@ -8,6 +6,3 @@ type CreateProductRequestDto struct {
 	Price       float64 `json:"price" validate:"required,gte=0"`
 }
 
-type CreateProductResponseDto struct {
-	ProductID uuid.UUID `json:"productId"`
-}

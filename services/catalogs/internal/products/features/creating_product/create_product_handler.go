@@ -8,6 +8,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/grpc/kafka_messages"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/creating_product/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/mappers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/models"
 	"github.com/opentracing/opentracing-go"
@@ -27,21 +28,21 @@ func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository r
 	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
 }
 
-func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "createProductHandler.Handle")
+func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct) (*dtos.CreateProductResponseDto, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductHandler.Handle")
 	defer span.Finish()
 
 	productDto := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price}
 
 	product, err := c.repository.CreateProduct(ctx, productDto)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	evt := &kafka_messages.ProductCreated{Product: mappers.ProductToGrpcMessage(product)}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	message := kafka.Message{
@@ -51,5 +52,10 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct
 		Headers: tracing.GetKafkaTracingHeadersFromSpanCtx(span.Context()),
 	}
 
-	return c.kafkaProducer.PublishMessage(ctx, message)
+	err = c.kafkaProducer.PublishMessage(ctx, message)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dtos.CreateProductResponseDto{ProductID: product.ProductID}, nil
 }

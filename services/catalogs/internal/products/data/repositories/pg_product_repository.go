@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/config"
@@ -23,78 +24,80 @@ func NewPostgresProductRepository(log logger.Logger, cfg *config.Config, db *pgx
 	return &postgresProductRepository{log: log, cfg: cfg, db: db, gorm: gorm}
 }
 
-func (p *postgresProductRepository) CreateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
-
-	span, ctx := opentracing.StartSpanFromContext(ctx, "productRepository.CreateProduct")
+func (p *postgresProductRepository) GetAllProducts(ctx context.Context) ([]*models.Product, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.GetAllProducts")
 	defer span.Finish()
 
-	var created models.Product
+	var products []*models.Product
 
-	if result := p.gorm.Create(&product).Scan(&created); result.Error != nil {
-		return nil, errors.Wrap(result.Error, "error in the insert product into the database")
+	if result := p.gorm.Find(&products); result.Error != nil {
+		return nil, errors.Wrap(result.Error, "error in finding products.")
 	}
 
-	return &created, nil
+	return products, nil
 }
 
-func (p *postgresProductRepository) UpdateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "productRepository.UpdateProduct")
+func (p *postgresProductRepository) GetProductsByPage(ctx context.Context, page int, skip int) ([]*models.Product, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.GetAllProducts")
 	defer span.Finish()
 
-	const updateProductQuery = `UPDATE products p SET
-	name=COALESCE(NULLIF($1, ''), name),
-	description=COALESCE(NULLIF($2, ''), description),
-	price=COALESCE(NULLIF($3, 0), price),
-	updated_at = now()
-	WHERE product_id=$4
-	RETURNING product_id, name, description, price, created_at, updated_at`
+	products := make([]*models.Product, 0)
 
-	var prod models.Product
-	if err := p.db.QueryRow(
-		ctx,
-		updateProductQuery,
-		&product.Name,
-		&product.Description,
-		&product.Price,
-		&product.ProductID,
-	).Scan(&prod.ProductID, &prod.Name, &prod.Description, &prod.Price, &prod.CreatedAt, &prod.UpdatedAt); err != nil {
-		return nil, errors.Wrap(err, "Scan")
+	if result := p.gorm.Limit(skip).Offset(skip * (page - 1)).Find(&products); result.Error != nil {
+		return nil, errors.Wrap(result.Error, "error in finding products.")
 	}
 
-	return &prod, nil
+	return products, nil
 }
 
 func (p *postgresProductRepository) GetProductById(ctx context.Context, uuid uuid.UUID) (*models.Product, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "productRepository.GetProductById")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.GetProductById")
 	defer span.Finish()
 
-	const getProductByIdQuery = `SELECT p.product_id, p.name, p.description, p.price, p.created_at, p.updated_at 
-	FROM products p WHERE p.product_id = $1`
-
 	var product models.Product
-	if err := p.db.QueryRow(ctx, getProductByIdQuery, uuid).Scan(
-		&product.ProductID,
-		&product.Name,
-		&product.Description,
-		&product.Price,
-		&product.CreatedAt,
-		&product.UpdatedAt,
-	); err != nil {
-		return nil, errors.Wrap(err, "Scan")
+
+	if result := p.gorm.First(&product, uuid); result.Error != nil {
+		return nil, errors.Wrap(result.Error, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
 	}
 
 	return &product, nil
 }
 
-func (p *postgresProductRepository) DeleteProductByID(ctx context.Context, uuid uuid.UUID) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "productRepository.DeleteProductByID")
+func (p *postgresProductRepository) CreateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.CreateProduct")
 	defer span.Finish()
 
-	const deleteProductByIdQuery = `DELETE FROM products WHERE product_id = $1`
+	if result := p.gorm.Create(&product); result.Error != nil {
+		return nil, errors.Wrap(result.Error, "error in the inserting product into the database.")
+	}
 
-	_, err := p.db.Exec(ctx, deleteProductByIdQuery, uuid)
-	if err != nil {
-		return errors.Wrap(err, "Exec")
+	return product, nil
+}
+
+func (p *postgresProductRepository) UpdateProduct(ctx context.Context, updateProduct *models.Product) (*models.Product, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.UpdateProduct")
+	defer span.Finish()
+
+	if result := p.gorm.Save(updateProduct); result.Error != nil {
+		return nil, errors.Wrap(result.Error, fmt.Sprintf("error in updating product with id %s into the database.", updateProduct.ProductID))
+	}
+
+	return updateProduct, nil
+}
+
+func (p *postgresProductRepository) DeleteProductByID(ctx context.Context, uuid uuid.UUID) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.DeleteProductByID")
+	defer span.Finish()
+
+	var product models.Product
+
+	if result := p.gorm.First(&product, uuid); result.Error != nil {
+		return errors.Wrap(result.Error, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
+	}
+
+	if result := p.gorm.Delete(&product); result.Error != nil {
+		return errors.Wrap(result.Error, "error in the deleting product into the database.")
 	}
 
 	return nil

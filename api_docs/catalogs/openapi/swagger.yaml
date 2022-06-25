@@ -1,5 +1,20 @@
 definitions:
-  dto.CreateProductRequestDto:
+  dto.ProductDto:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      productId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  dtos.CreateProductRequestDto:
     properties:
       description:
         maxLength: 5000
@@ -17,10 +32,45 @@ definitions:
     - name
     - price
     type: object
-  dto.CreateProductResponseDto:
+  dtos.CreateProductResponseDto:
     properties:
       productId:
         type: string
+    type: object
+  getting_product_by_id.GetProductByIdResponseDto:
+    properties:
+      product:
+        $ref: '#/definitions/dto.ProductDto'
+    type: object
+  getting_products.GetProductsResponseDto:
+    properties:
+      products:
+        items:
+          $ref: '#/definitions/dto.ProductDto'
+        type: array
+    type: object
+  updating_product.UpdateProductRequestDto:
+    properties:
+      description:
+        maxLength: 5000
+        minLength: 0
+        type: string
+      name:
+        maxLength: 255
+        minLength: 0
+        type: string
+      price:
+        minimum: 0
+        type: number
+      productId:
+        maxLength: 255
+        minLength: 0
+        type: string
+    required:
+    - description
+    - name
+    - price
+    - productId
     type: object
 info:
   contact:
@@ -28,6 +78,20 @@ info:
     url: https://github.com/mehdihadeli
 paths:
   /products:
+    get:
+      consumes:
+      - application/json
+      description: Get all products
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/getting_products.GetProductsResponseDto'
+      summary: Get all product
+      tags:
+      - Products
     post:
       consumes:
       - application/json
@@ -38,15 +102,78 @@ paths:
         name: CreateProductRequestDto
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateProductRequestDto'
+          $ref: '#/definitions/dtos.CreateProductRequestDto'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.CreateProductResponseDto'
+            $ref: '#/definitions/dtos.CreateProductResponseDto'
       summary: Create product
+      tags:
+      - Products
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete existing product
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+      summary: Delete product
+      tags:
+      - Products
+    get:
+      consumes:
+      - application/json
+      description: Get product by id
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/getting_product_by_id.GetProductByIdResponseDto'
+      summary: Get product
+      tags:
+      - Products
+    put:
+      consumes:
+      - application/json
+      description: Update existing product
+      parameters:
+      - description: Product data
+        in: body
+        name: UpdateProductRequestDto
+        required: true
+        schema:
+          $ref: '#/definitions/updating_product.UpdateProductRequestDto'
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+      summary: Update product
       tags:
       - Products
 swagger: "2.0"

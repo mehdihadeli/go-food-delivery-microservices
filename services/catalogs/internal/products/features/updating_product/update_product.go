@@ -11,6 +11,6 @@ type UpdateProduct struct {
 	Price       float64   `json:"price" validate:"required,gte=0"`
 }
 
-func NewUpdateProduct(productID uuid.UUID, name string, description string, price float64) *UpdateProduct {
-	return &UpdateProduct{ProductID: productID, Name: name, Description: description, Price: price}
+func NewUpdateProduct(productID uuid.UUID, name string, description string, price float64) UpdateProduct {
+	return UpdateProduct{ProductID: productID, Name: name, Description: description, Price: price}
 }

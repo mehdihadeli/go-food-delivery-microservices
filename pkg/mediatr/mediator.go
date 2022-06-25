@@ -31,7 +31,6 @@ func (m Mediator) Register(handlers ...interface{}) error {
 
 	for _, handler := range handlers {
 		handlerValue := reflect.ValueOf(handler)
-
 		var handleMethod = handlerValue.MethodByName("Handle")
 
 		messageType := handleMethod.Type().In(0)

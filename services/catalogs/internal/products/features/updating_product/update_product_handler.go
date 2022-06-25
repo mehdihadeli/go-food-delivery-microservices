@@ -29,7 +29,7 @@ func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, pgRepo repos
 
 func (c *UpdateProductHandler) Handle(ctx context.Context, command UpdateProduct) error {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "updateProductHandler.Handle")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateProductHandler.Handle")
 	defer span.Finish()
 
 	productDto := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price}

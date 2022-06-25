@@ -5,9 +5,10 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/contracts/repositories"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/creating_product"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/products/features/creating_product/dtos"
 	shared_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/internal/shared/configurations"
 	"net/http"
 )
@@ -15,17 +16,16 @@ import (
 type createProductEndpoint struct {
 	mediator          *mediatr.Mediator
 	productRepository repositories.ProductRepository
+	productsGroup     *echo.Group
 	infrastructure    *shared_configurations.Infrastructure
 }
 
-func NewCreteProductEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productRepository repositories.ProductRepository) *createProductEndpoint {
-	return &createProductEndpoint{mediator: mediator, productRepository: productRepository, infrastructure: infra}
+func NewCreteProductEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productsGroup *echo.Group, productRepository repositories.ProductRepository) *createProductEndpoint {
+	return &createProductEndpoint{mediator: mediator, productRepository: productRepository, productsGroup: productsGroup, infrastructure: infra}
 }
 
 func (ep *createProductEndpoint) MapRoute() {
-	v1 := ep.infrastructure.Echo.Group("/api/v1")
-	products := v1.Group("/" + ep.infrastructure.Cfg.Http.ProductsPath)
-	products.POST("", ep.createProduct())
+	ep.productsGroup.POST("", ep.createProduct())
 }
 
 // CreateProduct
@@ -34,17 +34,16 @@ func (ep *createProductEndpoint) MapRoute() {
 // @Description Create new product item
 // @Accept json
 // @Produce json
-// @Param CreateProductRequestDto body dto.CreateProductRequestDto true "Product data"
-// @Success 201 {object} dto.CreateProductResponseDto
+// @Param CreateProductRequestDto body dtos.CreateProductRequestDto true "Product data"
+// @Success 201 {object} dtos.CreateProductResponseDto
 // @Router /products [post]
 func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ep.infrastructure.Metrics.CreateProductHttpRequests.Inc()
-
-		ctx, span := tracing.StartHttpServerTracerSpan(c, "productsHandlers.CreateProduct")
+		ctx, span := tracing.StartHttpServerTracerSpan(c, "createProductEndpoint.createProduct")
 		defer span.Finish()
 
-		request := &dto.CreateProductRequestDto{}
+		request := &dtos.CreateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
 			ep.infrastructure.Log.WarnMsg("Bind", err)
 			ep.infrastructure.TraceErr(span, err)
@@ -58,7 +57,7 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 		}
 
 		command := creating_product.NewCreateProduct(request.Name, request.Description, request.Price)
-		_, err := ep.mediator.Send(ctx, *command)
+		result, err := ep.mediator.Send(ctx, command)
 
 		if err != nil {
 			ep.infrastructure.Log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", command.ProductID, err)
@@ -66,8 +65,14 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
-		ep.infrastructure.Log.Infof("(order created) id: {%s}", command.ProductID)
+		response, ok := result.(*dtos.CreateProductResponseDto)
+		err = utils.CheckType(ok)
+		if err != nil {
+			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+		}
+
+		ep.infrastructure.Log.Infof("(product created) id: {%s}", command.ProductID)
 		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()
-		return c.JSON(http.StatusCreated, dto.CreateProductResponseDto{ProductID: command.ProductID})
+		return c.JSON(http.StatusCreated, response)
 	}
 }
