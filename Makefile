@@ -1,7 +1,7 @@
 .PHONY:
 
-run_catalogs_service:
-	go run ./services/catalogs/cmd/main.go -config=./services/catalogs/config/config.yaml
+run_catalogs_write_service:
+	go run ./services/catalogs/write_service/cmd/main.go -config=./services/catalogs/write_service/config/config.yaml
 
 # ==============================================================================
 # Docker Compose
@@ -56,17 +56,16 @@ pprof_allocs:
 
 proto_product_kafka_messages:
 	@echo Generating products kafka messages proto
-	protoc --go_out=./services/catalogs/internal/products/contracts/grpc/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/internal/products/contracts/grpc/kafka_messages api_docs/catalogs/protobuf/products/kafka_messages/product_kafka_messages.proto
+	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/product_kafka_messages.proto
 
 proto_product_service:
 	@echo Generating product_service client proto
-	protoc --go_out=./services/catalogs/internal/products/contracts/grpc/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/internal/products/contracts/grpc/service_clients api_docs/catalogs/protobuf/products/service_clients/product_service_client.proto
-
+	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/grpc/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/grpc/service_clients api_docs/catalogs/write_service/protobuf/products/service_clients/product_service_client.proto
 
 # ==============================================================================
 # Swagger
 
 swagger_catalogs:
 	@echo Starting swagger generating
-	swag init -g ./services/catalogs/cmd/main.go -o ./services/catalogs/docs
-	swag init -g ./services/catalogs/cmd/main.go -o ./api_docs/catalogs/openapi/
+	swag init -g ./services/catalogs/write_service/cmd/main.go -o ./services/catalogs/write_service/docs
+	swag init -g ./services/catalogs/write_service/cmd/main.go -o ./api_docs/catalogs/write_service/openapi/
