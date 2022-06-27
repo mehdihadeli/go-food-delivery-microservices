@@ -22,6 +22,20 @@
 - ✔️ **[`mschneider82/problem`](https://github.com/mschneider82/problem)** - A go library that implements application/problem+json and application/problem+xml
 - ✔️ **[`go-playground/validator`](https://github.com/go-playground/validator)** - Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving
 
+## Plan
+> This project is in progress, New features will be added over time.
+
+High-level plan is represented in the table
+
+| Feature | Status |
+| ------- | ------ |
+| Building Blocks | In Progress 👷‍ |
+| Catalog Service | In Progress 👷‍ |
+| API Gateway | Not Started 🚩 |
+| Identity Service | Not Started 🚩 |
+| Customer Service | Not Started 🚩 |
+| Order Service |  Not Started 🚩|
+
 ## Application Structure
 
 In this project I used [vertical slice architecture](https://jimmybogard.com/vertical-slice-architecture/) or [Restructuring to a Vertical Slice Architecture](https://codeopinion.com/restructuring-to-a-vertical-slice-architecture/) also I used [feature folder structure](http://www.kamilgrzybek.com/design/feature-folders/) in this project.
