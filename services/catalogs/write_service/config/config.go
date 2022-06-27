@@ -91,7 +91,7 @@ type KafkaTopics struct {
 	ProductDeleted kafkaClient.TopicConfig `mapstructure:"productDeleted"`
 }
 
-func InitConfig() (*Config, error) {
+func InitConfig(env string) (*Config, error) {
 	if configPath == "" {
 		configPathFromEnv := os.Getenv(constants.ConfigPath)
 		if configPathFromEnv != "" {
@@ -101,7 +101,7 @@ func InitConfig() (*Config, error) {
 			if err != nil {
 				return nil, errors.Wrap(err, "os.Getwd")
 			}
-			configPath = fmt.Sprintf("%s/config/config.yaml", getwd)
+			configPath = fmt.Sprintf("%s/config/config.%s.yaml", getwd, env)
 		}
 	}
 

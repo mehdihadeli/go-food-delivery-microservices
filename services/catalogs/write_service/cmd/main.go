@@ -6,14 +6,23 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/server"
 	"log"
+	"os"
 )
+
+const dev = "development"
+const production = "production"
 
 // @contact.name Mehdi Hadeli
 // @contact.url https://github.com/mehdihadeli
 func main() {
 	flag.Parse()
 
-	cfg, err := config.InitConfig()
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = dev
+	}
+
+	cfg, err := config.InitConfig(env)
 	if err != nil {
 		log.Fatal(err)
 	}
