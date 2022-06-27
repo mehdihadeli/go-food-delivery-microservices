@@ -9,18 +9,18 @@
 
 ## Technologies - Libraries
 
-- ✔️ **[`echo`](https://github.com/labstack/echo)** - High performance, minimalist Go web framework
-- ✔️ **[`kafka-go`](https://github.com/segmentio/kafka-go)** - Kafka library in Go
-- ✔️ **[`grpc-go`](https://github.com/grpc/grpc-go)** - The Go language implementation of gRPC. HTTP/2 based RPC
-- ✔️ **[`pgx`](https://github.com/jackc/pgx)** - PostgreSQL driver and toolkit for Go
-- ✔️ **[`swag`](https://github.com/swaggo/swag)** - Automatically generate RESTful API documentation with Swagger 2.0 for Go.
-- ✔️ **[`jaeger-client-go`](https://github.com/jaegertracing/jaeger-client-go)** - Distributed tracing for go (will replace with open telemetry soon)
-- ✔️ **[`client_golang`](github.com/prometheus/client_golang)** - Prometheus instrumentation library for Go applications
-- ✔️ **[`mongo-go-driver`](https://github.com/mongodb/mongo-go-driver)** - The Go driver for MongoDB
+- ✔️ **[`labstack/echo`](https://github.com/labstack/echo)** - High performance, minimalist Go web framework
+- ✔️ **[`segmentio/kafka-go`](https://github.com/segmentio/kafka-go)** - Kafka library in Go
+- ✔️ **[`grpc/grpc-go`](https://github.com/grpc/grpc-go)** - The Go language implementation of gRPC. HTTP/2 based RPC
+- ✔️ **[`jackc/pgx`](https://github.com/jackc/pgx)** - PostgreSQL driver and toolkit for Go
+- ✔️ **[`swaggo/swag`](https://github.com/swaggo/swag)** - Automatically generate RESTful API documentation with Swagger 2.0 for Go.
+- ✔️ **[`jaegertracing/jaeger-client-go`](https://github.com/jaegertracing/jaeger-client-go)** - Distributed tracing for go (will replace with open telemetry soon)
+- ✔️ **[`prometheus/client_golang`](github.com/prometheus/client_golang)** - Prometheus instrumentation library for Go applications
+- ✔️ **[`mongodb/mongo-go-driver`](https://github.com/mongodb/mongo-go-driver)** - The Go driver for MongoDB
 - ✔️ **[`go-redis/redis`](https://github.com/go-redis/redis)** - Type-safe Redis client for Golang
 - ✔️ **[`go-gorm/gorm`](https://github.com/go-gorm/gorm)** - The fantastic ORM library for Golang, aims to be developer friendly
-
-
+- ✔️ **[`mschneider82/problem`](https://github.com/mschneider82/problem)** - A go library that implements application/problem+json and application/problem+xml
+- ✔️ **[`go-playground/validator`](https://github.com/go-playground/validator)** - Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving
 
 ## Application Structure
 
