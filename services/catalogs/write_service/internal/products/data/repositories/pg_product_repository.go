@@ -3,8 +3,11 @@ package repositories
 import (
 	"context"
 	"fmt"
+
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
@@ -24,30 +27,29 @@ func NewPostgresProductRepository(log logger.Logger, cfg *config.Config, db *pgx
 	return &postgresProductRepository{log: log, cfg: cfg, db: db, gorm: gorm}
 }
 
-func (p *postgresProductRepository) GetAllProducts(ctx context.Context) ([]*models.Product, error) {
+func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[models.Product], error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.GetAllProducts")
 	defer span.Finish()
 
-	var products []*models.Product
-
-	if result := p.gorm.Find(&products); result.Error != nil {
-		return nil, errors.Wrap(result.Error, "error in finding products.")
+	result, err := gorm_postgres.Paginate[models.Product](listQuery, p.gorm)
+	if err != nil {
+		return nil, err
 	}
-
-	return products, nil
+	return result, nil
 }
 
-func (p *postgresProductRepository) GetProductsByPage(ctx context.Context, page int, skip int) ([]*models.Product, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.GetAllProducts")
+func (p *postgresProductRepository) SearchProducts(ctx context.Context, searchText string, listQuery *utils.ListQuery) (*utils.ListResult[models.Product], error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.SearchProducts")
 	defer span.Finish()
 
-	products := make([]*models.Product, 0)
+	whereQuery := fmt.Sprintf("%s IN (?)", "Name")
+	query := p.gorm.Where(whereQuery, searchText)
 
-	if result := p.gorm.Limit(skip).Offset(skip * (page - 1)).Find(&products); result.Error != nil {
-		return nil, errors.Wrap(result.Error, "error in finding products.")
+	result, err := gorm_postgres.Paginate[models.Product](listQuery, query)
+	if err != nil {
+		return nil, err
 	}
-
-	return products, nil
+	return result, nil
 }
 
 func (p *postgresProductRepository) GetProductById(ctx context.Context, uuid uuid.UUID) (*models.Product, error) {

@@ -40,6 +40,17 @@ const (
 	Offset    = "offset"
 	Time      = "time"
 
+	Validate        = "validate"
+	FieldValidation = "field validation"
+	RequiredHeaders = "required header"
+	Base64          = "base64"
+	Unmarshal       = "unmarshal"
+	Uuid            = "uuid"
+	Cookie          = "cookie"
+	Token           = "token"
+	Bcrypt          = "bcrypt"
+	SQLState        = "sqlstate"
+
 	Page   = "page"
 	Size   = "size"
 	Search = "search"

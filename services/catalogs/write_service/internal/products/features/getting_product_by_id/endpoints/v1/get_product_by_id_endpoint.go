@@ -49,7 +49,7 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("uuid.FromString", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		query := getting_product_by_id.NewGetProductById(productUUID)
@@ -58,13 +58,13 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("GetProductById", err)
 			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		response, ok := queryResult.(*getting_product_by_id.GetProductByIdResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()

@@ -32,6 +32,26 @@ const docTemplate = `{
                     "Products"
                 ],
                 "summary": "Get all product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Size",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "OrderBy",
+                        "name": "orderBy",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -69,6 +89,56 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/dtos.CreateProductResponseDto"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/search": {
+            "get": {
+                "description": "Search products",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Search products",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search Keyword",
+                        "name": "search",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Size",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "OrderBy",
+                        "name": "orderBy",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/searching_product.SearchProductsResponseDto"
                         }
                     }
                 }
@@ -238,10 +308,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "products": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.ProductDto"
-                    }
+                    "type": "object"
+                }
+            }
+        },
+        "searching_product.SearchProductsResponseDto": {
+            "type": "object",
+            "properties": {
+                "products": {
+                    "type": "object"
                 }
             }
         },

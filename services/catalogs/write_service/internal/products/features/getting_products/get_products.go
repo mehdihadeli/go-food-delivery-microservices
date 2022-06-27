@@ -1,8 +1,9 @@
 package getting_products
 
-type GetProducts struct {
-}
+import "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 
-func NewGetProducts() GetProducts {
-	return GetProducts{}
+// Ref: https://golangbot.com/inheritance/
+
+type GetProducts struct {
+	*utils.ListQuery
 }

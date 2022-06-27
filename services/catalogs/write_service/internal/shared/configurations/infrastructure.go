@@ -28,7 +28,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared"
 	catalog_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares/error_middleware"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares/problem_details"
 	v7 "github.com/olivere/elastic/v7"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -192,6 +192,10 @@ func (ic *infrastructureConfigurator) configureHealthCheckEndpoints(ctx context.
 
 func (ic *infrastructureConfigurator) configMiddlewares() {
 
+	ic.echo.HideBanner = true
+
+	ic.echo.HTTPErrorHandler = problem_details.ProblemHandler
+
 	//i.Echo.Use(i.MiddlewareManager.RequestLoggerMiddleware)
 	ic.echo.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize:         catalog_constants.StackSize,
@@ -200,7 +204,6 @@ func (ic *infrastructureConfigurator) configMiddlewares() {
 	}))
 	ic.echo.Use(middleware.RequestID())
 	ic.echo.Use(middleware.Logger())
-	ic.echo.Use(middleware.CORS())
 	ic.echo.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: catalog_constants.GzipLevel,
 		Skipper: func(c echo.Context) bool {
@@ -209,18 +212,6 @@ func (ic *infrastructureConfigurator) configMiddlewares() {
 	}))
 
 	ic.echo.Use(middleware.BodyLimit(catalog_constants.BodyLimit))
-
-	ic.echo.HideBanner = true
-
-	ic.echo.HTTPErrorHandler = error_middleware.NewHttpErrorHandler(error_middleware.NewErrorStatusCodeMaps()).Handler
-
-	//ic.echo.HTTPErrorHandler = func(err error, c echo.Context) {
-	//	// Take required information from error and context and send it to a service like New Relic
-	//	fmt.Println(c.Path(), c.QueryParams(), err.Error())
-	//
-	//	// Call the default handler to return the HTTP response
-	//	ic.echo.DefaultHTTPErrorHandler(err, c)
-	//}
 }
 
 func (ic *infrastructureConfigurator) configGorm() (*gorm.DB, error) {

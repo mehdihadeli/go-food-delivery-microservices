@@ -1,23 +1,28 @@
-package httpErrors
+package http_errors
 
 import (
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator"
+	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/pkg/errors"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/go-playground/validator"
-	"github.com/labstack/echo/v4"
 )
 
 const (
 	ErrBadRequest          = "Bad request"
+	ErrEmailAlreadyExists  = "User with given email already exists"
+	ErrNoSuchUser          = "User not found"
+	ErrWrongCredentials    = "Wrong Credentials"
 	ErrNotFound            = "Not Found"
 	ErrUnauthorized        = "Unauthorized"
+	ErrForbidden           = "Forbidden"
+	ErrBadQueryParams      = "Invalid query params"
 	ErrRequestTimeout      = "Request Timeout"
 	ErrInvalidEmail        = "Invalid email"
 	ErrInvalidPassword     = "Invalid password"
@@ -26,12 +31,24 @@ const (
 )
 
 var (
-	BadRequest          = errors.New("Bad request")
-	WrongCredentials    = errors.New("Wrong Credentials")
-	NotFound            = errors.New("Not Found")
-	Unauthorized        = errors.New("Unauthorized")
-	Forbidden           = errors.New("Forbidden")
-	InternalServerError = errors.New("Internal Server Error")
+	BadRequest            = errors.New(ErrBadRequest)
+	WrongCredentials      = errors.New(ErrWrongCredentials)
+	NotFound              = errors.New(ErrNotFound)
+	Unauthorized          = errors.New(ErrUnauthorized)
+	Forbidden             = errors.New(ErrForbidden)
+	PermissionDenied      = errors.New("Permission Denied")
+	ExpiredCSRFError      = errors.New("Expired CSRF token")
+	WrongCSRFToken        = errors.New("Wrong CSRF token")
+	CSRFNotPresented      = errors.New("CSRF not presented")
+	NotRequiredFields     = errors.New("No such required fields")
+	BadQueryParams        = errors.New("Invalid query params")
+	InternalServerError   = errors.New(ErrInternalServerError)
+	RequestTimeoutError   = errors.New("Request Timeout")
+	ExistsEmailError      = errors.New("User with given email already exists")
+	InvalidJWTToken       = errors.New("Invalid JWT token")
+	InvalidJWTClaims      = errors.New("Invalid JWT claims")
+	NotAllowedImageHeader = errors.New("Not allowed image header")
+	NoCookie              = errors.New("not found cookie header")
 )
 
 // RestErr Rest error interface
@@ -181,7 +198,7 @@ func ParseErrors(err error, debug bool) RestErr {
 		return NewRestError(http.StatusUnauthorized, ErrUnauthorized, err.Error(), debug)
 	case errors.Is(err, WrongCredentials):
 		return NewRestError(http.StatusUnauthorized, ErrUnauthorized, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), "sqlstate"):
+	case strings.Contains(strings.ToLower(err.Error()), constants.SQLState):
 		return parseSqlErrors(err, debug)
 	case strings.Contains(strings.ToLower(err.Error()), "field validation"):
 		if validationErrors, ok := err.(validator.ValidationErrors); ok {
@@ -190,17 +207,17 @@ func ParseErrors(err error, debug bool) RestErr {
 		return parseValidatorError(err, debug)
 	case strings.Contains(strings.ToLower(err.Error()), "required header"):
 		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), "base64"):
+	case strings.Contains(strings.ToLower(err.Error()), constants.Base64):
 		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), "unmarshal"):
+	case strings.Contains(strings.ToLower(err.Error()), constants.Unmarshal):
 		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), "uuid"):
+	case strings.Contains(strings.ToLower(err.Error()), constants.Uuid):
 		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), "cookie"):
+	case strings.Contains(strings.ToLower(err.Error()), constants.Cookie):
 		return NewRestError(http.StatusUnauthorized, ErrUnauthorized, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), "token"):
+	case strings.Contains(strings.ToLower(err.Error()), constants.Token):
 		return NewRestError(http.StatusUnauthorized, ErrUnauthorized, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), "bcrypt"):
+	case strings.Contains(strings.ToLower(err.Error()), constants.Bcrypt):
 		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
 	case strings.Contains(strings.ToLower(err.Error()), "no documents in result"):
 		return NewRestError(http.StatusNotFound, ErrNotFound, err.Error(), debug)
@@ -229,12 +246,6 @@ func parseValidatorError(err error, debug bool) RestErr {
 }
 
 // ErrorResponse Error response
-func ErrorResponse(err error, debug bool) (int, interface{}) {
-	return ParseErrors(err, debug).Status(), ParseErrors(err, debug)
-}
-
-// ErrorCtxResponse Error response object and status code
-func ErrorCtxResponse(ctx echo.Context, err error, debug bool) error {
-	restErr := ParseErrors(err, debug)
-	return ctx.JSON(restErr.Status(), restErr)
+func ErrorResponse(err error, debug bool) error {
+	return ParseErrors(err, debug)
 }

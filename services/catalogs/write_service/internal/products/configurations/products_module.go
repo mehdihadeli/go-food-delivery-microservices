@@ -11,6 +11,7 @@ import (
 	deleting_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/endpoints/v1"
 	gettting_product_by_id "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/endpoints/v1"
 	getting_products "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products/endpoints/v1"
+	searching_products "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/endpoints/v1"
 	updating_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/endpoints/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
@@ -73,6 +74,10 @@ func (pm *ProductModule) configEndpoints() {
 	// GetProducts
 	getProductsEndpoint := getting_products.NewGetProductsEndpoint(pm.Infrastructure, pm.Mediator, pm.ProductsGroup, pm.ProductRepository)
 	getProductsEndpoint.MapRoute()
+
+	// SearchProducts
+	searchProducts := searching_products.NewSearchProductsEndpoint(pm.Infrastructure, pm.Mediator, pm.ProductsGroup, pm.ProductRepository)
+	searchProducts.MapRoute()
 
 	// GetProductById
 	getProductByIdEndpoint := gettting_product_by_id.NewGetProductByIdEndpoint(pm.Infrastructure, pm.Mediator, pm.ProductsGroup, pm.ProductRepository)

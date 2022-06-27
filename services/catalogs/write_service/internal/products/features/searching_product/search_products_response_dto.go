@@ -1,10 +1,10 @@
-package getting_products
+package searching_product
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 )
 
-type GetProductsResponseDto struct {
+type SearchProductsResponseDto struct {
 	Products *utils.ListResult[dto.ProductDto]
 }

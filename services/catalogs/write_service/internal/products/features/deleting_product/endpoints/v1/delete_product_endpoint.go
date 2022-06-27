@@ -48,7 +48,7 @@ func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("uuid.FromString", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		command := deleting_product.NewDeleteProduct(productUUID)
@@ -57,7 +57,7 @@ func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("DeleteProduct", err)
 			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()

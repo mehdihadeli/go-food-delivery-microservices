@@ -2,28 +2,49 @@ package utils
 
 import (
 	"fmt"
-	"math"
 	"strconv"
+
+	"github.com/labstack/echo/v4"
 )
 
 const (
 	defaultSize = 10
+	defaultPage = 1
 )
 
-// Pagination query params
-type Pagination struct {
-	Size    int    `json:"size,omitempty"`
-	Page    int    `json:"page,omitempty"`
-	OrderBy string `json:"orderBy,omitempty"`
+type FilterModel struct {
+	Field      string `json:"field"`
+	Value      string `json:"value"`
+	Comparison string `json:"comparison"`
 }
 
-// NewPaginationQuery Pagination query constructor
-func NewPaginationQuery(size int, page int) *Pagination {
-	return &Pagination{Size: size, Page: page}
+type ListQuery struct {
+	Size    int            `json:"size,omitempty"`
+	Page    int            `json:"page,omitempty"`
+	OrderBy string         `json:"orderBy,omitempty"`
+	Filters []*FilterModel `json:"filters,omitempty"`
 }
 
-func NewPaginationFromQueryParams(size string, page string) *Pagination {
-	p := &Pagination{Size: defaultSize, Page: 1}
+type ListResult[T any] struct {
+	Size       int   `json:"size,omitempty"`
+	Page       int   `json:"page,omitempty"`
+	TotalItems int64 `json:"totalItems,omitempty"`
+	TotalPage  int   `json:"totalPage,omitempty"`
+	Items      []*T  `json:"items,omitempty"`
+}
+
+func NewListQuery(size int, page int) *ListQuery {
+	return &ListQuery{Size: size, Page: page}
+}
+
+func NewListResult[T any](items []*T, size int, page int, totalItems int64, totalPage int) *ListResult[T] {
+	listResult := &ListResult[T]{Items: items, Size: size, Page: page, TotalItems: totalItems, TotalPage: totalPage}
+
+	return listResult
+}
+
+func NewListQueryFromQueryParams(size string, page string) *ListQuery {
+	p := &ListQuery{Size: defaultSize, Page: defaultPage}
 
 	if sizeNum, err := strconv.Atoi(size); err == nil && sizeNum != 0 {
 		p.Page = sizeNum
@@ -36,8 +57,21 @@ func NewPaginationFromQueryParams(size string, page string) *Pagination {
 	return p
 }
 
+func GetListQueryFromCtx(c echo.Context) (*ListQuery, error) {
+	q := &ListQuery{}
+	if err := q.SetPage(c.QueryParam("page")); err != nil {
+		return nil, err
+	}
+	if err := q.SetSize(c.QueryParam("size")); err != nil {
+		return nil, err
+	}
+	q.SetOrderBy(c.QueryParam("orderBy"))
+
+	return q, nil
+}
+
 // SetSize Set page size
-func (q *Pagination) SetSize(sizeQuery string) error {
+func (q *ListQuery) SetSize(sizeQuery string) error {
 	if sizeQuery == "" {
 		q.Size = defaultSize
 		return nil
@@ -52,9 +86,9 @@ func (q *Pagination) SetSize(sizeQuery string) error {
 }
 
 // SetPage Set page number
-func (q *Pagination) SetPage(pageQuery string) error {
+func (q *ListQuery) SetPage(pageQuery string) error {
 	if pageQuery == "" {
-		q.Size = 0
+		q.Page = defaultPage
 		return nil
 	}
 	n, err := strconv.Atoi(pageQuery)
@@ -67,12 +101,12 @@ func (q *Pagination) SetPage(pageQuery string) error {
 }
 
 // SetOrderBy Set order by
-func (q *Pagination) SetOrderBy(orderByQuery string) {
+func (q *ListQuery) SetOrderBy(orderByQuery string) {
 	q.OrderBy = orderByQuery
 }
 
 // GetOffset Get offset
-func (q *Pagination) GetOffset() int {
+func (q *ListQuery) GetOffset() int {
 	if q.Page == 0 {
 		return 0
 	}
@@ -80,38 +114,26 @@ func (q *Pagination) GetOffset() int {
 }
 
 // GetLimit Get limit
-func (q *Pagination) GetLimit() int {
+func (q *ListQuery) GetLimit() int {
 	return q.Size
 }
 
 // GetOrderBy Get OrderBy
-func (q *Pagination) GetOrderBy() string {
+func (q *ListQuery) GetOrderBy() string {
 	return q.OrderBy
 }
 
 // GetPage Get OrderBy
-func (q *Pagination) GetPage() int {
+func (q *ListQuery) GetPage() int {
 	return q.Page
 }
 
 // GetSize Get OrderBy
-func (q *Pagination) GetSize() int {
+func (q *ListQuery) GetSize() int {
 	return q.Size
 }
 
 // GetQueryString get query string
-func (q *Pagination) GetQueryString() string {
+func (q *ListQuery) GetQueryString() string {
 	return fmt.Sprintf("page=%v&size=%v&orderBy=%s", q.GetPage(), q.GetSize(), q.GetOrderBy())
-}
-
-// GetTotalPages Get total pages int
-func (q *Pagination) GetTotalPages(totalCount int) int {
-	// d := float64(totalCount) / float64(pageSize)
-	d := float64(totalCount) / float64(q.GetSize())
-	return int(math.Ceil(d))
-}
-
-// GetHasMore Get has more
-func (q *Pagination) GetHasMore(totalCount int) bool {
-	return q.GetPage() < totalCount/q.GetSize()
 }

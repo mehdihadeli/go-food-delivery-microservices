@@ -12,6 +12,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -33,6 +34,7 @@ type Config struct {
 	Http             Http                           `mapstructure:"http"`
 	Context          Context                        `mapstructure:"context"`
 	Postgresql       *postgres.Config               `mapstructure:"postgres"`
+	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq"`
 	GormPostgres     *gorm_postgres.Config          `mapstructure:"gormPostgres"`
 	Kafka            *kafkaClient.Config            `mapstructure:"kafka"`
 	Probes           probes.Config                  `mapstructure:"probes"`

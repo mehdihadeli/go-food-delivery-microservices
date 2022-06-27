@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
+	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
@@ -47,13 +47,13 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 		if err := c.Bind(request); err != nil {
 			ep.infrastructure.Log.WarnMsg("Bind", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
 			ep.infrastructure.Log.Errorf("(validate) err: {%v}", err)
 			tracing.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		command := creating_product.NewCreateProduct(request.Name, request.Description, request.Price)
@@ -62,13 +62,13 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 		if err != nil {
 			ep.infrastructure.Log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", command.ProductID, err)
 			tracing.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		response, ok := result.(*dtos.CreateProductResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		ep.infrastructure.Log.Infof("(product created) id: {%s}", command.ProductID)

@@ -45,9 +45,12 @@ definitions:
   getting_products.GetProductsResponseDto:
     properties:
       products:
-        items:
-          $ref: '#/definitions/dto.ProductDto'
-        type: array
+        type: object
+    type: object
+  searching_product.SearchProductsResponseDto:
+    properties:
+      products:
+        type: object
     type: object
   updating_product.UpdateProductRequestDto:
     properties:
@@ -82,6 +85,19 @@ paths:
       consumes:
       - application/json
       description: Get all products
+      parameters:
+      - description: Page
+        in: query
+        name: page
+        type: string
+      - description: Size
+        in: query
+        name: size
+        type: string
+      - description: OrderBy
+        in: query
+        name: orderBy
+        type: string
       produces:
       - application/json
       responses:
@@ -174,6 +190,39 @@ paths:
         "204":
           description: ""
       summary: Update product
+      tags:
+      - Products
+  /products/search:
+    get:
+      consumes:
+      - application/json
+      description: Search products
+      parameters:
+      - description: Search Keyword
+        in: query
+        name: search
+        required: true
+        type: string
+      - description: Page
+        in: query
+        name: page
+        type: string
+      - description: Size
+        in: query
+        name: size
+        type: string
+      - description: OrderBy
+        in: query
+        name: orderBy
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/searching_product.SearchProductsResponseDto'
+      summary: Search products
       tags:
       - Products
 swagger: "2.0"

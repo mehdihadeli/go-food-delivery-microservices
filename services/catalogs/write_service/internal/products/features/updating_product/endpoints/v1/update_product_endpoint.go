@@ -49,20 +49,20 @@ func (ep *updateProductEndpoint) updateProduct() echo.HandlerFunc {
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("uuid.FromString", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		request := &updating_product.UpdateProductRequestDto{ProductID: productUUID}
 		if err := c.Bind(request); err != nil {
 			ep.infrastructure.Log.WarnMsg("Bind", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
 			ep.infrastructure.Log.WarnMsg("validate", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		command := updating_product.NewUpdateProduct(productUUID, request.Name, request.Description, request.Price)
@@ -72,7 +72,7 @@ func (ep *updateProductEndpoint) updateProduct() echo.HandlerFunc {
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("UpdateProduct", err)
 			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
-			return httpErrors.ErrorCtxResponse(c, err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
 		ep.infrastructure.Log.Infof("(product updated) id: {%s}", productUUID.String())

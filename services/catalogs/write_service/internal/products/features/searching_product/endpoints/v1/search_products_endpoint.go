@@ -7,61 +7,68 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product"
 	shared_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
 	"net/http"
 )
 
-type getProductsEndpoint struct {
+type searchProductsEndpoint struct {
 	mediator          *mediatr.Mediator
 	productRepository repositories.ProductRepository
 	productsGroup     *echo.Group
 	infrastructure    *shared_configurations.Infrastructure
 }
 
-func NewGetProductsEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productsGroup *echo.Group, productRepository repositories.ProductRepository) *getProductsEndpoint {
-	return &getProductsEndpoint{mediator: mediator, productRepository: productRepository, productsGroup: productsGroup, infrastructure: infra}
+func NewSearchProductsEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productsGroup *echo.Group, productRepository repositories.ProductRepository) *searchProductsEndpoint {
+	return &searchProductsEndpoint{mediator: mediator, productRepository: productRepository, productsGroup: productsGroup, infrastructure: infra}
 }
 
-func (ep *getProductsEndpoint) MapRoute() {
-	ep.productsGroup.GET("", ep.getAllProducts())
+func (ep *searchProductsEndpoint) MapRoute() {
+	ep.productsGroup.GET("/search", ep.searchProducts())
 }
 
-// GetAllProducts
+// SearchProducts
 // @Tags Products
-// @Summary Get all product
-// @Description Get all products
+// @Summary Search products
+// @Description Search products
 // @Accept json
 // @Produce json
+// @Param search query string true "Search Keyword"
 // @Param page query string false "Page"
 // @Param size query string false "Size"
 // @Param orderBy query string false "OrderBy"
-// @Success 200 {object} getting_products.GetProductsResponseDto
-// @Router /products [get]
-func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
+// @Success 200 {object} searching_product.SearchProductsResponseDto
+// @Router /products/search [get]
+func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ep.infrastructure.Metrics.GetProductByIdHttpRequests.Inc()
 
-		ctx, span := tracing.StartHttpServerTracerSpan(c, "getProductsEndpoint.getAllProducts")
+		ctx, span := tracing.StartHttpServerTracerSpan(c, "searchProductsEndpoint.searchProducts")
 		defer span.Finish()
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
+
 		if err != nil {
 			utils.LogResponseError(c, ep.infrastructure.Log, err)
 			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
-		query := getting_products.GetProducts{listQuery}
+		search := c.QueryParam("search")
+		if search == "" {
+			return httpErrors.NewBadRequestError(c, "search is required", ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+		}
+
+		query := searching_product.SearchProducts{SearchText: search, ListQuery: listQuery}
 
 		queryResult, err := ep.mediator.Send(ctx, query)
 
 		if err != nil {
-			ep.infrastructure.Log.WarnMsg("GetProducts", err)
+			ep.infrastructure.Log.WarnMsg("SearchProducts", err)
 			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
 			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
 		}
 
-		response, ok := queryResult.(*getting_products.GetProductsResponseDto)
+		response, ok := queryResult.(*searching_product.SearchProductsResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
 			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
