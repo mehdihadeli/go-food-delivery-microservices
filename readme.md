@@ -62,6 +62,15 @@ Now we could all of these things beside each other and it decrease jumping and d
 
 Keeping such a split works great with CQRS. It segregates our operations and slices the application code vertically instead of horizontally. In Our CQRS pattern each command/query handler is a separate slice. This is where you can reduce coupling between layers. Each handler can be a separated code unit, even copy/pasted. Thanks to that, we can tune down the specific method to not follow general conventions (e.g. use custom SQL query or even different storage). In a traditional layered architecture, when we change the core generic mechanism in one layer, it can impact all methods.
 
+### Catalogs Service Structure
+
+![](./assets/catalogs-service.png)
+
+### High Level Structure
+
+![](./assets/high-level.png)
+
+
 ## References
 
 - [https://github.com/AleksK1NG/Go-CQRS-Kafka-gRPC-Microservices](https://github.com/AleksK1NG/Go-CQRS-Kafka-gRPC-Microservices)
