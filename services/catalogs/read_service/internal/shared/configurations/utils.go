@@ -2,7 +2,7 @@ package configurations
 
 import (
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"strings"
 )
 

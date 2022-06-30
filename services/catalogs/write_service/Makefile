@@ -1,7 +1,7 @@
 .PHONY:
 
 run_catalogs_service:
-	go run ./cmd/main.go -config=./config/config.yaml
+	go run ./cmd/main.go -config=./config/config.development.yaml
 
 build_catalogs_service:
 	go build ./cmd/main.go

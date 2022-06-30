@@ -1,12 +1,12 @@
-serviceName: catalogs_write_service
+serviceName: catalogs_read_service
 deliveryType: http
 context:
   timeout: 20
 grpc:
-  port: :5003
+  port: :5004
   development: true
 http:
-  port: :5000
+  port: :5001
   development: true
   timeout: 30
   basePath: /api/v1

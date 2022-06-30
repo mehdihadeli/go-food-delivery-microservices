@@ -52,20 +52,41 @@ pprof_allocs:
 	go tool pprof -http :8006 http://localhost:6060/debug/pprof/allocs?seconds=10
 
 # ==============================================================================
-# Proto
+# Proto Catalogs Write Service
 
-proto_product_kafka_messages:
+proto_catalogs_write_product_kafka_messages:
 	@echo Generating products kafka messages proto
 	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/product_kafka_messages.proto
 
-proto_product_service:
+proto_catalogs_write_product_service:
 	@echo Generating product_service client proto
 	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/grpc/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/grpc/service_clients api_docs/catalogs/write_service/protobuf/products/service_clients/product_service_client.proto
 
-# ==============================================================================
-# Swagger
 
-swagger_catalogs:
+# ==============================================================================
+# Proto Catalogs Read Service
+
+proto_catalogs_read_product_kafka_messages:
+	@echo Generating products kafka messages proto
+	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/grpc/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/grpc/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/product_kafka_messages.proto
+
+proto_catalogs_read_product_service:
+	@echo Generating product_service client proto
+	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/grpc/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/grpc/service_clients api_docs/catalogs/read_service/protobuf/products/service_clients/product_service_client.proto
+
+
+# ==============================================================================
+# Swagger Catalogs Write Service
+
+swagger_catalogs_write:
 	@echo Starting swagger generating
 	swag init -g ./services/catalogs/write_service/cmd/main.go -o ./services/catalogs/write_service/docs
 	swag init -g ./services/catalogs/write_service/cmd/main.go -o ./api_docs/catalogs/write_service/openapi/
+
+
+# ==============================================================================
+# Swagger Catalogs Read Service
+swagger_catalogs_read:
+	@echo Starting swagger generating
+	swag init -g ./services/catalogs/read_service/cmd/main.go -o ./services/catalogs/read_service/docs
+	swag init -g ./services/catalogs/read_service/cmd/main.go -o ./api_docs/catalogs/read_service/openapi/

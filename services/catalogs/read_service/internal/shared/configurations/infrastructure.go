@@ -21,14 +21,13 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/docs"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/consts"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared"
-	catalog_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/constants"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares/problem_details"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/docs"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/consts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared"
+	catalog_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/constants"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/middlewares"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/middlewares/problem_details"
 	v7 "github.com/olivere/elastic/v7"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -226,10 +225,10 @@ func (ic *infrastructureConfigurator) configGorm() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = gorm.AutoMigrate(&models.Product{})
-	if err != nil {
-		return nil, err
-	}
+	//err = gorm.AutoMigrate(&models.Product{})
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	return gorm, nil
 }
