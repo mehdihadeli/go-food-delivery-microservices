@@ -2,7 +2,6 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
@@ -33,10 +32,7 @@ func (ep *searchProductsEndpoint) MapRoute() {
 // @Description Search products
 // @Accept json
 // @Produce json
-// @Param search query string true "Search Keyword"
-// @Param page query string false "Page"
-// @Param size query string false "Size"
-// @Param orderBy query string false "OrderBy"
+// @Param searchProductsRequestDto query searching_product.SearchProductsRequestDto false "SearchProductsRequestDto"
 // @Success 200 {object} searching_product.SearchProductsResponseDto
 // @Router /products/search [get]
 func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
@@ -50,28 +46,38 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 
 		if err != nil {
 			utils.LogResponseError(c, ep.infrastructure.Log, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
-		search := c.QueryParam("search")
-		if search == "" {
-			return httpErrors.NewBadRequestError(c, "search is required", ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+		request := &searching_product.SearchProductsRequestDto{ListQuery: listQuery}
+
+		// https://echo.labstack.com/guide/binding/
+		if err := c.Bind(request); err != nil {
+			ep.infrastructure.Log.WarnMsg("Bind", err)
+			ep.infrastructure.TraceErr(span, err)
+			return err
 		}
 
-		query := searching_product.SearchProducts{SearchText: search, ListQuery: listQuery}
+		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
+			ep.infrastructure.Log.Errorf("(validate) err: {%v}", err)
+			tracing.TraceErr(span, err)
+			return err
+		}
+
+		query := searching_product.SearchProducts{SearchText: request.SearchText, ListQuery: request.ListQuery}
 
 		queryResult, err := ep.mediator.Send(ctx, query)
 
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("SearchProducts", err)
 			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		response, ok := queryResult.(*searching_product.SearchProductsResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()

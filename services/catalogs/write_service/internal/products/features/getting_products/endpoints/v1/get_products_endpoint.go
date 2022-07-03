@@ -2,7 +2,6 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
@@ -33,9 +32,7 @@ func (ep *getProductsEndpoint) MapRoute() {
 // @Description Get all products
 // @Accept json
 // @Produce json
-// @Param page query string false "Page"
-// @Param size query string false "Size"
-// @Param orderBy query string false "OrderBy"
+// @Param getProductsRequestDto query getting_products.GetProductsRequestDto false "GetProductsRequestDto"
 // @Success 200 {object} getting_products.GetProductsResponseDto
 // @Router /products [get]
 func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
@@ -48,23 +45,30 @@ func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 		listQuery, err := utils.GetListQueryFromCtx(c)
 		if err != nil {
 			utils.LogResponseError(c, ep.infrastructure.Log, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
-		query := getting_products.GetProducts{listQuery}
+		request := &getting_products.GetProductsRequestDto{ListQuery: listQuery}
+		if err := c.Bind(request); err != nil {
+			ep.infrastructure.Log.WarnMsg("Bind", err)
+			ep.infrastructure.TraceErr(span, err)
+			return err
+		}
+
+		query := getting_products.GetProducts{request.ListQuery}
 
 		queryResult, err := ep.mediator.Send(ctx, query)
 
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("GetProducts", err)
 			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		response, ok := queryResult.(*getting_products.GetProductsResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()

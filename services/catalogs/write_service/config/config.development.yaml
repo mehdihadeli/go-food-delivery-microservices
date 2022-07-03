@@ -1,4 +1,4 @@
-serviceName: catalogs_service
+serviceName: catalogs_write_service
 deliveryType: http
 context:
   timeout: 20

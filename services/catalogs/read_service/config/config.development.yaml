@@ -1,0 +1,104 @@
+serviceName: catalogs_read_service
+deliveryType: http
+context:
+  timeout: 20
+grpc:
+  port: :5004
+  development: true
+http:
+  port: :5001
+  development: true
+  timeout: 30
+  basePath: /api/v1
+  host: http://localhost
+  productsPath: products
+  debugHeaders: true
+  httpClientDebug: true
+  debugErrorsResponse: true
+  ignoreLogUrls: [ "metrics" ]
+probes:
+  readinessPath: /ready
+  livenessPath: /live
+  port: :3002
+  pprof: :6002
+  prometheusPath: /metrics
+  prometheusPort: :8002
+  checkIntervalSeconds: 10
+logger:
+  level: debug
+  devMode: false
+  encoder: json
+postgres:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  dbName: catalogs.service
+  sslMode: false
+gormPostgres:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: postgres
+  dbName: catalogs.service
+  sslMode: false
+kafka:
+  brokers: [ "localhost:9092" ]
+  groupID: catalogs_service_consumer
+  initTopics: true
+kafkaTopics:
+  productCreate:
+    topicName: product_create
+    partitions: 10
+    replicationFactor: 1
+  productUpdate:
+    topicName: product_update
+    partitions: 10
+    replicationFactor: 1
+  productCreated:
+    topicName: product_created
+    partitions: 10
+    replicationFactor: 1
+  productUpdated:
+    topicName: product_updated
+    partitions: 10
+    replicationFactor: 1
+  productDelete:
+    topicName: product_delete
+    partitions: 10
+    replicationFactor: 1
+  productDeleted:
+    topicName: product_deleted
+    partitions: 10
+    replicationFactor: 1
+redis:
+  addr: "localhost:6379"
+  password: ""
+  db: 0
+  poolSize: 300
+mongo:
+  uri: "mongodb://localhost:27017"
+  user: admin
+  password: admin
+  db: catalogs_service
+  useauth: false
+mongoCollections:
+  products: products
+  categories: categories
+jaeger:
+  enable: true
+  serviceName: catalogs_service
+  hostPort: "localhost:6831"
+  logSpans: false
+elastic:
+  url: "http://localhost:9200"
+  sniff: false
+  gzip: true
+  explain: true
+  fetchSource: true
+  version: true
+  pretty: true
+elasticIndexes:
+  products: "products"
+eventStoreConfig:
+  connectionString: "esdb://localhost:2113?tls=false"

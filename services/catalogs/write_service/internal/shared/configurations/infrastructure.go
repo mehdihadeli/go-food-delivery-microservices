@@ -63,6 +63,12 @@ type Infrastructure struct {
 	MiddlewareManager middlewares.MiddlewareManager
 }
 
+func (h *Infrastructure) TraceErr(span opentracing.Span, err error) {
+	span.SetTag("error", true)
+	span.LogKV("error_code", err.Error())
+	h.Metrics.ErrorHttpRequests.Inc()
+}
+
 var infrastructure *Infrastructure
 
 type InfrastructureConfigurator interface {

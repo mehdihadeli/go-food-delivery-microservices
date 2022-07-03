@@ -65,15 +65,19 @@ definitions:
       price:
         minimum: 0
         type: number
-      productId:
-        maxLength: 255
-        minLength: 0
-        type: string
     required:
     - description
     - name
     - price
-    - productId
+    type: object
+  utils.FilterModel:
+    properties:
+      comparison:
+        type: string
+      field:
+        type: string
+      value:
+        type: string
     type: object
 info:
   contact:
@@ -86,18 +90,15 @@ paths:
       - application/json
       description: Get all products
       parameters:
-      - description: Page
-        in: query
-        name: page
-        type: string
-      - description: Size
-        in: query
-        name: size
-        type: string
-      - description: OrderBy
-        in: query
+      - in: query
         name: orderBy
         type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: size
+        type: integer
       produces:
       - application/json
       responses:
@@ -198,23 +199,19 @@ paths:
       - application/json
       description: Search products
       parameters:
-      - description: Search Keyword
-        in: query
+      - in: query
+        name: orderBy
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
         name: search
         required: true
         type: string
-      - description: Page
-        in: query
-        name: page
-        type: string
-      - description: Size
-        in: query
+      - in: query
         name: size
-        type: string
-      - description: OrderBy
-        in: query
-        name: orderBy
-        type: string
+        type: integer
       produces:
       - application/json
       responses:

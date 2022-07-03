@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"encoding/json"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/sanitize"
 	"io/ioutil"
@@ -55,7 +54,7 @@ func ErrResponseWithLog(ctx echo.Context, logger logger.Logger, err error) error
 		GetIPAddress(ctx),
 		err,
 	)
-	return httpErrors.ErrorResponse(err, true)
+	return err
 }
 
 // Error response with logging error for echo context
