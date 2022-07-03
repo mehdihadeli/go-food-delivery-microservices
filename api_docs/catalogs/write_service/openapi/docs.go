@@ -35,20 +35,17 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Page",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
                         "name": "page",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "Size",
+                        "type": "integer",
                         "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "OrderBy",
-                        "name": "orderBy",
                         "in": "query"
                     }
                 ],
@@ -110,27 +107,23 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Search Keyword",
-                        "name": "search",
-                        "in": "query",
-                        "required": true
+                        "name": "orderBy",
+                        "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "Page",
+                        "type": "integer",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Size",
-                        "name": "size",
-                        "in": "query"
+                        "name": "search",
+                        "in": "query",
+                        "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "OrderBy",
-                        "name": "orderBy",
+                        "type": "integer",
+                        "name": "size",
                         "in": "query"
                     }
                 ],
@@ -325,8 +318,7 @@ const docTemplate = `{
             "required": [
                 "description",
                 "name",
-                "price",
-                "productId"
+                "price"
             ],
             "properties": {
                 "description": {
@@ -342,11 +334,20 @@ const docTemplate = `{
                 "price": {
                     "type": "number",
                     "minimum": 0
+                }
+            }
+        },
+        "utils.FilterModel": {
+            "type": "object",
+            "properties": {
+                "comparison": {
+                    "type": "string"
                 },
-                "productId": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 0
+                "field": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         }

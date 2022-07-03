@@ -1,251 +1,179 @@
 package http_errors
 
 import (
-	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator"
-	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/pkg/errors"
 	"net/http"
-	"strings"
 	"time"
 )
 
-const (
-	ErrBadRequest          = "Bad request"
-	ErrEmailAlreadyExists  = "User with given email already exists"
-	ErrNoSuchUser          = "User not found"
-	ErrWrongCredentials    = "Wrong Credentials"
-	ErrNotFound            = "Not Found"
-	ErrUnauthorized        = "Unauthorized"
-	ErrForbidden           = "Forbidden"
-	ErrBadQueryParams      = "Invalid query params"
-	ErrRequestTimeout      = "Request Timeout"
-	ErrInvalidEmail        = "Invalid email"
-	ErrInvalidPassword     = "Invalid password"
-	ErrInvalidField        = "Invalid field"
-	ErrInternalServerError = "Internal Server Error"
-)
-
-var (
-	BadRequest            = errors.New(ErrBadRequest)
-	WrongCredentials      = errors.New(ErrWrongCredentials)
-	NotFound              = errors.New(ErrNotFound)
-	Unauthorized          = errors.New(ErrUnauthorized)
-	Forbidden             = errors.New(ErrForbidden)
-	PermissionDenied      = errors.New("Permission Denied")
-	ExpiredCSRFError      = errors.New("Expired CSRF token")
-	WrongCSRFToken        = errors.New("Wrong CSRF token")
-	CSRFNotPresented      = errors.New("CSRF not presented")
-	NotRequiredFields     = errors.New("No such required fields")
-	BadQueryParams        = errors.New("Invalid query params")
-	InternalServerError   = errors.New(ErrInternalServerError)
-	RequestTimeoutError   = errors.New("Request Timeout")
-	ExistsEmailError      = errors.New("User with given email already exists")
-	InvalidJWTToken       = errors.New("Invalid JWT token")
-	InvalidJWTClaims      = errors.New("Invalid JWT claims")
-	NotAllowedImageHeader = errors.New("Not allowed image header")
-	NoCookie              = errors.New("not found cookie header")
-)
-
-// RestErr Rest error interface
-type RestErr interface {
-	Status() int
-	Error() string
-	Causes() interface{}
-	ErrBody() RestError
+type BadRequestError struct {
+	*ProblemDetail
 }
 
-// RestError Rest error struct
-type RestError struct {
-	ErrStatus  int         `json:"status,omitempty"`
-	ErrError   string      `json:"error,omitempty"`
-	ErrMessage interface{} `json:"message,omitempty"`
-	Timestamp  time.Time   `json:"timestamp,omitempty"`
+// NewBadRequestError New Bad Request Error
+func NewBadRequestError(detail string) ProblemDetailErr {
+	badRequestError := BadRequestError{&ProblemDetail{Title: constants.ErrBadRequest, Detail: detail, Status: http.StatusBadRequest, Timestamp: time.Now()}}
+
+	return badRequestError
+}
+
+type WrongCredentialsError struct {
+	*ProblemDetail
+}
+
+// NewWrongCredentialsError New Wrong Credentials Error
+func NewWrongCredentialsError(detail string) ProblemDetailErr {
+	wrongCredentialError := WrongCredentialsError{&ProblemDetail{Title: constants.ErrWrongCredentials, Detail: detail, Status: http.StatusUnauthorized, Timestamp: time.Now()}}
+
+	return wrongCredentialError
+}
+
+type NotFoundError struct {
+	*ProblemDetail
+}
+
+// NewNotFoundError New Not Found Error
+func NewNotFoundError(detail string) ProblemDetailErr {
+	notFoundError := NotFoundError{&ProblemDetail{Title: constants.ErrNotFound, Detail: detail, Status: http.StatusNotFound, Timestamp: time.Now()}}
+
+	return notFoundError
+}
+
+type UnauthorizedError struct {
+	*ProblemDetail
+}
+
+// NewUnauthorizedError New Unauthorized Error
+func NewUnauthorizedError(detail string) ProblemDetailErr {
+	unAuthorizeError := UnauthorizedError{&ProblemDetail{Title: constants.ErrUnauthorized, Detail: detail, Status: http.StatusUnauthorized, Timestamp: time.Now()}}
+
+	return unAuthorizeError
+}
+
+type ForbiddenError struct {
+	*ProblemDetail
+}
+
+// NewForbiddenError New Forbidden Error
+func NewForbiddenError(detail string) ProblemDetailErr {
+	forbiddenError := ForbiddenError{&ProblemDetail{Title: constants.ErrForbidden, Detail: detail, Status: http.StatusForbidden, Timestamp: time.Now()}}
+
+	return forbiddenError
+}
+
+type InternalServerError struct {
+	*ProblemDetail
+}
+
+// NewInternalServerError New Internal Server Error
+func NewInternalServerError(detail string) ProblemDetailErr {
+	internalServerError := InternalServerError{&ProblemDetail{Title: constants.ErrInternalServerError, Detail: detail, Status: http.StatusInternalServerError, Timestamp: time.Now()}}
+
+	return internalServerError
+}
+
+type DomainError struct {
+	*ProblemDetail
+}
+
+// NewDomainError New Domain Error
+func NewDomainError(status int, detail string) ProblemDetailErr {
+	domainError := DomainError{&ProblemDetail{Title: constants.ErrDomain, Detail: detail, Status: status, Timestamp: time.Now()}}
+
+	return domainError
+}
+
+type ApplicationError struct {
+	*ProblemDetail
+}
+
+// NewApplicationError New Application Error
+func NewApplicationError(status int, detail string) ProblemDetailErr {
+	applicationError := ApplicationError{&ProblemDetail{Title: constants.ErrApplication, Detail: detail, Status: status, Timestamp: time.Now()}}
+
+	return applicationError
+}
+
+type ApiError struct {
+	*ProblemDetail
+}
+
+// NewApiError New Api Error
+func NewApiError(status int, detail string) ProblemDetailErr {
+	apiError := ApiError{&ProblemDetail{Title: constants.ErrApi, Detail: detail, Status: status, Timestamp: time.Now()}}
+
+	return apiError
+}
+
+// ProblemDetailErr ProblemDetail error interface
+type ProblemDetailErr interface {
+	GetStatus() int
+	GetTitle() string
+	GetDetail() string
+	Error() string
+	ErrBody() error
+}
+
+// ProblemDetail error struct
+type ProblemDetail struct {
+	Status    int       `json:"status,omitempty"`
+	Title     string    `json:"title,omitempty"`
+	Detail    string    `json:"detail,omitempty"`
+	Type      string    `json:"type,omitempty"`
+	Timestamp time.Time `json:"timestamp,omitempty"`
 }
 
 // ErrBody Error body
-func (e RestError) ErrBody() RestError {
+func (e ProblemDetail) ErrBody() error {
 	return e
 }
 
 // Error  Error() interface method
-func (e RestError) Error() string {
-	return fmt.Sprintf("status: %d - errors: %s - causes: %v", e.ErrStatus, e.ErrError, e.ErrMessage)
+func (e ProblemDetail) Error() string {
+	return fmt.Sprintf("status: %d - title: %s - detail: %v", e.Status, e.Title, e.Detail)
 }
 
-// Status Error status
-func (e RestError) Status() int {
-	return e.ErrStatus
+func (e ProblemDetail) GetStatus() int {
+	return e.Status
 }
 
-// Causes RestError Causes
-func (e RestError) Causes() interface{} {
-	return e.ErrMessage
+func (e ProblemDetail) GetTitle() string {
+	return e.Title
 }
 
-// NewRestError New Rest Error
-func NewRestError(status int, err string, causes interface{}, debug bool) RestErr {
-	restError := RestError{
-		ErrStatus: status,
-		ErrError:  err,
-		Timestamp: time.Now().UTC(),
+func (e ProblemDetail) GetDetail() string {
+	return e.Detail
+}
+
+// NewProblemDetailError New ProblemDetail Error
+func NewProblemDetailError(status int, title string, detail string) ProblemDetailErr {
+	restError := ProblemDetail{
+		Status:    status,
+		Title:     title,
+		Timestamp: time.Now(),
+		Detail:    detail,
 	}
-	if debug {
-		restError.ErrMessage = causes
-	}
+
 	return restError
 }
 
-// NewRestErrorWithMessage New Rest Error With Message
-func NewRestErrorWithMessage(status int, err string, causes interface{}) RestErr {
-	return RestError{
-		ErrStatus:  status,
-		ErrError:   err,
-		ErrMessage: causes,
-		Timestamp:  time.Now().UTC(),
+// NewProblemDetailErrorWithMessage New ProblemDetail Error With Message
+func NewProblemDetailErrorWithMessage(status int, title string) ProblemDetailErr {
+	return ProblemDetail{
+		Status:    status,
+		Title:     title,
+		Timestamp: time.Now(),
 	}
 }
 
-// NewRestErrorFromBytes New Rest Error From Bytes
-func NewRestErrorFromBytes(bytes []byte) (RestErr, error) {
-	var apiErr RestError
+// NewProblemDetailErrorFromBytes New ProblemDetail Error From Bytes
+func NewProblemDetailErrorFromBytes(bytes []byte) (ProblemDetailErr, error) {
+	var apiErr ProblemDetail
 	if err := json.Unmarshal(bytes, &apiErr); err != nil {
 		return nil, errors.New("invalid json")
 	}
 	return apiErr, nil
-}
-
-// NewBadRequestError New Bad Request Error
-func NewBadRequestError(ctx echo.Context, causes interface{}, debug bool) error {
-	restError := RestError{
-		ErrStatus: http.StatusBadRequest,
-		ErrError:  BadRequest.Error(),
-		Timestamp: time.Now().UTC(),
-	}
-	if debug {
-		restError.ErrMessage = causes
-	}
-	return ctx.JSON(http.StatusBadRequest, restError)
-}
-
-// NewNotFoundError New Not Found Error
-func NewNotFoundError(ctx echo.Context, causes interface{}, debug bool) error {
-	restError := RestError{
-		ErrStatus: http.StatusNotFound,
-		ErrError:  NotFound.Error(),
-		Timestamp: time.Now().UTC(),
-	}
-	if debug {
-		restError.ErrMessage = causes
-	}
-	return ctx.JSON(http.StatusNotFound, restError)
-}
-
-// NewUnauthorizedError New Unauthorized Error
-func NewUnauthorizedError(ctx echo.Context, causes interface{}, debug bool) error {
-
-	restError := RestError{
-		ErrStatus: http.StatusUnauthorized,
-		ErrError:  Unauthorized.Error(),
-		Timestamp: time.Now().UTC(),
-	}
-	if debug {
-		restError.ErrMessage = causes
-	}
-	return ctx.JSON(http.StatusUnauthorized, restError)
-}
-
-// NewForbiddenError New Forbidden Error
-func NewForbiddenError(ctx echo.Context, causes interface{}, debug bool) error {
-
-	restError := RestError{
-		ErrStatus: http.StatusForbidden,
-		ErrError:  Forbidden.Error(),
-		Timestamp: time.Now().UTC(),
-	}
-	if debug {
-		restError.ErrMessage = causes
-	}
-	return ctx.JSON(http.StatusForbidden, restError)
-}
-
-// NewInternalServerError New Internal Server Error
-func NewInternalServerError(ctx echo.Context, causes interface{}, debug bool) error {
-
-	restError := RestError{
-		ErrStatus: http.StatusInternalServerError,
-		ErrError:  InternalServerError.Error(),
-		Timestamp: time.Now().UTC(),
-	}
-	if debug {
-		restError.ErrMessage = causes
-	}
-	return ctx.JSON(http.StatusInternalServerError, restError)
-}
-
-// ParseErrors Parser of error string messages returns RestError
-func ParseErrors(err error, debug bool) RestErr {
-	switch {
-	case errors.Is(err, sql.ErrNoRows):
-		return NewRestError(http.StatusNotFound, ErrNotFound, err.Error(), debug)
-	case errors.Is(err, context.DeadlineExceeded):
-		return NewRestError(http.StatusRequestTimeout, ErrRequestTimeout, err.Error(), debug)
-	case errors.Is(err, Unauthorized):
-		return NewRestError(http.StatusUnauthorized, ErrUnauthorized, err.Error(), debug)
-	case errors.Is(err, WrongCredentials):
-		return NewRestError(http.StatusUnauthorized, ErrUnauthorized, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), constants.SQLState):
-		return parseSqlErrors(err, debug)
-	case strings.Contains(strings.ToLower(err.Error()), "field validation"):
-		if validationErrors, ok := err.(validator.ValidationErrors); ok {
-			return NewRestError(http.StatusBadRequest, ErrBadRequest, validationErrors.Error(), debug)
-		}
-		return parseValidatorError(err, debug)
-	case strings.Contains(strings.ToLower(err.Error()), "required header"):
-		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), constants.Base64):
-		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), constants.Unmarshal):
-		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), constants.Uuid):
-		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), constants.Cookie):
-		return NewRestError(http.StatusUnauthorized, ErrUnauthorized, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), constants.Token):
-		return NewRestError(http.StatusUnauthorized, ErrUnauthorized, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), constants.Bcrypt):
-		return NewRestError(http.StatusBadRequest, ErrBadRequest, err.Error(), debug)
-	case strings.Contains(strings.ToLower(err.Error()), "no documents in result"):
-		return NewRestError(http.StatusNotFound, ErrNotFound, err.Error(), debug)
-	default:
-		if restErr, ok := err.(*RestError); ok {
-			return restErr
-		}
-		return NewRestError(http.StatusInternalServerError, ErrInternalServerError, errors.Cause(err).Error(), debug)
-	}
-}
-
-func parseSqlErrors(err error, debug bool) RestErr {
-	return NewRestError(http.StatusBadRequest, ErrBadRequest, err, debug)
-}
-
-func parseValidatorError(err error, debug bool) RestErr {
-	if strings.Contains(err.Error(), "Password") {
-		return NewRestError(http.StatusBadRequest, ErrInvalidPassword, err, debug)
-	}
-
-	if strings.Contains(err.Error(), "Email") {
-		return NewRestError(http.StatusBadRequest, ErrInvalidEmail, err, debug)
-	}
-
-	return NewRestError(http.StatusBadRequest, ErrInvalidField, err, debug)
-}
-
-// ErrorResponse Error response
-func ErrorResponse(err error, debug bool) error {
-	return ParseErrors(err, debug)
 }

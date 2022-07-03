@@ -2,7 +2,6 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
@@ -47,28 +46,28 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 		if err := c.Bind(request); err != nil {
 			ep.infrastructure.Log.WarnMsg("Bind", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
 			ep.infrastructure.Log.Errorf("(validate) err: {%v}", err)
 			tracing.TraceErr(span, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		command := creating_product.NewCreateProduct(request.Name, request.Description, request.Price)
 		result, err := ep.mediator.Send(ctx, command)
 
 		if err != nil {
-			ep.infrastructure.Log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", command.ProductID, err)
+			ep.infrastructure.Log.Errorf("(CreateProduct.Handle) id: {%s}, err: {%v}", command.ProductID, err)
 			tracing.TraceErr(span, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		response, ok := result.(*dtos.CreateProductResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		ep.infrastructure.Log.Infof("(product created) id: {%s}", command.ProductID)

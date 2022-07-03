@@ -5,7 +5,7 @@ import (
 )
 
 type DeleteProduct struct {
-	ProductID uuid.UUID `json:"productId" validate:"required"`
+	ProductID uuid.UUID
 }
 
 func NewDeleteProduct(productID uuid.UUID) DeleteProduct {

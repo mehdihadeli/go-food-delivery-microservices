@@ -2,14 +2,11 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product"
 	shared_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 )
 
@@ -45,37 +42,30 @@ func (ep *updateProductEndpoint) updateProduct() echo.HandlerFunc {
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "updateProductEndpoint.updateProduct")
 		defer span.Finish()
 
-		productUUID, err := uuid.FromString(c.Param(constants.ID))
-		if err != nil {
-			ep.infrastructure.Log.WarnMsg("uuid.FromString", err)
-			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
-		}
-
-		request := &updating_product.UpdateProductRequestDto{ProductID: productUUID}
+		request := &updating_product.UpdateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
 			ep.infrastructure.Log.WarnMsg("Bind", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
 			ep.infrastructure.Log.WarnMsg("validate", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
-		command := updating_product.NewUpdateProduct(productUUID, request.Name, request.Description, request.Price)
+		command := updating_product.NewUpdateProduct(request.ProductID, request.Name, request.Description, request.Price)
 
-		_, err = ep.mediator.Send(ctx, command)
+		_, err := ep.mediator.Send(ctx, command)
 
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("UpdateProduct", err)
 			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
-		ep.infrastructure.Log.Infof("(product updated) id: {%s}", productUUID.String())
+		ep.infrastructure.Log.Infof("(product updated) id: {%s}", request.ProductID)
 		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()
 
 		return c.NoContent(http.StatusNoContent)

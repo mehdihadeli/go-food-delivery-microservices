@@ -2,14 +2,11 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product"
 	shared_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 )
 
@@ -44,20 +41,26 @@ func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "deleteProductEndpoint.deleteProduct")
 		defer span.Finish()
 
-		productUUID, err := uuid.FromString(c.Param(constants.ID))
-		if err != nil {
-			ep.infrastructure.Log.WarnMsg("uuid.FromString", err)
+		request := &deleting_product.DeleteProductRequestDto{}
+		if err := c.Bind(request); err != nil {
+			ep.infrastructure.Log.WarnMsg("Bind", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
-		command := deleting_product.NewDeleteProduct(productUUID)
-		_, err = ep.mediator.Send(ctx, command)
+		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
+			ep.infrastructure.Log.WarnMsg("validate", err)
+			ep.infrastructure.TraceErr(span, err)
+			return err
+		}
+
+		command := deleting_product.NewDeleteProduct(request.ProductID)
+		_, err := ep.mediator.Send(ctx, command)
 
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("DeleteProduct", err)
 			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()

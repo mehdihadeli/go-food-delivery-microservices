@@ -2,15 +2,12 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id"
 	shared_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 )
 
@@ -45,26 +42,32 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "productsHandlers.getProductByID")
 		defer span.Finish()
 
-		productUUID, err := uuid.FromString(c.Param(constants.ID))
-		if err != nil {
-			ep.infrastructure.Log.WarnMsg("uuid.FromString", err)
+		request := &getting_product_by_id.GetProductByIdRequestDto{}
+		if err := c.Bind(request); err != nil {
+			ep.infrastructure.Log.WarnMsg("Bind", err)
 			ep.infrastructure.TraceErr(span, err)
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
-		query := getting_product_by_id.NewGetProductById(productUUID)
+		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
+			ep.infrastructure.Log.WarnMsg("validate", err)
+			ep.infrastructure.TraceErr(span, err)
+			return err
+		}
+
+		query := getting_product_by_id.NewGetProductById(request.ProductId)
 		queryResult, err := ep.mediator.Send(ctx, query)
 
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("GetProductById", err)
 			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		response, ok := queryResult.(*getting_product_by_id.GetProductByIdResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
-			return httpErrors.ErrorResponse(err, ep.infrastructure.Cfg.Http.DebugErrorsResponse)
+			return err
 		}
 
 		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()

@@ -2,6 +2,8 @@ package updating_product
 
 import (
 	"context"
+	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -32,14 +34,20 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command UpdateProduct
 	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateProductHandler.Handle")
 	defer span.Finish()
 
+	_, err := c.pgRepo.GetProductById(ctx, command.ProductID)
+
+	if err != nil {
+		return http_errors.NewNotFoundError(fmt.Sprintf("product with id %s not found", command.ProductID))
+	}
+
 	productDto := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price}
 
-	product, err := c.pgRepo.UpdateProduct(ctx, productDto)
+	updatedProduct, err := c.pgRepo.UpdateProduct(ctx, productDto)
 	if err != nil {
 		return err
 	}
 
-	evt := &kafka_messages.ProductUpdated{Product: mappers.ProductToGrpcMessage(product)}
+	evt := &kafka_messages.ProductUpdated{Product: mappers.ProductToGrpcMessage(updatedProduct)}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
 		return err

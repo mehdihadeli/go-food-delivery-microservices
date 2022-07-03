@@ -56,3 +56,22 @@ const (
 	Search = "search"
 	ID     = "id"
 )
+
+const (
+	ErrBadRequest          = "Bad Request"
+	ErrEmailAlreadyExists  = "User with given email already exists"
+	ErrNoSuchUser          = "User NotFound"
+	ErrWrongCredentials    = "Wrong Credentials"
+	ErrNotFound            = "Not Found"
+	ErrUnauthorized        = "Unauthorized"
+	ErrForbidden           = "Forbidden"
+	ErrBadQueryParams      = "Invalid query params"
+	ErrRequestTimeout      = "Request Timeout"
+	ErrInvalidEmail        = "Invalid Email"
+	ErrInvalidPassword     = "Invalid Password"
+	ErrInvalidField        = "Invalid Field"
+	ErrInternalServerError = "Internal Server Error"
+	ErrDomain              = "Domain Model Error"
+	ErrApplication         = "Application Service Error"
+	ErrApi                 = "Api Error"
+)

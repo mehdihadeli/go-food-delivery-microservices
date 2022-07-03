@@ -2,6 +2,8 @@ package getting_product_by_id
 
 import (
 	"context"
+	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
@@ -27,7 +29,7 @@ func (q *GetProductByIdHandler) Handle(ctx context.Context, query GetProductById
 	product, err := q.pgRepo.GetProductById(ctx, query.ProductID)
 
 	if err != nil {
-		return nil, err
+		return nil, http_errors.NewNotFoundError(fmt.Sprintf("product with id %s not found", query.ProductID))
 	}
 
 	productDto := mappers.ProductToProductDto(product)
