@@ -5,7 +5,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product"
 	shared_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
 	"net/http"
@@ -13,12 +13,12 @@ import (
 
 type searchProductsEndpoint struct {
 	mediator          *mediatr.Mediator
-	productRepository repositories.ProductRepository
+	productRepository contracts.ProductRepository
 	productsGroup     *echo.Group
 	infrastructure    *shared_configurations.Infrastructure
 }
 
-func NewSearchProductsEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productsGroup *echo.Group, productRepository repositories.ProductRepository) *searchProductsEndpoint {
+func NewSearchProductsEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productsGroup *echo.Group, productRepository contracts.ProductRepository) *searchProductsEndpoint {
 	return &searchProductsEndpoint{mediator: mediator, productRepository: productRepository, productsGroup: productsGroup, infrastructure: infra}
 }
 
@@ -37,14 +37,15 @@ func (ep *searchProductsEndpoint) MapRoute() {
 // @Router /products/search [get]
 func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ep.infrastructure.Metrics.GetProductByIdHttpRequests.Inc()
 
+		ep.infrastructure.Metrics.SearchProductHttpRequests.Inc()
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "searchProductsEndpoint.searchProducts")
 		defer span.Finish()
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 
 		if err != nil {
+			tracing.TraceErr(span, err)
 			utils.LogResponseError(c, ep.infrastructure.Log, err)
 			return err
 		}
@@ -54,7 +55,7 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 		// https://echo.labstack.com/guide/binding/
 		if err := c.Bind(request); err != nil {
 			ep.infrastructure.Log.WarnMsg("Bind", err)
-			ep.infrastructure.TraceErr(span, err)
+			tracing.TraceErr(span, err)
 			return err
 		}
 
@@ -70,17 +71,17 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("SearchProducts", err)
-			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
+			tracing.TraceErr(span, err)
 			return err
 		}
 
 		response, ok := queryResult.(*searching_product.SearchProductsResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
+			tracing.TraceErr(span, err)
 			return err
 		}
 
-		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()
 		return c.JSON(http.StatusOK, response)
 	}
 }

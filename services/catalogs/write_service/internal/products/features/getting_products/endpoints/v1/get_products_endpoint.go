@@ -5,7 +5,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products"
 	shared_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
 	"net/http"
@@ -13,12 +13,12 @@ import (
 
 type getProductsEndpoint struct {
 	mediator          *mediatr.Mediator
-	productRepository repositories.ProductRepository
+	productRepository contracts.ProductRepository
 	productsGroup     *echo.Group
 	infrastructure    *shared_configurations.Infrastructure
 }
 
-func NewGetProductsEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productsGroup *echo.Group, productRepository repositories.ProductRepository) *getProductsEndpoint {
+func NewGetProductsEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productsGroup *echo.Group, productRepository contracts.ProductRepository) *getProductsEndpoint {
 	return &getProductsEndpoint{mediator: mediator, productRepository: productRepository, productsGroup: productsGroup, infrastructure: infra}
 }
 
@@ -37,8 +37,8 @@ func (ep *getProductsEndpoint) MapRoute() {
 // @Router /products [get]
 func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ep.infrastructure.Metrics.GetProductByIdHttpRequests.Inc()
 
+		ep.infrastructure.Metrics.GetProductsHttpRequests.Inc()
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "getProductsEndpoint.getAllProducts")
 		defer span.Finish()
 
@@ -51,7 +51,7 @@ func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 		request := &getting_products.GetProductsRequestDto{ListQuery: listQuery}
 		if err := c.Bind(request); err != nil {
 			ep.infrastructure.Log.WarnMsg("Bind", err)
-			ep.infrastructure.TraceErr(span, err)
+			tracing.TraceErr(span, err)
 			return err
 		}
 
@@ -61,17 +61,17 @@ func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 
 		if err != nil {
 			ep.infrastructure.Log.WarnMsg("GetProducts", err)
-			ep.infrastructure.Metrics.ErrorHttpRequests.Inc()
+			tracing.TraceErr(span, err)
 			return err
 		}
 
 		response, ok := queryResult.(*getting_products.GetProductsResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
+			tracing.TraceErr(span, err)
 			return err
 		}
 
-		ep.infrastructure.Metrics.SuccessHttpRequests.Inc()
 		return c.JSON(http.StatusOK, response)
 	}
 }

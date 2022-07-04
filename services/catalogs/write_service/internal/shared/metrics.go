@@ -21,6 +21,7 @@ type CatalogsServiceMetrics struct {
 	UpdateProductHttpRequests  prometheus.Counter
 	DeleteProductHttpRequests  prometheus.Counter
 	GetProductByIdHttpRequests prometheus.Counter
+	GetProductsHttpRequests    prometheus.Counter
 	SearchProductHttpRequests  prometheus.Counter
 
 	SuccessHttpRequests prometheus.Counter
@@ -103,6 +104,10 @@ func NewCatalogsServiceMetrics(cfg *config.Config) *CatalogsServiceMetrics {
 		SearchProductHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
 			Name: fmt.Sprintf("%s_search_product_http_requests_total", cfg.ServiceName),
 			Help: "The total number of search product http requests",
+		}),
+		GetProductsHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
+			Name: fmt.Sprintf("%s_get_products_http_requests_total", cfg.ServiceName),
+			Help: "The total number of get products http requests",
 		}),
 		SuccessHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
 			Name: fmt.Sprintf("%s_success_http_requests_total", cfg.ServiceName),

@@ -6,7 +6,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 )
@@ -18,10 +18,10 @@ type GetProductByIdQrHandler interface {
 type GetProductByIdHandler struct {
 	log    logger.Logger
 	cfg    *config.Config
-	pgRepo repositories.ProductRepository
+	pgRepo contracts.ProductRepository
 }
 
-func NewGetProductByIdHandler(log logger.Logger, cfg *config.Config, pgRepo repositories.ProductRepository) *GetProductByIdHandler {
+func NewGetProductByIdHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository) *GetProductByIdHandler {
 	return &GetProductByIdHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 

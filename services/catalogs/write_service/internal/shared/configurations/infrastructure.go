@@ -28,7 +28,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared"
 	catalog_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares/problem_details"
 	v7 "github.com/olivere/elastic/v7"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -61,12 +60,6 @@ type Infrastructure struct {
 	MongoClient       *mongo.Client
 	ElasticClient     *v7.Client
 	MiddlewareManager middlewares.MiddlewareManager
-}
-
-func (h *Infrastructure) TraceErr(span opentracing.Span, err error) {
-	span.SetTag("error", true)
-	span.LogKV("error_code", err.Error())
-	h.Metrics.ErrorHttpRequests.Inc()
 }
 
 var infrastructure *Infrastructure
@@ -200,9 +193,13 @@ func (ic *infrastructureConfigurator) configMiddlewares() {
 
 	ic.echo.HideBanner = true
 
-	ic.echo.HTTPErrorHandler = problem_details.ProblemHandler
+	ic.echo.HTTPErrorHandler = middlewares.ProblemHandler
 
-	//i.Echo.Use(i.MiddlewareManager.RequestLoggerMiddleware)
+	middlewareManager := middlewares.NewMiddlewareManager(ic.log, ic.cfg, getHttpMetricsCb(infrastructure.Metrics))
+
+	ic.echo.Use(middlewareManager.RequestLoggerMiddleware)
+	ic.echo.Use(middlewareManager.RequestMetricsMiddleware)
+
 	ic.echo.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize:         catalog_constants.StackSize,
 		DisablePrintStack: true,
@@ -218,6 +215,7 @@ func (ic *infrastructureConfigurator) configMiddlewares() {
 	}))
 
 	ic.echo.Use(middleware.BodyLimit(catalog_constants.BodyLimit))
+
 }
 
 func (ic *infrastructureConfigurator) configGorm() (*gorm.DB, error) {

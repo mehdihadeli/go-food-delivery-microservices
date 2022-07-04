@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
@@ -33,6 +34,7 @@ func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuer
 
 	result, err := gorm_postgres.Paginate[models.Product](listQuery, p.gorm)
 	if err != nil {
+		tracing.TraceErr(span, err)
 		return nil, err
 	}
 	return result, nil
@@ -47,6 +49,7 @@ func (p *postgresProductRepository) SearchProducts(ctx context.Context, searchTe
 
 	result, err := gorm_postgres.Paginate[models.Product](listQuery, query)
 	if err != nil {
+		tracing.TraceErr(span, err)
 		return nil, err
 	}
 	return result, nil
@@ -59,6 +62,7 @@ func (p *postgresProductRepository) GetProductById(ctx context.Context, uuid uui
 	var product models.Product
 
 	if result := p.gorm.First(&product, uuid); result.Error != nil {
+		tracing.TraceErr(span, result.Error)
 		return nil, errors.Wrap(result.Error, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
 	}
 
@@ -71,6 +75,7 @@ func (p *postgresProductRepository) CreateProduct(ctx context.Context, product *
 	defer span.Finish()
 
 	if result := p.gorm.Create(&product); result.Error != nil {
+		tracing.TraceErr(span, result.Error)
 		return nil, errors.Wrap(result.Error, "error in the inserting product into the database.")
 	}
 
@@ -82,6 +87,7 @@ func (p *postgresProductRepository) UpdateProduct(ctx context.Context, updatePro
 	defer span.Finish()
 
 	if result := p.gorm.Save(updateProduct); result.Error != nil {
+		tracing.TraceErr(span, result.Error)
 		return nil, errors.Wrap(result.Error, fmt.Sprintf("error in updating product with id %s into the database.", updateProduct.ProductID))
 	}
 
@@ -95,10 +101,12 @@ func (p *postgresProductRepository) DeleteProductByID(ctx context.Context, uuid 
 	var product models.Product
 
 	if result := p.gorm.First(&product, uuid); result.Error != nil {
+		tracing.TraceErr(span, result.Error)
 		return errors.Wrap(result.Error, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
 	}
 
 	if result := p.gorm.Delete(&product); result.Error != nil {
+		tracing.TraceErr(span, result.Error)
 		return errors.Wrap(result.Error, "error in the deleting product into the database.")
 	}
 

@@ -3,8 +3,8 @@ package configurations
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	product_service "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/grpc/service_clients"
-	repositories_contract "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
 	repositories_imp "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery/grpc"
 	creating_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/endpoints/v1"
@@ -28,7 +28,7 @@ type productsModuleConfigurator struct {
 type ProductModule struct {
 	Infrastructure    *configurations.Infrastructure
 	Mediator          *mediatr.Mediator
-	ProductRepository repositories_contract.ProductRepository
+	ProductRepository contracts.ProductRepository
 	ProductsGroup     *echo.Group
 }
 

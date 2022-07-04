@@ -1,4 +1,4 @@
-package problem_details
+package middlewares
 
 import (
 	"context"
