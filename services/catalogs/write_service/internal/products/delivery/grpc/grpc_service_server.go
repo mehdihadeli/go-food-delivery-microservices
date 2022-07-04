@@ -39,13 +39,13 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 	span.LogFields(log.String("req", req.String()))
 	defer span.Finish()
 
-	if err := s.infrastructure.Validator.StructCtx(ctx, req); err != nil {
+	command := creating_product.NewCreateProduct(req.GetName(), req.GetDescription(), req.GetPrice())
+
+	if err := s.infrastructure.Validator.StructCtx(ctx, command); err != nil {
 		s.infrastructure.Log.Errorf("(validate) err: {%v}", err)
 		tracing.TraceErr(span, err)
 		return nil, s.errResponse(codes.InvalidArgument, err)
 	}
-
-	command := creating_product.NewCreateProduct(req.GetName(), req.GetDescription(), req.GetPrice())
 
 	result, err := s.mediator.Send(ctx, command)
 	if err != nil {
@@ -80,13 +80,13 @@ func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *produ
 		return nil, s.errResponse(codes.InvalidArgument, err)
 	}
 
-	if err := s.infrastructure.Validator.StructCtx(ctx, req); err != nil {
+	command := updating_product.NewUpdateProduct(productUUID, req.GetName(), req.GetDescription(), req.GetPrice())
+
+	if err := s.infrastructure.Validator.StructCtx(ctx, command); err != nil {
 		s.infrastructure.Log.WarnMsg("validate", err)
 		tracing.TraceErr(span, err)
 		return nil, s.errResponse(codes.InvalidArgument, err)
 	}
-
-	command := updating_product.NewUpdateProduct(productUUID, req.GetName(), req.GetDescription(), req.GetPrice())
 
 	_, err = s.mediator.Send(ctx, command)
 	if err != nil {

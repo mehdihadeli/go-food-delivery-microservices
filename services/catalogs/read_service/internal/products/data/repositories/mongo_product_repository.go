@@ -1,10 +1,13 @@
 package repositories
 
+//https://github.com/Kamva/mgm
+//https://github.com/mongodb/mongo-go-driver
+//https://blog.logrocket.com/how-to-use-mongodb-with-go/
+
 import (
 	"context"
-	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
@@ -12,6 +15,8 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -30,10 +35,14 @@ func (p *mongoProductRepository) GetAllProducts(ctx context.Context, listQuery *
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.GetAllProducts")
 	defer span.Finish()
 
-	result, err := gorm_postgres.Paginate[models.Product](listQuery, p.gorm)
+	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
+
+	result, err := mongodb.Paginate[models.Product](ctx, listQuery, collection, nil)
 	if err != nil {
+		tracing.TraceErr(span, err)
 		return nil, err
 	}
+
 	return result, nil
 }
 
@@ -41,13 +50,21 @@ func (p *mongoProductRepository) SearchProducts(ctx context.Context, searchText 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.SearchProducts")
 	defer span.Finish()
 
-	whereQuery := fmt.Sprintf("%s IN (?)", "Name")
-	query := p.gorm.Where(whereQuery, searchText)
+	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
 
-	result, err := gorm_postgres.Paginate[models.Product](listQuery, query)
+	filter := bson.D{
+		{Key: "$or", Value: bson.A{
+			bson.D{{Key: "name", Value: primitive.Regex{Pattern: searchText, Options: "gi"}}},
+			bson.D{{Key: "description", Value: primitive.Regex{Pattern: searchText, Options: "gi"}}},
+		}},
+	}
+
+	result, err := mongodb.Paginate[models.Product](ctx, listQuery, collection, filter)
 	if err != nil {
+		tracing.TraceErr(span, err)
 		return nil, err
 	}
+
 	return result, nil
 }
 
@@ -55,10 +72,12 @@ func (p *mongoProductRepository) GetProductById(ctx context.Context, uuid uuid.U
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.GetProductById")
 	defer span.Finish()
 
-	var product models.Product
+	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
 
-	if result := p.gorm.First(&product, uuid); result.Error != nil {
-		return nil, errors.Wrap(result.Error, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
+	var product models.Product
+	if err := collection.FindOne(ctx, bson.M{"_id": uuid.String()}).Decode(&product); err != nil {
+		tracing.TraceErr(span, err)
+		return nil, errors.Wrap(err, "error in the getting product from the database.")
 	}
 
 	return &product, nil
@@ -84,25 +103,30 @@ func (p *mongoProductRepository) UpdateProduct(ctx context.Context, updateProduc
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.UpdateProduct")
 	defer span.Finish()
 
-	if result := p.gorm.Save(updateProduct); result.Error != nil {
-		return nil, errors.Wrap(result.Error, fmt.Sprintf("error in updating product with id %s into the database.", updateProduct.ProductID))
+	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
+
+	ops := options.FindOneAndUpdate()
+	ops.SetReturnDocument(options.After)
+	ops.SetUpsert(true)
+
+	var updated models.Product
+	if err := collection.FindOneAndUpdate(ctx, bson.M{"_id": updateProduct.ProductID}, bson.M{"$set": updateProduct}, ops).Decode(&updated); err != nil {
+		tracing.TraceErr(span, err)
+		return nil, errors.Wrap(err, "error in the updating product into the database.")
 	}
 
-	return updateProduct, nil
+	return &updated, nil
 }
 
 func (p *mongoProductRepository) DeleteProductByID(ctx context.Context, uuid uuid.UUID) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.DeleteProductByID")
 	defer span.Finish()
 
-	var product models.Product
+	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
 
-	if result := p.gorm.First(&product, uuid); result.Error != nil {
-		return errors.Wrap(result.Error, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
-	}
-
-	if result := p.gorm.Delete(&product); result.Error != nil {
-		return errors.Wrap(result.Error, "error in the deleting product into the database.")
+	if err := collection.FindOneAndDelete(ctx, bson.M{"_id": uuid.String()}).Err(); err != nil {
+		tracing.TraceErr(span, err)
+		return errors.Wrap(err, "error in deleting product from the database.")
 	}
 
 	return nil

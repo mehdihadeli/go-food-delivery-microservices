@@ -49,13 +49,13 @@ func (ep *updateProductEndpoint) updateProduct() echo.HandlerFunc {
 			return err
 		}
 
-		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
+		command := updating_product.NewUpdateProduct(request.ProductID, request.Name, request.Description, request.Price)
+
+		if err := ep.infrastructure.Validator.StructCtx(ctx, command); err != nil {
 			ep.infrastructure.Log.WarnMsg("validate", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
-
-		command := updating_product.NewUpdateProduct(request.ProductID, request.Name, request.Description, request.Price)
 
 		_, err := ep.mediator.Send(ctx, command)
 

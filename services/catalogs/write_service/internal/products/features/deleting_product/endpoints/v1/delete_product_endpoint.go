@@ -36,7 +36,7 @@ func (ep *deleteProductEndpoint) MapRoute() {
 // @Router /products/{id} [delete]
 func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		
+
 		ep.infrastructure.Metrics.DeleteProductHttpRequests.Inc()
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "deleteProductEndpoint.deleteProduct")
 		defer span.Finish()
@@ -48,13 +48,14 @@ func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 			return err
 		}
 
-		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
+		command := deleting_product.NewDeleteProduct(request.ProductID)
+
+		if err := ep.infrastructure.Validator.StructCtx(ctx, command); err != nil {
 			ep.infrastructure.Log.WarnMsg("validate", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
 
-		command := deleting_product.NewDeleteProduct(request.ProductID)
 		_, err := ep.mediator.Send(ctx, command)
 
 		if err != nil {

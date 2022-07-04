@@ -5,6 +5,6 @@ import (
 )
 
 type SearchProductsRequestDto struct {
-	SearchText       string `query:"search" json:"search" validate:"required"`
+	SearchText       string `query:"search" json:"search"`
 	*utils.ListQuery  `json:"listQuery"`
 }

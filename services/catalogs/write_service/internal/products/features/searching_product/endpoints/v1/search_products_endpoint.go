@@ -59,13 +59,13 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 			return err
 		}
 
-		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
+		query := searching_product.SearchProducts{SearchText: request.SearchText, ListQuery: request.ListQuery}
+
+		if err := ep.infrastructure.Validator.StructCtx(ctx, query); err != nil {
 			ep.infrastructure.Log.Errorf("(validate) err: {%v}", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
-
-		query := searching_product.SearchProducts{SearchText: request.SearchText, ListQuery: request.ListQuery}
 
 		queryResult, err := ep.mediator.Send(ctx, query)
 

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -11,6 +12,28 @@ const (
 	defaultSize = 10
 	defaultPage = 1
 )
+
+type ListResult[T any] struct {
+	Size       int   `json:"size,omitempty" bson:"size"`
+	Page       int   `json:"page,omitempty" bson:"page"`
+	TotalItems int64 `json:"totalItems,omitempty" bson:"totalItems"`
+	TotalPage  int   `json:"totalPage,omitempty" bson:"totalPage"`
+	Items      []*T  `json:"items,omitempty" bson:"items"`
+}
+
+func NewListResult[T any](items []*T, size int, page int, totalItems int64) *ListResult[T] {
+	listResult := &ListResult[T]{Items: items, Size: size, Page: page, TotalItems: totalItems}
+
+	listResult.TotalPage = getTotalPages(totalItems, size)
+
+	return listResult
+}
+
+// GetTotalPages Get total pages int
+func getTotalPages(totalCount int64, size int) int {
+	d := float64(totalCount) / float64(size)
+	return int(math.Ceil(d))
+}
 
 type FilterModel struct {
 	Field      string `query:"field" json:"field"`
@@ -25,22 +48,8 @@ type ListQuery struct {
 	Filters []*FilterModel `query:"filters" json:"filters,omitempty"`
 }
 
-type ListResult[T any] struct {
-	Size       int   `json:"size,omitempty"`
-	Page       int   `json:"page,omitempty"`
-	TotalItems int64 `json:"totalItems,omitempty"`
-	TotalPage  int   `json:"totalPage,omitempty"`
-	Items      []*T  `json:"items,omitempty"`
-}
-
 func NewListQuery(size int, page int) *ListQuery {
 	return &ListQuery{Size: size, Page: page}
-}
-
-func NewListResult[T any](items []*T, size int, page int, totalItems int64, totalPage int) *ListResult[T] {
-	listResult := &ListResult[T]{Items: items, Size: size, Page: page, TotalItems: totalItems, TotalPage: totalPage}
-
-	return listResult
 }
 
 func NewListQueryFromQueryParams(size string, page string) *ListQuery {

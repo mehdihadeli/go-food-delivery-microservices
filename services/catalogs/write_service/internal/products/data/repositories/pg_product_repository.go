@@ -32,7 +32,7 @@ func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuer
 	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.GetAllProducts")
 	defer span.Finish()
 
-	result, err := gorm_postgres.Paginate[models.Product](listQuery, p.gorm)
+	result, err := gorm_postgres.Paginate[models.Product](ctx, listQuery, p.gorm)
 	if err != nil {
 		tracing.TraceErr(span, err)
 		return nil, err
@@ -47,7 +47,7 @@ func (p *postgresProductRepository) SearchProducts(ctx context.Context, searchTe
 	whereQuery := fmt.Sprintf("%s IN (?)", "Name")
 	query := p.gorm.Where(whereQuery, searchText)
 
-	result, err := gorm_postgres.Paginate[models.Product](listQuery, query)
+	result, err := gorm_postgres.Paginate[models.Product](ctx, listQuery, query)
 	if err != nil {
 		tracing.TraceErr(span, err)
 		return nil, err
@@ -61,9 +61,9 @@ func (p *postgresProductRepository) GetProductById(ctx context.Context, uuid uui
 
 	var product models.Product
 
-	if result := p.gorm.First(&product, uuid); result.Error != nil {
-		tracing.TraceErr(span, result.Error)
-		return nil, errors.Wrap(result.Error, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
+	if err := p.gorm.First(&product, uuid).Error; err != nil {
+		tracing.TraceErr(span, err)
+		return nil, errors.Wrap(err, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
 	}
 
 	return &product, nil
@@ -74,9 +74,9 @@ func (p *postgresProductRepository) CreateProduct(ctx context.Context, product *
 	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.CreateProduct")
 	defer span.Finish()
 
-	if result := p.gorm.Create(&product); result.Error != nil {
-		tracing.TraceErr(span, result.Error)
-		return nil, errors.Wrap(result.Error, "error in the inserting product into the database.")
+	if err := p.gorm.Create(&product).Error; err != nil {
+		tracing.TraceErr(span, err)
+		return nil, errors.Wrap(err, "error in the inserting product into the database.")
 	}
 
 	return product, nil
@@ -86,9 +86,9 @@ func (p *postgresProductRepository) UpdateProduct(ctx context.Context, updatePro
 	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.UpdateProduct")
 	defer span.Finish()
 
-	if result := p.gorm.Save(updateProduct); result.Error != nil {
-		tracing.TraceErr(span, result.Error)
-		return nil, errors.Wrap(result.Error, fmt.Sprintf("error in updating product with id %s into the database.", updateProduct.ProductID))
+	if err := p.gorm.Save(updateProduct).Error; err != nil {
+		tracing.TraceErr(span, err)
+		return nil, errors.Wrap(err, fmt.Sprintf("error in updating product with id %s into the database.", updateProduct.ProductID))
 	}
 
 	return updateProduct, nil
@@ -100,14 +100,14 @@ func (p *postgresProductRepository) DeleteProductByID(ctx context.Context, uuid 
 
 	var product models.Product
 
-	if result := p.gorm.First(&product, uuid); result.Error != nil {
-		tracing.TraceErr(span, result.Error)
-		return errors.Wrap(result.Error, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
+	if err := p.gorm.First(&product, uuid).Error; err != nil {
+		tracing.TraceErr(span, err)
+		return errors.Wrap(err, fmt.Sprintf("can't find the product with id %s into the database.", uuid))
 	}
 
-	if result := p.gorm.Delete(&product); result.Error != nil {
-		tracing.TraceErr(span, result.Error)
-		return errors.Wrap(result.Error, "error in the deleting product into the database.")
+	if err := p.gorm.Delete(&product).Error; err != nil {
+		tracing.TraceErr(span, err)
+		return errors.Wrap(err, "error in the deleting product into the database.")
 	}
 
 	return nil

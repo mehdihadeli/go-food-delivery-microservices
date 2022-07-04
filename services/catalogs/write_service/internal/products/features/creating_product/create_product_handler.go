@@ -2,6 +2,7 @@ package creating_product
 
 import (
 	"context"
+	"encoding/json"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -12,6 +13,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
 	"time"
@@ -29,7 +31,9 @@ func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository c
 }
 
 func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct) (*dtos.CreateProductResponseDto, error) {
+
 	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductHandler.Handle")
+	span.LogFields(log.String("ProductId", command.ProductID.String()))
 	defer span.Finish()
 
 	productDto := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price}
@@ -42,6 +46,7 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct
 	evt := &kafka_messages.ProductCreated{Product: mappers.ProductToGrpcMessage(product)}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
+		tracing.TraceErr(span, err)
 		return nil, err
 	}
 
@@ -54,8 +59,14 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct
 
 	err = c.kafkaProducer.PublishMessage(ctx, message)
 	if err != nil {
+		tracing.TraceErr(span, err)
 		return nil, err
 	}
 
-	return &dtos.CreateProductResponseDto{ProductID: product.ProductID}, nil
+	response := &dtos.CreateProductResponseDto{ProductID: product.ProductID}
+	bytes, _ := json.Marshal(response)
+
+	span.LogFields(log.String("CreateProductResponseDto", string(bytes)))
+
+	return response, nil
 }

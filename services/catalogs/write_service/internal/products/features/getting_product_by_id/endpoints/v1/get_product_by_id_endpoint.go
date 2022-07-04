@@ -49,13 +49,14 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		if err := ep.infrastructure.Validator.StructCtx(ctx, request); err != nil {
+		query := getting_product_by_id.NewGetProductById(request.ProductId)
+
+		if err := ep.infrastructure.Validator.StructCtx(ctx, query); err != nil {
 			ep.infrastructure.Log.WarnMsg("validate", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
 
-		query := getting_product_by_id.NewGetProductById(request.ProductId)
 		queryResult, err := ep.mediator.Send(ctx, query)
 
 		if err != nil {

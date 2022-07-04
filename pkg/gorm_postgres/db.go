@@ -1,12 +1,14 @@
 package gorm_postgres
 
 import (
+	"context"
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"math"
 	"strings"
 )
 
@@ -40,19 +42,19 @@ func NewGorm(cfg *Config) (*gorm.DB, error) {
 
 //Ref: https://dev.to/rafaelgfirmino/pagination-using-gorm-scopes-3k5f
 
-func Paginate[T any](pagination *utils.ListQuery, db *gorm.DB) (*utils.ListResult[T], error) {
+func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.DB) (*utils.ListResult[T], error) {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gorm.Paginate")
 
 	var items []*T
 	var totalRows int64
 	db.Model(items).Count(&totalRows)
 
-	totalPages := int(math.Ceil(float64(totalRows) / float64(pagination.GetSize())))
-
 	// generate where query
-	query := db.Offset(pagination.GetOffset()).Limit(pagination.GetLimit()).Order(pagination.GetOrderBy())
+	query := db.Offset(listQuery.GetOffset()).Limit(listQuery.GetLimit()).Order(listQuery.GetOrderBy())
 
-	if pagination.Filters != nil {
-		for _, filter := range pagination.Filters {
+	if listQuery.Filters != nil {
+		for _, filter := range listQuery.Filters {
 			column := filter.Field
 			action := filter.Comparison
 			value := filter.Value
@@ -76,9 +78,10 @@ func Paginate[T any](pagination *utils.ListQuery, db *gorm.DB) (*utils.ListResul
 		}
 	}
 
-	if result := query.Find(&items); result.Error != nil {
-		return nil, errors.Wrap(result.Error, "error in finding products.")
+	if err := query.Find(&items).Error; err != nil {
+		tracing.TraceErr(span, err)
+		return nil, errors.Wrap(err, "error in finding products.")
 	}
 
-	return utils.NewListResult(items, pagination.GetSize(), pagination.GetPage(), totalRows, totalPages), nil
+	return utils.NewListResult(items, listQuery.GetSize(), listQuery.GetPage(), totalRows), nil
 }
