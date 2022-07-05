@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Tue Jul 05 20:19:27 2022
+# Make data base, printed on Tue Jul 05 20:39:45 2022
 
 # Variables
 
@@ -23,7 +23,7 @@ USERPROFILE = C:\Users\MehdiHadeli
 # environment
 LOCALAPPDATA = C:\Users\MehdiHadeli\AppData\Local
 # environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-8908e8d9-d2bf-4e16-b26d-cf4f9598966c-sock
+VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-140d80bc-f1e8-4147-afb2-7c1775215d68-sock
 # environment
 VSCODE_CWD = D:\Github\GOLANG\store-golang-microservice-sample
 # environment
@@ -41,7 +41,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_15708_SJIKDUNPEBHRUBXD
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_23640_EJWKIXFIZYBHMPFO
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -99,7 +99,7 @@ MAKEFILE_LIST := Makefile
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_PID = 15708
+VSCODE_PID = 23640
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -151,8 +151,7 @@ VSCODE_LOG_NATIVE = false
 # environment
 USERNAME = MehdiHadeli
 # makefile (from 'Makefile', line 22)
-FILES := 8eda7350377d 42b95826bb06 3acb3a639405 1ac2a64298f6 37c3c34d691c 71c9c39537c9 f1bd 
-032b6687 1cca19e0ef0c 63a3b6653aa6 64c6eea8857d
+FILES := 8eda7350377d 42b95826bb06 3acb3a639405 1ac2a64298f6 37c3c34d691c 71c9c39537c9 f1bd032b6687 1cca19e0ef0c 63a3b6653aa6 64c6eea8857d
 # environment
 COMMONPROGRAMFILES = C:\Program Files (x86)\Common Files
 # automatic
@@ -209,7 +208,8 @@ TEMP = C:\Users\MEHDIH~1\AppData\Local\Temp
 VSCODE_IPC_HOOK = \\.\pipe\f514d32982fce962e7fdbbc6d4d7a88f-1.68.1-main-sock
 # environment
 GOPROXY = https://proxy.golang.org,direct
-# default
+# d 
+efault
 .RECIPEPREFIX := 
 # automatic
 <F = $(notdir $<)
@@ -232,7 +232,7 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 
 # Directories
 
-# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1657035938): 17 files, no impossibilities.
+# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1657037326): 17 files, no impossibilities.
 
 # 17 files, no impossibilities in 1 directories.
 
@@ -253,7 +253,7 @@ docker-compose_infra_up:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-05 20:04:46
+#  Last modified 2022-07-05 20:38:46
 #  File has been updated.
 #  Successfully updated.
 
@@ -262,8 +262,7 @@ run_catalogs_read_service:
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 7):
-	go run ./services/catalogs/read_service/cmd/main.go -config=./services/catalogs/read_service/config/config.development.yaml
-	
+	cd services/catalogs/read_service/ && go run ./cmd/main.go
 
 proto_catalogs_write_product_service:
 #  Implicit rule search has not been done.
@@ -309,8 +308,7 @@ swagger_catalogs_read:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 93):
 	@echo Starting swagger generating
-	swag init -g ./services/catalogs/read_service/cmd/ 
-main.go -o ./services/catalogs/read_service/docs
+	swag init -g ./services/catalogs/read_service/cmd/main.go -o ./services/catalogs/read_service/docs
 	swag init -g ./services/catalogs/read_service/cmd/main.go -o ./api_docs/catalogs/read_service/openapi/
 
 proto_catalogs_write_product_kafka_messages:
@@ -370,7 +368,7 @@ run_catalogs_write_service:
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 4):
-	go run ./services/catalogs/write_service/cmd/main.go -config=./services/catalogs/write_service/config/config.development.yaml
+	cd services/catalogs/write_service/ && 	go run ./cmd/main.go
 
 proto_catalogs_read_product_service:
 #  Implicit rule search has not been done.
@@ -397,7 +395,8 @@ docker_path:
 
 pprof_allocs:
 #  Implicit rule search has not been done.
-#  Modification time never checked.
+#  Modification time  
+never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 55):
 	go tool pprof -http :8006 http://localhost:6060/debug/pprof/allocs?seconds=10
@@ -421,6 +420,6 @@ pprof_allocs:
 # strcache performance: lookups = 62 / hit rate = 37%
 # hash-table stats:
 # Load=39/8192=0%, Rehash=0, Collisions=0/62=0%
-# Finished Make data base on Tue Jul 05 20:19:27 2022
+# Finished Make data base on Tue Jul 05 20:39:45 2022
 
  
