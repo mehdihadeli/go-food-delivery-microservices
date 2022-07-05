@@ -1,0 +1,6 @@
+make.exe --dry-run --always-make --keep-going --print-directory
+make: Entering directory 'd:/Github/GOLANG/store-golang-microservice-sample'
+ 
+go run ./services/catalogs/write_service/cmd/main.go -config=./services/catalogs/write_service/config/config.development.yaml
+make: Leaving directory 'd:/Github/GOLANG/store-golang-microservice-sample'
+ 
