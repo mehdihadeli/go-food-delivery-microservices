@@ -28,20 +28,6 @@ logger:
   level: debug
   devMode: false
   encoder: json
-postgres:
-  host: localhost
-  port: 5432
-  user: postgres
-  password: postgres
-  dbName: catalogs.service
-  sslMode: false
-gormPostgres:
-  host: localhost
-  port: 5432
-  user: postgres
-  password: postgres
-  dbName: catalogs.service
-  sslMode: false
 kafka:
   brokers: [ "localhost:9092" ]
   groupID: catalogs_service_consumer

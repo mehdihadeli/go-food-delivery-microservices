@@ -5,8 +5,8 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts/grpc/kafka_messages"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product/dtos"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
@@ -14,11 +14,11 @@ import (
 )
 
 type createProductConsumer struct {
-	*configurations.ProductKafkaConsumersConfigurations
+	*delivery.ProductConsumersBase
 }
 
-func NewCreateProductConsumer(config *configurations.ProductKafkaConsumersConfigurations) *createProductConsumer {
-	return &createProductConsumer{config}
+func NewCreateProductConsumer(productConsumerBase *delivery.ProductConsumersBase) *createProductConsumer {
+	return &createProductConsumer{productConsumerBase}
 }
 
 const (
@@ -31,14 +31,14 @@ var (
 )
 
 func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m kafka.Message) {
-	c.Infrastructure.Metrics.CreateProductKafkaMessages.Inc()
+	c.Metrics.CreateProductKafkaMessages.Inc()
 
 	ctx, span := tracing.StartKafkaConsumerTracerSpan(ctx, m.Headers, "readerMessageProcessor.processProductCreated")
 	defer span.Finish()
 
 	msg := &kafka_messages.ProductCreated{}
 	if err := proto.Unmarshal(m.Value, msg); err != nil {
-		c.Infrastructure.Log.WarnMsg("proto.Unmarshal", err)
+		c.Log.WarnMsg("proto.Unmarshal", err)
 		tracing.TraceErr(span, err)
 		c.CommitErrMessage(ctx, r, m)
 
@@ -47,9 +47,9 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 
 	p := msg.GetProduct()
 	command := NewCreateProduct(p.GetProductID(), p.GetName(), p.GetDescription(), p.GetPrice(), p.GetCreatedAt().AsTime(), p.GetUpdatedAt().AsTime())
-	if err := c.Infrastructure.Validator.StructCtx(ctx, command); err != nil {
+	if err := c.Validator.StructCtx(ctx, command); err != nil {
 		tracing.TraceErr(span, err)
-		c.Infrastructure.Log.WarnMsg("validate", err)
+		c.Log.WarnMsg("validate", err)
 		c.CommitErrMessage(ctx, r, m)
 		return
 	}
@@ -68,13 +68,13 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 			return err
 		}
 
-		c.Infrastructure.Log.Infof("(product created) id: {%s}", command.ProductID)
+		c.Log.Infof("(product created) id: {%s}", command.ProductID)
 
 		return nil
 	}, append(retryOptions, retry.Context(ctx))...); err != nil {
-		c.Infrastructure.Log.WarnMsg("CreateProduct.Handle", err)
+		c.Log.WarnMsg("CreateProduct.Handle", err)
 		tracing.TraceErr(span, err)
-		c.Infrastructure.Metrics.ErrorKafkaMessages.Inc()
+		c.Metrics.ErrorKafkaMessages.Inc()
 		return
 	}
 

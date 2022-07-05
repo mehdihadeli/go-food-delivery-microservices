@@ -3,9 +3,8 @@ package configurations
 import (
 	"context"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations"
 	"github.com/segmentio/kafka-go"
 	"sync"
 )
@@ -14,25 +13,14 @@ const (
 	PoolSize = 30
 )
 
-type ProductKafkaConsumersConfigurator struct {
-	*ProductModuleConfigurations
+func (pm *ProductModule) configKafkaConsumers(ctx context.Context) {
+	pm.Log.Info("Starting Reader Kafka consumers")
+
+	cg := kafkaClient.NewConsumerGroup(pm.Cfg.Kafka.Brokers, pm.Cfg.Kafka.GroupID, pm.Log)
+	go cg.ConsumeTopic(ctx, pm.getConsumerGroupTopics(), PoolSize, pm.processMessages)
 }
 
-type ProductKafkaConsumersConfigurations struct {
-	*configurations.Infrastructure
-	*mediatr.Mediator
-}
-
-func (pc *ProductKafkaConsumersConfigurator) configKafkaConsumers(ctx context.Context) {
-
-	consumerConfigurations := &ProductKafkaConsumersConfigurations{Infrastructure: pc.Infrastructure, Mediator: pc.Mediator}
-
-	pc.Infrastructure.Log.Info("Starting Reader Kafka consumers")
-	cg := kafkaClient.NewConsumerGroup(pc.Infrastructure.Cfg.Kafka.Brokers, pc.Infrastructure.Cfg.Kafka.GroupID, pc.Infrastructure.Log)
-	go cg.ConsumeTopic(ctx, consumerConfigurations.getConsumerGroupTopics(), PoolSize, consumerConfigurations.processMessages)
-}
-
-func (pm *ProductKafkaConsumersConfigurations) processMessages(ctx context.Context, r *kafka.Reader, wg *sync.WaitGroup, workerID int) {
+func (pm *ProductModule) processMessages(ctx context.Context, r *kafka.Reader, wg *sync.WaitGroup, workerID int) {
 	defer wg.Done()
 
 	for {
@@ -42,17 +30,18 @@ func (pm *ProductKafkaConsumersConfigurations) processMessages(ctx context.Conte
 		default:
 		}
 
-		m, err := r.FetchMessage(ctx)
+		message, err := r.FetchMessage(ctx)
 		if err != nil {
-			pm.Infrastructure.Log.Warnf("workerID: %v, err: %v", workerID, err)
+			pm.Log.Warnf("workerID: %v, err: %v", workerID, err)
 			continue
 		}
 
-		pm.LogProcessMessage(m, workerID)
+		productConsumersBase := delivery.NewProductConsumersBase(pm.Infrastructure, pm.Mediator)
+		productConsumersBase.LogProcessMessage(message, workerID)
 
-		switch m.Topic {
-		case pm.Infrastructure.Cfg.KafkaTopics.ProductCreated.TopicName:
-			creating_product.NewCreateProductConsumer(pm).Process(ctx, r, m)
+		switch message.Topic {
+		case pm.Cfg.KafkaTopics.ProductCreated.TopicName:
+			creating_product.NewCreateProductConsumer(productConsumersBase).Consume(ctx, r, message)
 			//	s.processProductCreated(ctx, r, m)
 			//case s.cfg.KafkaTopics.ProductUpdated.TopicName:
 			//	s.processProductUpdated(ctx, r, m)
@@ -62,31 +51,10 @@ func (pm *ProductKafkaConsumersConfigurations) processMessages(ctx context.Conte
 	}
 }
 
-func (pm *ProductKafkaConsumersConfigurations) getConsumerGroupTopics() []string {
+func (pm *ProductModule) getConsumerGroupTopics() []string {
 	return []string{
-		pm.Infrastructure.Cfg.KafkaTopics.ProductCreated.TopicName,
-		pm.Infrastructure.Cfg.KafkaTopics.ProductUpdated.TopicName,
-		pm.Infrastructure.Cfg.KafkaTopics.ProductDeleted.TopicName,
-	}
-}
-
-func (pm *ProductKafkaConsumersConfigurations) CommitMessage(ctx context.Context, r *kafka.Reader, m kafka.Message) {
-	pm.Infrastructure.Metrics.SuccessKafkaMessages.Inc()
-	pm.Infrastructure.Log.KafkaLogCommittedMessage(m.Topic, m.Partition, m.Offset)
-
-	if err := r.CommitMessages(ctx, m); err != nil {
-		pm.Infrastructure.Log.WarnMsg("commitMessage", err)
-	}
-}
-
-func (pm *ProductKafkaConsumersConfigurations) LogProcessMessage(m kafka.Message, workerID int) {
-	pm.Infrastructure.Log.KafkaProcessMessage(m.Topic, m.Partition, string(m.Value), workerID, m.Offset, m.Time)
-}
-
-func (pm *ProductKafkaConsumersConfigurations) CommitErrMessage(ctx context.Context, r *kafka.Reader, m kafka.Message) {
-	pm.Infrastructure.Metrics.ErrorKafkaMessages.Inc()
-	pm.Infrastructure.Log.KafkaLogCommittedMessage(m.Topic, m.Partition, m.Offset)
-	if err := r.CommitMessages(ctx, m); err != nil {
-		pm.Infrastructure.Log.WarnMsg("commitMessage", err)
+		pm.Cfg.KafkaTopics.ProductCreated.TopicName,
+		pm.Cfg.KafkaTopics.ProductUpdated.TopicName,
+		pm.Cfg.KafkaTopics.ProductDeleted.TopicName,
 	}
 }

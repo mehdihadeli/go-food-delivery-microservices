@@ -3,6 +3,8 @@ package config
 import (
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
@@ -16,7 +18,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"os"
 )
 
 var configPath string
@@ -97,18 +98,15 @@ func InitConfig(env string) (*Config, error) {
 		if configPathFromEnv != "" {
 			configPath = configPathFromEnv
 		} else {
-			getwd, err := os.Getwd()
-			if err != nil {
-				return nil, errors.Wrap(err, "os.Getwd")
-			}
-			configPath = fmt.Sprintf("%s/config/config.%s.yaml", getwd, env)
+			configPath = "./config"
 		}
 	}
 
 	cfg := &Config{}
 
+	viper.SetConfigName(fmt.Sprintf("config.%s", env))
+	viper.AddConfigPath(configPath)
 	viper.SetConfigType(constants.Yaml)
-	viper.SetConfigFile(configPath)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, errors.Wrap(err, "viper.ReadInConfig")

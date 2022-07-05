@@ -2,28 +2,23 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products"
-	shared_configurations "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
 	"net/http"
 )
 
 type getProductsEndpoint struct {
-	mediator          *mediatr.Mediator
-	productRepository contracts.ProductRepository
-	productsGroup     *echo.Group
-	infrastructure    *shared_configurations.Infrastructure
+	*delivery.ProductEndpointBase
 }
 
-func NewGetProductsEndpoint(infra *shared_configurations.Infrastructure, mediator *mediatr.Mediator, productsGroup *echo.Group, productRepository contracts.ProductRepository) *getProductsEndpoint {
-	return &getProductsEndpoint{mediator: mediator, productRepository: productRepository, productsGroup: productsGroup, infrastructure: infra}
+func NewGetProductsEndpoint(productEndpointBase *delivery.ProductEndpointBase) *getProductsEndpoint {
+	return &getProductsEndpoint{productEndpointBase}
 }
 
 func (ep *getProductsEndpoint) MapRoute() {
-	ep.productsGroup.GET("", ep.getAllProducts())
+	ep.ProductsGroup.GET("", ep.getAllProducts())
 }
 
 // GetAllProducts
@@ -38,29 +33,29 @@ func (ep *getProductsEndpoint) MapRoute() {
 func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
-		ep.infrastructure.Metrics.GetProductsHttpRequests.Inc()
+		ep.Metrics.GetProductsHttpRequests.Inc()
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "getProductsEndpoint.getAllProducts")
 		defer span.Finish()
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 		if err != nil {
-			utils.LogResponseError(c, ep.infrastructure.Log, err)
+			utils.LogResponseError(c, ep.Log, err)
 			return err
 		}
 
 		request := &getting_products.GetProductsRequestDto{ListQuery: listQuery}
 		if err := c.Bind(request); err != nil {
-			ep.infrastructure.Log.WarnMsg("Bind", err)
+			ep.Log.WarnMsg("Bind", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
 
 		query := getting_products.GetProducts{request.ListQuery}
 
-		queryResult, err := ep.mediator.Send(ctx, query)
+		queryResult, err := ep.Mediator.Send(ctx, query)
 
 		if err != nil {
-			ep.infrastructure.Log.WarnMsg("GetProducts", err)
+			ep.Log.WarnMsg("GetProducts", err)
 			tracing.TraceErr(span, err)
 			return err
 		}

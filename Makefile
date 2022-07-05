@@ -1,8 +1,11 @@
 .PHONY:
 
 run_catalogs_write_service:
-	go run ./services/catalogs/write_service/cmd/main.go -config=./services/catalogs/write_service/config/config.yaml
+	go run ./services/catalogs/write_service/cmd/main.go -config=./services/catalogs/write_service/config/config.development.yaml
 
+run_catalogs_read_service:
+	go run ./services/catalogs/read_service/cmd/main.go -config=./services/catalogs/read_service/config/config.development.yaml
+	
 # ==============================================================================
 # Docker Compose
 docker-compose_infra_up:
