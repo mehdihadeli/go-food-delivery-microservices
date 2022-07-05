@@ -30,13 +30,24 @@ const (
 // NewPgxConn pool
 func NewPgxConn(cfg *Config) (*pgxpool.Pool, error) {
 	ctx := context.Background()
-	dataSourceName := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
-		cfg.Host,
-		cfg.Port,
-		cfg.User,
-		cfg.DBName,
-		cfg.Password,
-	)
+	var dataSourceName string
+
+	if cfg.DBName == "" {
+		dataSourceName = fmt.Sprintf("host=%s port=%s user=%s password=%s",
+			cfg.Host,
+			cfg.Port,
+			cfg.User,
+			cfg.Password,
+		)
+	} else {
+		dataSourceName = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
+			cfg.Host,
+			cfg.Port,
+			cfg.User,
+			cfg.DBName,
+			cfg.Password,
+		)
+	}
 
 	poolCfg, err := pgxpool.ParseConfig(dataSourceName)
 	if err != nil {

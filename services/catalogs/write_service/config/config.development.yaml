@@ -33,14 +33,14 @@ postgres:
   port: 5432
   user: postgres
   password: postgres
-  dbName: catalogs.service
+  dbName: catalogs_service
   sslMode: false
 gormPostgres:
   host: localhost
   port: 5432
   user: postgres
   password: postgres
-  dbName: catalogs.service
+  dbName: catalogs_service
   sslMode: false
 kafka:
   brokers: [ "localhost:9092" ]
