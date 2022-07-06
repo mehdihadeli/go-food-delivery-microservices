@@ -3,20 +3,20 @@ package config
 import (
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/redis"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"os"
 )
 
 var configPath string
@@ -33,9 +33,8 @@ type Config struct {
 	GRPC             GRPC                           `mapstructure:"grpc"`
 	Http             Http                           `mapstructure:"http"`
 	Context          Context                        `mapstructure:"context"`
-	Postgresql       *postgres.Config               `mapstructure:"postgres"`
+	Redis            *redis.Config                  `mapstructure:"redis"`
 	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq"`
-	GormPostgres     *gorm_postgres.Config          `mapstructure:"gormPostgres"`
 	Kafka            *kafkaClient.Config            `mapstructure:"kafka"`
 	Probes           probes.Config                  `mapstructure:"probes"`
 	Jaeger           *tracing.Config                `mapstructure:"jaeger"`
@@ -97,18 +96,16 @@ func InitConfig(env string) (*Config, error) {
 		if configPathFromEnv != "" {
 			configPath = configPathFromEnv
 		} else {
-			getwd, err := os.Getwd()
-			if err != nil {
-				return nil, errors.Wrap(err, "os.Getwd")
-			}
-			configPath = fmt.Sprintf("%s/config/config.%s.yaml", getwd, env)
+			configPath = "./config"
 		}
 	}
 
 	cfg := &Config{}
 
+	//https://github.com/spf13/viper/issues/390#issuecomment-718756752
+	viper.SetConfigName(fmt.Sprintf("config.%s", env))
+	viper.AddConfigPath(configPath)
 	viper.SetConfigType(constants.Yaml)
-	viper.SetConfigFile(configPath)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, errors.Wrap(err, "viper.ReadInConfig")
@@ -123,18 +120,22 @@ func InitConfig(env string) (*Config, error) {
 		cfg.GRPC.Port = grpcPort
 	}
 
-	postgresHost := os.Getenv(constants.PostgresqlHost)
-	if postgresHost != "" {
-		cfg.Postgresql.Host = postgresHost
+	mongoURI := os.Getenv(constants.MongoDbURI)
+	if mongoURI != "" {
+		//cfg.Mongo.URI = "mongodb://host.docker.internal:27017"
+		cfg.Mongo.URI = mongoURI
 	}
-	postgresPort := os.Getenv(constants.PostgresqlPort)
-	if postgresPort != "" {
-		cfg.Postgresql.Port = postgresPort
+
+	redisAddr := os.Getenv(constants.RedisAddr)
+	if redisAddr != "" {
+		cfg.Redis.Addr = redisAddr
 	}
+
 	jaegerAddr := os.Getenv(constants.JaegerHostPort)
 	if jaegerAddr != "" {
 		cfg.Jaeger.HostPort = jaegerAddr
 	}
+
 	kafkaBrokers := os.Getenv(constants.KafkaBrokers)
 	if kafkaBrokers != "" {
 		cfg.Kafka.Brokers = []string{kafkaBrokers}

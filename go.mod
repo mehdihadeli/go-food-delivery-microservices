@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/EventStore/EventStore-Client-Go v1.0.2
-	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-resty/resty/v2 v2.7.0
@@ -82,6 +81,5 @@ require (
 	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/genproto v0.0.0-20200815001618-f69a88009b70 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
-	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

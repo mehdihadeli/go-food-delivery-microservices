@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
 	"github.com/opentracing/opentracing-go"
 )
@@ -12,10 +12,10 @@ import (
 type SearchProductsHandler struct {
 	log    logger.Logger
 	cfg    *config.Config
-	pgRepo repositories.ProductRepository
+	pgRepo contracts.ProductRepository
 }
 
-func NewSearchProductsHandler(log logger.Logger, cfg *config.Config, pgRepo repositories.ProductRepository) *SearchProductsHandler {
+func NewSearchProductsHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository) *SearchProductsHandler {
 	return &SearchProductsHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 

@@ -52,6 +52,9 @@ func (m Mediator) Register(handlers ...interface{}) error {
 	return nil
 }
 
+// https://github.com/mehdihadeli/store-golang-microservices-sample/issues/12
+// https://github.com/mehdihadeli/store-golang-microservices-sample/issues/15
+
 func (m Mediator) Send(ctx context.Context, command interface{}) (interface{}, error) {
 	handler, ok := m.registrations[reflect.TypeOf(command)]
 	if !ok {
