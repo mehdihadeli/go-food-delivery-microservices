@@ -1,4 +1,4 @@
-package configurations
+package infrastructure
 
 import (
 	"context"
@@ -10,17 +10,15 @@ import (
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/middlewares"
 	v7 "github.com/olivere/elastic/v7"
-	"github.com/opentracing/opentracing-go"
 	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 )
 
-type Infrastructure struct {
+type InfrastructureConfigurations struct {
 	Log               logger.Logger
 	Cfg               *config.Config
 	Validator         *validator.Validate
@@ -29,7 +27,7 @@ type Infrastructure struct {
 	Im                interceptors.InterceptorManager
 	PgConn            *pgxpool.Pool
 	Gorm              *gorm.DB
-	Metrics           *shared.CatalogsServiceMetrics
+	Metrics           *CatalogsServiceMetrics
 	Echo              *echo.Echo
 	GrpcServer        *grpc.Server
 	Esdb              *esdb.Client
@@ -37,14 +35,6 @@ type Infrastructure struct {
 	ElasticClient     *v7.Client
 	MiddlewareManager middlewares.MiddlewareManager
 }
-
-func (h *Infrastructure) TraceErr(span opentracing.Span, err error) {
-	span.SetTag("error", true)
-	span.LogKV("error_code", err.Error())
-	h.Metrics.ErrorHttpRequests.Inc()
-}
-
-var infrastructure *Infrastructure
 
 type InfrastructureConfigurator interface {
 	ConfigureInfrastructure() error
@@ -61,14 +51,14 @@ func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config, echo *
 	return &infrastructureConfigurator{log: log, cfg: cfg, echo: echo, grpcServer: grpcServer}
 }
 
-func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*Infrastructure, error, func()) {
+func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*InfrastructureConfigurations, error, func()) {
 
-	infrastructure = &Infrastructure{Cfg: ic.cfg, Echo: ic.echo, GrpcServer: ic.grpcServer, Log: ic.log, Validator: validator.New()}
+	infrastructure := &InfrastructureConfigurations{Cfg: ic.cfg, Echo: ic.echo, GrpcServer: ic.grpcServer, Log: ic.log, Validator: validator.New()}
 
 	infrastructure.Im = interceptors.NewInterceptorManager(ic.log)
-	infrastructure.Metrics = shared.NewCatalogsServiceMetrics(ic.cfg)
 
-	//infrastructure.MiddlewareManager = middlewares.NewMiddlewareManager(ic.server.Log, ic.server.Cfg, getHttpMetricsCb(infrastructure.Metrics))
+	metrics := ic.configCatalogsMetrics()
+	infrastructure.Metrics = metrics
 
 	cleanup := []func(){}
 
@@ -107,7 +97,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	infrastructure.KafkaProducer = kafkaProducer
 
 	ic.configSwagger()
-	ic.configMiddlewares()
+	ic.configMiddlewares(metrics)
 	ic.configureHealthCheckEndpoints(ctx, mongoClient)
 
 	if err != nil {

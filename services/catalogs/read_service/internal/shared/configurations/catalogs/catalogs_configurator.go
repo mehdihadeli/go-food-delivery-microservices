@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	"google.golang.org/grpc"
 	"net/http"
 )
@@ -39,14 +39,10 @@ func (c *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Conte
 	if err != nil {
 		return err, nil
 	}
-
-	err = c.migrateCatalogs(infrastructureConfigurations.Gorm)
-	if err != nil {
-		return err, nil
-	}
+	c.migrationCatalogsMongo(ctx, infrastructureConfigurations.MongoClient)
 
 	c.echo.GET("", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Catalogs Write-Service is running...")
+		return c.String(http.StatusOK, "Catalogs Read-Service is running...")
 	})
 
 	return nil, infraCleanup

@@ -3,22 +3,12 @@ package infrastructure
 import (
 	"context"
 	"github.com/heptiolabs/healthcheck"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
-func (ic *infrastructureConfigurator) configureHealthCheckEndpoints(ctx context.Context, mongoClient *mongo.Client) {
+func (ic *infrastructureConfigurator) configureHealthCheckEndpoints(ctx context.Context) {
 
 	health := healthcheck.NewHandler()
-
-	health.AddReadinessCheck(constants.MongoDB, healthcheck.AsyncWithContext(ctx, func() error {
-		if err := mongoClient.Ping(ctx, nil); err != nil {
-			ic.log.Warnf("(MongoDB Readiness Check) err: {%v}", err)
-			return err
-		}
-		return nil
-	}, time.Duration(ic.cfg.Probes.CheckIntervalSeconds)*time.Second))
+	ic.log.Info(health)
 
 	//health.AddReadinessCheck(constants.ElasticSearch, healthcheck.AsyncWithContext(ctx, func() error {
 	//	_, _, err := s.elasticClient.Ping(s.cfg.Elastic.URL).Do(ctx)

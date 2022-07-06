@@ -3,17 +3,17 @@ package delivery
 import (
 	"context"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	"github.com/segmentio/kafka-go"
 )
 
 type ProductConsumersBase struct {
-	*configurations.Infrastructure
-	Mediator *mediatr.Mediator
+	*infrastructure.InfrastructureConfigurations
+	ProductMediator *mediatr.Mediator
 }
 
-func NewProductConsumersBase(infra *configurations.Infrastructure, mediator *mediatr.Mediator) *ProductConsumersBase {
-	return &ProductConsumersBase{Infrastructure: infra, Mediator: mediator}
+func NewProductConsumersBase(infra *infrastructure.InfrastructureConfigurations, mediator *mediatr.Mediator) *ProductConsumersBase {
+	return &ProductConsumersBase{InfrastructureConfigurations: infra, ProductMediator: mediator}
 }
 
 func (pm *ProductConsumersBase) CommitMessage(ctx context.Context, r *kafka.Reader, m kafka.Message) {

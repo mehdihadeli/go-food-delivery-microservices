@@ -67,7 +67,7 @@ mongo:
   user: admin
   password: admin
   db: catalogs_service
-  useauth: false
+  useAuth: true
 mongoCollections:
   products: products
   categories: categories

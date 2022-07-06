@@ -2,10 +2,8 @@ package configurations
 
 import (
 	"context"
-	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/data/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 )
 
 type ProductsModuleConfigurator interface {
@@ -13,39 +11,31 @@ type ProductsModuleConfigurator interface {
 }
 
 type productsModuleConfigurator struct {
-	*configurations.Infrastructure
+	*infrastructure.InfrastructureConfigurations
 }
 
-type ProductModule struct {
-	*configurations.Infrastructure
-	Mediator      *mediatr.Mediator
-	ProductsGroup *echo.Group
-}
-
-func NewProductsModuleConfigurator(infrastructure *configurations.Infrastructure) *productsModuleConfigurator {
-	return &productsModuleConfigurator{Infrastructure: infrastructure}
+func NewProductsModuleConfigurator(infrastructure *infrastructure.InfrastructureConfigurations) *productsModuleConfigurator {
+	return &productsModuleConfigurator{InfrastructureConfigurations: infrastructure}
 }
 
 func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context) error {
 
-	pm := &ProductModule{Infrastructure: c.Infrastructure}
-
 	v1 := c.Echo.Group("/api/v1")
-	pm.ProductsGroup = v1.Group("/" + c.Cfg.Http.ProductsPath)
+	group := v1.Group("/" + c.Cfg.Http.ProductsPath)
 
-	mediator, err := shared.NewCatalogsMediator(c.Log, c.Cfg, c.KafkaProducer)
+	productRepository := repositories.NewMongoProductRepository(c.Log, c.Cfg, c.MongoClient)
+
+	mediator, err := c.configProductsMediator(productRepository)
 
 	if err != nil {
 		return err
 	}
 
-	pm.Mediator = mediator
-
-	pm.configEndpoints(ctx)
-	pm.configKafkaConsumers(ctx)
+	c.configEndpoints(ctx, mediator, group)
+	c.configKafkaConsumers(ctx, mediator)
 
 	if c.Cfg.DeliveryType == "grpc" {
-		pm.configGrpc()
+		c.configGrpc(ctx, mediator)
 	}
 
 	return nil

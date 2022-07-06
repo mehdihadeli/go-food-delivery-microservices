@@ -13,7 +13,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares"
 	v7 "github.com/olivere/elastic/v7"
 	"github.com/segmentio/kafka-go"
-	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 )
@@ -31,7 +30,6 @@ type InfrastructureConfiguration struct {
 	Echo              *echo.Echo
 	GrpcServer        *grpc.Server
 	Esdb              *esdb.Client
-	MongoClient       *mongo.Client
 	ElasticClient     *v7.Client
 	MiddlewareManager middlewares.MiddlewareManager
 }
@@ -74,13 +72,6 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	}
 	cleanup = append(cleanup, jaegerCleanup)
 
-	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
-	if err != nil {
-		return nil, err, nil
-	}
-	cleanup = append(cleanup, mongoCleanup)
-	infrastructure.MongoClient = mongoClient
-
 	pgx, err, postgresCleanup := ic.configPostgres()
 	if err != nil {
 		return nil, err, nil
@@ -111,7 +102,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 
 	ic.configSwagger()
 	ic.configMiddlewares(metrics)
-	ic.configureHealthCheckEndpoints(ctx, mongoClient)
+	ic.configureHealthCheckEndpoints(ctx)
 
 	if err != nil {
 		return nil, err, nil

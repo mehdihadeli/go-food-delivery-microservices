@@ -1,4 +1,4 @@
-package configurations
+package infrastructure
 
 import (
 	"fmt"

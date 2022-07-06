@@ -1,20 +1,19 @@
-package configurations
+package infrastructure
 
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared"
 	catalog_constants "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/middlewares"
 	"strings"
 )
 
-func (ic *infrastructureConfigurator) configMiddlewares() {
+func (ic *infrastructureConfigurator) configMiddlewares(metrics *CatalogsServiceMetrics) {
 	ic.echo.HideBanner = false
 
 	ic.echo.HTTPErrorHandler = middlewares.ProblemHandler
 
-	middlewareManager := middlewares.NewMiddlewareManager(ic.log, ic.cfg, getHttpMetricsCb(infrastructure.Metrics))
+	middlewareManager := middlewares.NewMiddlewareManager(ic.log, ic.cfg, getHttpMetricsCb(metrics))
 
 	ic.echo.Use(middlewareManager.RequestLoggerMiddleware)
 	ic.echo.Use(middlewareManager.RequestMetricsMiddleware)
@@ -36,7 +35,7 @@ func (ic *infrastructureConfigurator) configMiddlewares() {
 	ic.echo.Use(middleware.BodyLimit(catalog_constants.BodyLimit))
 }
 
-func getHttpMetricsCb(metrics *shared.CatalogsServiceMetrics) func(err error) {
+func getHttpMetricsCb(metrics *CatalogsServiceMetrics) func(err error) {
 	return func(err error) {
 		if err != nil {
 			metrics.ErrorHttpRequests.Inc()
@@ -46,7 +45,7 @@ func getHttpMetricsCb(metrics *shared.CatalogsServiceMetrics) func(err error) {
 	}
 }
 
-func getGrpcMetricsCb(metrics *shared.CatalogsServiceMetrics) func(err error) {
+func getGrpcMetricsCb(metrics *CatalogsServiceMetrics) func(err error) {
 	return func(err error) {
 		if err != nil {
 			metrics.ErrorGrpcRequests.Inc()

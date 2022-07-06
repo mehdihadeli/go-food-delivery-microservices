@@ -6,12 +6,10 @@ import (
 	"os"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq"
@@ -41,11 +39,6 @@ type Config struct {
 	Probes           probes.Config                  `mapstructure:"probes"`
 	Jaeger           *tracing.Config                `mapstructure:"jaeger"`
 	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
-	Subscriptions    Subscriptions                  `mapstructure:"subscriptions"`
-	Elastic          elasticsearch.Config           `mapstructure:"elastic"`
-	ElasticIndexes   ElasticIndexes                 `mapstructure:"elasticIndexes"`
-	Mongo            *mongodb.Config                `mapstructure:"mongo"`
-	MongoCollections MongoCollections               `mapstructure:"mongoCollections"`
 }
 
 type Context struct {
@@ -66,21 +59,6 @@ type Http struct {
 	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls"`
 	Timeout             int      `mapstructure:"timeout"`
 	Host                string   `mapstructure:"host"`
-}
-
-type MongoCollections struct {
-	Products string `mapstructure:"products" validate:"required"`
-}
-
-type Subscriptions struct {
-	PoolSize                   int    `mapstructure:"poolSize" validate:"required,gte=0"`
-	OrderPrefix                string `mapstructure:"orderPrefix" validate:"required,gte=0"`
-	MongoProjectionGroupName   string `mapstructure:"mongoProjectionGroupName" validate:"required,gte=0"`
-	ElasticProjectionGroupName string `mapstructure:"elasticProjectionGroupName" validate:"required,gte=0"`
-}
-
-type ElasticIndexes struct {
-	Orders string `mapstructure:"orders" validate:"required"`
 }
 
 type KafkaTopics struct {

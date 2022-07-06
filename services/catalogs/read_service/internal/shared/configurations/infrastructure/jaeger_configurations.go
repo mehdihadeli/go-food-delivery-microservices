@@ -1,4 +1,4 @@
-package configurations
+package infrastructure
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -19,4 +19,3 @@ func (ic *infrastructureConfigurator) configJaeger() (error, func()) {
 
 	return nil, func() {}
 }
-

@@ -71,34 +71,10 @@ kafkaTopics:
     topicName: product_deleted
     partitions: 10
     replicationFactor: 1
-redis:
-  addr: "localhost:6379"
-  password: ""
-  db: 0
-  poolSize: 300
-mongo:
-  uri: "mongodb://localhost:27017"
-  user: admin
-  password: admin
-  db: catalogs_service
-  useauth: false
-mongoCollections:
-  products: products
-  categories: categories
 jaeger:
   enable: true
   serviceName: catalogs_service
   hostPort: "localhost:6831"
   logSpans: false
-elastic:
-  url: "http://localhost:9200"
-  sniff: false
-  gzip: true
-  explain: true
-  fetchSource: true
-  version: true
-  pretty: true
-elasticIndexes:
-  products: "products"
 eventStoreConfig:
   connectionString: "esdb://localhost:2113?tls=false"

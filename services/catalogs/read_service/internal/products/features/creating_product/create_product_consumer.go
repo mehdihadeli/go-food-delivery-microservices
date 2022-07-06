@@ -55,7 +55,7 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	if err := retry.Do(func() error {
-		result, err := c.Mediator.Send(ctx, command)
+		result, err := c.ProductMediator.Send(ctx, command)
 		if err != nil {
 			tracing.TraceErr(span, err)
 			return err

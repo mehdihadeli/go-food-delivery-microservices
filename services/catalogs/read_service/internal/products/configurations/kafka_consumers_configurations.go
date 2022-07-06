@@ -3,6 +3,7 @@ package configurations
 import (
 	"context"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product"
 	"github.com/segmentio/kafka-go"
@@ -13,14 +14,14 @@ const (
 	PoolSize = 30
 )
 
-func (pm *ProductModule) configKafkaConsumers(ctx context.Context) {
-	pm.Log.Info("Starting Reader Kafka consumers")
+func (c *productsModuleConfigurator) configKafkaConsumers(ctx context.Context, mediator *mediatr.Mediator) {
+	c.Log.Info("Starting Reader Kafka consumers")
 
-	cg := kafkaClient.NewConsumerGroup(pm.Cfg.Kafka.Brokers, pm.Cfg.Kafka.GroupID, pm.Log)
-	go cg.ConsumeTopic(ctx, pm.getConsumerGroupTopics(), PoolSize, pm.processMessages)
+	cg := kafkaClient.NewConsumerGroup(c.Cfg.Kafka.Brokers, c.Cfg.Kafka.GroupID, c.Log)
+	go cg.ConsumeTopic(ctx, mediator, c.getConsumerGroupTopics(), PoolSize, c.processMessages)
 }
 
-func (pm *ProductModule) processMessages(ctx context.Context, r *kafka.Reader, wg *sync.WaitGroup, workerID int) {
+func (c *productsModuleConfigurator) processMessages(ctx context.Context, mediator *mediatr.Mediator, r *kafka.Reader, wg *sync.WaitGroup, workerID int) {
 	defer wg.Done()
 
 	for {
@@ -32,15 +33,15 @@ func (pm *ProductModule) processMessages(ctx context.Context, r *kafka.Reader, w
 
 		message, err := r.FetchMessage(ctx)
 		if err != nil {
-			pm.Log.Warnf("workerID: %v, err: %v", workerID, err)
+			c.Log.Warnf("workerID: %v, err: %v", workerID, err)
 			continue
 		}
 
-		productConsumersBase := delivery.NewProductConsumersBase(pm.Infrastructure, pm.Mediator)
+		productConsumersBase := delivery.NewProductConsumersBase(c.InfrastructureConfigurations, mediator)
 		productConsumersBase.LogProcessMessage(message, workerID)
 
 		switch message.Topic {
-		case pm.Cfg.KafkaTopics.ProductCreated.TopicName:
+		case c.Cfg.KafkaTopics.ProductCreated.TopicName:
 			creating_product.NewCreateProductConsumer(productConsumersBase).Consume(ctx, r, message)
 			//	s.processProductCreated(ctx, r, m)
 			//case s.cfg.KafkaTopics.ProductUpdated.TopicName:
@@ -51,10 +52,10 @@ func (pm *ProductModule) processMessages(ctx context.Context, r *kafka.Reader, w
 	}
 }
 
-func (pm *ProductModule) getConsumerGroupTopics() []string {
+func (c *productsModuleConfigurator) getConsumerGroupTopics() []string {
 	return []string{
-		pm.Cfg.KafkaTopics.ProductCreated.TopicName,
-		pm.Cfg.KafkaTopics.ProductUpdated.TopicName,
-		pm.Cfg.KafkaTopics.ProductDeleted.TopicName,
+		c.Cfg.KafkaTopics.ProductCreated.TopicName,
+		c.Cfg.KafkaTopics.ProductUpdated.TopicName,
+		c.Cfg.KafkaTopics.ProductDeleted.TopicName,
 	}
 }

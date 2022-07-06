@@ -1,4 +1,4 @@
-package configurations
+package infrastructure
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/docs"
@@ -14,4 +14,3 @@ func (ic *infrastructureConfigurator) configSwagger() {
 
 	ic.echo.GET("/swagger/*", echoSwagger.WrapHandler)
 }
-

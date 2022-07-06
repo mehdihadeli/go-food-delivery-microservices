@@ -11,6 +11,6 @@ type CreateProduct struct {
 	UpdatedAt   time.Time
 }
 
-func NewCreateProduct(productID string, name string, description string, price float64, createdAt time.Time, updatedAt time.Time) *CreateProduct {
-	return &CreateProduct{ProductID: productID, Name: name, Description: description, Price: price, CreatedAt: createdAt, UpdatedAt: updatedAt}
+func NewCreateProduct(productID string, name string, description string, price float64, createdAt time.Time, updatedAt time.Time) CreateProduct {
+	return CreateProduct{ProductID: productID, Name: name, Description: description, Price: price, CreatedAt: createdAt, UpdatedAt: updatedAt}
 }

@@ -1,6 +1,7 @@
 package configurations
 
 import (
+	"context"
 	repositories_imp "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 )
@@ -17,7 +18,7 @@ func NewProductsModuleConfigurator(infrastructure *infrastructure.Infrastructure
 	return &productsModuleConfigurator{InfrastructureConfiguration: infrastructure}
 }
 
-func (c *productsModuleConfigurator) ConfigureProductsModule() error {
+func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context) error {
 
 	v1 := c.Echo.Group("/api/v1")
 	group := v1.Group("/" + c.Cfg.Http.ProductsPath)
@@ -30,10 +31,10 @@ func (c *productsModuleConfigurator) ConfigureProductsModule() error {
 		return err
 	}
 
-	c.configEndpoints(group, mediator)
+	c.configEndpoints(ctx, group, mediator)
 
 	if c.Cfg.DeliveryType == "grpc" {
-		c.configGrpc(mediator)
+		c.configGrpc(ctx, mediator)
 	}
 
 	return nil
