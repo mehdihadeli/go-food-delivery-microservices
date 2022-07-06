@@ -51,7 +51,7 @@ func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 			return err
 		}
 
-		_, err := ep.Mediator.Send(ctx, command)
+		_, err := ep.ProductMediator.Send(ctx, command)
 
 		if err != nil {
 			ep.Log.WarnMsg("DeleteProduct", err)

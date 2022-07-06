@@ -40,19 +40,19 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 
 		request := &dtos.CreateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
-			ep.Infrastructure.Log.WarnMsg("Bind", err)
+			ep.Log.WarnMsg("Bind", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
 
 		if err := ep.Validator.StructCtx(ctx, request); err != nil {
-			ep.Infrastructure.Log.Errorf("(validate) err: {%v}", err)
+			ep.Log.Errorf("(validate) err: {%v}", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
 
 		command := creating_product.NewCreateProduct(request.Name, request.Description, request.Price)
-		result, err := ep.Mediator.Send(ctx, command)
+		result, err := ep.ProductMediator.Send(ctx, command)
 
 		if err != nil {
 			ep.Log.Errorf("(CreateProduct.Handle) id: {%s}, err: {%v}", command.ProductID, err)

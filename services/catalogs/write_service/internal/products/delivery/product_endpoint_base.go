@@ -3,13 +3,11 @@ package delivery
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 )
 
 type ProductEndpointBase struct {
-	*configurations.Infrastructure
-	Mediator          *mediatr.Mediator
-	ProductRepository contracts.ProductRepository
-	ProductsGroup     *echo.Group
+	*infrastructure.InfrastructureConfiguration
+	ProductMediator *mediatr.Mediator
+	ProductsGroup   *echo.Group
 }

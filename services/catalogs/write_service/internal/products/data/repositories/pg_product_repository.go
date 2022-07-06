@@ -24,8 +24,8 @@ type postgresProductRepository struct {
 	gorm *gorm.DB
 }
 
-func NewPostgresProductRepository(log logger.Logger, cfg *config.Config, db *pgxpool.Pool, gorm *gorm.DB) *postgresProductRepository {
-	return &postgresProductRepository{log: log, cfg: cfg, db: db, gorm: gorm}
+func NewPostgresProductRepository(log logger.Logger, cfg *config.Config, gorm *gorm.DB) *postgresProductRepository {
+	return &postgresProductRepository{log: log, cfg: cfg, gorm: gorm}
 }
 
 func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[models.Product], error) {

@@ -1,10 +1,7 @@
-package shared
+package configurations
 
 import (
-	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product"
@@ -15,17 +12,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewCatalogsMediator(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, kafkaProducer kafkaClient.Producer) (*mediatr.Mediator, error) {
+func (c *productsModuleConfigurator) configProductsMediator(pgRepo contracts.ProductRepository) (*mediatr.Mediator, error) {
 
 	md := mediatr.New()
 
 	err := md.Register(
-		creating_product.NewCreateProductHandler(log, cfg, pgRepo, kafkaProducer),
-		updating_product.NewUpdateProductHandler(log, cfg, pgRepo, kafkaProducer),
-		deleting_product.NewDeleteProductHandler(log, cfg, pgRepo, kafkaProducer),
-		getting_product_by_id.NewGetProductByIdHandler(log, cfg, pgRepo),
-		getting_products.NewGetProductsHandler(log, cfg, pgRepo),
-		searching_product.NewSearchProductsHandler(log, cfg, pgRepo),
+		creating_product.NewCreateProductHandler(c.Log, c.Cfg, pgRepo, c.KafkaProducer),
+		updating_product.NewUpdateProductHandler(c.Log, c.Cfg, pgRepo, c.KafkaProducer),
+		deleting_product.NewDeleteProductHandler(c.Log, c.Cfg, pgRepo, c.KafkaProducer),
+		getting_product_by_id.NewGetProductByIdHandler(c.Log, c.Cfg, pgRepo),
+		getting_products.NewGetProductsHandler(c.Log, c.Cfg, pgRepo),
+		searching_product.NewSearchProductsHandler(c.Log, c.Cfg, pgRepo),
 	)
 
 	if err != nil {

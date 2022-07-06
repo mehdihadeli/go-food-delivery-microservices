@@ -1,8 +1,7 @@
-package shared
+package infrastructure
 
 import (
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -35,7 +34,8 @@ type CatalogsServiceMetrics struct {
 	DeleteProductKafkaMessages prometheus.Counter
 }
 
-func NewCatalogsServiceMetrics(cfg *config.Config) *CatalogsServiceMetrics {
+func (ic *infrastructureConfigurator) configCatalogsMetrics() *CatalogsServiceMetrics {
+	cfg := ic.cfg
 	return &CatalogsServiceMetrics{
 		SuccessGrpcRequests: promauto.NewCounter(prometheus.CounterOpts{
 			Name: fmt.Sprintf("%s_success_grpc_requests_total", cfg.ServiceName),

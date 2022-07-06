@@ -1,6 +1,8 @@
 package configurations
 
 import (
+	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	creating_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/endpoints/v1"
 	deleting_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/endpoints/v1"
@@ -10,13 +12,12 @@ import (
 	updating_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/endpoints/v1"
 )
 
-func (pm *ProductModule) configEndpoints() {
+func (c *productsModuleConfigurator) configEndpoints(group *echo.Group, mediator *mediatr.Mediator) {
 
 	productEndpointBase := &delivery.ProductEndpointBase{
-		ProductsGroup:     pm.ProductsGroup,
-		Mediator:          pm.Mediator,
-		ProductRepository: pm.ProductRepository,
-		Infrastructure:    pm.Infrastructure,
+		ProductsGroup:               group,
+		ProductMediator:             mediator,
+		InfrastructureConfiguration: c.InfrastructureConfiguration,
 	}
 	// CreateNewProduct
 	createProductEndpoint := creating_product.NewCreteProductEndpoint(productEndpointBase)

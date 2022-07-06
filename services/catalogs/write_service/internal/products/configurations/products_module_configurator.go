@@ -1,53 +1,39 @@
 package configurations
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	repositories_imp "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 )
-
-type ProductModule struct {
-	*configurations.Infrastructure
-	Mediator          *mediatr.Mediator
-	ProductRepository contracts.ProductRepository
-	ProductsGroup     *echo.Group
-}
 
 type ProductsModuleConfigurator interface {
 	ConfigureProductsModule() error
 }
 
 type productsModuleConfigurator struct {
-	*configurations.Infrastructure
+	*infrastructure.InfrastructureConfiguration
 }
 
-func NewProductsModuleConfigurator(infrastructure *configurations.Infrastructure) *productsModuleConfigurator {
-	return &productsModuleConfigurator{Infrastructure: infrastructure}
+func NewProductsModuleConfigurator(infrastructure *infrastructure.InfrastructureConfiguration) *productsModuleConfigurator {
+	return &productsModuleConfigurator{InfrastructureConfiguration: infrastructure}
 }
 
 func (c *productsModuleConfigurator) ConfigureProductsModule() error {
 
-	pm := ProductModule{Infrastructure: c.Infrastructure}
-
 	v1 := c.Echo.Group("/api/v1")
-	pm.ProductsGroup = v1.Group("/" + c.Cfg.Http.ProductsPath)
+	group := v1.Group("/" + c.Cfg.Http.ProductsPath)
 
-	pm.ProductRepository = repositories_imp.NewPostgresProductRepository(c.Log, c.Cfg, c.PgConn, c.Gorm)
-	m, err := shared.NewCatalogsMediator(c.Log, c.Cfg, pm.ProductRepository, c.KafkaProducer)
+	productRepository := repositories_imp.NewPostgresProductRepository(c.Log, c.Cfg, c.Gorm)
+
+	mediator, err := c.configProductsMediator(productRepository)
 
 	if err != nil {
 		return err
 	}
 
-	pm.Mediator = m
-
-	pm.configEndpoints()
+	c.configEndpoints(group, mediator)
 
 	if c.Cfg.DeliveryType == "grpc" {
-		pm.configGrpc()
+		c.configGrpc(mediator)
 	}
 
 	return nil

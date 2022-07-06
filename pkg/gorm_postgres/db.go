@@ -3,7 +3,6 @@ package gorm_postgres
 import (
 	"context"
 	"fmt"
-	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/opentracing/opentracing-go"
@@ -31,11 +30,6 @@ func NewGorm(cfg *Config) (*gorm.DB, error) {
 		cfg.DBName,
 		cfg.Password,
 	)
-
-	err := createDB(cfg)
-	if err != nil {
-		return nil, err
-	}
 
 	db, err := gorm.Open(gorm_postgres.Open(dataSourceName), &gorm.Config{})
 
@@ -92,36 +86,3 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.D
 	return utils.NewListResult(items, listQuery.GetSize(), listQuery.GetPage(), totalRows), nil
 }
 
-func createDB(cfg *Config) error {
-
-	db, err := postgres.NewPgxConn(&postgres.Config{Host: cfg.Host, Port: cfg.Port, SSLMode: cfg.SSLMode, User: cfg.User, Password: cfg.Password})
-	if err != nil {
-		return err
-	}
-
-	var exists int
-	rows, err := db.Query(context.Background(), fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
-	if err != nil {
-		return err
-	}
-
-	if rows.Next() {
-		err = rows.Scan(&exists)
-		if err != nil {
-			return err
-		}
-	}
-
-	if exists == 1 {
-		return nil
-	}
-
-	_, err = db.Exec(context.Background(), fmt.Sprintf("CREATE DATABASE %s", cfg.DBName))
-	if err != nil {
-		return err
-	}
-
-	defer db.Close()
-
-	return nil
-}

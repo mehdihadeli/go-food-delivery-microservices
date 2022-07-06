@@ -5,7 +5,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	product_service_client "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/grpc/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
@@ -13,7 +12,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	"github.com/opentracing/opentracing-go/log"
 	uuid "github.com/satori/go.uuid"
 	"google.golang.org/grpc/codes"
@@ -21,15 +20,14 @@ import (
 )
 
 type ProductGrpcServiceServer struct {
-	mediator          *mediatr.Mediator
-	infrastructure    *configurations.Infrastructure
-	productRepository contracts.ProductRepository
+	mediator       *mediatr.Mediator
+	infrastructure *infrastructure.InfrastructureConfiguration
 	// Ref:https://github.com/grpc/grpc-go/issues/3794#issuecomment-720599532
 	// product_service_client.UnimplementedProductsServiceServer
 }
 
-func NewProductGrpcService(infra *configurations.Infrastructure, mediator *mediatr.Mediator, productRepository contracts.ProductRepository) *ProductGrpcServiceServer {
-	return &ProductGrpcServiceServer{productRepository: productRepository, infrastructure: infra, mediator: mediator}
+func NewProductGrpcService(infra *infrastructure.InfrastructureConfiguration, mediator *mediatr.Mediator) *ProductGrpcServiceServer {
+	return &ProductGrpcServiceServer{infrastructure: infra, mediator: mediator}
 }
 
 func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *product_service_client.CreateProductReq) (*product_service_client.CreateProductRes, error) {

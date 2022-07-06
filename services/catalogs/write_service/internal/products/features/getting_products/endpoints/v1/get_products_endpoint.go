@@ -52,7 +52,7 @@ func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 
 		query := getting_products.GetProducts{request.ListQuery}
 
-		queryResult, err := ep.Mediator.Send(ctx, query)
+		queryResult, err := ep.ProductMediator.Send(ctx, query)
 
 		if err != nil {
 			ep.Log.WarnMsg("GetProducts", err)
