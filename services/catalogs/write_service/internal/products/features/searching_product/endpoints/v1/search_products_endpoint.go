@@ -6,6 +6,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/dtos"
 	"net/http"
 )
 
@@ -27,9 +28,9 @@ func (ep *searchProductsEndpoint) MapRoute() {
 // @Description Search products
 // @Accept json
 // @Produce json
-// @Param searchProductsRequestDto query searching_product.SearchProductsRequestDto false "SearchProductsRequestDto"
-// @Success 200 {object} searching_product.SearchProductsResponseDto
-// @Router /products/search [get]
+// @Param searchProductsRequestDto query dtos.SearchProductsRequestDto false "SearchProductsRequestDto"
+// @Success 200 {object} dtos.SearchProductsResponseDto
+// @Router /api/v1/products/search [get]
 func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
@@ -45,7 +46,7 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 			return err
 		}
 
-		request := &searching_product.SearchProductsRequestDto{ListQuery: listQuery}
+		request := &dtos.SearchProductsRequestDto{ListQuery: listQuery}
 
 		// https://echo.labstack.com/guide/binding/
 		if err := c.Bind(request); err != nil {
@@ -70,7 +71,7 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 			return err
 		}
 
-		response, ok := queryResult.(*searching_product.SearchProductsResponseDto)
+		response, ok := queryResult.(*dtos.SearchProductsResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
 			tracing.TraceErr(span, err)

@@ -5,6 +5,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
 	"github.com/opentracing/opentracing-go"
 )
@@ -19,7 +20,7 @@ func NewSearchProductsHandler(log logger.Logger, cfg *config.Config, pgRepo cont
 	return &SearchProductsHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 
-func (c *SearchProductsHandler) Handle(ctx context.Context, query SearchProducts) (*SearchProductsResponseDto, error) {
+func (c *SearchProductsHandler) Handle(ctx context.Context, query SearchProducts) (*dtos.SearchProductsResponseDto, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "SearchProductsHandler.Handle")
 	defer span.Finish()
@@ -31,5 +32,5 @@ func (c *SearchProductsHandler) Handle(ctx context.Context, query SearchProducts
 
 	listResultDto := mappers.ListResultToListResultDto(products, mappers.ProductsToProductsDto)
 
-	return &SearchProductsResponseDto{Products: listResultDto}, nil
+	return &dtos.SearchProductsResponseDto{Products: listResultDto}, nil
 }

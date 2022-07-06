@@ -19,7 +19,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/products": {
+        "/api/v1/products": {
             "get": {
                 "description": "Get all products",
                 "consumes": [
@@ -35,20 +35,17 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Page",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
                         "name": "page",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "Size",
+                        "type": "integer",
                         "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "OrderBy",
-                        "name": "orderBy",
                         "in": "query"
                     }
                 ],
@@ -56,7 +53,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/getting_products.GetProductsResponseDto"
+                            "$ref": "#/definitions/dtos.GetProductsResponseDto"
                         }
                     }
                 }
@@ -94,7 +91,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/products/search": {
+        "/api/v1/products/search": {
             "get": {
                 "description": "Search products",
                 "consumes": [
@@ -110,27 +107,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Search Keyword",
-                        "name": "search",
-                        "in": "query",
-                        "required": true
+                        "name": "orderBy",
+                        "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "Page",
+                        "type": "integer",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Size",
-                        "name": "size",
+                        "name": "search",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "OrderBy",
-                        "name": "orderBy",
+                        "type": "integer",
+                        "name": "size",
                         "in": "query"
                     }
                 ],
@@ -138,13 +130,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/searching_product.SearchProductsResponseDto"
+                            "$ref": "#/definitions/dtos.SearchProductsResponseDto"
                         }
                     }
                 }
             }
         },
-        "/products/{id}": {
+        "/api/v1/products/{id}": {
             "get": {
                 "description": "Get product by id",
                 "consumes": [
@@ -170,7 +162,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/getting_product_by_id.GetProductByIdResponseDto"
+                            "$ref": "#/definitions/dtos.GetProductByIdResponseDto"
                         }
                     }
                 }
@@ -266,25 +258,15 @@ const docTemplate = `{
         },
         "dtos.CreateProductRequestDto": {
             "type": "object",
-            "required": [
-                "description",
-                "name",
-                "price"
-            ],
             "properties": {
                 "description": {
-                    "type": "string",
-                    "maxLength": 5000,
-                    "minLength": 0
+                    "type": "string"
                 },
                 "name": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 0
+                    "type": "string"
                 },
                 "price": {
-                    "type": "number",
-                    "minimum": 0
+                    "type": "number"
                 }
             }
         },
@@ -296,7 +278,7 @@ const docTemplate = `{
                 }
             }
         },
-        "getting_product_by_id.GetProductByIdResponseDto": {
+        "dtos.GetProductByIdResponseDto": {
             "type": "object",
             "properties": {
                 "product": {
@@ -304,7 +286,7 @@ const docTemplate = `{
                 }
             }
         },
-        "getting_products.GetProductsResponseDto": {
+        "dtos.GetProductsResponseDto": {
             "type": "object",
             "properties": {
                 "products": {
@@ -312,7 +294,7 @@ const docTemplate = `{
                 }
             }
         },
-        "searching_product.SearchProductsResponseDto": {
+        "dtos.SearchProductsResponseDto": {
             "type": "object",
             "properties": {
                 "products": {
@@ -322,31 +304,29 @@ const docTemplate = `{
         },
         "updating_product.UpdateProductRequestDto": {
             "type": "object",
-            "required": [
-                "description",
-                "name",
-                "price",
-                "productId"
-            ],
             "properties": {
                 "description": {
-                    "type": "string",
-                    "maxLength": 5000,
-                    "minLength": 0
+                    "type": "string"
                 },
                 "name": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 0
+                    "type": "string"
                 },
                 "price": {
-                    "type": "number",
-                    "minimum": 0
+                    "type": "number"
+                }
+            }
+        },
+        "utils.FilterModel": {
+            "type": "object",
+            "properties": {
+                "comparison": {
+                    "type": "string"
                 },
-                "productId": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 0
+                "field": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         }

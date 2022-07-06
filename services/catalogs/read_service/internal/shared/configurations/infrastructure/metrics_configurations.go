@@ -20,6 +20,7 @@ type CatalogsServiceMetrics struct {
 	UpdateProductHttpRequests  prometheus.Counter
 	DeleteProductHttpRequests  prometheus.Counter
 	GetProductByIdHttpRequests prometheus.Counter
+	GetProductsHttpRequests    prometheus.Counter
 	SearchProductHttpRequests  prometheus.Counter
 
 	SuccessHttpRequests prometheus.Counter
@@ -35,7 +36,7 @@ type CatalogsServiceMetrics struct {
 
 func (ic *infrastructureConfigurator) configCatalogsMetrics() *CatalogsServiceMetrics {
 	cfg := ic.cfg
-	
+
 	return &CatalogsServiceMetrics{
 		SuccessGrpcRequests: promauto.NewCounter(prometheus.CounterOpts{
 			Name: fmt.Sprintf("%s_success_grpc_requests_total", cfg.ServiceName),
@@ -100,6 +101,10 @@ func (ic *infrastructureConfigurator) configCatalogsMetrics() *CatalogsServiceMe
 		GetProductByIdHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
 			Name: fmt.Sprintf("%s_get_product_by_id_http_requests_total", cfg.ServiceName),
 			Help: "The total number of get product by id http requests",
+		}),
+		GetProductsHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
+			Name: fmt.Sprintf("%s_get_products_http_requests_total", cfg.ServiceName),
+			Help: "The total number of get products http requests",
 		}),
 		SearchProductHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
 			Name: fmt.Sprintf("%s_search_product_http_requests_total", cfg.ServiceName),

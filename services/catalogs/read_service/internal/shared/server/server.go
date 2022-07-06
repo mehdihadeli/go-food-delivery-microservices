@@ -42,7 +42,11 @@ func (s *Server) Run() error {
 	defer catalogsCleanup()
 
 	deliveryType := s.Cfg.DeliveryType
-	var healthCleanup func()
+
+	s.RunMetrics(cancel)
+
+	healthCleanup := s.RunHealthCheck(ctx)
+	defer healthCleanup()
 
 	go func() {
 		switch deliveryType {
@@ -52,11 +56,6 @@ func (s *Server) Run() error {
 				cancel()
 			}
 			s.Log.Infof("%s is listening on Http PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.Http.Port)
-
-			s.RunMetrics(cancel)
-
-			healthCleanup = s.RunHealthCheck(ctx)
-			defer healthCleanup()
 
 		case "grpc":
 			if err := s.RunGrpcServer(nil); err != nil {

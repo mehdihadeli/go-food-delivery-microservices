@@ -3,7 +3,7 @@ deliveryType: http
 context:
   timeout: 20
 grpc:
-  port: :5003
+  port: :6003
   development: true
 http:
   port: :5000

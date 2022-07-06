@@ -3,7 +3,7 @@ deliveryType: http
 context:
   timeout: 20
 grpc:
-  port: :5004
+  port: :6004
   development: true
 http:
   port: :5001
@@ -73,7 +73,7 @@ mongoCollections:
   categories: categories
 jaeger:
   enable: true
-  serviceName: catalogs_service
+  serviceName: catalogs_read_service
   hostPort: "localhost:6831"
   logSpans: false
 elastic:

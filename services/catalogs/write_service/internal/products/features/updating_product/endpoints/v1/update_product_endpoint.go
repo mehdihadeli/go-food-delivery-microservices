@@ -29,7 +29,7 @@ func (ep *updateProductEndpoint) MapRoute() {
 // @Param UpdateProductRequestDto body updating_product.UpdateProductRequestDto true "Product data"
 // @Param id path string true "Product ID"
 // @Success 204
-// @Router /products/{id} [put]
+// @Router /api/v1/products/{id} [put]
 func (ep *updateProductEndpoint) updateProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
 

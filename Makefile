@@ -79,17 +79,17 @@ proto_catalogs_read_product_service:
 
 
 # ==============================================================================
-# Swagger Catalogs Write Service
+# Swagger Catalogs Write Service  #https://github.com/swaggo/swag/issues/817
 
 swagger_catalogs_write:
 	@echo Starting swagger generating
-	swag init -g ./services/catalogs/write_service/cmd/main.go -o ./services/catalogs/write_service/docs
-	swag init -g ./services/catalogs/write_service/cmd/main.go -o ./api_docs/catalogs/write_service/openapi/
+	swag init --parseDependency --parseInternal --parseDepth 1 -g ./services/catalogs/write_service/cmd/main.go -o ./services/catalogs/write_service/docs
+	swag init --parseDependency --parseInternal --parseDepth 1 -g ./services/catalogs/write_service/cmd/main.go -o ./api_docs/catalogs/write_service/openapi/
 
 
 # ==============================================================================
-# Swagger Catalogs Read Service
+# Swagger Catalogs Read Service  #https://github.com/swaggo/swag/issues/817
 swagger_catalogs_read:
 	@echo Starting swagger generating
-	swag init -g ./services/catalogs/read_service/cmd/main.go -o ./services/catalogs/read_service/docs
-	swag init -g ./services/catalogs/read_service/cmd/main.go -o ./api_docs/catalogs/read_service/openapi/
+	swag init --parseDependency --parseInternal --parseDepth 1 -g ./services/catalogs/read_service/cmd/main.go -o ./services/catalogs/read_service/docs
+	swag init --parseDependency --parseInternal --parseDepth 1 -g ./services/catalogs/read_service/cmd/main.go -o ./api_docs/catalogs/read_service/openapi/
