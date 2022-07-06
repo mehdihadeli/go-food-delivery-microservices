@@ -5,6 +5,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/server"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web"
 	"log"
 	"os"
 )
@@ -29,7 +30,7 @@ func main() {
 
 	appLogger := logger.NewAppLogger(cfg.Logger)
 	appLogger.InitLogger()
-	appLogger.WithName("catalogs-services")
+	appLogger.WithName(web.GetMicroserviceName(cfg))
 
 	appLogger.Fatal(server.NewServer(appLogger, cfg).Run())
 }

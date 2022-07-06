@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Jul 06 00:38:42 2022
+# Make data base, printed on Wed Jul 06 21:09:49 2022
 
 # Variables
 
@@ -25,7 +25,7 @@ USERPROFILE = C:\Users\MehdiHadeli
 # environment
 LOCALAPPDATA = C:\Users\MehdiHadeli\AppData\Local
 # environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-1b10b16f-0551-473f-8002-cd8d24c4ebfe-sock
+VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-43f04ae7-746a-4f8c-85fb-0d2f2253c430-sock
 # environment
 VSCODE_CWD = D:\Github\GOLANG\store-golang-microservice-sample
 # environment
@@ -43,7 +43,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_21464_OLNYQWAQNIYNMTTA
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_18260_LFEOJLRCTWLGEVHE
 # environment
 FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
@@ -103,7 +103,7 @@ MAKEFILE_LIST := Makefile
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_PID = 21464
+VSCODE_PID = 18260
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -425,6 +425,7 @@ pprof_allocs:
 # strcache performance: lookups = 62 / hit rate = 37%
 # hash-table stats:
 # Load=39/8192=0%, Rehash=0, Collisions=0/62=0%
-# Finished Make data base on Wed Jul 06 00:38:42 2022
+# Finished Make data base on Wed Jul 06 21:09: 
+49 2022
 
  
