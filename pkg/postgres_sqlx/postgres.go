@@ -1,11 +1,9 @@
-package postgres
+package postgres_sqlx
 
 import (
-	"context"
 	"fmt"
-	"github.com/jackc/pgx/v4/pgxpool"
+	_ "github.com/jackc/pgx/v4/stdlib" // load pgx driver for PostgreSQL
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 	"os"
 	"strconv"
 	"time"
@@ -18,57 +16,6 @@ type Config struct {
 	DBName   string `yaml:"dbName"`
 	SSLMode  bool   `yaml:"sslMode"`
 	Password string `yaml:"password"`
-}
-
-const (
-	maxConn           = 50
-	healthCheckPeriod = 1 * time.Minute
-	maxConnIdleTime   = 1 * time.Minute
-	maxConnLifetime   = 3 * time.Minute
-	minConns          = 10
-	lazyConnect       = false
-)
-
-// NewPgxConn func for connection to PostgreSQL database.
-func NewPgxConn(cfg *Config) (*pgxpool.Pool, error) {
-	ctx := context.Background()
-	var dataSourceName string
-
-	if cfg.DBName == "" {
-		dataSourceName = fmt.Sprintf("host=%s port=%s user=%s password=%s",
-			cfg.Host,
-			cfg.Port,
-			cfg.User,
-			cfg.Password,
-		)
-	} else {
-		dataSourceName = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
-			cfg.Host,
-			cfg.Port,
-			cfg.User,
-			cfg.DBName,
-			cfg.Password,
-		)
-	}
-
-	poolCfg, err := pgxpool.ParseConfig(dataSourceName)
-	if err != nil {
-		return nil, err
-	}
-
-	poolCfg.MaxConns = maxConn
-	poolCfg.HealthCheckPeriod = healthCheckPeriod
-	poolCfg.MaxConnIdleTime = maxConnIdleTime
-	poolCfg.MaxConnLifetime = maxConnLifetime
-	poolCfg.MinConns = minConns
-	poolCfg.LazyConnect = lazyConnect
-
-	connPool, err := pgxpool.ConnectConfig(ctx, poolCfg)
-	if err != nil {
-		return nil, errors.Wrap(err, "pgx.ConnectConfig")
-	}
-
-	return connPool, nil
 }
 
 // NewSqlxConn func for connection to PostgreSQL database.

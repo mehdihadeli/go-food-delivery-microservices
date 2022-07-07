@@ -2,7 +2,7 @@ package infrastructure
 
 import (
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
+	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	"github.com/pkg/errors"
 )
 

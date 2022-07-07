@@ -47,39 +47,42 @@ func (s *Server) Run() error {
 	healthCleanup := s.RunHealthCheck(ctx)
 	defer healthCleanup()
 
-	go func() {
-		switch deliveryType {
-		case "http":
+	switch deliveryType {
+	case "http":
+		go func() {
 			if err := s.RunHttpServer(nil); err != nil {
 				s.Log.Errorf("(s.RunHttpServer) err: {%v}", err)
 				cancel()
 			}
-			s.Log.Infof("%s is listening on Http PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.Http.Port)
+		}()
+		s.Log.Infof("%s is listening on Http PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.Http.Port)
 
-		case "grpc":
+	case "grpc":
+		go func() {
 			if err := s.RunGrpcServer(nil); err != nil {
 				s.Log.Errorf("(s.RunGrpcServer) err: {%v}", err)
 				cancel()
 			}
-			s.Log.Infof("%s is listening on Grpc PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.GRPC.Port)
-		default:
-			fmt.Sprintf("server type %s is not supported", deliveryType)
-			//panic()
-		}
-	}()
+		}()
+		s.Log.Infof("%s is listening on Grpc PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.GRPC.Port)
+	default:
+		fmt.Sprintf("server type %s is not supported", deliveryType)
+		//panic()
+	}
 
 	<-ctx.Done()
 	s.WaitShootDown(constants.WaitShotDownDuration)
 
-	if deliveryType == "grpc" {
-		s.GrpcServer.Stop()
-		s.GrpcServer.GracefulStop()
-	}
-
-	if deliveryType == "http" {
+	switch deliveryType {
+	case "http":
+		s.Log.Infof("%s is shutting down Http PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.Http.Port)
 		if err := s.Echo.Shutdown(ctx); err != nil {
 			s.Log.Warnf("(Shutdown) err: {%v}", err)
 		}
+	case "grpc":
+		s.Log.Infof("%s is shutting down Grpc PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.GRPC.Port)
+		s.GrpcServer.Stop()
+		s.GrpcServer.GracefulStop()
 	}
 
 	<-s.DoneCh

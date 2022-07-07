@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"fmt"
+	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	"os"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
@@ -10,7 +11,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"

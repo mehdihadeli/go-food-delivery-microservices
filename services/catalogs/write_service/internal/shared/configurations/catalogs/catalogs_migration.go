@@ -2,7 +2,7 @@ package catalogs
 
 import (
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres"
+	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"golang.org/x/net/context"
 	"gorm.io/gorm"
