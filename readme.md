@@ -1,4 +1,4 @@
-# 🧺 Store Golang Microservices Sample
+# 🧺 Store Golang Microservices
 
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod&style=flat-square&color=ff69b4)](https://gitpod.io/#https://github.com/mehdihadeli/store-golang-microservices-sample)
 
