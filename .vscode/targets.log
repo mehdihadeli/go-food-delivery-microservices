@@ -8,12 +8,10 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Jul 06 00:38:42 2022
+# Make data base, printed on Thu Jul 07 21:17:21 2022
 
 # Variables
 
-# environment
-FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
 SYSTEMDRIVE = C:
 # environment
@@ -25,7 +23,7 @@ USERPROFILE = C:\Users\MehdiHadeli
 # environment
 LOCALAPPDATA = C:\Users\MehdiHadeli\AppData\Local
 # environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-1b10b16f-0551-473f-8002-cd8d24c4ebfe-sock
+VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-a63fb928-a06a-4a9b-a48d-b7e78d249423-sock
 # environment
 VSCODE_CWD = D:\Github\GOLANG\store-golang-microservice-sample
 # environment
@@ -35,7 +33,7 @@ SYSTEMROOT = C:\Windows
 # environment
 PROCESSOR_LEVEL = 6
 # environment
-PSMODULEPATH = C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+PSMODULEPATH = %ProgramFiles%\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
 # default
 MAKE_COMMAND := C:/ProgramData/chocolatey/lib/make/tools/install/bin/make.exe
 # environment
@@ -43,9 +41,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_21464_OLNYQWAQNIYNMTTA
-# environment
-FPS_BROWSER_USER_PROFILE_STRING = Default
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_11652_ESXCLZYIJLAFRDHE
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -103,7 +99,7 @@ MAKEFILE_LIST := Makefile
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-VSCODE_PID = 21464
+VSCODE_PID = 11652
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -135,7 +131,7 @@ MAKELEVEL := 0
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
-PATH = C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\Azure Data Studio\bin;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Users\MehdiHadeli\go\bin;C:\Program Files\Go\bin;C:\bins;C:\Users\MehdiHadeli\scoop\shims;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\;C:\Users\MehdiHadeli\AppData\Local\Microsoft\WindowsApps;C:\Users\MehdiHadeli\.dotnet\tools;C:\Users\MehdiHadeli\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Azure Data Studio\bin;C:\Program Files\JetBrains\JetBrains Rider 2021.3\bin;C:\Users\MehdiHadeli\AppData\Roaming\npm;C:\Program Files\JetBrains\DataGrip 2021.3\bin;C:\Program Files\JetBrains\GoLand 2021.3\bin;C:\Users\MehdiHadeli\go\bin;C:\Program Files\Go\bin;
+PATH = C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\Azure Data Studio\bin;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Users\MehdiHadeli\go\bin;C:\Program Files\Go\bin;C:\bins;C:\Users\MehdiHadeli\scoop\shims;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\;C:\Users\MehdiHadeli\AppData\Local\Microsoft\WindowsApps;C:\Users\MehdiHadeli\.dotnet\tools;C:\Users\MehdiHadeli\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\JetBrains\JetBrains Rider 2021.3\bin;C:\Users\MehdiHadeli\AppData\Roaming\npm;C:\Program Files\JetBrains\DataGrip 2021.3\bin;C:\Program Files\JetBrains\GoLand 2021.3\bin
 # environment
 ZES_ENABLE_SYSMAN = 1
 # environment
@@ -212,7 +208,8 @@ TEMP = C:\Users\MEHDIH~1\AppData\Local\Temp
 VSCODE_IPC_HOOK = \\.\pipe\f514d32982fce962e7fdbbc6d4d7a88f-1.68.1-main-sock
 # environment
 GOPROXY = https://proxy.golang.org,direct
-# default
+# d 
+efault
 .RECIPEPREFIX := 
 # automatic
 <F = $(notdir $<)
@@ -220,8 +217,6 @@ GOPROXY = https://proxy.golang.org,direct
 SUFFIXES := 
 # environment
 ALLUSERSPROFILE = C:\ProgramData
-# environment
-SESSIONNAME = Console
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync load
 # environment
@@ -229,7 +224,7 @@ PROCESSOR_REVISION = a503
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=108/1024=11%, Rehash=0, Collisions=12/139=9%
+# Load=105/1024=10%, Rehash=0, Collisions=11/136=8%
 
 # Pattern-specific Variable Values
 
@@ -237,11 +232,10 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 
 # Directories
 
-# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1657037326): 17 files, no impossibilities.
+# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1657212304): 17 files, no impossibilities.
 
 # 17 files, no impossibilities in 1 directories.
 
- 
 # Implicit Rules
 
 # No implicit rules.
@@ -259,7 +253,7 @@ docker-compose_infra_up:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-05 20:38:46
+#  Last modified 2022-07-07 21:15:04
 #  File has been updated.
 #  Successfully updated.
 
@@ -305,17 +299,17 @@ swagger_catalogs_write:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 85):
 	@echo Starting swagger generating
-	swag init -g ./services/catalogs/write_service/cmd/main.go -o ./services/catalogs/write_service/docs
-	swag init -g ./services/catalogs/write_service/cmd/main.go -o ./api_docs/catalogs/write_service/openapi/
+	swag init --parseDependency --parseInternal --parseDepth 1 -g ./cmd/main.go -d ./services/catalogs/write_service/ -o ./services/catalogs/write_service/docs
+	swag init --parseDependency --parseInternal --parseDepth 1 -g ./cmd/main.go -d ./services/catalogs/write_service/ -o ./api_docs/catalogs/write_service/openapi/
 
 swagger_catalogs_read:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 93):
+#  recipe to execute (from 'Makefile', line 92):
 	@echo Starting swagger generating
-	swag init -g ./services/catalogs/read_service/cmd/main.go -o ./services/catalogs/read_service/docs
-	swag init -g ./services/catalogs/read_service/cmd/main.go -o ./api_docs/catalogs/read_service/openapi/
+	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/catalogs/read_service/ -o ./services/catalogs/read_service/docs
+	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/catalogs/read_service/ -o ./api_docs/catalogs/read_service/openapi/
 
 proto_catalogs_write_product_kafka_messages:
 #  Implicit rule search has not been done.
@@ -409,7 +403,8 @@ pprof_allocs:
 .PHONY:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
-#  File has not been updated.
+#  File has not been update 
+d.
 
 # files hash-table stats:
 # Load=23/1024=2%, Rehash=0, Collisions=0/33=0%
@@ -425,6 +420,6 @@ pprof_allocs:
 # strcache performance: lookups = 62 / hit rate = 37%
 # hash-table stats:
 # Load=39/8192=0%, Rehash=0, Collisions=0/62=0%
-# Finished Make data base on Wed Jul 06 00:38:42 2022
+# Finished Make data base on Thu Jul 07 21:17:21 2022
 
  

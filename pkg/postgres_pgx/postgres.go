@@ -3,10 +3,9 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/pkg/errors"
+	"time"
 )
 
 type Config struct {
@@ -27,7 +26,7 @@ const (
 	lazyConnect       = false
 )
 
-// NewPgxConn pool
+// NewPgxConn func for connection to PostgreSQL database.
 func NewPgxConn(cfg *Config) (*pgxpool.Pool, error) {
 	ctx := context.Background()
 	var dataSourceName string

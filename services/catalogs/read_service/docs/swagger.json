@@ -7,7 +7,7 @@
         }
     },
     "paths": {
-        "/products": {
+        "/api/v1/products": {
             "get": {
                 "description": "Get all products",
                 "consumes": [
@@ -23,276 +23,33 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Page",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
                         "name": "page",
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "Size",
+                        "type": "integer",
                         "name": "size",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "OrderBy",
-                        "name": "orderBy",
-                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/getting_products.GetProductsResponseDto"
+                            "$ref": "#/definitions/dtos.GetProductsResponseDto"
                         }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create new product item",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Create product",
-                "parameters": [
-                    {
-                        "description": "Product data",
-                        "name": "CreateProductRequestDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dtos.CreateProductRequestDto"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.CreateProductResponseDto"
-                        }
-                    }
-                }
-            }
-        },
-        "/products/search": {
-            "get": {
-                "description": "Search products",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Search products",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Search Keyword",
-                        "name": "search",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Page",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Size",
-                        "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "OrderBy",
-                        "name": "orderBy",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/searching_product.SearchProductsResponseDto"
-                        }
-                    }
-                }
-            }
-        },
-        "/products/{id}": {
-            "get": {
-                "description": "Get product by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Get product",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Product ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/getting_product_by_id.GetProductByIdResponseDto"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update existing product",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Update product",
-                "parameters": [
-                    {
-                        "description": "Product data",
-                        "name": "UpdateProductRequestDto",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/updating_product.UpdateProductRequestDto"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Product ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": ""
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete existing product",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Delete product",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Product ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": ""
                     }
                 }
             }
         }
     },
     "definitions": {
-        "dto.ProductDto": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                },
-                "productId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "dtos.CreateProductRequestDto": {
-            "type": "object",
-            "required": [
-                "description",
-                "name",
-                "price"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "maxLength": 5000,
-                    "minLength": 0
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 0
-                },
-                "price": {
-                    "type": "number",
-                    "minimum": 0
-                }
-            }
-        },
-        "dtos.CreateProductResponseDto": {
-            "type": "object",
-            "properties": {
-                "productId": {
-                    "type": "string"
-                }
-            }
-        },
-        "getting_product_by_id.GetProductByIdResponseDto": {
-            "type": "object",
-            "properties": {
-                "product": {
-                    "$ref": "#/definitions/dto.ProductDto"
-                }
-            }
-        },
-        "getting_products.GetProductsResponseDto": {
+        "dtos.GetProductsResponseDto": {
             "type": "object",
             "properties": {
                 "products": {
@@ -300,41 +57,17 @@
                 }
             }
         },
-        "searching_product.SearchProductsResponseDto": {
+        "utils.FilterModel": {
             "type": "object",
             "properties": {
-                "products": {
-                    "type": "object"
-                }
-            }
-        },
-        "updating_product.UpdateProductRequestDto": {
-            "type": "object",
-            "required": [
-                "description",
-                "name",
-                "price",
-                "productId"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "maxLength": 5000,
-                    "minLength": 0
+                "comparison": {
+                    "type": "string"
                 },
-                "name": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 0
+                "field": {
+                    "type": "string"
                 },
-                "price": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "productId": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 0
+                "value": {
+                    "type": "string"
                 }
             }
         }

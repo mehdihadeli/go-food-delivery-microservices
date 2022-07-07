@@ -6,6 +6,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
 	"net/http"
 )
 
@@ -28,8 +29,8 @@ func (ep *getProductByIdEndpoint) MapRoute() {
 // @Accept json
 // @Produce json
 // @Param id path string true "Product ID"
-// @Success 200 {object} getting_product_by_id.GetProductByIdResponseDto
-// @Router /products/{id} [get]
+// @Success 200 {object} dtos.GetProductByIdResponseDto
+// @Router /api/v1/products/{id} [get]
 func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
@@ -37,7 +38,7 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "productsHandlers.getProductByID")
 		defer span.Finish()
 
-		request := &getting_product_by_id.GetProductByIdRequestDto{}
+		request := &dtos.GetProductByIdRequestDto{}
 		if err := c.Bind(request); err != nil {
 			ep.Log.WarnMsg("Bind", err)
 			tracing.TraceErr(span, err)
@@ -60,7 +61,7 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		response, ok := queryResult.(*getting_product_by_id.GetProductByIdResponseDto)
+		response, ok := queryResult.(*dtos.GetProductByIdResponseDto)
 		err = utils.CheckType(ok)
 		if err != nil {
 			tracing.TraceErr(span, err)

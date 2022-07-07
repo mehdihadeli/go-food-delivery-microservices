@@ -2,11 +2,13 @@ package catalogs
 
 import (
 	"context"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web"
 	"google.golang.org/grpc"
 	"net/http"
 )
@@ -45,8 +47,8 @@ func (c *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Conte
 		return err, nil
 	}
 
-	c.echo.GET("", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Catalogs Write-Service is running...")
+	c.echo.GET("", func(ec echo.Context) error {
+		return ec.String(http.StatusOK, fmt.Sprintf("%s is running...", web.GetMicroserviceName(c.cfg)))
 	})
 
 	return nil, infraCleanup

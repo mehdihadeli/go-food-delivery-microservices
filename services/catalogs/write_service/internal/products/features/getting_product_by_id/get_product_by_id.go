@@ -5,7 +5,7 @@ import (
 )
 
 type GetProductById struct {
-	ProductID uuid.UUID `validate:"required"`
+	ProductID uuid.UUID `validate:"required,uuid"`
 }
 
 func NewGetProductById(productID uuid.UUID) GetProductById {

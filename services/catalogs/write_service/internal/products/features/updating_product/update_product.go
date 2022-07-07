@@ -5,7 +5,7 @@ import (
 )
 
 type UpdateProduct struct {
-	ProductID   uuid.UUID `validate:"required"`
+	ProductID   uuid.UUID `validate:"required,uuid"`
 	Name        string    `validate:"required,gte=0,lte=255"`
 	Description string    `validate:"required,gte=0,lte=5000"`
 	Price       float64   `validate:"required,gte=0"`

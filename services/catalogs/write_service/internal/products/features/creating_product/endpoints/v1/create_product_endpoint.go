@@ -30,7 +30,7 @@ func (ep *createProductEndpoint) MapRoute() {
 // @Produce json
 // @Param CreateProductRequestDto body dtos.CreateProductRequestDto true "Product data"
 // @Success 201 {object} dtos.CreateProductResponseDto
-// @Router /products [post]
+// @Router /api/v1/products [post]
 func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
 

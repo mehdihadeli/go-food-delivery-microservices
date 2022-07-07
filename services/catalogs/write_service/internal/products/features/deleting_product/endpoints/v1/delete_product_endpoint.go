@@ -28,7 +28,7 @@ func (ep *deleteProductEndpoint) MapRoute() {
 // @Produce json
 // @Success 204
 // @Param id path string true "Product ID"
-// @Router /products/{id} [delete]
+// @Router /api/v1/products/{id} [delete]
 func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 	return func(c echo.Context) error {
 

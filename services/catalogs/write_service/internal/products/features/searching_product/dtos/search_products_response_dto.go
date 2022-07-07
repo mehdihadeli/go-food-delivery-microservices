@@ -1,4 +1,4 @@
-package searching_product
+package dtos
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
