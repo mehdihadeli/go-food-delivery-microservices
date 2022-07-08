@@ -10,7 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 	"github.com/segmentio/kafka-go"
@@ -40,14 +40,14 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command UpdateProduct
 		return http_errors.NewNotFoundError(fmt.Sprintf("product with id %s not found", command.ProductID))
 	}
 
-	productDto := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price}
+	product := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price, UpdatedAt: command.UpdatedAt}
 
-	updatedProduct, err := c.pgRepo.UpdateProduct(ctx, productDto)
+	updatedProduct, err := c.pgRepo.UpdateProduct(ctx, product)
 	if err != nil {
 		return err
 	}
 
-	evt := &kafka_messages.ProductUpdated{Product: mappers.ProductToGrpcMessage(updatedProduct)}
+	evt := &kafka_messages.ProductUpdated{Product: mappings.ProductToGrpcMessage(updatedProduct)}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
 		return err
@@ -56,7 +56,7 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command UpdateProduct
 	message := kafka.Message{
 		Topic:   c.cfg.KafkaTopics.ProductUpdated.TopicName,
 		Value:   msgBytes,
-		Time:    time.Now().UTC(),
+		Time:    time.Now(),
 		Headers: tracing.GetKafkaTracingHeadersFromSpanCtx(span.Context()),
 	}
 

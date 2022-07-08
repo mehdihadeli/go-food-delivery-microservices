@@ -10,7 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	"github.com/opentracing/opentracing-go/log"
@@ -134,7 +134,7 @@ func (s *ProductGrpcServiceServer) GetProductById(ctx context.Context, req *prod
 
 	s.infrastructure.Metrics.SuccessGrpcRequests.Inc()
 
-	return &product_service_client.GetProductByIdRes{Product: mappers.WriterProductToGrpc(&p)}, nil
+	return &product_service_client.GetProductByIdRes{Product: mappings.WriterProductToGrpc(&p)}, nil
 }
 
 func (s *ProductGrpcServiceServer) errResponse(c codes.Code, err error) error {

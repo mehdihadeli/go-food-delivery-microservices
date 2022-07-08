@@ -3,10 +3,11 @@ package searching_product
 import (
 	"context"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/dtos"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappings"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -30,7 +31,7 @@ func (c *SearchProductsHandler) Handle(ctx context.Context, query SearchProducts
 		return nil, err
 	}
 
-	listResultDto := mappers.ListResultToListResultDto(products, mappers.ProductsToProductsDto)
+	listResultDto := utils.ListResultToListResultDto(products, mappings.ProductsToProductsDto)
 
 	return &dtos.SearchProductsResponseDto{Products: listResultDto}, nil
 }

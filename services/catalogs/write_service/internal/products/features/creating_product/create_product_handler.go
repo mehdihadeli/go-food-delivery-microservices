@@ -10,7 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
@@ -36,14 +36,20 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct
 	span.LogFields(log.String("ProductId", command.ProductID.String()))
 	defer span.Finish()
 
-	productDto := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price}
+	product := &models.Product{
+		ProductID:   command.ProductID,
+		Name:        command.Name,
+		Description: command.Description,
+		Price:       command.Price,
+		CreatedAt:   command.CreatedAt,
+	}
 
-	product, err := c.repository.CreateProduct(ctx, productDto)
+	createdProduct, err := c.repository.CreateProduct(ctx, product)
 	if err != nil {
 		return nil, err
 	}
 
-	evt := &kafka_messages.ProductCreated{Product: mappers.ProductToGrpcMessage(product)}
+	evt := &kafka_messages.ProductCreated{Product: mappings.ProductToGrpcMessage(createdProduct)}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
 		tracing.TraceErr(span, err)
@@ -53,7 +59,7 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct
 	message := kafka.Message{
 		Topic:   c.cfg.KafkaTopics.ProductCreated.TopicName,
 		Value:   msgBytes,
-		Time:    time.Now().UTC(),
+		Time:    time.Now(),
 		Headers: tracing.GetKafkaTracingHeadersFromSpanCtx(span.Context()),
 	}
 

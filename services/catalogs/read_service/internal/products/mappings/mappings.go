@@ -1,7 +1,6 @@
-package mappers
+package mappings
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts/grpc/kafka_messages"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
@@ -37,14 +36,4 @@ func ProductsToProductsDto(products []*models.Product) []*dto.ProductDto {
 	}
 
 	return productDtos
-}
-
-func ListResultToListResultDto[TModel any, TDto any](listResult *utils.ListResult[TModel], m func([]*TModel) []*TDto) *utils.ListResult[TDto] {
-	return &utils.ListResult[TDto]{
-		Items:      m(listResult.Items),
-		Size:       listResult.Size,
-		Page:       listResult.Page,
-		TotalItems: listResult.TotalItems,
-		TotalPage:  listResult.TotalPage,
-	}
 }

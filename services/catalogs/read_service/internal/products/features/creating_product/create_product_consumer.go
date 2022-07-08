@@ -46,7 +46,7 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	p := msg.GetProduct()
-	command := NewCreateProduct(p.GetProductID(), p.GetName(), p.GetDescription(), p.GetPrice(), p.GetCreatedAt().AsTime(), p.GetUpdatedAt().AsTime())
+	command := NewCreateProduct(p.GetProductID(), p.GetName(), p.GetDescription(), p.GetPrice(), p.GetCreatedAt().AsTime())
 	if err := c.Validator.StructCtx(ctx, command); err != nil {
 		tracing.TraceErr(span, err)
 		c.Log.WarnMsg("validate", err)

@@ -8,7 +8,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappers"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 )
 
@@ -33,7 +33,7 @@ func (q *GetProductByIdHandler) Handle(ctx context.Context, query GetProductById
 		return nil, http_errors.NewNotFoundError(fmt.Sprintf("product with id %s not found", query.ProductID))
 	}
 
-	productDto := mappers.ProductToProductDto(product)
+	productDto := mappings.ProductToProductDto(product)
 
 	return &dtos.GetProductByIdResponseDto{Product: productDto}, nil
 }

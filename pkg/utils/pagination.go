@@ -169,3 +169,13 @@ func (q *ListQuery) GetSize() int {
 func (q *ListQuery) GetQueryString() string {
 	return fmt.Sprintf("page=%v&size=%v&orderBy=%s", q.GetPage(), q.GetSize(), q.GetOrderBy())
 }
+
+func ListResultToListResultDto[TModel any, TDto any](listResult *ListResult[TModel], m func([]*TModel) []*TDto) *ListResult[TDto] {
+	return &ListResult[TDto]{
+		Items:      m(listResult.Items),
+		Size:       listResult.Size,
+		Page:       listResult.Page,
+		TotalItems: listResult.TotalItems,
+		TotalPage:  listResult.TotalPage,
+	}
+}

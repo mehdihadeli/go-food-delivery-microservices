@@ -62,6 +62,10 @@ func NewMongoDBConn(ctx context.Context, cfg *Config) (*mongo.Client, error) {
 func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection *mongo.Collection, filter interface{}) (*utils.ListResult[T], error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongodb.Paginate")
 
+	if filter == nil {
+		filter = bson.D{}
+	}
+
 	count, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
 		tracing.TraceErr(span, err)
@@ -70,9 +74,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 
 	limit := int64(listQuery.GetLimit())
 	skip := int64(listQuery.GetOffset())
-	if filter == nil {
-		filter = bson.D{}
-	}
+
 	cursor, err := collection.Find(ctx, filter, &options.FindOptions{
 		Limit: &limit,
 		Skip:  &skip,
