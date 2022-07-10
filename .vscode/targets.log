@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Jul 10 18:22:19 2022
+# Make data base, printed on Sun Jul 10 23:08:03 2022
 
 # Variables
 
@@ -312,8 +312,7 @@ proto_catalogs_write_product_kafka_messages:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to 
- execute (from 'Makefile', line 61):
+#  recipe to execute (from 'Makefile', line 61):
 	@echo Generating products kafka messages proto
 	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/product_kafka_messages.proto
 
@@ -417,6 +416,6 @@ pprof_allocs:
 # strcache performance: lookups = 62 / hit rate = 37%
 # hash-table stats:
 # Load=39/8192=0%, Rehash=0, Collisions=0/62=0%
-# Finished Make data base on Sun Jul 10 18:22:19 2022
+# Finished Make data base on Sun Jul 10 23:08:03 2022
 
  

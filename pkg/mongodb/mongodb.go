@@ -85,7 +85,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 	}
 	defer cursor.Close(ctx) // nolint: errcheck
 
-	products := make([]*T, 0, listQuery.GetSize())
+	products := make([]T, 0, listQuery.GetSize())
 
 	for cursor.Next(ctx) {
 		var prod T
@@ -93,7 +93,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 			tracing.TraceErr(span, err)
 			return nil, errors.Wrap(err, "Find")
 		}
-		products = append(products, &prod)
+		products = append(products, prod)
 	}
 
 	if err := cursor.Err(); err != nil {
@@ -101,5 +101,5 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 		return nil, errors.Wrap(err, "cursor.Err")
 	}
 
-	return utils.NewListResult(products, listQuery.GetSize(), listQuery.GetPage(), count), nil
+	return utils.NewListResult[T](products, listQuery.GetSize(), listQuery.GetPage(), count), nil
 }
