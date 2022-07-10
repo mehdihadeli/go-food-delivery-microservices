@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Jul 08 23:57:56 2022
+# Make data base, printed on Sun Jul 10 18:22:19 2022
 
 # Variables
 
@@ -24,8 +24,6 @@ ACSVCPORT = 17532
 USERPROFILE = C:\Users\MehdiHadeli
 # environment
 LOCALAPPDATA = C:\Users\MehdiHadeli\AppData\Local
-# environment
-VSCODE_IPC_HOOK_EXTHOST = \\.\pipe\vscode-ipc-34d5e5db-54d3-48ea-be3d-1ed855f87abc-sock
 # environment
 VSCODE_CWD = D:\Github\GOLANG\store-golang-microservice-sample
 # environment
@@ -43,7 +41,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_6620_ELUNEFJHKUGVXXVW
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_13964_ROPAKMENEQTSTJMD
 # environment
 FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
@@ -56,12 +54,10 @@ JETBRAINS RIDER = C:\Program Files\JetBrains\JetBrains Rider 2021.3\bin;
 %D = $(patsubst %/,%,$(patsubst %\,%,$(dir $%)))
 # automatic
 ^D = $(patsubst %/,%,$(patsubst %\,%,$(dir $^)))
-# environment
-VSCODE_LOG_STACK = false
 # automatic
 %F = $(notdir $%)
 # environment
-VSCODE_CODE_CACHE_PATH = C:\Users\MehdiHadeli\AppData\Roaming\Code\CachedData\30d9c6cd9483b2cc586687151bcbcd635f373630
+VSCODE_CODE_CACHE_PATH = C:\Users\MehdiHadeli\AppData\Roaming\Code\CachedData\92d25e35d9bf1a6b16f7d0758f25d48ace11e5b9
 # environment
 LANG = C
 # default
@@ -78,8 +74,6 @@ MAKEFLAGS = pqrR
 ONEDRIVE = C:\Users\MehdiHadeli\OneDrive
 # makefile
 CURDIR := d:/Github/GOLANG/store-golang-microservice-sample
-# environment
-VSCODE_PIPE_LOGGING = true
 # environment
 APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # environment
@@ -101,9 +95,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_VERBOSE_LOGGING = true
-# environment
-VSCODE_PID = 6620
+VSCODE_PID = 13964
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -151,8 +143,6 @@ CHOCOLATEYLASTPATHUPDATE = 132998421948824247
 # environment
 LOGONSERVER = \\MEHDI
 # environment
-VSCODE_LOG_NATIVE = false
-# environment
 USERNAME = MehdiHadeli
 # makefile (from 'Makefile', line 22)
 FILES := a7c3e849b03f b4b7b76bc5da a24c28d188f0 60eaf0934a47 72f3a4fdbdda b3ba04eff945 d3703fa862b0 2aea86b823d7 d9421464347b 90441c657854
@@ -174,6 +164,8 @@ USERDOMAIN = Mehdi
 GNUMAKEFLAGS := 
 # environment
 OS = Windows_NT
+# environment
+__COMPAT_LAYER = DetectorsAppHealth
 # makefile
 .DEFAULT_GOAL := run_catalogs_write_service
 # default
@@ -205,12 +197,11 @@ VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
 COMMONPROGRAMFILES(X86) = C:\Program Files (x86)\Common Files
 # environment
-ELECTRON_RUN_AS_NODE 
- = 1
+ELECTRON_RUN_AS_NODE = 1
 # environment
 TEMP = C:\Users\MEHDIH~1\AppData\Local\Temp
 # environment
-VSCODE_IPC_HOOK = \\.\pipe\f514d32982fce962e7fdbbc6d4d7a88f-1.68.1-main-sock
+VSCODE_IPC_HOOK = \\.\pipe\f514d32982fce962e7fdbbc6d4d7a88f-1.69.0-main-sock
 # environment
 GOPROXY = https://proxy.golang.org,direct
 # default
@@ -230,7 +221,7 @@ PROCESSOR_REVISION = a503
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=108/1024=11%, Rehash=0, Collisions=12/139=9%
+# Load=104/1024=10%, Rehash=0, Collisions=11/135=8%
 
 # Pattern-specific Variable Values
 
@@ -321,7 +312,8 @@ proto_catalogs_write_product_kafka_messages:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 61):
+#  recipe to 
+ execute (from 'Makefile', line 61):
 	@echo Generating products kafka messages proto
 	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/grpc/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/product_kafka_messages.proto
 
@@ -365,8 +357,7 @@ run-linter:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to ex 
-ecute (from 'Makefile', line 42):
+#  recipe to execute (from 'Makefile', line 42):
 	@echo Starting linters
 	golangci-lint run ./...
 
@@ -426,6 +417,6 @@ pprof_allocs:
 # strcache performance: lookups = 62 / hit rate = 37%
 # hash-table stats:
 # Load=39/8192=0%, Rehash=0, Collisions=0/62=0%
-# Finished Make data base on Fri Jul 08 23:57:56 2022
+# Finished Make data base on Sun Jul 10 18:22:19 2022
 
  

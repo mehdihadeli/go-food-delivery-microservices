@@ -6,5 +6,5 @@ import (
 )
 
 type SearchProductsResponseDto struct {
-	Products *utils.ListResult[dto.ProductDto]
+	Products *utils.ListResult[*dto.ProductDto]
 }
