@@ -1,5 +1,8 @@
 # 🧺 Store Golang Microservices
 
+[![CI](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/store-golang-microservice-sample)](https://goreportcard.com/report/github.com/mehdihadeli/store-golang-microservice-sample)
+![Go Version](https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod&style=flat-square&color=ff69b4)](https://gitpod.io/#https://github.com/mehdihadeli/store-golang-microservices-sample)
 
 > A practical store sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Driven Architecture**. For communication between independent services, We use asynchronous messaging with using kafka, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
