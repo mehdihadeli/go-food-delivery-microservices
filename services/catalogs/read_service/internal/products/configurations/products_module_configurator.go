@@ -3,6 +3,7 @@ package configurations
 import (
 	"context"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/data/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 )
 
@@ -24,6 +25,11 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 	group := v1.Group("/" + c.Cfg.Http.ProductsPath)
 
 	productRepository := repositories.NewMongoProductRepository(c.Log, c.Cfg, c.MongoClient)
+
+	err := mappings.ConfigureMappings()
+	if err != nil {
+		return err
+	}
 
 	mediator, err := c.configProductsMediator(productRepository)
 

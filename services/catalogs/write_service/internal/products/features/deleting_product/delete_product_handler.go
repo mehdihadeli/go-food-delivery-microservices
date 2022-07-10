@@ -43,7 +43,7 @@ func (c *DeleteProductHandler) Handle(ctx context.Context, command DeleteProduct
 	message := kafka.Message{
 		Topic:   c.cfg.KafkaTopics.ProductDeleted.TopicName,
 		Value:   msgBytes,
-		Time:    time.Now().UTC(),
+		Time:    time.Now(),
 		Headers: tracing.GetKafkaTracingHeadersFromSpanCtx(span.Context()),
 	}
 

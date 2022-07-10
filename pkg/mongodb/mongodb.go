@@ -62,6 +62,10 @@ func NewMongoDBConn(ctx context.Context, cfg *Config) (*mongo.Client, error) {
 func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection *mongo.Collection, filter interface{}) (*utils.ListResult[T], error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongodb.Paginate")
 
+	if filter == nil {
+		filter = bson.D{}
+	}
+
 	count, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
 		tracing.TraceErr(span, err)
@@ -70,9 +74,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 
 	limit := int64(listQuery.GetLimit())
 	skip := int64(listQuery.GetOffset())
-	if filter == nil {
-		filter = bson.D{}
-	}
+
 	cursor, err := collection.Find(ctx, filter, &options.FindOptions{
 		Limit: &limit,
 		Skip:  &skip,
@@ -83,7 +85,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 	}
 	defer cursor.Close(ctx) // nolint: errcheck
 
-	products := make([]*T, 0, listQuery.GetSize())
+	products := make([]T, 0, listQuery.GetSize())
 
 	for cursor.Next(ctx) {
 		var prod T
@@ -91,7 +93,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 			tracing.TraceErr(span, err)
 			return nil, errors.Wrap(err, "Find")
 		}
-		products = append(products, &prod)
+		products = append(products, prod)
 	}
 
 	if err := cursor.Err(); err != nil {
@@ -99,5 +101,5 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 		return nil, errors.Wrap(err, "cursor.Err")
 	}
 
-	return utils.NewListResult(products, listQuery.GetSize(), listQuery.GetPage(), count), nil
+	return utils.NewListResult[T](products, listQuery.GetSize(), listQuery.GetPage(), count), nil
 }

@@ -46,7 +46,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.D
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "gorm.Paginate")
 
-	var items []*T
+	var items []T
 	var totalRows int64
 	db.Model(items).Count(&totalRows)
 
@@ -83,6 +83,5 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.D
 		return nil, errors.Wrap(err, "error in finding products.")
 	}
 
-	return utils.NewListResult(items, listQuery.GetSize(), listQuery.GetPage(), totalRows), nil
+	return utils.NewListResult[T](items, listQuery.GetSize(), listQuery.GetPage(), totalRows), nil
 }
-

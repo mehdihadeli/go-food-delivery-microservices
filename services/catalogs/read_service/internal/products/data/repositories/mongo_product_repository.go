@@ -31,13 +31,13 @@ func NewMongoProductRepository(log logger.Logger, cfg *config.Config, mongoClien
 	return &mongoProductRepository{log: log, cfg: cfg, mongoClient: mongoClient}
 }
 
-func (p *mongoProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[models.Product], error) {
+func (p *mongoProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[*models.Product], error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.GetAllProducts")
 	defer span.Finish()
 
 	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
 
-	result, err := mongodb.Paginate[models.Product](ctx, listQuery, collection, nil)
+	result, err := mongodb.Paginate[*models.Product](ctx, listQuery, collection, nil)
 	if err != nil {
 		tracing.TraceErr(span, err)
 		return nil, err
@@ -46,7 +46,7 @@ func (p *mongoProductRepository) GetAllProducts(ctx context.Context, listQuery *
 	return result, nil
 }
 
-func (p *mongoProductRepository) SearchProducts(ctx context.Context, searchText string, listQuery *utils.ListQuery) (*utils.ListResult[models.Product], error) {
+func (p *mongoProductRepository) SearchProducts(ctx context.Context, searchText string, listQuery *utils.ListQuery) (*utils.ListResult[*models.Product], error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.SearchProducts")
 	defer span.Finish()
 
@@ -59,7 +59,7 @@ func (p *mongoProductRepository) SearchProducts(ctx context.Context, searchText 
 		}},
 	}
 
-	result, err := mongodb.Paginate[models.Product](ctx, listQuery, collection, filter)
+	result, err := mongodb.Paginate[*models.Product](ctx, listQuery, collection, filter)
 	if err != nil {
 		tracing.TraceErr(span, err)
 		return nil, err

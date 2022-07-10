@@ -33,7 +33,7 @@ func NewBaseEvent(aggregate Aggregate, eventType string) Event {
 		AggregateID:   aggregate.GetID(),
 		Version:       aggregate.GetVersion(),
 		EventType:     eventType,
-		Timestamp:     time.Now().UTC(),
+		Timestamp:     time.Now(),
 	}
 }
 

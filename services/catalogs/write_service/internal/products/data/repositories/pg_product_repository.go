@@ -28,11 +28,11 @@ func NewPostgresProductRepository(log logger.Logger, cfg *config.Config, gorm *g
 	return &postgresProductRepository{log: log, cfg: cfg, gorm: gorm}
 }
 
-func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[models.Product], error) {
+func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[*models.Product], error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.GetAllProducts")
 	defer span.Finish()
 
-	result, err := gorm_postgres.Paginate[models.Product](ctx, listQuery, p.gorm)
+	result, err := gorm_postgres.Paginate[*models.Product](ctx, listQuery, p.gorm)
 	if err != nil {
 		tracing.TraceErr(span, err)
 		return nil, err
@@ -40,14 +40,14 @@ func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuer
 	return result, nil
 }
 
-func (p *postgresProductRepository) SearchProducts(ctx context.Context, searchText string, listQuery *utils.ListQuery) (*utils.ListResult[models.Product], error) {
+func (p *postgresProductRepository) SearchProducts(ctx context.Context, searchText string, listQuery *utils.ListQuery) (*utils.ListResult[*models.Product], error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "postgresProductRepository.SearchProducts")
 	defer span.Finish()
 
 	whereQuery := fmt.Sprintf("%s IN (?)", "Name")
 	query := p.gorm.Where(whereQuery, searchText)
 
-	result, err := gorm_postgres.Paginate[models.Product](ctx, listQuery, query)
+	result, err := gorm_postgres.Paginate[*models.Product](ctx, listQuery, query)
 	if err != nil {
 		tracing.TraceErr(span, err)
 		return nil, err

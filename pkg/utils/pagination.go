@@ -5,6 +5,8 @@ import (
 	"math"
 	"strconv"
 
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -18,10 +20,10 @@ type ListResult[T any] struct {
 	Page       int   `json:"page,omitempty" bson:"page"`
 	TotalItems int64 `json:"totalItems,omitempty" bson:"totalItems"`
 	TotalPage  int   `json:"totalPage,omitempty" bson:"totalPage"`
-	Items      []*T  `json:"items,omitempty" bson:"items"`
+	Items      []T   `json:"items,omitempty" bson:"items"`
 }
 
-func NewListResult[T any](items []*T, size int, page int, totalItems int64) *ListResult[T] {
+func NewListResult[T any](items []T, size int, page int, totalItems int64) *ListResult[T] {
 	listResult := &ListResult[T]{Items: items, Size: size, Page: page, TotalItems: totalItems}
 
 	listResult.TotalPage = getTotalPages(totalItems, size)
@@ -168,4 +170,20 @@ func (q *ListQuery) GetSize() int {
 // GetQueryString get query string
 func (q *ListQuery) GetQueryString() string {
 	return fmt.Sprintf("page=%v&size=%v&orderBy=%s", q.GetPage(), q.GetSize(), q.GetOrderBy())
+}
+
+func ListResultToListResultDto[TDto any, TModel any](listResult *ListResult[TModel]) (*ListResult[TDto], error) {
+
+	items, err := mapper.Map[[]TDto](listResult.Items)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ListResult[TDto]{
+		Items:      items,
+		Size:       listResult.Size,
+		Page:       listResult.Page,
+		TotalItems: listResult.TotalItems,
+		TotalPage:  listResult.TotalPage,
+	}, nil
 }

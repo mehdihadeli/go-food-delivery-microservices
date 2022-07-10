@@ -8,7 +8,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 )
@@ -30,9 +29,9 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct
 	span.LogFields(log.String("ProductId", command.ProductID))
 	defer span.Finish()
 
-	productDto := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price}
+	product := CreateProductCommandToProductModel(&command)
 
-	product, err := c.repository.CreateProduct(ctx, productDto)
+	product, err := c.repository.CreateProduct(ctx, product)
 	if err != nil {
 		return nil, err
 	}
