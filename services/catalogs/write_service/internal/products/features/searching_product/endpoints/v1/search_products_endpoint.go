@@ -1,13 +1,15 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/dtos"
-	"net/http"
 )
 
 type searchProductsEndpoint struct {
@@ -55,7 +57,7 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 			return err
 		}
 
-		query := searching_product.SearchProducts{SearchText: request.SearchText, ListQuery: request.ListQuery}
+		query := &searching_product.SearchProducts{SearchText: request.SearchText, ListQuery: request.ListQuery}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			ep.Log.Errorf("(validate) err: {%v}", err)
@@ -63,7 +65,7 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 			return err
 		}
 
-		queryResult, err := ep.ProductMediator.Send(ctx, query)
+		queryResult, err := mediatr.Send[*dtos.SearchProductsResponseDto](ctx, query)
 
 		if err != nil {
 			ep.Log.WarnMsg("SearchProducts", err)
@@ -71,13 +73,6 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 			return err
 		}
 
-		response, ok := queryResult.(*dtos.SearchProductsResponseDto)
-		err = utils.CheckType(ok)
-		if err != nil {
-			tracing.TraceErr(span, err)
-			return err
-		}
-
-		return c.JSON(http.StatusOK, response)
+		return c.JSON(http.StatusOK, queryResult)
 	}
 }

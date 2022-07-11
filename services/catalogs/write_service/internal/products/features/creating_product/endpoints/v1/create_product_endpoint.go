@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
-	"net/http"
 )
 
 type createProductEndpoint struct {
@@ -52,7 +53,7 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 		}
 
 		command := creating_product.NewCreateProduct(request.Name, request.Description, request.Price)
-		result, err := ep.ProductMediator.Send(ctx, command)
+		result, err := mediatr.Send[*dtos.CreateProductResponseDto](ctx, command)
 
 		if err != nil {
 			ep.Log.Errorf("(CreateProduct.Handle) id: {%s}, err: {%v}", command.ProductID, err)
@@ -60,14 +61,7 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 			return err
 		}
 
-		response, ok := result.(*dtos.CreateProductResponseDto)
-		err = utils.CheckType(ok)
-		if err != nil {
-			tracing.TraceErr(span, err)
-			return err
-		}
-
 		ep.Log.Infof("(product created) id: {%s}", command.ProductID)
-		return c.JSON(http.StatusCreated, response)
+		return c.JSON(http.StatusCreated, result)
 	}
 }

@@ -23,13 +23,13 @@ func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository c
 	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
 }
 
-func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct) (*dtos.CreateProductResponseDto, error) {
+func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduct) (*dtos.CreateProductResponseDto, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductHandler.Handle")
 	span.LogFields(log.String("ProductId", command.ProductID))
 	defer span.Finish()
 
-	product := CreateProductCommandToProductModel(&command)
+	product := CreateProductCommandToProductModel(command)
 
 	product, err := c.repository.CreateProduct(ctx, product)
 	if err != nil {

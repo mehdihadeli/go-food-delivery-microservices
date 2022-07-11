@@ -31,17 +31,16 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 		return err
 	}
 
-	mediator, err := c.configProductsMediator(productRepository)
-
+	err = c.configProductsMediator(productRepository)
 	if err != nil {
 		return err
 	}
 
-	c.configEndpoints(ctx, mediator, group)
-	c.configKafkaConsumers(ctx, mediator)
+	c.configEndpoints(ctx, group)
+	c.configKafkaConsumers(ctx)
 
 	if c.Cfg.DeliveryType == "grpc" {
-		c.configGrpc(ctx, mediator)
+		c.configGrpc(ctx)
 	}
 
 	return nil

@@ -21,7 +21,7 @@ func NewGetProductsHandler(log logger.Logger, cfg *config.Config, pgRepo contrac
 	return &GetProductsHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 
-func (c *GetProductsHandler) Handle(ctx context.Context, query GetProducts) (*dtos.GetProductsResponseDto, error) {
+func (c *GetProductsHandler) Handle(ctx context.Context, query *GetProducts) (*dtos.GetProductsResponseDto, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "GetProductsHandler.Handle")
 	defer span.Finish()

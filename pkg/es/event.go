@@ -180,6 +180,6 @@ func (e *Event) String() string {
 		e.EventType,
 		e.AggregateType,
 		string(e.Metadata),
-		e.Timestamp.UTC().String(),
+		e.Timestamp.String(),
 	)
 }

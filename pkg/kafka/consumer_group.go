@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"context"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"sync"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -16,7 +15,7 @@ type MessageProcessor interface {
 }
 
 // Worker kafka consumer worker fetch and process messages from reader
-type Worker func(ctx context.Context, med *mediatr.Mediator, r *kafka.Reader, wg *sync.WaitGroup, workerID int)
+type Worker func(ctx context.Context, r *kafka.Reader, wg *sync.WaitGroup, workerID int)
 
 type ConsumerGroup interface {
 	ConsumeTopic(ctx context.Context, cancel context.CancelFunc, groupID, topic string, poolSize int, worker Worker)
@@ -71,7 +70,7 @@ func (c *consumerGroup) GetNewKafkaWriter() *kafka.Writer {
 }
 
 // ConsumeTopic start consumer group with given worker and pool size
-func (c *consumerGroup) ConsumeTopic(ctx context.Context, mediator *mediatr.Mediator, groupTopics []string, poolSize int, worker Worker) {
+func (c *consumerGroup) ConsumeTopic(ctx context.Context, groupTopics []string, poolSize int, worker Worker) {
 	r := c.GetNewKafkaReader(c.Brokers, groupTopics, c.GroupID)
 
 	defer func() {
@@ -85,7 +84,7 @@ func (c *consumerGroup) ConsumeTopic(ctx context.Context, mediator *mediatr.Medi
 	wg := &sync.WaitGroup{}
 	for i := 0; i <= poolSize; i++ {
 		wg.Add(1)
-		go worker(ctx, mediator, r, wg, i)
+		go worker(ctx, r, wg, i)
 	}
 	wg.Wait()
 }

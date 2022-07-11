@@ -3,8 +3,8 @@ package creating_product
 import (
 	"context"
 	"github.com/avast/retry-go"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts/grpc/kafka_messages"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product/dtos"
@@ -55,20 +55,13 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	if err := retry.Do(func() error {
-		result, err := c.ProductMediator.Send(ctx, command)
+		result, err := mediatr.Send[*dtos.CreateProductResponseDto](ctx, command)
 		if err != nil {
 			tracing.TraceErr(span, err)
 			return err
 		}
 
-		_, ok := result.(*dtos.CreateProductResponseDto)
-		err = utils.CheckType(ok)
-		if err != nil {
-			tracing.TraceErr(span, err)
-			return err
-		}
-
-		c.Log.Infof("(product created) id: {%s}", command.ProductID)
+		c.Log.Infof("(product created) id: {%s}", result.ProductID)
 
 		return nil
 	}, append(retryOptions, retry.Context(ctx))...); err != nil {
