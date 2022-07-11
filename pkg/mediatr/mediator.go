@@ -29,9 +29,6 @@ func RegisterHandler[TRequest any, TResponse any](h RequestHandler[TRequest, TRe
 	return nil
 }
 
-// https://github.com/mehdihadeli/store-golang-microservices-sample/issues/12
-// https://github.com/mehdihadeli/store-golang-microservices-sample/issues/15
-
 func Send[TResponse any, TRequest any](ctx context.Context, request TRequest) (TResponse, error) {
 
 	requestType := reflect.TypeOf(request)

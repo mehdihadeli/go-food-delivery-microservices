@@ -8,10 +8,12 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Mon Jul 11 14:49:33 2022
+# Make data base, printed on Mon Jul 11 20:59:41 2022
 
 # Variables
 
+# environment
+FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
 SYSTEMDRIVE = C:
 # environment
@@ -40,6 +42,8 @@ GOPATH = C:\Users\MehdiHadeli\go
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
 CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_5804_DBSGMNQHTHBXQUNN
+# environment
+FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -190,8 +194,7 @@ DATAGRIP = C:\Program Files\JetBrains\DataGrip 2021.3\bin;
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
 COMMONPROGRAMFILES(X86) = C:\Program Files (x86)\Common Files
-# e 
-nvironment
+# environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
 TEMP = C:\Users\MEHDIH~1\AppData\Local\Temp
@@ -216,7 +219,7 @@ PROCESSOR_REVISION = a503
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=101/1024=10%, Rehash=0, Collisions=10/132=8%
+# Load=103/1024=10%, Rehash=0, Collisions=11/134=8%
 
 # Pattern-specific Variable Values
 
@@ -240,7 +243,8 @@ docker-compose_infra_up:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 12):
 	@echo Starting infrastructure docker-compose
-	docker-compose -f deployments/docker-compose/docker-compose.infrastructure.yaml up --build
+	docker-compose -f deployments/docker-compose/docker-compose.infrastructure.yaml up  
+--build
 
 # Not a target:
 Makefile:
@@ -332,8 +336,7 @@ all:
 #  File does not exist.
 #  File has not been updated.
 
-dock 
-er_clean:
+docker_clean:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -402,17 +405,17 @@ pprof_allocs:
 # Load=23/1024=2%, Rehash=0, Collisions=0/33=0%
 # VPATH Search Paths
 
-# No 'vpath' search paths.
+# No 'vpath 
+' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 39 / storage = 559 B 
- / avg = 14 B
+# strcache buffers: 1 (0) / strings = 39 / storage = 559 B / avg = 14 B
 # current buf: size = 8174 B / used = 559 B / count = 39 / avg = 14 B
 
 # strcache performance: lookups = 62 / hit rate = 37%
 # hash-table stats:
 # Load=39/8192=0%, Rehash=0, Collisions=0/62=0%
-# Finished Make data base on Mon Jul 11 14:49:33 2022
+# Finished Make data base on Mon Jul 11 20:59:41 2022
 
  
