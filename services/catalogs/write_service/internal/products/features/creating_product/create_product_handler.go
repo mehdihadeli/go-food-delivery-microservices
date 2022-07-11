@@ -3,6 +3,8 @@ package creating_product
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -16,7 +18,6 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
-	"time"
 )
 
 type CreateProductHandler struct {
@@ -30,7 +31,7 @@ func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository c
 	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
 }
 
-func (c *CreateProductHandler) Handle(ctx context.Context, command CreateProduct) (*dtos.CreateProductResponseDto, error) {
+func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduct) (*dtos.CreateProductResponseDto, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductHandler.Handle")
 	span.LogFields(log.String("ProductId", command.ProductID.String()))

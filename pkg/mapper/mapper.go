@@ -123,7 +123,7 @@ func Map[TDes any, TSrc any](src TSrc) (TDes, error) {
 	k := mappingsEntry{SourceType: srcType, DestinationType: desType}
 	fn, ok := maps[k]
 	if !ok {
-		return des, ErrMapNotExist
+		return *new(TDes), ErrMapNotExist
 	}
 	if fn != nil {
 		mfn := fn.(MapFunc[TSrc, TDes])
@@ -134,7 +134,7 @@ func Map[TDes any, TSrc any](src TSrc) (TDes, error) {
 
 	err := processValues(reflect.ValueOf(src), desTypeValue)
 	if err != nil {
-		return des, err
+		return *new(TDes), err
 	}
 
 	return des, nil

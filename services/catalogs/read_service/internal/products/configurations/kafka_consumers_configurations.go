@@ -3,7 +3,6 @@ package configurations
 import (
 	"context"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product"
 	"github.com/segmentio/kafka-go"
@@ -14,14 +13,14 @@ const (
 	PoolSize = 30
 )
 
-func (c *productsModuleConfigurator) configKafkaConsumers(ctx context.Context, mediator *mediatr.Mediator) {
+func (c *productsModuleConfigurator) configKafkaConsumers(ctx context.Context) {
 	c.Log.Info("Starting Reader Kafka consumers")
 
 	cg := kafkaClient.NewConsumerGroup(c.Cfg.Kafka.Brokers, c.Cfg.Kafka.GroupID, c.Log)
-	go cg.ConsumeTopic(ctx, mediator, c.getConsumerGroupTopics(), PoolSize, c.processMessages)
+	go cg.ConsumeTopic(ctx, c.getConsumerGroupTopics(), PoolSize, c.processMessages)
 }
 
-func (c *productsModuleConfigurator) processMessages(ctx context.Context, mediator *mediatr.Mediator, r *kafka.Reader, wg *sync.WaitGroup, workerID int) {
+func (c *productsModuleConfigurator) processMessages(ctx context.Context, r *kafka.Reader, wg *sync.WaitGroup, workerID int) {
 	defer wg.Done()
 
 	for {
@@ -37,7 +36,7 @@ func (c *productsModuleConfigurator) processMessages(ctx context.Context, mediat
 			continue
 		}
 
-		productConsumersBase := delivery.NewProductConsumersBase(c.InfrastructureConfigurations, mediator)
+		productConsumersBase := delivery.NewProductConsumersBase(c.InfrastructureConfigurations)
 		productConsumersBase.LogProcessMessage(message, workerID)
 
 		switch message.Topic {

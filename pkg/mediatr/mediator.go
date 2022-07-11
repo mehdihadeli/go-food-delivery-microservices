@@ -1,5 +1,3 @@
-// Ref: https://github.com/adzeitor/mediatr
-
 package mediatr
 
 import (
@@ -8,46 +6,25 @@ import (
 	"reflect"
 )
 
-type Mediator struct {
-	subscriptions map[reflect.Type][]reflect.Value
-	registrations map[reflect.Type]reflect.Value
+//https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
+type RequestHandler[TRequest any, TResponse any] interface {
+	Handle(ctx context.Context, request TRequest) (TResponse, error)
 }
 
-// New return new instance of mediator.
-func New() Mediator {
-	return Mediator{
-		subscriptions: make(map[reflect.Type][]reflect.Value),
-		registrations: make(map[reflect.Type]reflect.Value),
+var registrations = map[reflect.Type]interface{}{}
+
+type Unit struct{}
+
+func RegisterHandler[TRequest any, TResponse any](h RequestHandler[TRequest, TResponse]) error {
+	var request TRequest
+	requestType := reflect.TypeOf(request)
+
+	_, exist := registrations[requestType]
+	if exist {
+		return fmt.Errorf("handler already registered for message %T", requestType)
 	}
-}
 
-type Handler interface {
-	Handle(context.Context, interface{}) error
-}
-
-// Register registers command handler.
-// Command type is detected by argument of handler.
-func (m Mediator) Register(handlers ...interface{}) error {
-
-	for _, handler := range handlers {
-		handlerValue := reflect.ValueOf(handler)
-		var handleMethod = handlerValue.MethodByName("Handle")
-
-		messageType := handleMethod.Type().In(0)
-		fmt.Print(messageType)
-		if handleMethod.Type().NumIn() > 1 {
-			if argIsContext(messageType) {
-				messageType = handleMethod.Type().In(1)
-			}
-		}
-
-		_, exist := m.registrations[messageType]
-		if exist {
-			return fmt.Errorf("handler already registered for message %T", messageType)
-		}
-
-		m.registrations[messageType] = handlerValue
-	}
+	registrations[requestType] = h
 
 	return nil
 }
@@ -55,55 +32,24 @@ func (m Mediator) Register(handlers ...interface{}) error {
 // https://github.com/mehdihadeli/store-golang-microservices-sample/issues/12
 // https://github.com/mehdihadeli/store-golang-microservices-sample/issues/15
 
-func (m Mediator) Send(ctx context.Context, command interface{}) (interface{}, error) {
-	handler, ok := m.registrations[reflect.TypeOf(command)]
+func Send[TResponse any, TRequest any](ctx context.Context, request TRequest) (TResponse, error) {
+
+	requestType := reflect.TypeOf(request)
+
+	handler, ok := registrations[requestType]
 	if !ok {
-		return nil, fmt.Errorf("no handlers for command %T", command)
+		return *new(TResponse), fmt.Errorf("no handlers for command %T", request)
 	}
 
-	arguments := []reflect.Value{
-		reflect.ValueOf(command),
+	handlerValue, ok := handler.(RequestHandler[TRequest, TResponse])
+	if !ok {
+		return *new(TResponse), fmt.Errorf("handler for command %T is not a Handler", request)
 	}
 
-	var handleMethod = handler.MethodByName("Handle")
-
-	if handleMethod.Type().NumIn() == 2 {
-		arguments = append(
-			[]reflect.Value{reflect.ValueOf(ctx)},
-			arguments...,
-		)
+	response, err := handlerValue.Handle(ctx, request)
+	if err != nil {
+		return *new(TResponse), err
 	}
 
-	result := handleMethod.Call(arguments)
-	switch len(result) {
-	case 0:
-		return nil, nil
-	case 1:
-		return oneReturnValuesCommand(result)
-	case 2:
-		return twoReturnValuesCommand(result)
-	}
-	return nil, nil
-}
-
-func oneReturnValuesCommand(result []reflect.Value) (interface{}, error) {
-	err, isError := result[0].Interface().(error)
-	if isError {
-		return nil, err
-	}
-	return result[0].Interface(), nil
-}
-
-func twoReturnValuesCommand(result []reflect.Value) (interface{}, error) {
-	var err error
-	if !result[1].IsNil() {
-		err = result[1].Interface().(error)
-	}
-	return result[0].Interface(), err
-}
-
-var contextType = reflect.TypeOf(new(context.Context)).Elem()
-
-func argIsContext(typeOf reflect.Type) bool {
-	return contextType == typeOf
+	return response, nil
 }

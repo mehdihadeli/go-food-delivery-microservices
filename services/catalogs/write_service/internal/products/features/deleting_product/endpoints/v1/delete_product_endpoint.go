@@ -1,11 +1,13 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product"
-	"net/http"
 )
 
 type deleteProductEndpoint struct {
@@ -51,7 +53,7 @@ func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 			return err
 		}
 
-		_, err := ep.ProductMediator.Send(ctx, command)
+		_, err := mediatr.Send[*mediatr.Unit](ctx, command)
 
 		if err != nil {
 			ep.Log.WarnMsg("DeleteProduct", err)

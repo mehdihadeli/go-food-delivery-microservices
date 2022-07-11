@@ -6,6 +6,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
@@ -29,7 +30,7 @@ func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, pgRepo contr
 	return &UpdateProductHandler{log: log, cfg: cfg, pgRepo: pgRepo, kafkaProducer: kafkaProducer}
 }
 
-func (c *UpdateProductHandler) Handle(ctx context.Context, command UpdateProduct) error {
+func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduct) (*mediatr.Unit, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateProductHandler.Handle")
 	defer span.Finish()
@@ -37,20 +38,20 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command UpdateProduct
 	_, err := c.pgRepo.GetProductById(ctx, command.ProductID)
 
 	if err != nil {
-		return http_errors.NewNotFoundError(fmt.Sprintf("product with id %s not found", command.ProductID))
+		return nil, http_errors.NewNotFoundError(fmt.Sprintf("product with id %s not found", command.ProductID))
 	}
 
 	product := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price, UpdatedAt: command.UpdatedAt}
 
 	updatedProduct, err := c.pgRepo.UpdateProduct(ctx, product)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	evt := &kafka_messages.ProductUpdated{Product: mappings.ProductToGrpcMessage(updatedProduct)}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	message := kafka.Message{
@@ -60,5 +61,5 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command UpdateProduct
 		Headers: tracing.GetKafkaTracingHeadersFromSpanCtx(span.Context()),
 	}
 
-	return c.kafkaProducer.PublishMessage(ctx, message)
+	return &mediatr.Unit{}, c.kafkaProducer.PublishMessage(ctx, message)
 }

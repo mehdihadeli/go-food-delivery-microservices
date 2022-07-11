@@ -21,7 +21,7 @@ func NewSearchProductsHandler(log logger.Logger, cfg *config.Config, pgRepo cont
 	return &SearchProductsHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 
-func (c *SearchProductsHandler) Handle(ctx context.Context, query SearchProducts) (*dtos.SearchProductsResponseDto, error) {
+func (c *SearchProductsHandler) Handle(ctx context.Context, query *SearchProducts) (*dtos.SearchProductsResponseDto, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "SearchProductsHandler.Handle")
 	defer span.Finish()

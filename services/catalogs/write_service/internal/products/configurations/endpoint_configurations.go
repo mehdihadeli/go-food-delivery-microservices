@@ -2,8 +2,8 @@ package configurations
 
 import (
 	"context"
+
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	creating_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/endpoints/v1"
 	deleting_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/endpoints/v1"
@@ -13,11 +13,10 @@ import (
 	updating_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/endpoints/v1"
 )
 
-func (c *productsModuleConfigurator) configEndpoints(ctx context.Context, group *echo.Group, mediator *mediatr.Mediator) {
+func (c *productsModuleConfigurator) configEndpoints(ctx context.Context, group *echo.Group) {
 
 	productEndpointBase := &delivery.ProductEndpointBase{
 		ProductsGroup:               group,
-		ProductMediator:             mediator,
 		InfrastructureConfiguration: c.InfrastructureConfiguration,
 	}
 	// CreateNewProduct

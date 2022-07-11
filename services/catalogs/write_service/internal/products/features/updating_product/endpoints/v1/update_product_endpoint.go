@@ -1,11 +1,13 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product"
-	"net/http"
 )
 
 type updateProductEndpoint struct {
@@ -52,7 +54,7 @@ func (ep *updateProductEndpoint) updateProduct() echo.HandlerFunc {
 			return err
 		}
 
-		_, err := ep.ProductMediator.Send(ctx, command)
+		_, err := mediatr.Send[*mediatr.Unit](ctx, command)
 
 		if err != nil {
 			ep.Log.WarnMsg("UpdateProduct", err)

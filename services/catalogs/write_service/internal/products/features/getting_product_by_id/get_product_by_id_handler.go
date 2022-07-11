@@ -10,12 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 )
-
-type GetProductByIdQrHandler interface {
-	Handle(ctx context.Context, query *GetProductById) (*models.Product, error)
-}
 
 type GetProductByIdHandler struct {
 	log    logger.Logger
@@ -27,7 +22,7 @@ func NewGetProductByIdHandler(log logger.Logger, cfg *config.Config, pgRepo cont
 	return &GetProductByIdHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 
-func (q *GetProductByIdHandler) Handle(ctx context.Context, query GetProductById) (*dtos.GetProductByIdResponseDto, error) {
+func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductById) (*dtos.GetProductByIdResponseDto, error) {
 	product, err := q.pgRepo.GetProductById(ctx, query.ProductID)
 
 	if err != nil {

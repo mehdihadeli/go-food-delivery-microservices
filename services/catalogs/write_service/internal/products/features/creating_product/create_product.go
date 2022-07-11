@@ -13,6 +13,6 @@ type CreateProduct struct {
 	CreatedAt   time.Time `validate:"required"`
 }
 
-func NewCreateProduct(name string, description string, price float64) CreateProduct {
-	return CreateProduct{ProductID: uuid.NewV4(), Name: name, Description: description, Price: price, CreatedAt: time.Now()}
+func NewCreateProduct(name string, description string, price float64) *CreateProduct {
+	return &CreateProduct{ProductID: uuid.NewV4(), Name: name, Description: description, Price: price, CreatedAt: time.Now()}
 }
