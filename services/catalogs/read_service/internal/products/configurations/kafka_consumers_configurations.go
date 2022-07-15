@@ -5,6 +5,8 @@ import (
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/deleting_products"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/updating_products"
 	"github.com/segmentio/kafka-go"
 	"sync"
 )
@@ -42,11 +44,10 @@ func (c *productsModuleConfigurator) processMessages(ctx context.Context, r *kaf
 		switch message.Topic {
 		case c.Cfg.KafkaTopics.ProductCreated.TopicName:
 			creating_product.NewCreateProductConsumer(productConsumersBase).Consume(ctx, r, message)
-			//	s.processProductCreated(ctx, r, m)
-			//case s.cfg.KafkaTopics.ProductUpdated.TopicName:
-			//	s.processProductUpdated(ctx, r, m)
-			//case s.cfg.KafkaTopics.ProductDeleted.TopicName:
-			//	s.processProductDeleted(ctx, r, m)
+		case c.Cfg.KafkaTopics.ProductUpdated.TopicName:
+			updating_products.NewUpdateProductConsumer(productConsumersBase).Consume(ctx, r, message)
+		case c.Cfg.KafkaTopics.ProductDeleted.TopicName:
+			deleting_products.NewDeleteProductConsumer(productConsumersBase).Consume(ctx, r, message)
 		}
 	}
 }
