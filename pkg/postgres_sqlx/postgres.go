@@ -1,25 +1,48 @@
 package postgres_sqlx
 
 import (
+	"database/sql"
 	"fmt"
+	"github.com/Masterminds/squirrel"
+	"github.com/doug-martin/goqu/v9"
 	_ "github.com/jackc/pgx/v4/stdlib" // load pgx driver for PostgreSQL
 	"github.com/jmoiron/sqlx"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
+	"go.uber.org/zap"
 	"os"
 	"strconv"
 	"time"
 )
 
 type Config struct {
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	User     string `yaml:"user"`
-	DBName   string `yaml:"dbName"`
-	SSLMode  bool   `yaml:"sslMode"`
-	Password string `yaml:"password"`
+	Host       string     `mapstructure:"host"`
+	Port       string     `mapstructure:"port"`
+	User       string     `mapstructure:"user"`
+	DBName     string     `mapstructure:"dbName"`
+	SSLMode    bool       `mapstructure:"sslMode"`
+	Password   string     `mapstructure:"password"`
+	Migrations Migrations `mapstructure:"migrations"`
 }
 
-// NewSqlxConn func for connection to PostgreSQL database.
-func NewSqlxConn(cfg *Config) (*sqlx.DB, error) {
+type Migrations struct {
+	MigrationsDirectory string `mapstructure:"migrationsDir"`
+	VersionTable        string `mapstructure:"versionTable"`
+	SchemaVersion       uint   `mapstructure:"schemaVersion"`
+	SkipMigration       bool   `mapstructure:"skipMigration"`
+}
+
+type Sqlx struct {
+	SqlxDB          *sqlx.DB
+	DB              *sql.DB
+	SquirrelBuilder squirrel.StatementBuilderType
+	GoquBuilder     *goqu.SelectDataset
+}
+
+// NewSqlxConn creates a database connection with appropriate pool configuration
+// and runs migration to prepare database.
+//
+// Migration will be omitted if appropriate config parameter set.
+func NewSqlxConn(cfg *Config) (*Sqlx, error) {
 	// Define database connection settings.
 	maxConn, _ := strconv.Atoi(os.Getenv("DB_MAX_CONNECTIONS"))
 	maxIdleConn, _ := strconv.Atoi(os.Getenv("DB_MAX_IDLE_CONNECTIONS"))
@@ -50,7 +73,8 @@ func NewSqlxConn(cfg *Config) (*sqlx.DB, error) {
 		return nil, fmt.Errorf("error, not connected to database, %w", err)
 	}
 
-	// Set database connection settings.
+	// stdlib package doesn't have a compat layer for pgxpool
+	// so had to use standard sql api for pool configuration.
 	db.SetMaxOpenConns(maxConn)                           // the default is 0 (unlimited)
 	db.SetMaxIdleConns(maxIdleConn)                       // defaultMaxIdleConns = 2
 	db.SetConnMaxLifetime(time.Duration(maxLifetimeConn)) // 0, connections are reused forever
@@ -61,5 +85,37 @@ func NewSqlxConn(cfg *Config) (*sqlx.DB, error) {
 		return nil, fmt.Errorf("error, not sent ping to database, %w", err)
 	}
 
-	return db, nil
+	//squirrel
+	squirrelBuilder := squirrel.StatementBuilder.
+		PlaceholderFormat(squirrel.Dollar).RunWith(db)
+
+	// goqu
+	dialect := goqu.Dialect("postgres")
+	database := dialect.DB(db)
+	goquBuilder := database.From()
+
+	sqlx := &Sqlx{DB: db.DB, SqlxDB: db, SquirrelBuilder: squirrelBuilder, GoquBuilder: goquBuilder}
+
+	if cfg.Migrations.SkipMigration {
+		zap.L().Info("database migration skipped")
+		return sqlx, nil
+	}
+
+	mp := migrations.MigrationParams{
+		DbName:        cfg.DBName,
+		VersionTable:  cfg.Migrations.VersionTable,
+		MigrationsDir: cfg.Migrations.MigrationsDirectory,
+		TargetVersion: cfg.Migrations.SchemaVersion,
+	}
+	if err = migrations.RunMigration(db.DB, mp); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+
+	return sqlx, nil
+}
+
+func (db *Sqlx) Close() {
+	_ = db.DB.Close()
+	_ = db.SqlxDB.Close()
 }

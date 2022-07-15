@@ -4,11 +4,11 @@ import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/go-playground/validator"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/interceptors"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares"
 	v7 "github.com/olivere/elastic/v7"
@@ -24,7 +24,7 @@ type InfrastructureConfiguration struct {
 	KafkaConn         *kafka.Conn
 	KafkaProducer     kafkaClient.Producer
 	Im                interceptors.InterceptorManager
-	PgConn            *pgxpool.Pool
+	Pgx               *postgres.Pgx
 	Gorm              *gorm.DB
 	Metrics           *CatalogsServiceMetrics
 	Echo              *echo.Echo
@@ -77,7 +77,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 		return nil, err, nil
 	}
 	cleanup = append(cleanup, postgresCleanup)
-	infrastructure.PgConn = pgx
+	infrastructure.Pgx = pgx
 
 	//el, err, _ := ic.configElasticSearch(ctx)
 	//if err != nil {
