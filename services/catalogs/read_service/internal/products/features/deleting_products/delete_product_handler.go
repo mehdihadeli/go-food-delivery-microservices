@@ -10,13 +10,14 @@ import (
 )
 
 type DeleteProductHandler struct {
-	log        logger.Logger
-	cfg        *config.Config
-	repository contracts.ProductRepository
+	log             logger.Logger
+	cfg             *config.Config
+	mongoRepository contracts.ProductRepository
+	redisRepository contracts.ProductCacheRepository
 }
 
-func NewDeleteProductHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository) *DeleteProductHandler {
-	return &DeleteProductHandler{log: log, cfg: cfg, repository: repository}
+func NewDeleteProductHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *DeleteProductHandler {
+	return &DeleteProductHandler{log: log, cfg: cfg, mongoRepository: repository, redisRepository: redisRepository}
 }
 
 func (c *DeleteProductHandler) Handle(ctx context.Context, command *DeleteProduct) (*mediatr.Unit, error) {
@@ -24,11 +25,13 @@ func (c *DeleteProductHandler) Handle(ctx context.Context, command *DeleteProduc
 	span, ctx := opentracing.StartSpanFromContext(ctx, "DeleteProductHandler.Handle")
 	defer span.Finish()
 
-	if err := c.repository.DeleteProductByID(ctx, command.ProductID); err != nil {
+	if err := c.mongoRepository.DeleteProductByID(ctx, command.ProductID); err != nil {
 		return nil, err
 	}
 
 	c.log.Infof("(product deleted) id: {%s}", command.ProductID)
-	
+
+	c.redisRepository.DelProduct(ctx, command.ProductID.String())
+
 	return &mediatr.Unit{}, nil
 }
