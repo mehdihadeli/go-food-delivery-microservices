@@ -11,13 +11,14 @@ import (
 )
 
 type CreateProductHandler struct {
-	log        logger.Logger
-	cfg        *config.Config
-	repository contracts.ProductRepository
+	log             logger.Logger
+	cfg             *config.Config
+	mongoRepository contracts.ProductRepository
+	redisRepository contracts.ProductCacheRepository
 }
 
-func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository) *CreateProductHandler {
-	return &CreateProductHandler{log: log, cfg: cfg, repository: repository}
+func NewCreateProductHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *CreateProductHandler {
+	return &CreateProductHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
 }
 
 func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduct) (*CreateProductResponseDto, error) {
@@ -28,13 +29,15 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 
 	product := CreateProductCommandToProductModel(command)
 
-	product, err := c.repository.CreateProduct(ctx, product)
+	createdProduct, err := c.mongoRepository.CreateProduct(ctx, product)
 	if err != nil {
 		return nil, err
 	}
 
-	response := &CreateProductResponseDto{ProductID: product.ProductID}
+	response := &CreateProductResponseDto{ProductID: createdProduct.ProductID}
 	bytes, _ := json.Marshal(response)
+
+	c.redisRepository.PutProduct(ctx, createdProduct.ProductID, createdProduct)
 
 	span.LogFields(log.String("CreateProductResponseDto", string(bytes)))
 

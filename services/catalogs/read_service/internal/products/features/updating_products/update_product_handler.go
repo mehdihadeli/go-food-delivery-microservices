@@ -13,13 +13,14 @@ import (
 )
 
 type UpdateProductHandler struct {
-	log        logger.Logger
-	cfg        *config.Config
-	repository contracts.ProductRepository
+	log             logger.Logger
+	cfg             *config.Config
+	mongoRepository contracts.ProductRepository
+	redisRepository contracts.ProductCacheRepository
 }
 
-func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository) *UpdateProductHandler {
-	return &UpdateProductHandler{log: log, cfg: cfg, repository: repository}
+func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *UpdateProductHandler {
+	return &UpdateProductHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
 }
 
 func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduct) (*mediatr.Unit, error) {
@@ -27,7 +28,7 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduc
 	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateProductHandler.Handle")
 	defer span.Finish()
 
-	_, err := c.repository.GetProductById(ctx, command.ProductID)
+	_, err := c.mongoRepository.GetProductById(ctx, command.ProductID)
 
 	if err != nil {
 		return nil, http_errors.NewNotFoundError(fmt.Sprintf("product with id %s not found", command.ProductID))
@@ -35,10 +36,12 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduc
 
 	product := &models.Product{ProductID: command.ProductID.String(), Name: command.Name, Description: command.Description, Price: command.Price, UpdatedAt: command.UpdatedAt}
 
-	_, err = c.repository.UpdateProduct(ctx, product)
+	updatedProduct, err := c.mongoRepository.UpdateProduct(ctx, product)
 	if err != nil {
 		return nil, err
 	}
+
+	c.redisRepository.PutProduct(ctx, updatedProduct.ProductID, updatedProduct)
 
 	c.log.Infof("(product updated) id: {%s}", command.ProductID)
 

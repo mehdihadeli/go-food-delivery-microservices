@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/go-playground/validator"
+	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/interceptors"
@@ -33,6 +34,7 @@ type InfrastructureConfigurations struct {
 	Esdb              *esdb.Client
 	MongoClient       *mongo.Client
 	ElasticClient     *v7.Client
+	Redis             redis.UniversalClient
 	MiddlewareManager middlewares.MiddlewareManager
 }
 
@@ -74,6 +76,13 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	}
 	cleanup = append(cleanup, mongoCleanup)
 	infrastructure.MongoClient = mongoClient
+
+	redis, err, redisCleanup := ic.configRedis(ctx)
+	if err != nil {
+		return nil, err, nil
+	}
+	cleanup = append(cleanup, redisCleanup)
+	infrastructure.Redis = redis
 
 	//el, err, _ := ic.configElasticSearch(ctx)
 	//if err != nil {

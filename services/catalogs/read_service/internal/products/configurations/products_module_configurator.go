@@ -24,14 +24,15 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 	v1 := c.Echo.Group("/api/v1")
 	group := v1.Group("/" + c.Cfg.Http.ProductsPath)
 
-	productRepository := repositories.NewMongoProductRepository(c.Log, c.Cfg, c.MongoClient)
+	mongoProductRepository := repositories.NewMongoProductRepository(c.Log, c.Cfg, c.MongoClient)
+	redisRepository := repositories.NewRedisRepository(c.Log, c.Cfg, c.Redis)
 
 	err := mappings.ConfigureMappings()
 	if err != nil {
 		return err
 	}
 
-	err = c.configProductsMediator(productRepository)
+	err = c.configProductsMediator(mongoProductRepository, redisRepository)
 	if err != nil {
 		return err
 	}
