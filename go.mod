@@ -5,7 +5,6 @@ go 1.18
 require (
 	github.com/EventStore/EventStore-Client-Go v1.0.2
 	github.com/Masterminds/squirrel v1.5.3
-	github.com/doug-martin/goqu v5.0.0+incompatible
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/go-redis/redis/v8 v8.11.5
@@ -16,6 +15,7 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.7.2
+	github.com/mattes/migrate v3.0.1+incompatible
 	github.com/microcosm-cc/bluemonday v1.0.18
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/opentracing/opentracing-go v1.2.0
@@ -38,7 +38,6 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
-	github.com/c2fo/testify v0.0.0-20150827203832-fba96363964a // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -93,7 +92,5 @@ require (
 	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/genproto v0.0.0-20220314164441-57ef72a4c106 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
-	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
-	gopkg.in/doug-martin/goqu.v5 v5.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

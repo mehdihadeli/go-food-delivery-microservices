@@ -15,20 +15,13 @@ import (
 )
 
 type Config struct {
-	Host       string     `mapstructure:"host"`
-	Port       string     `mapstructure:"port"`
-	User       string     `mapstructure:"user"`
-	DBName     string     `mapstructure:"dbName"`
-	SSLMode    bool       `mapstructure:"sslMode"`
-	Password   string     `mapstructure:"password"`
-	Migrations Migrations `mapstructure:"migrations"`
-}
-
-type Migrations struct {
-	MigrationsDirectory string `mapstructure:"migrationsDir"`
-	VersionTable        string `mapstructure:"versionTable"`
-	SchemaVersion       uint   `mapstructure:"schemaVersion"`
-	SkipMigration       bool   `mapstructure:"skipMigration"`
+	Host       string                     `mapstructure:"host"`
+	Port       string                     `mapstructure:"port"`
+	User       string                     `mapstructure:"user"`
+	DBName     string                     `mapstructure:"dbName"`
+	SSLMode    bool                       `mapstructure:"sslMode"`
+	Password   string                     `mapstructure:"password"`
+	Migrations migrations.MigrationParams `mapstructure:"migrations"`
 }
 
 type Sqlx struct {
@@ -36,6 +29,7 @@ type Sqlx struct {
 	DB              *sql.DB
 	SquirrelBuilder squirrel.StatementBuilderType
 	GoquBuilder     *goqu.SelectDataset
+	config          *Config
 }
 
 // NewSqlxConn creates a database connection with appropriate pool configuration
@@ -94,25 +88,29 @@ func NewSqlxConn(cfg *Config) (*Sqlx, error) {
 	database := dialect.DB(db)
 	goquBuilder := database.From()
 
-	sqlx := &Sqlx{DB: db.DB, SqlxDB: db, SquirrelBuilder: squirrelBuilder, GoquBuilder: goquBuilder}
+	sqlx := &Sqlx{DB: db.DB, SqlxDB: db, SquirrelBuilder: squirrelBuilder, GoquBuilder: goquBuilder, config: cfg}
 
-	if cfg.Migrations.SkipMigration {
+	return sqlx, nil
+}
+
+func (db *Sqlx) Migrate() error {
+	if db.config.Migrations.SkipMigration {
 		zap.L().Info("database migration skipped")
-		return sqlx, nil
+		return nil
 	}
 
 	mp := migrations.MigrationParams{
-		DbName:        cfg.DBName,
-		VersionTable:  cfg.Migrations.VersionTable,
-		MigrationsDir: cfg.Migrations.MigrationsDirectory,
-		TargetVersion: cfg.Migrations.SchemaVersion,
-	}
-	if err = migrations.RunMigration(db.DB, mp); err != nil {
-		_ = db.Close()
-		return nil, err
+		DbName:        db.config.DBName,
+		VersionTable:  db.config.Migrations.VersionTable,
+		MigrationsDir: db.config.Migrations.MigrationsDir,
+		TargetVersion: db.config.Migrations.TargetVersion,
 	}
 
-	return sqlx, nil
+	if err := migrations.RunMigration(db.DB, mp); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (db *Sqlx) Close() {

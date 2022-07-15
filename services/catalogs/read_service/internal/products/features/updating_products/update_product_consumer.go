@@ -1,4 +1,4 @@
-package creating_product
+package updating_products
 
 import (
 	"context"
@@ -7,17 +7,18 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts/grpc/kafka_messages"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
+	uuid "github.com/satori/go.uuid"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
 	"time"
 )
 
-type createProductConsumer struct {
+type updateProductConsumer struct {
 	*delivery.ProductConsumersBase
 }
 
-func NewCreateProductConsumer(productConsumerBase *delivery.ProductConsumersBase) *createProductConsumer {
-	return &createProductConsumer{productConsumerBase}
+func NewUpdateProductConsumer(productConsumerBase *delivery.ProductConsumersBase) *updateProductConsumer {
+	return &updateProductConsumer{productConsumerBase}
 }
 
 const (
@@ -29,32 +30,39 @@ var (
 	retryOptions = []retry.Option{retry.Attempts(retryAttempts), retry.Delay(retryDelay), retry.DelayType(retry.BackOffDelay)}
 )
 
-func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m kafka.Message) {
-	c.Metrics.CreateProductKafkaMessages.Inc()
+func (c *updateProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m kafka.Message) {
+	c.Metrics.UpdateProductKafkaMessages.Inc()
 
-	ctx, span := tracing.StartKafkaConsumerTracerSpan(ctx, m.Headers, "createProductConsumer.Consume")
+	ctx, span := tracing.StartKafkaConsumerTracerSpan(ctx, m.Headers, "updateProductConsumer.Consume")
 	defer span.Finish()
 
-	msg := &kafka_messages.ProductCreated{}
+	msg := &kafka_messages.ProductUpdated{}
 	if err := proto.Unmarshal(m.Value, msg); err != nil {
 		c.Log.WarnMsg("proto.Unmarshal", err)
-		tracing.TraceErr(span, err)
 		c.CommitErrMessage(ctx, r, m)
-
 		return
 	}
 
 	p := msg.GetProduct()
-	command := NewCreateProduct(p.GetProductID(), p.GetName(), p.GetDescription(), p.GetPrice(), p.GetCreatedAt().AsTime())
-	if err := c.Validator.StructCtx(ctx, command); err != nil {
+
+	productUUID, err := uuid.FromString(p.GetProductID())
+	if err != nil {
+		c.Log.WarnMsg("uuid.FromString", err)
 		tracing.TraceErr(span, err)
+		c.CommitErrMessage(ctx, r, m)
+		return
+	}
+
+	command := NewUpdateProduct(productUUID, p.GetName(), p.GetDescription(), p.GetPrice())
+	if err := c.Validator.StructCtx(ctx, command); err != nil {
 		c.Log.WarnMsg("validate", err)
+		tracing.TraceErr(span, err)
 		c.CommitErrMessage(ctx, r, m)
 		return
 	}
 
 	if err := retry.Do(func() error {
-		_, err := mediatr.Send[*CreateProductResponseDto, *CreateProduct](ctx, command)
+		_, err := mediatr.Send[*mediatr.Unit, *UpdateProduct](ctx, command)
 		if err != nil {
 			tracing.TraceErr(span, err)
 			return err
@@ -62,7 +70,7 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 
 		return nil
 	}, append(retryOptions, retry.Context(ctx))...); err != nil {
-		c.Log.WarnMsg("CreateProduct.Handle", err)
+		c.Log.WarnMsg("UpdateProduct.Handle", err)
 		tracing.TraceErr(span, err)
 		c.CommitErrMessage(ctx, r, m)
 		return

@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+
 	"go.uber.org/zap"
 )
 
 type MigrationParams struct {
-	DbName        string
-	VersionTable  string
-	MigrationsDir string
-	TargetVersion uint
+	DbName        string `mapstructure:"dbName"`
+	VersionTable  string `mapstructure:"versionTable"`
+	MigrationsDir string `mapstructure:"migrationsDir"`
+	TargetVersion uint   `mapstructure:"targetVersion"`
+	SkipMigration bool   `mapstructure:"skipMigration"`
 }
 
 func RunMigration(db *sql.DB, p MigrationParams) error {

@@ -3,6 +3,7 @@ package gorm_postgres
 import (
 	"context"
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/opentracing/opentracing-go"
@@ -13,12 +14,13 @@ import (
 )
 
 type Config struct {
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	User     string `yaml:"user"`
-	DBName   string `yaml:"dbName"`
-	SSLMode  bool   `yaml:"sslMode"`
-	Password string `yaml:"password"`
+	Host       string                     `yaml:"host"`
+	Port       string                     `yaml:"port"`
+	User       string                     `yaml:"user"`
+	DBName     string                     `yaml:"dbName"`
+	SSLMode    bool                       `yaml:"sslMode"`
+	Password   string                     `yaml:"password"`
+	Migrations migrations.MigrationParams `mapstructure:"migrations"`
 }
 
 func NewGorm(cfg *Config) (*gorm.DB, error) {
@@ -31,13 +33,13 @@ func NewGorm(cfg *Config) (*gorm.DB, error) {
 		cfg.Password,
 	)
 
-	db, err := gorm.Open(gorm_postgres.Open(dataSourceName), &gorm.Config{})
+	gormDb, err := gorm.Open(gorm_postgres.Open(dataSourceName), &gorm.Config{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	return gormDb, nil
 }
 
 //Ref: https://dev.to/rafaelgfirmino/pagination-using-gorm-scopes-3k5f

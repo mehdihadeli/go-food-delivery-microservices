@@ -22,20 +22,13 @@ import (
 )
 
 type Config struct {
-	Host       string     `mapstructure:"host"`
-	Port       string     `mapstructure:"port"`
-	User       string     `mapstructure:"user"`
-	DBName     string     `mapstructure:"dbName"`
-	SSLMode    bool       `mapstructure:"sslMode"`
-	Password   string     `mapstructure:"password"`
-	Migrations Migrations `mapstructure:"migrations"`
-}
-
-type Migrations struct {
-	MigrationsDirectory string `mapstructure:"migrationsDir"`
-	VersionTable        string `mapstructure:"versionTable"`
-	SchemaVersion       uint   `mapstructure:"schemaVersion"`
-	SkipMigration       bool   `mapstructure:"skipMigration"`
+	Host       string                     `mapstructure:"host"`
+	Port       string                     `mapstructure:"port"`
+	User       string                     `mapstructure:"user"`
+	DBName     string                     `mapstructure:"dbName"`
+	SSLMode    bool                       `mapstructure:"sslMode"`
+	Password   string                     `mapstructure:"password"`
+	Migrations migrations.MigrationParams `mapstructure:"migrations"`
 }
 
 const (
@@ -58,6 +51,7 @@ type Pgx struct {
 	DB              *sql.DB
 	SquirrelBuilder squirrel.StatementBuilderType
 	GoquBuilder     *goqu.SelectDataset
+	config          *Config
 }
 
 // NewPgxPoolConn func for connection to PostgreSQL database.
@@ -129,23 +123,7 @@ func NewPgxPoolConn(cfg *Config, logger pgx.Logger, logLevel pgx.LogLevel) (*Pgx
 	squirrelBuilder := squirrel.StatementBuilder.
 		PlaceholderFormat(squirrel.Dollar).RunWith(db)
 
-	p := &Pgx{ConnPool: connPool, DB: db, SquirrelBuilder: squirrelBuilder, GoquBuilder: goquBuilder}
-
-	if cfg.Migrations.SkipMigration {
-		zap.L().Info("database migration skipped")
-		return p, nil
-	}
-
-	mp := migrations.MigrationParams{
-		DbName:        cfg.DBName,
-		VersionTable:  cfg.Migrations.VersionTable,
-		MigrationsDir: cfg.Migrations.MigrationsDirectory,
-		TargetVersion: cfg.Migrations.SchemaVersion,
-	}
-
-	if err = migrations.RunMigration(db, mp); err != nil {
-		return nil, err
-	}
+	p := &Pgx{ConnPool: connPool, DB: db, SquirrelBuilder: squirrelBuilder, GoquBuilder: goquBuilder, config: cfg}
 
 	return p, nil
 }
@@ -153,6 +131,26 @@ func NewPgxPoolConn(cfg *Config, logger pgx.Logger, logLevel pgx.LogLevel) (*Pgx
 func (db *Pgx) Close() {
 	db.ConnPool.Close()
 	_ = db.DB.Close()
+}
+
+func (db *Pgx) Migrate() error {
+	if db.config.Migrations.SkipMigration {
+		zap.L().Info("database migration skipped")
+		return nil
+	}
+
+	mp := migrations.MigrationParams{
+		DbName:        db.config.DBName,
+		VersionTable:  db.config.Migrations.VersionTable,
+		MigrationsDir: db.config.Migrations.MigrationsDir,
+		TargetVersion: db.config.Migrations.TargetVersion,
+	}
+
+	if err := migrations.RunMigration(db.DB, mp); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // conn returns a PostgreSQL transaction if one exists.

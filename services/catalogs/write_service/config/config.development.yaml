@@ -35,6 +35,9 @@ postgres:
   password: postgres
   dbName: catalogs_service
   sslMode: false
+  migrations:
+    migrationsDir: migrations
+    skipMigration: true
 gormPostgres:
   host: localhost
   port: 5432
