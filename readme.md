@@ -1,6 +1,5 @@
 # 🧺 Store Golang Microservices
-![store-golang-microservices](https://socialify.git.ci/mehdihadeli/store-golang-microservices/image?description=1&font=Inter&forks=1&issues=1&language=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Light)
-
+![store-golang-microservices](https://socialify.git.ci/mehdihadeli/store-golang-microservices/image?description=1&descriptionEditable=%F0%9F%A7%BA%20Practical%20store%20microservices%2C%20built%20with%20Golang%2C%20DDD%2C%20CQRS%2C%20Event%20Sourcing%2C%20Vertical%20Slice%20Architecture%2C%20and%20the%20latest%20technologies.&font=Inter&forks=1&issues=1&language=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Light)
 
 [![CI](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/store-golang-microservice-sample)](https://goreportcard.com/report/github.com/mehdihadeli/store-golang-microservice-sample)
