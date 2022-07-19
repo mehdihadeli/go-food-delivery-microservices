@@ -1,4 +1,6 @@
 # 🧺 Store Golang Microservices
+![store-golang-microservices](https://socialify.git.ci/mehdihadeli/store-golang-microservices/image?description=1&font=Inter&forks=1&issues=1&language=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Light)
+
 
 [![CI](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/store-golang-microservice-sample)](https://goreportcard.com/report/github.com/mehdihadeli/store-golang-microservice-sample)
