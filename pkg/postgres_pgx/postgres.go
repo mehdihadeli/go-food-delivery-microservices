@@ -60,21 +60,22 @@ func NewPgxPoolConn(cfg *Config, logger pgx.Logger, logLevel pgx.LogLevel) (*Pgx
 	var dataSourceName string
 
 	if cfg.DBName == "" {
-		dataSourceName = fmt.Sprintf("host=%s port=%s user=%s password=%s",
-			cfg.Host,
-			cfg.Port,
-			cfg.User,
-			cfg.Password,
-		)
-	} else {
-		dataSourceName = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
-			cfg.Host,
-			cfg.Port,
-			cfg.User,
-			cfg.DBName,
-			cfg.Password,
-		)
+		return nil, errors.New("DBName is required in the config.")
 	}
+
+	err := createDB(cfg, ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	dataSourceName = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
+		cfg.Host,
+		cfg.Port,
+		cfg.User,
+		cfg.DBName,
+		cfg.Password,
+	)
 
 	poolCfg, err := pgxpool.ParseConfig(dataSourceName)
 	if err != nil {
@@ -133,6 +134,51 @@ func (db *Pgx) Close() {
 	_ = db.DB.Close()
 }
 
+func createDB(cfg *Config, ctx context.Context) error {
+	datasource := fmt.Sprintf("host=%s port=%s user=%s password=%s",
+		cfg.Host,
+		cfg.Port,
+		cfg.User,
+		cfg.Password,
+	)
+
+	poolCfg, err := pgxpool.ParseConfig(datasource)
+	if err != nil {
+		return err
+	}
+
+	connPool, err := pgxpool.ConnectConfig(ctx, poolCfg)
+	if err != nil {
+		return errors.Wrap(err, "pgx.ConnectConfig")
+	}
+
+	var exists int
+	rows, err := connPool.Query(context.Background(), fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
+	if err != nil {
+		return err
+	}
+
+	if rows.Next() {
+		err = rows.Scan(&exists)
+		if err != nil {
+			return err
+		}
+	}
+
+	if exists == 1 {
+		return nil
+	}
+
+	_, err = connPool.Exec(context.Background(), fmt.Sprintf("CREATE DATABASE %s", cfg.DBName))
+	if err != nil {
+		return err
+	}
+
+	defer connPool.Close()
+
+	return nil
+}
+
 func (db *Pgx) Migrate() error {
 	if db.config.Migrations.SkipMigration {
 		zap.L().Info("database migration skipped")
@@ -146,7 +192,7 @@ func (db *Pgx) Migrate() error {
 		TargetVersion: db.config.Migrations.TargetVersion,
 	}
 
-	if err := migrations.RunMigration(db.DB, mp); err != nil {
+	if err := migrations.RunPostgresMigration(db.DB, mp); err != nil {
 		return err
 	}
 
@@ -164,6 +210,26 @@ func (db *Pgx) conn(ctx context.Context) PGXQuerier {
 		return res
 	}
 	return db.ConnPool
+}
+
+// Ref:https://dev.to/techschoolguru/a-clean-way-to-implement-database-transaction-in-golang-2ba
+
+// ExecTx executes a transaction with provided function.
+func (db *Pgx) ExecTx(ctx context.Context, fn func(*Pgx) error) error {
+	tx, err := db.ConnPool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
+	if err != nil {
+		return err
+	}
+
+	err = fn(db)
+	if err != nil {
+		if rbErr := tx.Rollback(ctx); rbErr != nil {
+			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
+		}
+		return err
+	}
+
+	return tx.Commit(ctx)
 }
 
 // TransactionContext returns a copy of the parent context which begins a transaction

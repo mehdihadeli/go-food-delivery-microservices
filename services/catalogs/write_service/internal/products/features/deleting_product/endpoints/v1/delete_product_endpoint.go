@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/commands/v1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product"
+	deletingProduct "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product"
 )
 
 type deleteProductEndpoint struct {
@@ -38,14 +39,14 @@ func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "deleteProductEndpoint.deleteProduct")
 		defer span.Finish()
 
-		request := &deleting_product.DeleteProductRequestDto{}
+		request := &deletingProduct.DeleteProductRequestDto{}
 		if err := c.Bind(request); err != nil {
 			ep.Log.WarnMsg("Bind", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
 
-		command := deleting_product.NewDeleteProduct(request.ProductID)
+		command := v1.NewDeleteProduct(request.ProductID)
 
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			ep.Log.WarnMsg("validate", err)

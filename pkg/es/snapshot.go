@@ -1,17 +1,22 @@
 package es
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain/types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
+	uuid "github.com/satori/go.uuid"
+)
 
 // Snapshot Event Sourcing Snapshotting is an optimisation that reduces time spent on reading event from an event store.
 type Snapshot struct {
-	ID      string        `json:"id"`
-	Type    AggregateType `json:"type"`
-	State   []byte        `json:"state"`
-	Version uint64        `json:"version"`
+	ID      uuid.UUID           `json:"id"`
+	Type    types.AggregateType `json:"type"`
+	State   []byte              `json:"state"`
+	Version uint64              `json:"version"`
 }
 
 // NewSnapshotFromAggregate create new snapshot from the Aggregate state.
-func NewSnapshotFromAggregate(aggregate Aggregate) (*Snapshot, error) {
+func NewSnapshotFromAggregate(aggregate contracts.IEventSourcedAggregateRoot) (*Snapshot, error) {
 
 	aggregateBytes, err := json.Marshal(aggregate)
 	if err != nil {

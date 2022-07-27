@@ -3,6 +3,8 @@ package config
 import (
 	"flag"
 	"fmt"
+	"github.com/caarlos0/env/v6"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	"os"
 
@@ -10,7 +12,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -25,52 +26,52 @@ func init() {
 }
 
 type Config struct {
-	DeliveryType     string                         `mapstructure:"deliveryType"`
-	ServiceName      string                         `mapstructure:"serviceName"`
-	Logger           *logger.Config                 `mapstructure:"logger"`
-	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics"`
-	GRPC             GRPC                           `mapstructure:"grpc"`
-	Http             Http                           `mapstructure:"http"`
-	Context          Context                        `mapstructure:"context"`
-	Postgresql       *postgres.Config               `mapstructure:"postgres"`
-	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq"`
-	GormPostgres     *gorm_postgres.Config          `mapstructure:"gormPostgres"`
-	Kafka            *kafkaClient.Config            `mapstructure:"kafka"`
-	Probes           probes.Config                  `mapstructure:"probes"`
-	Jaeger           *tracing.Config                `mapstructure:"jaeger"`
-	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
+	DeliveryType     string                         `mapstructure:"deliveryType" env:"DeliveryType"`
+	ServiceName      string                         `mapstructure:"serviceName" env:"ServiceName"`
+	Logger           *logger.Config                 `mapstructure:"logger" envPrefix:"Logger_"`
+	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics" envPrefix:"KafkaTopics_"`
+	GRPC             GRPC                           `mapstructure:"grpc" envPrefix:"GRPC_"`
+	Http             Http                           `mapstructure:"http" envPrefix:"Http_"`
+	Context          Context                        `mapstructure:"context" envPrefix:"Context_"`
+	Postgresql       *postgres.Config               `mapstructure:"postgres" envPrefix:"Postgresql_"`
+	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq" envPrefix:"Rabbitmq_"`
+	GormPostgres     *gorm_postgres.Config          `mapstructure:"gormPostgres" envPrefix:"GormPostgres_"`
+	Kafka            *kafkaClient.Config            `mapstructure:"kafka" envPrefix:"Kafka_"`
+	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
+	Jaeger           *tracing.Config                `mapstructure:"jaeger" envPrefix:"Jaeger_"`
+	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
 }
 
 type Context struct {
-	Timeout int `mapstructure:"timeout"`
+	Timeout int `mapstructure:"timeout" env:"Timeout"`
 }
 
 type GRPC struct {
-	Port        string `mapstructure:"port"`
-	Development bool   `mapstructure:"development"`
+	Port        string `mapstructure:"port" env:"Port"`
+	Development bool   `mapstructure:"development" env:"Development"`
 }
 
 type Http struct {
-	Port                string   `mapstructure:"port" validate:"required"`
-	Development         bool     `mapstructure:"development"`
-	BasePath            string   `mapstructure:"basePath" validate:"required"`
-	ProductsPath        string   `mapstructure:"productsPath" validate:"required"`
-	DebugErrorsResponse bool     `mapstructure:"debugErrorsResponse"`
-	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls"`
-	Timeout             int      `mapstructure:"timeout"`
-	Host                string   `mapstructure:"host"`
+	Port                string   `mapstructure:"port" validate:"required" env:"Port"`
+	Development         bool     `mapstructure:"development" env:"Development"`
+	BasePath            string   `mapstructure:"basePath" validate:"required" env:"BasePath"`
+	ProductsPath        string   `mapstructure:"productsPath" validate:"required" env:"ProductsPath"`
+	DebugErrorsResponse bool     `mapstructure:"debugErrorsResponse" env:"DebugErrorsResponse"`
+	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls" env:"IgnoreLogUrls"`
+	Timeout             int      `mapstructure:"timeout" env:"Timeout"`
+	Host                string   `mapstructure:"host" env:"Host"`
 }
 
 type KafkaTopics struct {
-	ProductCreate  kafkaClient.TopicConfig `mapstructure:"productCreate"`
-	ProductCreated kafkaClient.TopicConfig `mapstructure:"productCreated"`
-	ProductUpdate  kafkaClient.TopicConfig `mapstructure:"productUpdate"`
-	ProductUpdated kafkaClient.TopicConfig `mapstructure:"productUpdated"`
-	ProductDelete  kafkaClient.TopicConfig `mapstructure:"productDelete"`
-	ProductDeleted kafkaClient.TopicConfig `mapstructure:"productDeleted"`
+	ProductCreate  kafkaClient.TopicConfig `mapstructure:"productCreate" envPrefix:"ProductCreate_"`
+	ProductCreated kafkaClient.TopicConfig `mapstructure:"productCreated" envPrefix:"ProductCreated_"`
+	ProductUpdate  kafkaClient.TopicConfig `mapstructure:"productUpdate" envPrefix:"ProductUpdate_"`
+	ProductUpdated kafkaClient.TopicConfig `mapstructure:"productUpdated" envPrefix:"ProductUpdated_"`
+	ProductDelete  kafkaClient.TopicConfig `mapstructure:"productDelete" envPrefix:"ProductDelete_"`
+	ProductDeleted kafkaClient.TopicConfig `mapstructure:"productDeleted" envPrefix:"ProductDeleted_"`
 }
 
-func InitConfig(env string) (*Config, error) {
+func InitConfig(environment string) (*Config, error) {
 	if configPath == "" {
 		configPathFromEnv := os.Getenv(constants.ConfigPath)
 		if configPathFromEnv != "" {
@@ -82,7 +83,7 @@ func InitConfig(env string) (*Config, error) {
 
 	cfg := &Config{}
 
-	viper.SetConfigName(fmt.Sprintf("config.%s", env))
+	viper.SetConfigName(fmt.Sprintf("config.%s", environment))
 	viper.AddConfigPath(configPath)
 	viper.SetConfigType(constants.Yaml)
 
@@ -92,6 +93,10 @@ func InitConfig(env string) (*Config, error) {
 
 	if err := viper.Unmarshal(cfg); err != nil {
 		return nil, errors.Wrap(err, "viper.Unmarshal")
+	}
+
+	if err := env.Parse(cfg); err != nil {
+		fmt.Printf("%+v\n", err)
 	}
 
 	grpcPort := os.Getenv(constants.GrpcPort)

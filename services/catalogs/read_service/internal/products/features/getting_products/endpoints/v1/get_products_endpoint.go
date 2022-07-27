@@ -6,8 +6,8 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/getting_products"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/getting_products/dtos"
+	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/getting_products/queries/v1"
 	"net/http"
 )
 
@@ -52,7 +52,7 @@ func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 			return err
 		}
 
-		query := &getting_products.GetProducts{request.ListQuery}
+		query := &v1.GetProducts{ListQuery: request.ListQuery}
 
 		queryResult, err := mediatr.Send[*dtos.GetProductsResponseDto](ctx, query)
 

@@ -8,14 +8,14 @@ import (
 )
 
 func (ic *infrastructureConfigurator) configMongo(ctx context.Context) (*mongo.Client, error, func()) {
-	mongoClient, err := mongodb.NewMongoDBConn(ctx, ic.cfg.Mongo)
+	mongo, err := mongodb.NewMongoDB(ctx, ic.cfg.Mongo)
 	if err != nil {
 		return nil, errors.Wrap(err, "NewMongoDBConn"), nil
 	}
 
-	ic.log.Infof("(Mongo connected) SessionsInProgress: {%v}", mongoClient.NumberSessionsInProgress())
+	ic.log.Infof("(Mongo connected) SessionsInProgress: {%v}", mongo.MongoClient.NumberSessionsInProgress())
 
-	return mongoClient, nil, func() {
-		_ = mongoClient.Disconnect(ctx) // nolint: errcheck
+	return mongo.MongoClient, nil, func() {
+		_ = mongo.Close() // nolint: errcheck
 	}
 }

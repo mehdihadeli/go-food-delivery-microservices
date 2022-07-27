@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/sanitize"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 )
 
 // Get request id from echo context

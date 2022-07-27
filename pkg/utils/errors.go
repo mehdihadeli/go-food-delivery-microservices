@@ -22,4 +22,3 @@ func CheckErrMessages(err error, messages ...string) bool {
 	}
 	return false
 }
-

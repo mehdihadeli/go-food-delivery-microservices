@@ -3,29 +3,49 @@ package gorm_postgres
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	gorm_postgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"strings"
 )
 
 type Config struct {
-	Host       string                     `yaml:"host"`
-	Port       string                     `yaml:"port"`
-	User       string                     `yaml:"user"`
-	DBName     string                     `yaml:"dbName"`
-	SSLMode    bool                       `yaml:"sslMode"`
-	Password   string                     `yaml:"password"`
+	Host       string                     `mapstructure:"host"`
+	Port       string                     `mapstructure:"port"`
+	User       string                     `mapstructure:"user"`
+	DBName     string                     `mapstructure:"dbName"`
+	SSLMode    bool                       `mapstructure:"sslMode"`
+	Password   string                     `mapstructure:"password"`
 	Migrations migrations.MigrationParams `mapstructure:"migrations"`
 }
 
-func NewGorm(cfg *Config) (*gorm.DB, error) {
+type Gorm struct {
+	DB     *gorm.DB
+	config *Config
+}
 
-	dataSourceName := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
+func NewGorm(cfg *Config) (*Gorm, error) {
+
+	var dataSourceName string
+	ctx := context.Background()
+
+	if cfg.DBName == "" {
+		return nil, errors.New("DBName is required in the config.")
+	}
+
+	err := createDB(cfg, ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	dataSourceName = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
 		cfg.Host,
 		cfg.Port,
 		cfg.User,
@@ -39,7 +59,78 @@ func NewGorm(cfg *Config) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	return gormDb, nil
+	return &Gorm{DB: gormDb, config: cfg}, nil
+}
+
+func (db *Gorm) Close() {
+	d, _ := db.DB.DB()
+	_ = d.Close()
+}
+
+func createDB(cfg *Config, ctx context.Context) error {
+	datasource := fmt.Sprintf("host=%s port=%s user=%s password=%s",
+		cfg.Host,
+		cfg.Port,
+		cfg.User,
+		cfg.Password,
+	)
+
+	poolCfg, err := pgxpool.ParseConfig(datasource)
+	if err != nil {
+		return err
+	}
+
+	connPool, err := pgxpool.ConnectConfig(ctx, poolCfg)
+	if err != nil {
+		return errors.Wrap(err, "pgx.ConnectConfig")
+	}
+
+	var exists int
+	rows, err := connPool.Query(context.Background(), fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
+	if err != nil {
+		return err
+	}
+
+	if rows.Next() {
+		err = rows.Scan(&exists)
+		if err != nil {
+			return err
+		}
+	}
+
+	if exists == 1 {
+		return nil
+	}
+
+	_, err = connPool.Exec(context.Background(), fmt.Sprintf("CREATE DATABASE %s", cfg.DBName))
+	if err != nil {
+		return err
+	}
+
+	defer connPool.Close()
+
+	return nil
+}
+
+func (db *Gorm) Migrate() error {
+	if db.config.Migrations.SkipMigration {
+		zap.L().Info("database migration skipped")
+		return nil
+	}
+
+	mp := migrations.MigrationParams{
+		DbName:        db.config.DBName,
+		VersionTable:  db.config.Migrations.VersionTable,
+		MigrationsDir: db.config.Migrations.MigrationsDir,
+		TargetVersion: db.config.Migrations.TargetVersion,
+	}
+
+	d, _ := db.DB.DB()
+	if err := migrations.RunPostgresMigration(d, mp); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //Ref: https://dev.to/rafaelgfirmino/pagination-using-gorm-scopes-3k5f

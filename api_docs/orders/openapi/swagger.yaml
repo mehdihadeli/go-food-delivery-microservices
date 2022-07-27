@@ -1,0 +1,131 @@
+definitions:
+  dtos.CreateOrderRequestDto:
+    properties:
+      accountEmail:
+        type: string
+      deliveryAddress:
+        type: string
+      deliveryTime:
+        type: string
+      shopItems:
+        items:
+          $ref: '#/definitions/dtos.ShopItemDto'
+        type: array
+    required:
+    - accountEmail
+    - deliveryAddress
+    - deliveryTime
+    - shopItems
+    type: object
+  dtos.CreateOrderResponseDto:
+    properties:
+      orderID:
+        type: string
+    type: object
+  dtos.GetOrderByIdResponseDto:
+    properties:
+      order:
+        $ref: '#/definitions/dtos.OrderDto'
+    type: object
+  dtos.OrderDto:
+    properties:
+      accountEmail:
+        type: string
+      cancelReason:
+        type: string
+      canceled:
+        type: boolean
+      completed:
+        type: boolean
+      createdAt:
+        type: string
+      deliveredTime:
+        type: string
+      deliveryAddress:
+        type: string
+      id:
+        type: string
+      paid:
+        type: boolean
+      payment:
+        $ref: '#/definitions/dtos.PaymentDto'
+      shopItems:
+        items:
+          $ref: '#/definitions/dtos.ShopItemDto'
+        type: array
+      submitted:
+        type: boolean
+      totalPrice:
+        type: number
+      updatedAt:
+        type: string
+    type: object
+  dtos.PaymentDto:
+    properties:
+      OrderId:
+        type: string
+      paymentId:
+        type: string
+      timestamp:
+        type: string
+    type: object
+  dtos.ShopItemDto:
+    properties:
+      description:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+      title:
+        type: string
+    type: object
+info:
+  contact:
+    name: Mehdi Hadeli
+    url: https://github.com/mehdihadeli
+paths:
+  /api/v1/orders:
+    post:
+      consumes:
+      - application/json
+      description: Create new order
+      parameters:
+      - description: Order data
+        in: body
+        name: CreateOrderRequestDto
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateOrderRequestDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dtos.CreateOrderResponseDto'
+      summary: Create order
+      tags:
+      - Orders
+  /api/v1/orders/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get order by id
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.GetOrderByIdResponseDto'
+      summary: Get order by id
+      tags:
+      - Orders
+swagger: "2.0"

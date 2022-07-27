@@ -5,6 +5,7 @@ import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/interceptors"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -14,7 +15,6 @@ import (
 	v7 "github.com/olivere/elastic/v7"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
-	"gorm.io/gorm"
 )
 
 type InfrastructureConfiguration struct {
@@ -25,7 +25,7 @@ type InfrastructureConfiguration struct {
 	KafkaProducer     kafkaClient.Producer
 	Im                interceptors.InterceptorManager
 	Pgx               *postgres.Pgx
-	Gorm              *gorm.DB
+	Gorm              *gorm_postgres.Gorm
 	Metrics           *CatalogsServiceMetrics
 	Echo              *echo.Echo
 	GrpcServer        *grpc.Server
@@ -84,13 +84,6 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	//	return nil, err, nil
 	//}
 	//infrastructure.ElasticClient = el
-
-	es, err, eventStoreCleanup := ic.configEventStore()
-	if err != nil {
-		return nil, err, nil
-	}
-	cleanup = append(cleanup, eventStoreCleanup)
-	infrastructure.Esdb = es
 
 	kafkaConn, kafkaProducer, err, kafkaCleanup := ic.configKafka(ctx)
 	if err != nil {

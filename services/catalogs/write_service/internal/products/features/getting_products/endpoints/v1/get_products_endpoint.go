@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products/queries/v1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -8,7 +9,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products/dtos"
 )
 
@@ -53,7 +53,7 @@ func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 			return err
 		}
 
-		query := &getting_products.GetProducts{ListQuery: request.ListQuery}
+		query := &v1.GetProducts{ListQuery: request.ListQuery}
 
 		queryResult, err := mediatr.Send[*dtos.GetProductsResponseDto](ctx, query)
 

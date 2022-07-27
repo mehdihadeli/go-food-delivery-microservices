@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
-	getting_product_by_id "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id/endpoints/v1"
-	getting_products "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/getting_products/endpoints/v1"
-	searching_products "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products/endpoints/v1"
+	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id/endpoints/v1"
+	gettingProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/getting_products/endpoints/v1"
+	searchingProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products/endpoints/v1"
 )
 
 func (c *productsModuleConfigurator) configEndpoints(ctx context.Context, group *echo.Group) {
@@ -19,14 +19,14 @@ func (c *productsModuleConfigurator) configEndpoints(ctx context.Context, group 
 	}
 
 	// GetProducts
-	getProductsEndpoint := getting_products.NewGetProductsEndpoint(productEndpointBase)
+	getProductsEndpoint := gettingProductsV1.NewGetProductsEndpoint(productEndpointBase)
 	getProductsEndpoint.MapRoute()
 
 	// SearchProducts
-	searchProductsEndpoint := searching_products.NewSearchProductsEndpoint(productEndpointBase)
+	searchProductsEndpoint := searchingProductsV1.NewSearchProductsEndpoint(productEndpointBase)
 	searchProductsEndpoint.MapRoute()
 
 	// GetProductById
-	getProductByIdEndpoint := getting_product_by_id.NewGetProductByIdEndpoint(productEndpointBase)
+	getProductByIdEndpoint := gettingProductByIdV1.NewGetProductByIdEndpoint(productEndpointBase)
 	getProductByIdEndpoint.MapRoute()
 }

@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/commands/v1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product"
+	updatingProduct "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product"
 )
 
 type updateProductEndpoint struct {
@@ -28,7 +29,7 @@ func (ep *updateProductEndpoint) MapRoute() {
 // @Description Update existing product
 // @Accept json
 // @Produce json
-// @Param UpdateProductRequestDto body updating_product.UpdateProductRequestDto true "Product data"
+// @Param UpdateProductRequestDto body updatingProduct.UpdateProductRequestDto true "Product data"
 // @Param id path string true "Product ID"
 // @Success 204
 // @Router /api/v1/products/{id} [put]
@@ -39,14 +40,14 @@ func (ep *updateProductEndpoint) updateProduct() echo.HandlerFunc {
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "updateProductEndpoint.updateProduct")
 		defer span.Finish()
 
-		request := &updating_product.UpdateProductRequestDto{}
+		request := &updatingProduct.UpdateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
 			ep.Log.WarnMsg("Bind", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
 
-		command := updating_product.NewUpdateProduct(request.ProductID, request.Name, request.Description, request.Price)
+		command := v1.NewUpdateProduct(request.ProductID, request.Name, request.Description, request.Price)
 
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			ep.Log.WarnMsg("validate", err)

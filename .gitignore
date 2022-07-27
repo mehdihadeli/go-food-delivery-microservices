@@ -36,3 +36,10 @@ go.work
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+*.log*
+
+.DS_Store
+
+profile.out
+coverage.txt

@@ -1,13 +1,13 @@
 package v1
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/commands/v1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
 )
 
@@ -52,7 +52,7 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 			return err
 		}
 
-		command := creating_product.NewCreateProduct(request.Name, request.Description, request.Price)
+		command := v1.NewCreateProduct(request.Name, request.Description, request.Price)
 		result, err := mediatr.Send[*dtos.CreateProductResponseDto](ctx, command)
 
 		if err != nil {

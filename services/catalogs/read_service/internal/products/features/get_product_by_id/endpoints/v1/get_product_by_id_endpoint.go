@@ -2,8 +2,8 @@ package v1
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
-	getting_product_by_id "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id/dtos"
+	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id/queries/v1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -46,7 +46,7 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		query := getting_product_by_id.NewGetProductById(request.ProductId)
+		query := &gettingProductByIdV1.GetProductById{ProductID: request.ProductId}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			ep.Log.WarnMsg("validate", err)

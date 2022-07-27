@@ -6,10 +6,10 @@ package mapper
 import (
 	"flag"
 	"fmt"
+	"github.com/pkg/errors"
 	"reflect"
 
 	"github.com/golang/glog"
-	"github.com/pkg/errors"
 )
 
 var (
