@@ -9,12 +9,12 @@ import (
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/middlewares"
 	v7 "github.com/olivere/elastic/v7"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/middlewares"
 )
 
 type InfrastructureConfiguration struct {
@@ -26,7 +26,7 @@ type InfrastructureConfiguration struct {
 	Im                interceptors.InterceptorManager
 	Pgx               *postgres.Pgx
 	Gorm              *gorm.DB
-	Metrics           *CatalogsServiceMetrics
+	Metrics           *OrdersServiceMetrics
 	Echo              *echo.Echo
 	GrpcServer        *grpc.Server
 	Esdb              *esdb.Client
@@ -60,24 +60,11 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 
 	cleanup := []func(){}
 
-	gorm, err := ic.configGorm()
-	if err != nil {
-		return nil, err, nil
-	}
-	infrastructure.Gorm = gorm
-
 	err, jaegerCleanup := ic.configJaeger()
 	if err != nil {
 		return nil, err, nil
 	}
 	cleanup = append(cleanup, jaegerCleanup)
-
-	pgx, err, postgresCleanup := ic.configPostgres()
-	if err != nil {
-		return nil, err, nil
-	}
-	cleanup = append(cleanup, postgresCleanup)
-	infrastructure.Pgx = pgx
 
 	//el, err, _ := ic.configElasticSearch(ctx)
 	//if err != nil {

@@ -3,12 +3,8 @@ package config
 import (
 	"flag"
 	"fmt"
-	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
-	"os"
-
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
@@ -16,6 +12,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"os"
 )
 
 var configPath string
@@ -32,9 +29,7 @@ type Config struct {
 	GRPC             GRPC                           `mapstructure:"grpc"`
 	Http             Http                           `mapstructure:"http"`
 	Context          Context                        `mapstructure:"context"`
-	Postgresql       *postgres.Config               `mapstructure:"postgres"`
 	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq"`
-	GormPostgres     *gorm_postgres.Config          `mapstructure:"gormPostgres"`
 	Kafka            *kafkaClient.Config            `mapstructure:"kafka"`
 	Probes           probes.Config                  `mapstructure:"probes"`
 	Jaeger           *tracing.Config                `mapstructure:"jaeger"`
@@ -54,7 +49,7 @@ type Http struct {
 	Port                string   `mapstructure:"port" validate:"required"`
 	Development         bool     `mapstructure:"development"`
 	BasePath            string   `mapstructure:"basePath" validate:"required"`
-	ProductsPath        string   `mapstructure:"productsPath" validate:"required"`
+	OrdersPath          string   `mapstructure:"ordersPath" validate:"required"`
 	DebugErrorsResponse bool     `mapstructure:"debugErrorsResponse"`
 	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls"`
 	Timeout             int      `mapstructure:"timeout"`
@@ -95,14 +90,6 @@ func InitConfig(env string) (*Config, error) {
 		cfg.GRPC.Port = grpcPort
 	}
 
-	postgresHost := os.Getenv(constants.PostgresqlHost)
-	if postgresHost != "" {
-		cfg.Postgresql.Host = postgresHost
-	}
-	postgresPort := os.Getenv(constants.PostgresqlPort)
-	if postgresPort != "" {
-		cfg.Postgresql.Port = postgresPort
-	}
 	jaegerAddr := os.Getenv(constants.JaegerHostPort)
 	if jaegerAddr != "" {
 		cfg.Jaeger.HostPort = jaegerAddr

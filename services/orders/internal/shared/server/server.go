@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/orders"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web"
 	"google.golang.org/grpc"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/constants"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web"
 )
 
 type Server struct {
@@ -31,6 +32,13 @@ func NewServer(log logger.Logger, cfg *config.Config) *Server {
 func (s *Server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
+
+	ordersConfigurator := orders.NewOrdersServiceConfigurator(s.Log, s.Cfg, s.Echo, s.GrpcServer)
+	err, ordersCleanup := ordersConfigurator.ConfigureCatalogsService(ctx)
+	if err != nil {
+		return err
+	}
+	defer ordersCleanup()
 
 	deliveryType := s.Cfg.DeliveryType
 

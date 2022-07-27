@@ -1,6 +1,8 @@
 package es
 
-import "github.com/pkg/errors"
+import (
+	"github.com/pkg/errors"
+)
 
 var (
 	ErrAlreadyExists       = errors.New("Already exists")

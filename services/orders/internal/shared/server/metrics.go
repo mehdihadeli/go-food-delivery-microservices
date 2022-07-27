@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/constants"
 )
 
 func (s *Server) RunMetrics(cancel context.CancelFunc) {

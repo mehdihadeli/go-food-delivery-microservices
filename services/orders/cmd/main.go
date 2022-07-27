@@ -2,25 +2,29 @@ package main
 
 import (
 	"flag"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/joho/godotenv"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/logrous"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/server"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web"
 	"log"
 	"os"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/server"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web"
 )
-
-const dev = "development"
-const production = "production"
 
 // @contact.name Mehdi Hadeli
 // @contact.url https://github.com/mehdihadeli
 func main() {
 	flag.Parse()
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	env := os.Getenv("APP_ENV")
 	if env == "" {
-		env = dev
+		env = constants.Dev
 	}
 
 	cfg, err := config.InitConfig(env)
@@ -28,8 +32,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	appLogger := logger.NewAppLogger(cfg.Logger)
-	appLogger.InitLogger()
+	appLogger := logrous.NewLogrusLogger(cfg.Logger)
 	appLogger.WithName(web.GetMicroserviceName(cfg))
 
 	appLogger.Fatal(server.NewServer(appLogger, cfg).Run())

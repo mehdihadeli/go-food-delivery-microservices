@@ -1,13 +1,13 @@
 package v1
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/queries/v1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
 )
 
@@ -36,7 +36,7 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
 		ep.Metrics.GetProductByIdHttpRequests.Inc()
-		ctx, span := tracing.StartHttpServerTracerSpan(c, "productsHandlers.getProductByID")
+		ctx, span := tracing.StartHttpServerTracerSpan(c, "getProductByIdEndpoint.getProductByID")
 		defer span.Finish()
 
 		request := &dtos.GetProductByIdRequestDto{}
@@ -46,7 +46,7 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		query := getting_product_by_id.NewGetProductById(request.ProductId)
+		query := &v1.GetProductById{ProductID: request.ProductId}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			ep.Log.WarnMsg("validate", err)

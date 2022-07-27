@@ -2,8 +2,8 @@ package v1
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products/dtos"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products/queries/v1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -57,7 +57,7 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 			return err
 		}
 
-		query := &searching_products.SearchProducts{SearchText: request.SearchText, ListQuery: request.ListQuery}
+		query := &v1.SearchProducts{SearchText: request.SearchText, ListQuery: request.ListQuery}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			ep.Log.Errorf("(validate) err: {%v}", err)

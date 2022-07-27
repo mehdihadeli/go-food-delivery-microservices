@@ -2,15 +2,14 @@ package configurations
 
 import (
 	"context"
-
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
-	creating_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/endpoints/v1"
-	deleting_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/endpoints/v1"
-	gettting_product_by_id "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/endpoints/v1"
-	getting_products "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products/endpoints/v1"
-	searching_products "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/endpoints/v1"
-	updating_product "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/endpoints/v1"
+	creatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/endpoints/v1"
+	deletingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/endpoints/v1"
+	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/endpoints/v1"
+	gettingProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products/endpoints/v1"
+	searchingProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/endpoints/v1"
+	updatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/endpoints/v1"
 )
 
 func (c *productsModuleConfigurator) configEndpoints(ctx context.Context, group *echo.Group) {
@@ -20,26 +19,26 @@ func (c *productsModuleConfigurator) configEndpoints(ctx context.Context, group 
 		InfrastructureConfiguration: c.InfrastructureConfiguration,
 	}
 	// CreateNewProduct
-	createProductEndpoint := creating_product.NewCreteProductEndpoint(productEndpointBase)
+	createProductEndpoint := creatingProductV1.NewCreteProductEndpoint(productEndpointBase)
 	createProductEndpoint.MapRoute()
 
 	// UpdateProduct
-	updateProductEndpoint := updating_product.NewUpdateProductEndpoint(productEndpointBase)
+	updateProductEndpoint := updatingProductV1.NewUpdateProductEndpoint(productEndpointBase)
 	updateProductEndpoint.MapRoute()
 
 	// GetProducts
-	getProductsEndpoint := getting_products.NewGetProductsEndpoint(productEndpointBase)
+	getProductsEndpoint := gettingProductsV1.NewGetProductsEndpoint(productEndpointBase)
 	getProductsEndpoint.MapRoute()
 
 	// SearchProducts
-	searchProducts := searching_products.NewSearchProductsEndpoint(productEndpointBase)
+	searchProducts := searchingProductsV1.NewSearchProductsEndpoint(productEndpointBase)
 	searchProducts.MapRoute()
 
 	// GetProductById
-	getProductByIdEndpoint := gettting_product_by_id.NewGetProductByIdEndpoint(productEndpointBase)
+	getProductByIdEndpoint := gettingProductByIdV1.NewGetProductByIdEndpoint(productEndpointBase)
 	getProductByIdEndpoint.MapRoute()
 
 	// DeleteProduct
-	deleteProductEndpoint := deleting_product.NewDeleteProductEndpoint(productEndpointBase)
+	deleteProductEndpoint := deletingProductV1.NewDeleteProductEndpoint(productEndpointBase)
 	deleteProductEndpoint.MapRoute()
 }

@@ -2,6 +2,7 @@ package tracing
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/labstack/echo/v4"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -105,6 +106,27 @@ func InjectTextMapCarrierToGrpcMetaData(ctx context.Context, spanCtx opentracing
 	return ctx
 }
 
+func ExtractTextMapCarrier(spanCtx opentracing.SpanContext) opentracing.TextMapCarrier {
+	textMapCarrier, err := InjectTextMapCarrier(spanCtx)
+	if err != nil {
+		return make(opentracing.TextMapCarrier)
+	}
+	return textMapCarrier
+}
+
+func ExtractTextMapCarrierBytes(spanCtx opentracing.SpanContext) []byte {
+	textMapCarrier, err := InjectTextMapCarrier(spanCtx)
+	if err != nil {
+		return []byte("")
+	}
+
+	dataBytes, err := json.Marshal(&textMapCarrier)
+	if err != nil {
+		return []byte("")
+	}
+	return dataBytes
+}
+
 func GetKafkaTracingHeadersFromSpanCtx(spanCtx opentracing.SpanContext) []kafka.Header {
 	textMapCarrier, err := InjectTextMapCarrier(spanCtx)
 	if err != nil {
@@ -118,4 +140,13 @@ func GetKafkaTracingHeadersFromSpanCtx(spanCtx opentracing.SpanContext) []kafka.
 func TraceErr(span opentracing.Span, err error) {
 	span.SetTag("error", true)
 	span.LogKV("error_code", err.Error())
+}
+
+func TraceWithErr(span opentracing.Span, err error) error {
+	if err != nil {
+		span.SetTag("error", true)
+		span.LogKV("error_code", err.Error())
+	}
+
+	return err
 }

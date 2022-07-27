@@ -19,10 +19,10 @@ http:
 probes:
   readinessPath: /ready
   livenessPath: /live
-  port: :3002
-  pprof: :6002
+  port: :3003
+  pprof: :6003
   prometheusPath: /metrics
-  prometheusPort: :8002
+  prometheusPort: :8003
   checkIntervalSeconds: 10
 logger:
   level: debug

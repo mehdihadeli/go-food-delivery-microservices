@@ -5,6 +5,7 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     restart: on-failure
+    user: root
     ports:
       - "9090:9090"
     command:
@@ -28,7 +29,7 @@ services:
     restart: on-failure
     image: grafana/grafana
     ports:
-      - '3005:3000'
+      - '3000:3000'
     networks:
       - store
 
@@ -97,6 +98,16 @@ services:
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
 
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    container_name: kafdrop
+    ports:
+        - '9000:9000'
+    environment:
+        - 'KAFKA_BROKERCONNECT=<host:port,host:port>'
+        - 'JVM_OPTS=-Xms32M -Xmx64M'
+        - SERVER_SERVLET_CONTEXTPATH=/
+
   mongo:
     image: mongo
     container_name: mongo
@@ -127,60 +138,72 @@ services:
     networks:
       - store
 
+  # https://developers.eventstore.com/server/v21.10/installation.html#insecure-single-node
+  # https://hub.docker.com/r/eventstore/eventstore/tags
+  # https://stackoverflow.com/questions/65272764/ports-are-not-available-listen-tcp-0-0-0-0-50070-bind-an-attempt-was-made-to
   eventstore:
-    image: eventstore/eventstore:latest
+    image: eventstore/eventstore:21.10.5-buster-slim
     container_name: eventstore
     restart: on-failure
     environment:
       - EVENTSTORE_CLUSTER_SIZE=1
       - EVENTSTORE_RUN_PROJECTIONS=All
-      - EVENTSTORE_START_STANDARD_PROJECTIONS=false
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
       - EVENTSTORE_EXT_TCP_PORT=1113
       - EVENTSTORE_HTTP_PORT=2113
       - EVENTSTORE_INSECURE=true
       - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
       - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
-      - EVENTSTORE_MEM_DB=true
     ports:
       - "1113:1113"
       - "2113:2113"
+    volumes:
+      - type: volume
+        source: eventstore-volume-data
+        target: /var/lib/eventstore
+      - type: volume
+        source: eventstore-volume-logs
+        target: /var/log/eventstore
     networks:
       - store
-  
-  # elasticsearch:
-  #   container_name: elastic_search
-  #   restart: on-failure
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
-  #   environment:
-  #     - discovery.type=single-node
-  #     - bootstrap.memory_lock=true
-  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  #   ulimits:
-  #     memlock:
-  #       soft: -1
-  #       hard: -1
-  #   volumes:
-  #     - elastic-data:/usr/share/elasticsearch/data
-  #   ports:
-  #     - "9200:9200"
-  #     - "9300:9300"
-  #   networks:
-  #     - store
 
-  # kibana:
-  #   image: docker.elastic.co/kibana/kibana:7.13.3
-  #   restart: on-failure
-  #   environment:
-  #     - ELASTICSEARCH_HOSTS=http://elastic_search:9200
-  #   ports:
-  #     - "5601:5601"
-  #   networks:
-  #     - store
-  #   depends_on:
-  #     - elasticsearch
+  elasticsearch:
+    container_name: elastic_search
+    restart: on-failure
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.3
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - store
 
-  # volumes:
-  #   elastic-data:
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.13.3
+    container_name: kibana
+    restart: on-failure
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elastic_search:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - store
+    depends_on:
+      - elasticsearch
+
+volumes:
+  eventstore-volume-data:
+  eventstore-volume-logs:
+  elastic-data:
 
 
 networks:

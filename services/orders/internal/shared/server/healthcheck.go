@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"github.com/heptiolabs/healthcheck"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"net/http"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/constants"
 )
 
 func NewHealthCheckServer(config *config.Config) *http.Server {

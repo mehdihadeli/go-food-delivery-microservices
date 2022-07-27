@@ -3,7 +3,7 @@ package middlewares
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 )
 
 type MiddlewareManager interface {

@@ -2,12 +2,14 @@ package mongodb
 
 import (
 	"context"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,16 +22,22 @@ const (
 	maxPoolSize     = 300
 )
 
-type Config struct {
-	URI      string `mapstructure:"uri"`
-	User     string `mapstructure:"user"`
-	Password string `mapstructure:"password"`
-	Db       string `mapstructure:"db"`
-	UseAuth  bool   `mapstructure:"useAuth"`
+type MongoDb struct {
+	MongoClient *mongo.Client
+	config      *Config
 }
 
-// NewMongoDBConn Create new MongoDB client
-func NewMongoDBConn(ctx context.Context, cfg *Config) (*mongo.Client, error) {
+type Config struct {
+	URI        string                     `mapstructure:"uri"`
+	User       string                     `mapstructure:"user"`
+	Password   string                     `mapstructure:"password"`
+	Db         string                     `mapstructure:"db"`
+	UseAuth    bool                       `mapstructure:"useAuth"`
+	Migrations migrations.MigrationParams `mapstructure:"migrations"`
+}
+
+// NewMongoDB Create new MongoDB client
+func NewMongoDB(ctx context.Context, cfg *Config) (*MongoDb, error) {
 
 	opt := options.Client().ApplyURI(cfg.URI).
 		SetConnectTimeout(connectTimeout).
@@ -54,7 +62,31 @@ func NewMongoDBConn(ctx context.Context, cfg *Config) (*mongo.Client, error) {
 		return nil, err
 	}
 
-	return client, nil
+	return &MongoDb{MongoClient: client}, nil
+}
+
+func (m *MongoDb) Close() error {
+	return m.MongoClient.Disconnect(context.Background())
+}
+
+func (m *MongoDb) Migrate() error {
+	if m.config.Migrations.SkipMigration {
+		zap.L().Info("database migration skipped")
+		return nil
+	}
+
+	mp := migrations.MigrationParams{
+		DbName:        m.config.Db,
+		VersionTable:  m.config.Migrations.VersionTable,
+		MigrationsDir: m.config.Migrations.MigrationsDir,
+		TargetVersion: m.config.Migrations.TargetVersion,
+	}
+
+	if err := migrations.RunMongoMigration(m.MongoClient, mp); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //https://stackoverflow.com/a/23650312/581476

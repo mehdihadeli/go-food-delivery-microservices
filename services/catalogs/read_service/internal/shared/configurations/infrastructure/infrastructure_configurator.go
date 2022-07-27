@@ -89,14 +89,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	//	return nil, err, nil
 	//}
 	//infrastructure.ElasticClient = el
-
-	es, err, eventStoreCleanup := ic.configEventStore()
-	if err != nil {
-		return nil, err, nil
-	}
-	cleanup = append(cleanup, eventStoreCleanup)
-	infrastructure.Esdb = es
-
+	
 	kafkaConn, kafkaProducer, err, kafkaCleanup := ic.configKafka(ctx)
 	if err != nil {
 		return nil, err, nil

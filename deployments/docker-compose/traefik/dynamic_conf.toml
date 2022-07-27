@@ -1,0 +1,108 @@
+################################################################
+# Middlewares
+################################################################
+
+[http.middlewares]
+  # Latency Check
+  [http.middlewares.latency-check.circuitBreaker]
+    expression = "LatencyAtQuantileMS(50.0) > 100"
+
+  [http.middlewares.test-compress.compress]
+    excludedContentTypes = ["text/event-stream"]
+
+  # Custom Error Page for 5XX
+  [http.middlewares.test-errorpage.errors]
+    status = ["500-599"]
+    service = "serviceError"
+    query = "/{status}.html"
+
+  # 100 reqs/s
+  [http.middlewares.test-ratelimit.rateLimit]
+    average = 100
+
+  # Retry to send request 4 times
+  [http.middlewares.test-retry.retry]
+    attempts = 4
+
+################################################################
+# TLS
+################################################################
+
+#[tls.stores]
+#  [tls.stores.default]
+#    [tls.stores.default.defaultCertificate]
+#      certFile = "/cert/shortlink-peer.pem"
+#      keyFile = "/cert/shortlink-peer-key.pem"
+
+################################################################
+# userService
+################################################################
+[http.routers]
+  [http.routers.user]
+    entryPoints = ["web"]
+    rule = "PathPrefix(`/user_rpc.UserRPC/`)"
+    service = "user"
+
+  [http.routers.billing]
+    entryPoints = ["web"]
+    rule = "PathPrefix(`/billing_rpc.BillingRPC/`)"
+    service = "billing"
+
+  [http.routers.book]
+    entryPoints = ["web"]
+    rule = "PathPrefix(`/book_rpc.BookRPC/`)"
+    service = "book"
+
+[http.services]
+  [http.services.user]
+    [http.services.user.loadBalancer]
+      [http.services.user.loadBalancer.healthCheck]
+        scheme = "http"
+        path = "/health"
+        interval = "10s"
+        timeout = "3s"
+        port = 8080
+      [[http.services.user.loadBalancer.servers]]
+        url = "h2c://192.168.1.57:50051"
+      [[http.services.user.loadBalancer.servers]]
+        url = "h2c://user:50051"
+
+  [http.services.billing]
+    [http.services.billing.loadBalancer]
+      [http.services.billing.loadBalancer.healthCheck]
+        scheme = "http"
+        path = "/health"
+        interval = "10s"
+        timeout = "3s"
+        port = 8080
+      [[http.services.billing.loadBalancer.servers]]
+        url = "h2c://192.168.1.57:50052"
+      [[http.services.billing.loadBalancer.servers]]
+        url = "h2c://billing:50051"
+
+  [http.services.book]
+    [http.services.book.loadBalancer]
+      [http.services.book.loadBalancer.healthCheck]
+        scheme = "http"
+        path = "/health"
+        interval = "10s"
+        timeout = "3s"
+        port = 8080
+      [[http.services.book.loadBalancer.servers]]
+        url = "h2c://192.168.1.57:50053"
+      [[http.services.book.loadBalancer.servers]]
+        url = "h2c://book:50051"
+
+################################################################
+# UI
+################################################################
+#[http.routers.ui]
+#  rule = "Host(`ui-next.local`)"
+#  service = "ui-next-shortlink@docker"
+#  [http.routers.ui.tls]
+#    certResolver = "default"
+#
+#[http.services.ui]
+#  [http.services.ui.loadBalancer]
+#    [[http.services.ui.loadBalancer.servers]]
+#      url = "http://ui-next"

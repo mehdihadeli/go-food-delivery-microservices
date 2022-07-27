@@ -1,8 +1,8 @@
 package infrastructure
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/docs"
 	echoSwagger "github.com/swaggo/echo-swagger"
-	"github.com/swaggo/swag/example/basic/docs"
 )
 
 func (ic *infrastructureConfigurator) configSwagger() {

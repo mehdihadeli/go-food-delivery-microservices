@@ -11,6 +11,11 @@ scrape_configs:
     static_configs:
       - targets: [ 'host.docker.internal:9101' ]
 
-  - job_name: 'product_service'
+  - job_name: 'product_write_service'
     static_configs:
       - targets: [ 'host.docker.internal:8002' ]
+
+  - job_name: 'product_read_service'
+    static_configs:
+      - targets: [ 'host.docker.internal:8003' ]
+

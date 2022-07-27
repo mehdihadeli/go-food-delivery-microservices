@@ -11,7 +11,7 @@ http:
   timeout: 30
   basePath: /api/v1
   host: http://localhost
-  productsPath: products
+  ordersPath: orders
   debugHeaders: true
   httpClientDebug: true
   debugErrorsResponse: true

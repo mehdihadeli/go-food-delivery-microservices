@@ -2,8 +2,8 @@ package web
 
 import (
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"strings"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 )
 
 func GetMicroserviceName(cfg *config.Config) string {

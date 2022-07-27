@@ -3,9 +3,9 @@ package infrastructure
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/middlewares"
 	"strings"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/constants"
-	"thub.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/middlewares"
 )
 
 func (ic *infrastructureConfigurator) configMiddlewares(metrics *OrdersServiceMetrics) {

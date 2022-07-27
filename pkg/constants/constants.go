@@ -1,5 +1,7 @@
 package constants
 
+import "time"
+
 const (
 	GrpcPort       = "GRPC_PORT"
 	HttpPort       = "HTTP_PORT"
@@ -28,6 +30,7 @@ const (
 	HTTP     = "HTTP"
 	ERROR    = "ERROR"
 	METHOD   = "METHOD"
+	NAME     = "NAME"
 	METADATA = "METADATA"
 	REQUEST  = "REQUEST"
 	REPLY    = "REPLY"
@@ -74,4 +77,16 @@ const (
 	ErrDomain              = "Domain Model Error"
 	ErrApplication         = "Application Service Error"
 	ErrApi                 = "Api Error"
+)
+
+const (
+	MaxHeaderBytes       = 1 << 20
+	StackSize            = 1 << 10 // 1 KB
+	BodyLimit            = "2M"
+	ReadTimeout          = 15 * time.Second
+	WriteTimeout         = 15 * time.Second
+	GzipLevel            = 5
+	WaitShotDownDuration = 3 * time.Second
+	Dev                  = "development"
+	Production           = "production"
 )

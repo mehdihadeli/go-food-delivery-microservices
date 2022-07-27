@@ -1,4 +1,4 @@
-package http_errors
+package httpErrors
 
 import (
 	"encoding/json"
@@ -79,9 +79,16 @@ type DomainError struct {
 	*ProblemDetail
 }
 
-// NewDomainError New Domain Error
-func NewDomainError(status int, detail string) ProblemDetailErr {
+// NewDomainErrorWithStatus New Domain Error with specific status code
+func NewDomainErrorWithStatus(status int, detail string) ProblemDetailErr {
 	domainError := DomainError{&ProblemDetail{Title: constants.ErrDomain, Detail: detail, Status: status, Timestamp: time.Now()}}
+
+	return domainError
+}
+
+// NewDomainError New Domain Error
+func NewDomainError(detail string) ProblemDetailErr {
+	domainError := DomainError{&ProblemDetail{Title: constants.ErrDomain, Detail: detail, Status: http.StatusBadRequest, Timestamp: time.Now()}}
 
 	return domainError
 }
@@ -90,9 +97,16 @@ type ApplicationError struct {
 	*ProblemDetail
 }
 
-// NewApplicationError New Application Error
-func NewApplicationError(status int, detail string) ProblemDetailErr {
+// NewApplicationErrorWithStatus New Application Error with specific status code
+func NewApplicationErrorWithStatus(status int, detail string) ProblemDetailErr {
 	applicationError := ApplicationError{&ProblemDetail{Title: constants.ErrApplication, Detail: detail, Status: status, Timestamp: time.Now()}}
+
+	return applicationError
+}
+
+// NewApplicationError New Application Error with specific status code
+func NewApplicationError(status int, detail string) ProblemDetailErr {
+	applicationError := ApplicationError{&ProblemDetail{Title: constants.ErrApplication, Detail: detail, Status: http.StatusBadRequest, Timestamp: time.Now()}}
 
 	return applicationError
 }

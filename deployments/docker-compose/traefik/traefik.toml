@@ -1,0 +1,206 @@
+################################################################
+# Global configuration
+################################################################
+[global]
+  checkNewVersion = true
+  sendAnonymousUsage = true
+
+#[experimental.pilot]
+#  token = "secret-token"
+
+################################################################
+# Entrypoints configuration
+################################################################
+
+# Entrypoints definition
+#
+# Optional
+# Default:
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+
+  [entryPoints.websecure]
+    address = ":443"
+
+  [entryPoints.metrics]
+    address = ":8082"
+
+################################################################
+# Traefik logs configuration
+################################################################
+
+# Traefik logs
+# Enabled by default and log to stdout
+#
+# Optional
+#
+[log]
+
+  # Log level
+  #
+  # Optional
+  # Default: "ERROR"
+  level = "INFO"
+
+  # Sets the filepath for the traefik log. If not specified, stdout will be used.
+  # Intermediate directories are created if necessary.
+  #
+  # Optional
+  # Default: os.Stdout
+  #
+  # filePath = "log/traefik.log"
+
+  # Format is either "json" or "common".
+  #
+  # Optional
+  # Default: "common"
+  format = "json"
+
+################################################################
+# Access logs configuration
+################################################################
+
+# Enable access logs
+# By default it will write to stdout and produce logs in the textual
+# Common Log Format (CLF), extended with additional fields.
+#
+# Optional
+#
+# [accessLog]
+
+  # Sets the file path for the access log. If not specified, stdout will be used.
+  # Intermediate directories are created if necessary.
+  #
+  # Optional
+  # Default: os.Stdout
+  #
+  # filePath = "/path/to/log/log.txt"
+
+  # Format is either "json" or "common".
+  #
+  # Optional
+  # Default: "common"
+  #
+  # format = "json"
+
+################################################################
+# API and dashboard configuration
+################################################################
+
+# Enable API and dashboard
+[api]
+
+  # Enable the API in insecure mode
+  insecure = true
+
+  # Enabled Dashboard
+  dashboard = true
+
+################################################################
+# Ping configuration
+################################################################
+
+# Enable ping
+[ping]
+
+  # Name of the related entry point
+  #
+  # Optional
+  # Default: "traefik"
+  #
+  # entryPoint = "traefik"
+
+################################################################
+# Docker configuration backend
+################################################################
+
+[providers.file]
+  directory = "/conf"
+  watch = true
+
+# Enable Docker configuration backend
+[providers.docker]
+
+  # Docker server endpoint. Can be a tcp or a unix socket endpoint.
+  endpoint = "unix:///var/run/docker.sock"
+
+  # Default host rule.
+  #
+  # Optional
+  # Default: "Host(`{{ normalize .Name }}`)"
+  #
+  # defaultRule = "Host(`{{ normalize .Name }}.docker.localhost`)"
+
+  # Expose containers by default in traefik
+  #
+  # Optional
+  # Default: true
+  #
+  exposedByDefault = false
+
+  watch = true
+
+################################################################
+# Tracing definition
+################################################################
+
+[tracing]
+  # Service name used in Jaeger backend
+  #
+  # Default: "traefik"
+  #
+  serviceName = "traefik"
+
+  # Span name limit allows for name truncation in case of very long Frontend/Backend names
+  # This can prevent certain tracing providers to drop traces that exceed their length limits
+  #
+  # Default: 0 - no truncation will occur
+  #
+  spanNameLimit = 0
+
+  [tracing.jaeger]
+    # Sampling Server URL is the address of jaeger-agent's HTTP sampling server
+    #
+    # Default: "http://localhost:5778/sampling"
+    #
+    samplingServerURL = "http://jaeger-agent:5778/sampling"
+
+    # Sampling Type specifies the type of the sampler: const, probabilistic, rateLimiting
+    #
+    # Default: "const"
+    #
+    samplingType = "const"
+
+    # Sampling Param is a value passed to the sampler.
+    # Valid values for Param field are:
+    #   - for "const" sampler, 0 or 1 for always false/true respectively
+    #   - for "probabilistic" sampler, a probability between 0 and 1
+    #   - for "rateLimiting" sampler, the number of spans per second
+    #
+    # Default: 1.0
+    #
+    samplingParam = 1.0
+
+    # Local Agent Host Port instructs reporter to send spans to jaeger-agent at this address
+    #
+    # Default: "127.0.0.1:6831"
+    #
+    localAgentHostPort = "jaeger-agent:6831"
+
+    # Trace Context Header Name is the http header name used to propagate tracing context.
+    # This must be in lower-case to avoid mismatches when decoding incoming headers.
+    #
+    # Default: "uber-trace-id"
+    #
+    traceContextHeaderName = "uber-trace-id"
+
+################################################################
+# Prometheus
+################################################################
+
+[metrics]
+  [metrics.prometheus]
+    addEntryPointsLabels = true
+    addServicesLabels = true
+    entryPoint = "metrics"
