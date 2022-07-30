@@ -39,7 +39,7 @@ High-level plan is represented in the table
 | API Gateway | Not Started 🚩 |
 | Identity Service | Not Started 🚩 |
 | Customer Service | Not Started 🚩 |
-| Order Service |  Not Started 🚩|
+| Order Service |  In Progress 👷‍|
 
 ## Application Structure
 
