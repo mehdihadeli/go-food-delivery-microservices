@@ -3,12 +3,14 @@ package eventstroredb
 import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/goccy/go-reflect"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/serializer"
+	esSerializer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_name"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
@@ -16,7 +18,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"io"
 	"math"
-	"reflect"
 )
 
 const (
@@ -47,7 +48,7 @@ func (a *aggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID) (T,
 	if !method.IsValid() {
 		return *new(T), errors.New("aggregateStore.Load: aggregate does not have a NewEmptyAggregate method")
 	}
-	
+
 	method.Call([]reflect.Value{})
 
 	streamId := streamName.ForID[T](aggregateId)
@@ -75,13 +76,20 @@ func (a *aggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID) (T,
 			return *new(T), errors.Wrap(err, "stream.Recv")
 		}
 
-		esEvent, err := serializer.ToESEventFromRecordedEvent(event.Event)
+		esEvent, err := esSerializer.ToESEventFromRecordedEvent(event.Event)
 
-		deserializedEvent, err := serializer.DeserializeEventFromESEvent(esEvent)
+		deserializedEvent, err := esSerializer.DeserializeEventFromESEvent(esEvent)
 		if err != nil {
 			a.log.Errorf("(loadEvents) serializer.DeserializeEvent err: %v", err)
 			return *new(T), tracing.TraceWithErr(span, errors.Wrap(err, "serializer.DeserializeEvent"))
 		}
+		a.log.Debugf("(loadEvents) deserializedEvents: %v", serializer.ColoredPrettyPrint(deserializedEvent))
+
+		deserializedMeta, err := esSerializer.DeserializeMetadataFromESEvent(esEvent)
+		if err != nil {
+			return *new(T), err
+		}
+		a.log.Debugf("(loadMeta) deserializedMeta: %v", serializer.ColoredPrettyPrint(deserializedMeta))
 
 		if err := aggregate.RaiseEvent(deserializedEvent); err != nil {
 			tracing.TraceErr(span, err)
@@ -108,13 +116,13 @@ func (a *aggregateStore[T]) Store(ctx context.Context, aggregate T, metadata *do
 	eventsData := make([]esdb.EventData, 0, len(aggregate.GetUncommittedEvents()))
 	for _, event := range aggregate.GetUncommittedEvents() {
 
-		event, err := serializer.SerializeToESEvent(aggregate, event, metadata)
+		event, err := esSerializer.SerializeToESEvent(aggregate, event, metadata)
 		if err != nil {
 			a.log.Errorf("(Save) serializer.SerializeEvent err: %v", err)
 			return tracing.TraceWithErr(span, errors.Wrap(err, "serializer.SerializeEvent"))
 		}
 
-		eventsData = append(eventsData, serializer.ToEventData(event))
+		eventsData = append(eventsData, esSerializer.ToEventData(event))
 	}
 
 	// check for aggregate.GetVersion() == 0 or len(aggregate.GetAppliedEvents()) == 0 means new aggregate

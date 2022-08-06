@@ -20,20 +20,20 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type CreateProductHandler struct {
+type CreateProductCommandHandler struct {
 	log           logger.Logger
 	cfg           *config.Config
 	repository    contracts.ProductRepository
 	kafkaProducer kafkaClient.Producer
 }
 
-func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *CreateProductHandler {
-	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
+func NewCreateProductCommandHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *CreateProductCommandHandler {
+	return &CreateProductCommandHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
 }
 
-func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduct) (*dtos.CreateProductResponseDto, error) {
+func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*dtos.CreateProductResponseDto, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductHandler.Handle")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductCommandHandler.Handle")
 	span.LogFields(log.String("ProductId", command.ProductID.String()))
 	defer span.Finish()
 
@@ -54,7 +54,7 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 	if err != nil {
 		return nil, err
 	}
-	
+
 	evt := &kafka_messages.ProductCreated{Product: kafkaProduct}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {

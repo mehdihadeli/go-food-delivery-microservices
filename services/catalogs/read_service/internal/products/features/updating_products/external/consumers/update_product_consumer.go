@@ -3,7 +3,7 @@ package consumers
 import (
 	"context"
 	"github.com/avast/retry-go"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts/proto/kafka_messages"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
@@ -63,7 +63,7 @@ func (c *updateProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	if err := retry.Do(func() error {
-		_, err := mediatr.Send[*mediatr.Unit, *updatingProductV1.UpdateProduct](ctx, command)
+		_, err := mediatr.Send[*updatingProductV1.UpdateProductCommand, *mediatr.Unit](ctx, command)
 		if err != nil {
 			tracing.TraceErr(span, err)
 			return err
@@ -71,7 +71,7 @@ func (c *updateProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 
 		return nil
 	}, append(retryOptions, retry.Context(ctx))...); err != nil {
-		c.Log.WarnMsg("UpdateProduct.Handle", err)
+		c.Log.WarnMsg("UpdateProductCommand.Handle", err)
 		tracing.TraceErr(span, err)
 		c.CommitErrMessage(ctx, r, m)
 		return

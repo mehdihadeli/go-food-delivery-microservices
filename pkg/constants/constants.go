@@ -16,6 +16,7 @@ const (
 	ReaderServicePort = "READER_SERVICE"
 
 	Yaml          = "yaml"
+	Json          = "json"
 	Tcp           = "tcp"
 	Redis         = "redis"
 	Kafka         = "kafka"

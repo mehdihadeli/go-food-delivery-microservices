@@ -2,7 +2,7 @@ package v1
 
 import "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 
-type SearchProducts struct {
+type SearchProductsQuery struct {
 	SearchText string `validate:"required"`
 	*utils.ListQuery
 }

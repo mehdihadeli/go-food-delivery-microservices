@@ -2,7 +2,7 @@ package domain
 
 import (
 	"fmt"
-	"reflect"
+	"github.com/goccy/go-reflect"
 )
 
 //TODO: Integrate with mediatr for publishing events

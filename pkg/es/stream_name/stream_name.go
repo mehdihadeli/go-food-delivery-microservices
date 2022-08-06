@@ -2,9 +2,9 @@ package streamName
 
 import (
 	"fmt"
+	"github.com/goccy/go-reflect"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
 	uuid "github.com/satori/go.uuid"
-	"reflect"
 	"strings"
 )
 

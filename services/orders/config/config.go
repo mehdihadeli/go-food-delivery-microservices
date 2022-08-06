@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
+	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
@@ -26,8 +28,8 @@ type Config struct {
 	ServiceName      string                         `mapstructure:"serviceName"`
 	Logger           *logger.Config                 `mapstructure:"logger"`
 	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics"`
-	GRPC             GRPC                           `mapstructure:"grpc"`
-	Http             Http                           `mapstructure:"http"`
+	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc"`
+	Http             *customEcho.EchoHttpConfig     `mapstructure:"http"`
 	Context          Context                        `mapstructure:"context"`
 	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq"`
 	Kafka            *kafkaClient.Config            `mapstructure:"kafka"`
@@ -38,22 +40,6 @@ type Config struct {
 
 type Context struct {
 	Timeout int `mapstructure:"timeout"`
-}
-
-type GRPC struct {
-	Port        string `mapstructure:"port"`
-	Development bool   `mapstructure:"development"`
-}
-
-type Http struct {
-	Port                string   `mapstructure:"port" validate:"required"`
-	Development         bool     `mapstructure:"development"`
-	BasePath            string   `mapstructure:"basePath" validate:"required"`
-	OrdersPath          string   `mapstructure:"ordersPath" validate:"required"`
-	DebugErrorsResponse bool     `mapstructure:"debugErrorsResponse"`
-	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls"`
-	Timeout             int      `mapstructure:"timeout"`
-	Host                string   `mapstructure:"host"`
 }
 
 type KafkaTopics struct {

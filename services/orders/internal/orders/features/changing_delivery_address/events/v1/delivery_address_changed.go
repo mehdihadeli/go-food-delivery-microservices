@@ -6,7 +6,7 @@ type DeliveryAddressChangedEventV1 struct {
 	DeliveryAddress string `json:"deliveryAddress" bson:"deliveryAddress,omitempty"`
 }
 
-func NewDeliveryAddressChangedEvent(deliveryAddress string) (*DeliveryAddressChangedEventV1, error) {
+func NewDeliveryAddressChangedEventV1(deliveryAddress string) (*DeliveryAddressChangedEventV1, error) {
 	if deliveryAddress == "" {
 		return nil, domainExceptions.ErrInvalidDeliveryAddress
 	}

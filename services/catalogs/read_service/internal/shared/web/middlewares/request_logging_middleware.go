@@ -1,4 +1,4 @@
-package middlewares
+package cutomMiddlewares
 
 import (
 	"github.com/labstack/echo/v4"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (mw *middlewareManager) RequestLoggerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (mw *customMiddlewares) RequestLoggerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 
 		start := time.Now()
@@ -18,7 +18,7 @@ func (mw *middlewareManager) RequestLoggerMiddleware(next echo.HandlerFunc) echo
 		size := res.Size
 		s := time.Since(start)
 
-		if !mw.checkIgnoredURI(ctx.Request().RequestURI, mw.cfg.Http.IgnoreLogUrls) {
+		if !checkIgnoredURI(ctx.Request().RequestURI, mw.cfg.Http.IgnoreLogUrls) {
 			mw.log.HttpMiddlewareAccessLogger(req.Method, req.URL.String(), status, size, s)
 		}
 
@@ -26,7 +26,7 @@ func (mw *middlewareManager) RequestLoggerMiddleware(next echo.HandlerFunc) echo
 	}
 }
 
-func (mw *middlewareManager) checkIgnoredURI(requestURI string, uriList []string) bool {
+func checkIgnoredURI(requestURI string, uriList []string) bool {
 	for _, s := range uriList {
 		if strings.Contains(requestURI, s) {
 			return true

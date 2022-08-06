@@ -12,20 +12,20 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-type CreateProductHandler struct {
+type CreateProductCommandHandler struct {
 	log             logger.Logger
 	cfg             *config.Config
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
-func NewCreateProductHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *CreateProductHandler {
-	return &CreateProductHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
+func NewCreateProductCommandHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *CreateProductCommandHandler {
+	return &CreateProductCommandHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
 }
 
-func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduct) (*creatingProduct.CreateProductResponseDto, error) {
+func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*creatingProduct.CreateProductResponseDto, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductHandler.Handle")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductCommandHandler.Handle")
 	span.LogFields(log.String("ProductId", command.ProductID))
 	defer span.Finish()
 

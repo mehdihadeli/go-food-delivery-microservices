@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	creatingOrderv1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/commands/v1"
@@ -52,7 +52,7 @@ func (ep *createOrderEndpoint) createOrder() echo.HandlerFunc {
 		}
 
 		command := creatingOrderv1.NewCreateOrderCommand(request.ShopItems, request.AccountEmail, request.DeliveryAddress, time.Time(request.DeliveryTime))
-		result, err := mediatr.Send[*dtos.CreateOrderResponseDto](ctx, command)
+		result, err := mediatr.Send[*creatingOrderv1.CreateOrderCommand, *dtos.CreateOrderResponseDto](ctx, command)
 
 		if err != nil {
 			ep.Log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", command.OrderID, err)

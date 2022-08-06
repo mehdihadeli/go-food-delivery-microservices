@@ -6,8 +6,8 @@ package mapper
 import (
 	"flag"
 	"fmt"
+	"github.com/goccy/go-reflect"
 	"github.com/pkg/errors"
-	"reflect"
 
 	"github.com/golang/glog"
 )
@@ -318,10 +318,10 @@ func mapMaps(src reflect.Value, dest reflect.Value) {
 	destMapIter := dest.MapRange()
 
 	for destMapIter.Next() && srcMapIter.Next() {
-		destKey := reflect.New(destMapIter.Key().Type()).Elem()
-		destValue := reflect.New(destMapIter.Value().Type()).Elem()
-		processValues(srcMapIter.Key(), destKey)
-		processValues(srcMapIter.Value(), destValue)
+		destKey := reflect.New(reflect.ToType(destMapIter.Key().Type())).Elem()
+		destValue := reflect.New(reflect.ToType(destMapIter.Value().Type())).Elem()
+		processValues(reflect.ToValue(srcMapIter.Key()), destKey)
+		processValues(reflect.ToValue(srcMapIter.Value()), destValue)
 
 		dest.SetMapIndex(destKey, destValue)
 	}

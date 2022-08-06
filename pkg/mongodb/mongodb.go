@@ -24,10 +24,10 @@ const (
 
 type MongoDb struct {
 	MongoClient *mongo.Client
-	config      *Config
+	config      *MongoDbConfig
 }
 
-type Config struct {
+type MongoDbConfig struct {
 	URI        string                     `mapstructure:"uri"`
 	User       string                     `mapstructure:"user"`
 	Password   string                     `mapstructure:"password"`
@@ -37,7 +37,7 @@ type Config struct {
 }
 
 // NewMongoDB Create new MongoDB client
-func NewMongoDB(ctx context.Context, cfg *Config) (*MongoDb, error) {
+func NewMongoDB(ctx context.Context, cfg *MongoDbConfig) (*MongoDb, error) {
 
 	opt := options.Client().ApplyURI(cfg.URI).
 		SetConnectTimeout(connectTimeout).

@@ -12,8 +12,13 @@ import (
 	"os"
 )
 
+//https://github.com/swaggo/swag#how-to-use-it-with-gin
+
 // @contact.name Mehdi Hadeli
 // @contact.url https://github.com/mehdihadeli
+// @title Orders Service Api
+// @version 1.0
+// @description Orders Service Api
 func main() {
 	flag.Parse()
 

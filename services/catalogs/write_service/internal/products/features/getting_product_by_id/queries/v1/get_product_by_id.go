@@ -4,6 +4,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type GetProductById struct {
+type GetProductByIdQuery struct {
 	ProductID uuid.UUID `validate:"required"`
 }

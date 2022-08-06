@@ -10,8 +10,8 @@ type OrderPayedEventV1 struct {
 	PaymentID uuid.UUID `json:"PaymentID" bson:"PaymentID,omitempty"`
 }
 
-func NewOrderPaidEvent(payment *entities.Payment) (*OrderPayedEventV1, error) {
-	event := OrderPayedEventV1{OrderID: payment.OrderID, PaymentID: payment.PaymentID}
+func NewOrderPaidEventV1(payment *entities.Payment) (*OrderPayedEventV1, error) {
+	event := OrderPayedEventV1{OrderID: payment.OrderId, PaymentID: payment.PaymentId}
 
 	return &event, nil
 }

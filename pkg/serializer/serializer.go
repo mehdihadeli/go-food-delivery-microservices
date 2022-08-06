@@ -2,14 +2,14 @@ package serializer
 
 import (
 	"github.com/TylerBrock/colorjson"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 	"github.com/mitchellh/mapstructure"
 	"log"
 )
 
 //https://www.sohamkamani.com/golang/json/#decoding-json-to-maps---unstructured-data
 //https://developpaper.com/mapstructure-of-go/
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+//https://github.com/goccy/go-json
 
 func Marshal(v interface{}) ([]byte, error) {
 	return json.Marshal(v)

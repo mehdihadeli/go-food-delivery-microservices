@@ -1,8 +1,8 @@
 package serializer
 
 import (
+	"github.com/goccy/go-reflect"
 	"github.com/stretchr/testify/assert"
-	"reflect"
 	"testing"
 )
 

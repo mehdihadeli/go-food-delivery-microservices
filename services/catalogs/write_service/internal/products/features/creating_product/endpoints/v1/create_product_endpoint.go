@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
@@ -23,7 +23,7 @@ func (ep *createProductEndpoint) MapRoute() {
 	ep.ProductsGroup.POST("", ep.createProduct())
 }
 
-// CreateProduct
+// CreateProductCommand
 // @Tags Products
 // @Summary Create product
 // @Description Create new product item
@@ -52,11 +52,11 @@ func (ep *createProductEndpoint) createProduct() echo.HandlerFunc {
 			return err
 		}
 
-		command := v1.NewCreateProduct(request.Name, request.Description, request.Price)
-		result, err := mediatr.Send[*dtos.CreateProductResponseDto](ctx, command)
+		command := v1.NewCreateProductCommand(request.Name, request.Description, request.Price)
+		result, err := mediatr.Send[*v1.CreateProductCommand, *dtos.CreateProductResponseDto](ctx, command)
 
 		if err != nil {
-			ep.Log.Errorf("(CreateProduct.Handle) id: {%s}, err: {%v}", command.ProductID, err)
+			ep.Log.Errorf("(CreateProductCommand.Handle) id: {%s}, err: {%v}", command.ProductID, err)
 			tracing.TraceErr(span, err)
 			return err
 		}

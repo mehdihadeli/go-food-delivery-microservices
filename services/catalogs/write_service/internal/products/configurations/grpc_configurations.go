@@ -9,5 +9,5 @@ import (
 
 func (c *productsModuleConfigurator) configGrpc(ctx context.Context) {
 	productGrpcService := grpc.NewProductGrpcService(c.InfrastructureConfiguration)
-	productService.RegisterProductsServiceServer(c.GrpcServer, productGrpcService)
+	productService.RegisterProductsServiceServer(c.GrpcServer.GetCurrentGrpcServer(), productGrpcService)
 }

@@ -3,7 +3,7 @@ package consumers
 import (
 	"context"
 	"github.com/avast/retry-go"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts/proto/kafka_messages"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
@@ -53,7 +53,7 @@ func (c *deleteProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 		return
 	}
 
-	command := deletingProductV1.NewDeleteProduct(productUUID)
+	command := deletingProductV1.NewDeleteProductCommand(productUUID)
 	if err := c.Validator.StructCtx(ctx, command); err != nil {
 		c.Log.WarnMsg("validate", err)
 		tracing.TraceErr(span, err)
@@ -62,7 +62,7 @@ func (c *deleteProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	if err := retry.Do(func() error {
-		_, err := mediatr.Send[*mediatr.Unit, *deletingProductV1.DeleteProduct](ctx, command)
+		_, err := mediatr.Send[*deletingProductV1.DeleteProductCommand, *mediatr.Unit](ctx, command)
 		if err != nil {
 			tracing.TraceErr(span, err)
 			return err
@@ -70,7 +70,7 @@ func (c *deleteProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 
 		return nil
 	}, append(retryOptions, retry.Context(ctx))...); err != nil {
-		c.Log.WarnMsg("DeleteProduct.Handle", err)
+		c.Log.WarnMsg("DeleteProductCommand.Handle", err)
 		c.CommitErrMessage(ctx, r, m)
 		return
 	}

@@ -11,19 +11,19 @@ import (
 	"github.com/opentracing/opentracing-go"
 )
 
-type GetProductsHandler struct {
+type GetProductsQueryHandler struct {
 	log    logger.Logger
 	cfg    *config.Config
 	pgRepo contracts.ProductRepository
 }
 
-func NewGetProductsHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository) *GetProductsHandler {
-	return &GetProductsHandler{log: log, cfg: cfg, pgRepo: pgRepo}
+func NewGetProductsQueryHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository) *GetProductsQueryHandler {
+	return &GetProductsQueryHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 
-func (c *GetProductsHandler) Handle(ctx context.Context, query *GetProducts) (*gettingProductsDto.GetProductsResponseDto, error) {
+func (c *GetProductsQueryHandler) Handle(ctx context.Context, query *GetProductsQuery) (*gettingProductsDto.GetProductsResponseDto, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "GetProductsHandler.Handle")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetProductsQueryHandler.Handle")
 	defer span.Finish()
 
 	products, err := c.pgRepo.GetAllProducts(ctx, query.ListQuery)

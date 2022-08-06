@@ -2,9 +2,9 @@ package v1
 
 import (
 	"context"
+	"github.com/mehdihadeli/go-mediatr"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
@@ -15,18 +15,18 @@ import (
 	"time"
 )
 
-type DeleteProductHandler struct {
+type DeleteProductCommandHandler struct {
 	log           logger.Logger
 	cfg           *config.Config
 	pgRepo        contracts.ProductRepository
 	kafkaProducer kafkaClient.Producer
 }
 
-func NewDeleteProductHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *DeleteProductHandler {
-	return &DeleteProductHandler{log: log, cfg: cfg, pgRepo: pgRepo, kafkaProducer: kafkaProducer}
+func NewDeleteProductCommandHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *DeleteProductCommandHandler {
+	return &DeleteProductCommandHandler{log: log, cfg: cfg, pgRepo: pgRepo, kafkaProducer: kafkaProducer}
 }
 
-func (c *DeleteProductHandler) Handle(ctx context.Context, command *DeleteProduct) (*mediatr.Unit, error) {
+func (c *DeleteProductCommandHandler) Handle(ctx context.Context, command *DeleteProductCommand) (*mediatr.Unit, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "deleteProductHandler.Handle")
 	defer span.Finish()

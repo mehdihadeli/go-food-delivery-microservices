@@ -9,7 +9,7 @@ type ShoppingCartUpdatedEventV1 struct {
 	ShopItems []*value_objects.ShopItem `json:"shopItems" bson:"shopItems,omitempty"`
 }
 
-func NewShoppingCartUpdatedEvent(shopItems []*value_objects.ShopItem) (*ShoppingCartUpdatedEventV1, error) {
+func NewShoppingCartUpdatedEventV1(shopItems []*value_objects.ShopItem) (*ShoppingCartUpdatedEventV1, error) {
 
 	if shopItems == nil {
 		return nil, domainExceptions.ErrOrderShopItemsIsRequired

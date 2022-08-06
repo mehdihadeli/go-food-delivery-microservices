@@ -1,13 +1,15 @@
-package middlewares
+package cutomMiddlewares
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+)
 
-type MiddlewareMetricsCb func(err error)
+type MetricsFunc func(err error)
 
-func (mw *middlewareManager) RequestMetricsMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (mw *customMiddlewares) RequestMetricsMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		err := next(ctx)
-		mw.metricsCb(err)
+		mw.metricsFunc(err)
 
 		return err
 	}

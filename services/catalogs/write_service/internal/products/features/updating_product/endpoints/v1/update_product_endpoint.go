@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	updatingProduct "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product"
@@ -23,7 +23,7 @@ func (ep *updateProductEndpoint) MapRoute() {
 	ep.ProductsGroup.PUT("/:id", ep.updateProduct())
 }
 
-// UpdateProduct
+// UpdateProductCommand
 // @Tags Products
 // @Summary Update product
 // @Description Update existing product
@@ -47,7 +47,7 @@ func (ep *updateProductEndpoint) updateProduct() echo.HandlerFunc {
 			return err
 		}
 
-		command := v1.NewUpdateProduct(request.ProductID, request.Name, request.Description, request.Price)
+		command := v1.NewUpdateProductCommand(request.ProductID, request.Name, request.Description, request.Price)
 
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			ep.Log.WarnMsg("validate", err)
@@ -55,10 +55,10 @@ func (ep *updateProductEndpoint) updateProduct() echo.HandlerFunc {
 			return err
 		}
 
-		_, err := mediatr.Send[*mediatr.Unit](ctx, command)
+		_, err := mediatr.Send[*v1.UpdateProductCommand, *mediatr.Unit](ctx, command)
 
 		if err != nil {
-			ep.Log.WarnMsg("UpdateProduct", err)
+			ep.Log.WarnMsg("UpdateProductCommand", err)
 			tracing.TraceErr(span, err)
 			return err
 		}
