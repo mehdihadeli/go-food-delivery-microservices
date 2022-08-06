@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/dtos"
@@ -53,7 +53,7 @@ func (ep *getOrderByIdEndpoint) getOrderByID() echo.HandlerFunc {
 			return err
 		}
 
-		queryResult, err := mediatr.Send[*dtos.GetOrderByIdResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*v1.GetOrderByIdQuery, *dtos.GetOrderByIdResponseDto](ctx, query)
 
 		if err != nil {
 			ep.Log.WarnMsg("GetOrderById", err)

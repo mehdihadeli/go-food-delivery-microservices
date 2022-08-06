@@ -3,29 +3,29 @@ package v1
 import (
 	"context"
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
+	"github.com/mehdihadeli/go-mediatr"
+	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 )
 
-type UpdateProductHandler struct {
+type UpdateProductCommandHandler struct {
 	log             logger.Logger
 	cfg             *config.Config
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
-func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *UpdateProductHandler {
-	return &UpdateProductHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
+func NewUpdateProductCommandHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *UpdateProductCommandHandler {
+	return &UpdateProductCommandHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
 }
 
-func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduct) (*mediatr.Unit, error) {
+func (c *UpdateProductCommandHandler) Handle(ctx context.Context, command *UpdateProductCommand) (*mediatr.Unit, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateProductHandler.Handle")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateProductCommandHandler.Handle")
 	defer span.Finish()
 
 	_, err := c.mongoRepository.GetProductById(ctx, command.ProductID)

@@ -14,7 +14,7 @@ type OrderCreatedEventV1 struct {
 	DeliveredTime   time.Time                 `json:"deliveredTime" bson:"deliveredTime,omitempty"`
 }
 
-func NewOrderCreatedEvent(shopItems []*value_objects.ShopItem, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedEventV1, error) {
+func NewOrderCreatedEventV1(shopItems []*value_objects.ShopItem, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedEventV1, error) {
 
 	if shopItems == nil {
 		return nil, domainExceptions.ErrOrderShopItemsIsRequired

@@ -3,7 +3,7 @@ package consumers
 import (
 	"context"
 	"github.com/avast/retry-go"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts/proto/kafka_messages"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
@@ -47,7 +47,7 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	p := msg.GetProduct()
-	command := v1.NewCreateProduct(p.GetProductID(), p.GetName(), p.GetDescription(), p.GetPrice(), p.GetCreatedAt().AsTime())
+	command := v1.NewCreateProductCommand(p.GetProductID(), p.GetName(), p.GetDescription(), p.GetPrice(), p.GetCreatedAt().AsTime())
 	if err := c.Validator.StructCtx(ctx, command); err != nil {
 		tracing.TraceErr(span, err)
 		c.Log.WarnMsg("validate", err)
@@ -56,7 +56,7 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	if err := retry.Do(func() error {
-		_, err := mediatr.Send[*creatingProduct.CreateProductResponseDto, *v1.CreateProduct](ctx, command)
+		_, err := mediatr.Send[*v1.CreateProductCommand, *creatingProduct.CreateProductResponseDto](ctx, command)
 		if err != nil {
 			tracing.TraceErr(span, err)
 			return err
@@ -64,7 +64,7 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 
 		return nil
 	}, append(retryOptions, retry.Context(ctx))...); err != nil {
-		c.Log.WarnMsg("CreateProduct.Handle", err)
+		c.Log.WarnMsg("CreateProductCommand.Handle", err)
 		tracing.TraceErr(span, err)
 		c.CommitErrMessage(ctx, r, m)
 		return

@@ -3,11 +3,11 @@ package v1
 import (
 	"context"
 	"fmt"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
@@ -19,20 +19,20 @@ import (
 	"time"
 )
 
-type UpdateProductHandler struct {
+type UpdateProductCommandHandler struct {
 	log           logger.Logger
 	cfg           *config.Config
 	pgRepo        contracts.ProductRepository
 	kafkaProducer kafkaClient.Producer
 }
 
-func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *UpdateProductHandler {
-	return &UpdateProductHandler{log: log, cfg: cfg, pgRepo: pgRepo, kafkaProducer: kafkaProducer}
+func NewUpdateProductCommandHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *UpdateProductCommandHandler {
+	return &UpdateProductCommandHandler{log: log, cfg: cfg, pgRepo: pgRepo, kafkaProducer: kafkaProducer}
 }
 
-func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduct) (*mediatr.Unit, error) {
+func (c *UpdateProductCommandHandler) Handle(ctx context.Context, command *UpdateProductCommand) (*mediatr.Unit, error) {
 
-	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateProductHandler.Handle")
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateProductCommandHandler.Handle")
 	defer span.Finish()
 
 	_, err := c.pgRepo.GetProductById(ctx, command.ProductID)

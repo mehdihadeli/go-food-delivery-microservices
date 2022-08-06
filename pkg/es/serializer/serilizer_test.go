@@ -1,4 +1,4 @@
-package serializer
+package esSerializer
 
 import "testing"
 

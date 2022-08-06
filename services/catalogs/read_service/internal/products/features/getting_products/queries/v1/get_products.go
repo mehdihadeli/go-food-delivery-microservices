@@ -4,6 +4,6 @@ import "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 
 // Ref: https://golangbot.com/inheritance/
 
-type GetProducts struct {
+type GetProductsQuery struct {
 	*utils.ListQuery
 }

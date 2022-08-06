@@ -10,5 +10,5 @@ func (ic *infrastructureConfigurator) configSwagger() {
 	docs.SwaggerInfo.Title = "Orders Service Api"
 	docs.SwaggerInfo.Description = "Orders Service Api."
 
-	ic.echo.GET("/swagger/*", echoSwagger.WrapHandler)
+	ic.echoServer.GetEchoInstance().GET("/swagger/*", echoSwagger.WrapHandler)
 }

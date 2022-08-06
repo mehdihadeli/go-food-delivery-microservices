@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/caarlos0/env/v6"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
+	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"os"
 
@@ -31,8 +33,8 @@ type Config struct {
 	ServiceName      string                         `mapstructure:"serviceName" env:"ServiceName"`
 	Logger           *logger.Config                 `mapstructure:"logger" envPrefix:"Logger_"`
 	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics" envPrefix:"KafkaTopics_"`
-	GRPC             GRPC                           `mapstructure:"grpc" envPrefix:"GRPC_"`
-	Http             Http                           `mapstructure:"http" envPrefix:"Http_"`
+	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
+	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
 	Context          Context                        `mapstructure:"context" envPrefix:"Context_"`
 	Redis            *redis.Config                  `mapstructure:"redis" envPrefix:"Redis_"`
 	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq" envPrefix:"Rabbitmq_"`
@@ -42,28 +44,12 @@ type Config struct {
 	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
 	Elastic          elasticsearch.Config           `mapstructure:"elastic" envPrefix:"Elastic_"`
 	ElasticIndexes   ElasticIndexes                 `mapstructure:"elasticIndexes" envPrefix:"ElasticIndexes_"`
-	Mongo            *mongodb.Config                `mapstructure:"mongo" envPrefix:"Mongo_"`
+	Mongo            *mongodb.MongoDbConfig         `mapstructure:"mongo" envPrefix:"Mongo_"`
 	MongoCollections MongoCollections               `mapstructure:"mongoCollections" envPrefix:"MongoCollections_"`
 }
 
 type Context struct {
 	Timeout int `mapstructure:"timeout" env:"Timeout"`
-}
-
-type GRPC struct {
-	Port        string `mapstructure:"port" env:"Port"`
-	Development bool   `mapstructure:"development" env:"Development"`
-}
-
-type Http struct {
-	Port                string   `mapstructure:"port" validate:"required" env:"Port"`
-	Development         bool     `mapstructure:"development" env:"Development"`
-	BasePath            string   `mapstructure:"basePath" validate:"required" env:"BasePath"`
-	ProductsPath        string   `mapstructure:"productsPath" validate:"required" env:"ProductsPath"`
-	DebugErrorsResponse bool     `mapstructure:"debugErrorsResponse" env:"DebugErrorsResponse"`
-	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls"`
-	Timeout             int      `mapstructure:"timeout" env:"Timeout"`
-	Host                string   `mapstructure:"host" env:"Host"`
 }
 
 type MongoCollections struct {
@@ -98,7 +84,7 @@ func InitConfig(environment string) (*Config, error) {
 	//https://github.com/spf13/viper/issues/390#issuecomment-718756752
 	viper.SetConfigName(fmt.Sprintf("config.%s", environment))
 	viper.AddConfigPath(configPath)
-	viper.SetConfigType(constants.Yaml)
+	viper.SetConfigType(constants.Json)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, errors.Wrap(err, "viper.ReadInConfig")

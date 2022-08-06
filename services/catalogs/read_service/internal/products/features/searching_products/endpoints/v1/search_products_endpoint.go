@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 )
@@ -24,7 +24,7 @@ func (ep *searchProductsEndpoint) MapRoute() {
 	ep.ProductsGroup.GET("/search", ep.searchProducts())
 }
 
-// SearchProducts
+// SearchProductsQuery
 // @Tags Products
 // @Summary Search products
 // @Description Search products
@@ -57,7 +57,7 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 			return err
 		}
 
-		query := &v1.SearchProducts{SearchText: request.SearchText, ListQuery: request.ListQuery}
+		query := &v1.SearchProductsQuery{SearchText: request.SearchText, ListQuery: request.ListQuery}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			ep.Log.Errorf("(validate) err: {%v}", err)
@@ -65,10 +65,10 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 			return err
 		}
 
-		queryResult, err := mediatr.Send[*dtos.SearchProductsResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*v1.SearchProductsQuery, *dtos.SearchProductsResponseDto](ctx, query)
 
 		if err != nil {
-			ep.Log.WarnMsg("SearchProducts", err)
+			ep.Log.WarnMsg("SearchProductsQuery", err)
 			tracing.TraceErr(span, err)
 			return err
 		}

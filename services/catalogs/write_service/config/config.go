@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/caarlos0/env/v6"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
+	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	"os"
@@ -30,8 +32,8 @@ type Config struct {
 	ServiceName      string                         `mapstructure:"serviceName" env:"ServiceName"`
 	Logger           *logger.Config                 `mapstructure:"logger" envPrefix:"Logger_"`
 	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics" envPrefix:"KafkaTopics_"`
-	GRPC             GRPC                           `mapstructure:"grpc" envPrefix:"GRPC_"`
-	Http             Http                           `mapstructure:"http" envPrefix:"Http_"`
+	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
+	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
 	Context          Context                        `mapstructure:"context" envPrefix:"Context_"`
 	Postgresql       *postgres.Config               `mapstructure:"postgres" envPrefix:"Postgresql_"`
 	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq" envPrefix:"Rabbitmq_"`
@@ -44,22 +46,6 @@ type Config struct {
 
 type Context struct {
 	Timeout int `mapstructure:"timeout" env:"Timeout"`
-}
-
-type GRPC struct {
-	Port        string `mapstructure:"port" env:"Port"`
-	Development bool   `mapstructure:"development" env:"Development"`
-}
-
-type Http struct {
-	Port                string   `mapstructure:"port" validate:"required" env:"Port"`
-	Development         bool     `mapstructure:"development" env:"Development"`
-	BasePath            string   `mapstructure:"basePath" validate:"required" env:"BasePath"`
-	ProductsPath        string   `mapstructure:"productsPath" validate:"required" env:"ProductsPath"`
-	DebugErrorsResponse bool     `mapstructure:"debugErrorsResponse" env:"DebugErrorsResponse"`
-	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls" env:"IgnoreLogUrls"`
-	Timeout             int      `mapstructure:"timeout" env:"Timeout"`
-	Host                string   `mapstructure:"host" env:"Host"`
 }
 
 type KafkaTopics struct {
@@ -85,7 +71,7 @@ func InitConfig(environment string) (*Config, error) {
 
 	viper.SetConfigName(fmt.Sprintf("config.%s", environment))
 	viper.AddConfigPath(configPath)
-	viper.SetConfigType(constants.Yaml)
+	viper.SetConfigType(constants.Json)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, errors.Wrap(err, "viper.ReadInConfig")

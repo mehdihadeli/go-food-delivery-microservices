@@ -4,7 +4,7 @@ type OrderCanceledEventV1 struct {
 	CancelReason string `json:"cancelReason"`
 }
 
-func NewOrderCanceledEvent(cancelReason string) (*OrderCanceledEventV1, error) {
+func NewOrderCanceledEventV1(cancelReason string) (*OrderCanceledEventV1, error) {
 	eventData := OrderCanceledEventV1{CancelReason: cancelReason}
 
 	return &eventData, nil

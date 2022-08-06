@@ -21,9 +21,6 @@ func NewProductsModuleConfigurator(infrastructure *infrastructure.Infrastructure
 
 func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context) error {
 
-	v1 := c.Echo.Group("/api/v1")
-	group := v1.Group("/" + c.Cfg.Http.ProductsPath)
-
 	mongoProductRepository := repositories.NewMongoProductRepository(c.Log, c.Cfg, c.MongoClient)
 	redisRepository := repositories.NewRedisRepository(c.Log, c.Cfg, c.Redis)
 
@@ -37,11 +34,12 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 		return err
 	}
 
-	c.configEndpoints(ctx, group)
 	c.configKafkaConsumers(ctx)
 
 	if c.Cfg.DeliveryType == "grpc" {
 		c.configGrpc(ctx)
+	} else {
+		c.configEndpoints(ctx)
 	}
 
 	return nil

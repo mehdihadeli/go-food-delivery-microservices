@@ -6,9 +6,10 @@ import (
 )
 
 func (ic *infrastructureConfigurator) configSwagger() {
+	//https://github.com/swaggo/swag#how-to-use-it-with-gin
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Title = "Catalogs Write-Service Api"
 	docs.SwaggerInfo.Description = "Catalogs Write-Service Api."
 
-	ic.echo.GET("/swagger/*", echoSwagger.WrapHandler)
+	ic.echoServer.GetEchoInstance().GET("/swagger/*", echoSwagger.WrapHandler)
 }

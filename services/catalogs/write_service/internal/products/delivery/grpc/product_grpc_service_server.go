@@ -2,8 +2,8 @@ package grpc
 
 import (
 	"context"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	productsService "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
 	creatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/commands/v1"
@@ -34,11 +34,11 @@ func NewProductGrpcService(infra *infrastructure.InfrastructureConfiguration) *P
 func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *productsService.CreateProductReq) (*productsService.CreateProductRes, error) {
 
 	s.Metrics.CreateProductGrpcRequests.Inc()
-	ctx, span := tracing.StartGrpcServerTracerSpan(ctx, "ProductGrpcServiceServer.CreateProduct")
+	ctx, span := tracing.StartGrpcServerTracerSpan(ctx, "ProductGrpcServiceServer.CreateProductCommand")
 	span.LogFields(log.String("req", req.String()))
 	defer span.Finish()
 
-	command := creatingProductV1.NewCreateProduct(req.GetName(), req.GetDescription(), req.GetPrice())
+	command := creatingProductV1.NewCreateProductCommand(req.GetName(), req.GetDescription(), req.GetPrice())
 
 	if err := s.Validator.StructCtx(ctx, command); err != nil {
 		s.Log.Errorf("(validate) err: {%v}", err)
@@ -46,9 +46,9 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 		return nil, s.errResponse(codes.InvalidArgument, err)
 	}
 
-	result, err := mediatr.Send[*creatingProductDtos.CreateProductResponseDto](ctx, command)
+	result, err := mediatr.Send[*creatingProductV1.CreateProductCommand, *creatingProductDtos.CreateProductResponseDto](ctx, command)
 	if err != nil {
-		s.Log.Errorf("(CreateProduct.Handle) productId: {%s}, err: {%v}", command.ProductID, err)
+		s.Log.Errorf("(CreateProductCommand.Handle) productId: {%s}, err: {%v}", command.ProductID, err)
 		tracing.TraceErr(span, err)
 		return nil, s.errResponse(codes.Internal, err)
 	}
@@ -61,7 +61,7 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 
 func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *productsService.UpdateProductReq) (*productsService.UpdateProductRes, error) {
 	s.Metrics.UpdateProductGrpcRequests.Inc()
-	ctx, span := tracing.StartGrpcServerTracerSpan(ctx, "ProductGrpcServiceServer.UpdateProduct")
+	ctx, span := tracing.StartGrpcServerTracerSpan(ctx, "ProductGrpcServiceServer.UpdateProductCommand")
 	span.LogFields(log.String("req", req.String()))
 	defer span.Finish()
 
@@ -72,7 +72,7 @@ func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *produ
 		return nil, s.errResponse(codes.InvalidArgument, err)
 	}
 
-	command := updatingProductV1.NewUpdateProduct(productUUID, req.GetName(), req.GetDescription(), req.GetPrice())
+	command := updatingProductV1.NewUpdateProductCommand(productUUID, req.GetName(), req.GetDescription(), req.GetPrice())
 
 	if err := s.Validator.StructCtx(ctx, command); err != nil {
 		s.Log.WarnMsg("validate", err)
@@ -80,8 +80,8 @@ func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *produ
 		return nil, s.errResponse(codes.InvalidArgument, err)
 	}
 
-	if _, err = mediatr.Send[*mediatr.Unit](ctx, command); err != nil {
-		s.Log.WarnMsg("UpdateProduct.Handle", err)
+	if _, err = mediatr.Send[*updatingProductV1.UpdateProductCommand, *mediatr.Unit](ctx, command); err != nil {
+		s.Log.WarnMsg("UpdateProductCommand.Handle", err)
 		tracing.TraceErr(span, err)
 		return nil, s.errResponse(codes.Internal, err)
 	}
@@ -95,7 +95,7 @@ func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *produ
 func (s *ProductGrpcServiceServer) GetProductById(ctx context.Context, req *productsService.GetProductByIdReq) (*productsService.GetProductByIdRes, error) {
 
 	s.Metrics.GetProductByIdGrpcRequests.Inc()
-	ctx, span := tracing.StartGrpcServerTracerSpan(ctx, "ProductGrpcServiceServer.GetProductById")
+	ctx, span := tracing.StartGrpcServerTracerSpan(ctx, "ProductGrpcServiceServer.GetProductByIdQuery")
 	span.LogFields(log.String("req", req.String()))
 	defer span.Finish()
 
@@ -106,15 +106,15 @@ func (s *ProductGrpcServiceServer) GetProductById(ctx context.Context, req *prod
 		return nil, s.errResponse(codes.InvalidArgument, err)
 	}
 
-	query := gettingProductByIdV1.GetProductById{ProductID: productUUID}
+	query := &gettingProductByIdV1.GetProductByIdQuery{ProductID: productUUID}
 	if err := s.Validator.StructCtx(ctx, query); err != nil {
 		s.Log.WarnMsg("validate", err)
 		return nil, s.errResponse(codes.InvalidArgument, err)
 	}
 
-	queryResult, err := mediatr.Send[*gettingProductByIdDtos.GetProductByIdResponseDto](ctx, query)
+	queryResult, err := mediatr.Send[*gettingProductByIdV1.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdResponseDto](ctx, query)
 	if err != nil {
-		s.Log.WarnMsg("GetProductById.Handle", err)
+		s.Log.WarnMsg("GetProductByIdQuery.Handle", err)
 		tracing.TraceErr(span, err)
 		return nil, s.errResponse(codes.Internal, err)
 	}

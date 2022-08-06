@@ -1,7 +1,7 @@
 package typeMapper
 
 import (
-	"reflect"
+	"github.com/goccy/go-reflect"
 	"unsafe"
 )
 

@@ -65,6 +65,9 @@ info:
   contact:
     name: Mehdi Hadeli
     url: https://github.com/mehdihadeli
+  description: Catalogs Write-Service Api.
+  title: Catalogs Write-Service Api
+  version: "1.0"
 paths:
   /api/v1/products:
     get:

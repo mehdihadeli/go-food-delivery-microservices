@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
@@ -53,12 +53,12 @@ func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 			return err
 		}
 
-		query := &v1.GetProducts{ListQuery: request.ListQuery}
+		query := &v1.GetProductsQuery{ListQuery: request.ListQuery}
 
-		queryResult, err := mediatr.Send[*dtos.GetProductsResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*v1.GetProductsQuery, *dtos.GetProductsResponseDto](ctx, query)
 
 		if err != nil {
-			ep.Log.WarnMsg("GetProducts", err)
+			ep.Log.WarnMsg("GetProductsQuery", err)
 			tracing.TraceErr(span, err)
 			return err
 		}

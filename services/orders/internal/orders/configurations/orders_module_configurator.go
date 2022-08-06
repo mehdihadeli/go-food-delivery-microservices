@@ -22,9 +22,6 @@ func NewOrdersModuleConfigurator(infrastructure *infrastructure.InfrastructureCo
 
 func (c *ordersModuleConfigurator) ConfigureOrdersModule(ctx context.Context) error {
 
-	v1 := c.Echo.Group("/api/v1")
-	group := v1.Group("/" + c.Cfg.Http.OrdersPath)
-
 	err := mappings.ConfigureMappings()
 	if err != nil {
 		return err
@@ -36,10 +33,10 @@ func (c *ordersModuleConfigurator) ConfigureOrdersModule(ctx context.Context) er
 		return err
 	}
 
-	c.configEndpoints(ctx, group)
-
 	if c.Cfg.DeliveryType == "grpc" {
 		c.configGrpc(ctx)
+	} else {
+		c.configEndpoints(ctx)
 	}
 
 	return nil

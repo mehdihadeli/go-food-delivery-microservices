@@ -1,7 +1,7 @@
 package configurations
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product/commands/v1"
@@ -18,32 +18,32 @@ import (
 
 func (c *productsModuleConfigurator) configProductsMediator(mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) error {
 
-	err := mediatr.RegisterHandler[*v1.CreateProduct, *creating_product.CreateProductResponseDto](v1.NewCreateProductHandler(c.Log, c.Cfg, mongoRepository, redisRepository))
+	err := mediatr.RegisterRequestHandler[*v1.CreateProductCommand, *creating_product.CreateProductResponseDto](v1.NewCreateProductCommandHandler(c.Log, c.Cfg, mongoRepository, redisRepository))
 	if err != nil {
 		return errors.Wrap(err, "error while registering handlers in the mediator")
 	}
 
-	err = mediatr.RegisterHandler[*deletingProductV1.DeleteProduct, *mediatr.Unit](deletingProductV1.NewDeleteProductHandler(c.Log, c.Cfg, mongoRepository, redisRepository))
+	err = mediatr.RegisterRequestHandler[*deletingProductV1.DeleteProductCommand, *mediatr.Unit](deletingProductV1.NewDeleteProductCommandHandler(c.Log, c.Cfg, mongoRepository, redisRepository))
 	if err != nil {
 		return errors.Wrap(err, "error while registering handlers in the mediator")
 	}
 
-	err = mediatr.RegisterHandler[*updatingProductV1.UpdateProduct, *mediatr.Unit](updatingProductV1.NewUpdateProductHandler(c.Log, c.Cfg, mongoRepository, redisRepository))
+	err = mediatr.RegisterRequestHandler[*updatingProductV1.UpdateProductCommand, *mediatr.Unit](updatingProductV1.NewUpdateProductCommandHandler(c.Log, c.Cfg, mongoRepository, redisRepository))
 	if err != nil {
 		return errors.Wrap(err, "error while registering handlers in the mediator")
 	}
 
-	err = mediatr.RegisterHandler[*gettingProductsV1.GetProducts, *gettingProductsDtos.GetProductsResponseDto](gettingProductsV1.NewGetProductsHandler(c.Log, c.Cfg, mongoRepository))
+	err = mediatr.RegisterRequestHandler[*gettingProductsV1.GetProductsQuery, *gettingProductsDtos.GetProductsResponseDto](gettingProductsV1.NewGetProductsQueryHandler(c.Log, c.Cfg, mongoRepository))
 	if err != nil {
 		return errors.Wrap(err, "error while registering handlers in the mediator")
 	}
 
-	err = mediatr.RegisterHandler[*searchingProductV1.SearchProducts, *searchingProductsDtos.SearchProductsResponseDto](searchingProductV1.NewSearchProductsHandler(c.Log, c.Cfg, mongoRepository))
+	err = mediatr.RegisterRequestHandler[*searchingProductV1.SearchProductsQuery, *searchingProductsDtos.SearchProductsResponseDto](searchingProductV1.NewSearchProductsQueryHandler(c.Log, c.Cfg, mongoRepository))
 	if err != nil {
 		return errors.Wrap(err, "error while registering handlers in the mediator")
 	}
 
-	err = mediatr.RegisterHandler[*gettingProductByIdV1.GetProductById, *gettingProductByIdDtos.GetProductByIdResponseDto](gettingProductByIdV1.NewGetProductByIdHandler(c.Log, c.Cfg, mongoRepository, redisRepository))
+	err = mediatr.RegisterRequestHandler[*gettingProductByIdV1.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdResponseDto](gettingProductByIdV1.NewGetProductByIdQueryHandler(c.Log, c.Cfg, mongoRepository, redisRepository))
 	if err != nil {
 		return errors.Wrap(err, "error while registering handlers in the mediator")
 	}

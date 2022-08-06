@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/serializer"
+	esSerializer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/opentracing/opentracing-go"
@@ -29,7 +29,7 @@ func (e *eventStore) SaveEvents(ctx context.Context, streamID string, events []*
 
 	eventsData := make([]esdb.EventData, 0, len(events))
 	for _, event := range events {
-		eventsData = append(eventsData, serializer.ToEventData(event))
+		eventsData = append(eventsData, esSerializer.ToEventData(event))
 	}
 
 	stream, err := e.db.AppendToStream(ctx, streamID, esdb.AppendToStreamOptions{}, eventsData...)
@@ -68,7 +68,7 @@ func (e *eventStore) LoadEvents(ctx context.Context, streamID string) ([]*es.ESE
 			return nil, err
 		}
 
-		esEvent, err := serializer.ToESEventFromRecordedEvent(event.Event)
+		esEvent, err := esSerializer.ToESEventFromRecordedEvent(event.Event)
 		if err != nil {
 			return nil, err
 		}

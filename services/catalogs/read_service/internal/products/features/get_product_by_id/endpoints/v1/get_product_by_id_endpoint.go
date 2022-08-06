@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 )
 
@@ -46,7 +46,7 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		query := &gettingProductByIdV1.GetProductById{ProductID: request.ProductId}
+		query := &gettingProductByIdV1.GetProductByIdQuery{ProductID: request.ProductId}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			ep.Log.WarnMsg("validate", err)
@@ -54,10 +54,10 @@ func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
 			return err
 		}
 
-		queryResult, err := mediatr.Send[*dtos.GetProductByIdResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*gettingProductByIdV1.GetProductByIdQuery, *dtos.GetProductByIdResponseDto](ctx, query)
 
 		if err != nil {
-			ep.Log.WarnMsg("GetProductById", err)
+			ep.Log.WarnMsg("GetProductByIdQuery", err)
 			tracing.TraceErr(span, err)
 			return err
 		}

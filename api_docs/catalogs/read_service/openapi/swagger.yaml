@@ -42,6 +42,9 @@ info:
   contact:
     name: Mehdi Hadeli
     url: https://github.com/mehdihadeli
+  description: Catalogs Read-Service Api.
+  title: Catalogs Read-Service Api
+  version: "1.0"
 paths:
   /api/v1/products:
     get:

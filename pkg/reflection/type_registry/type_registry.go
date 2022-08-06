@@ -1,7 +1,7 @@
 package type_registry
 
 // Ref:https://stackoverflow.com/questions/23030884/is-there-a-way-to-create-an-instance-of-a-struct-from-a-string
-import "reflect"
+import "github.com/goccy/go-reflect"
 
 var typeRegistry = make(map[string]reflect.Type)
 

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mediatr"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	deletingProduct "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product"
@@ -23,7 +23,7 @@ func (ep *deleteProductEndpoint) MapRoute() {
 	ep.ProductsGroup.DELETE("/:id", ep.deleteProduct())
 }
 
-// DeleteProduct
+// DeleteProductCommand
 // @Tags Products
 // @Summary Delete product
 // @Description Delete existing product
@@ -46,7 +46,7 @@ func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 			return err
 		}
 
-		command := v1.NewDeleteProduct(request.ProductID)
+		command := v1.NewDeleteProductCommand(request.ProductID)
 
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			ep.Log.WarnMsg("validate", err)
@@ -54,10 +54,10 @@ func (ep *deleteProductEndpoint) deleteProduct() echo.HandlerFunc {
 			return err
 		}
 
-		_, err := mediatr.Send[*mediatr.Unit](ctx, command)
+		_, err := mediatr.Send[*v1.DeleteProductCommand, *mediatr.Unit](ctx, command)
 
 		if err != nil {
-			ep.Log.WarnMsg("DeleteProduct", err)
+			ep.Log.WarnMsg("DeleteProductCommand", err)
 			tracing.TraceErr(span, err)
 			return err
 		}

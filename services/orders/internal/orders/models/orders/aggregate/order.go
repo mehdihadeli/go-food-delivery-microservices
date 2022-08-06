@@ -46,7 +46,7 @@ func CreateNewOrder(orderId uuid.UUID, shopItems []*value_objects.ShopItem, acco
 	order.NewEmptyAggregate()
 	order.SetID(orderId)
 
-	event, err := creatingOrderEvents.NewOrderCreatedEvent(shopItems, accountEmail, deliveryAddress, deliveredTime, createdAt)
+	event, err := creatingOrderEvents.NewOrderCreatedEventV1(shopItems, accountEmail, deliveryAddress, deliveredTime, createdAt)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func CreateNewOrder(orderId uuid.UUID, shopItems []*value_objects.ShopItem, acco
 
 func (o *Order) ChangeDeliveryAddress(address string) error {
 
-	event, err := changingDeliveryAddressEvents.NewDeliveryAddressChangedEvent(address)
+	event, err := changingDeliveryAddressEvents.NewDeliveryAddressChangedEventV1(address)
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (o *Order) ChangeDeliveryAddress(address string) error {
 
 func (o *Order) UpdateShoppingCard(shopItems []*value_objects.ShopItem) error {
 
-	event, err := updatingShoppingCardEvents.NewShoppingCartUpdatedEvent(shopItems)
+	event, err := updatingShoppingCardEvents.NewShoppingCartUpdatedEventV1(shopItems)
 	if err != nil {
 		return err
 	}

@@ -14,18 +14,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-type GetProductByIdHandler struct {
+type GetProductByIdQueryHandler struct {
 	log             logger.Logger
 	cfg             *config.Config
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
-func NewGetProductByIdHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *GetProductByIdHandler {
-	return &GetProductByIdHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
+func NewGetProductByIdQueryHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *GetProductByIdQueryHandler {
+	return &GetProductByIdQueryHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
 }
 
-func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductById) (*getProductByIdDtos.GetProductByIdResponseDto, error) {
+func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProductByIdQuery) (*getProductByIdDtos.GetProductByIdResponseDto, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "getProductByIdHandler.Handle")
 	defer span.Finish()
 
