@@ -63,6 +63,7 @@ const (
 
 const (
 	ErrBadRequest          = "Bad Request"
+	ErrConflict            = "Conflict Error"
 	ErrEmailAlreadyExists  = "User with given email already exists"
 	ErrNoSuchUser          = "User NotFound"
 	ErrWrongCredentials    = "Wrong Credentials"

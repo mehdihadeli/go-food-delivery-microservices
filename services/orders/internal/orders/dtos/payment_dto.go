@@ -4,6 +4,6 @@ import "time"
 
 type PaymentDto struct {
 	PaymentId string    `json:"paymentId"`
-	OrderId   string    `json:"OrderId"`
+	OrderId   string    `json:"orderId"`
 	Timestamp time.Time `json:"timestamp"`
 }

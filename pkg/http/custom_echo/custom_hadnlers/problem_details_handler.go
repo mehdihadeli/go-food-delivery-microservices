@@ -16,14 +16,15 @@ func ProblemHandler(err error, c echo.Context) {
 	}
 	if problemDetail, ok := err.(httpErrors.ProblemDetailErr); ok {
 		if !c.Response().Committed {
-			prb := problem.Of(problemDetail.GetStatus()).Append(problem.Detail(problemDetail.GetDetail())).Append(problem.Title(problemDetail.GetTitle()))
+
+			prb := problem.Of(problemDetail.GetStatus()).Append(problem.Detail(problemDetail.GetDetailError())).Append(problem.Title(problemDetail.GetTitle()))
 			if _, err := prb.WriteTo(c.Response()); err != nil {
 				c.Logger().Error(err)
 			}
 		}
 	} else if problemDetail, ok := err.(*echo.HTTPError).Internal.(httpErrors.ProblemDetailErr); ok {
 		if !c.Response().Committed {
-			prb := problem.Of(problemDetail.GetStatus()).Append(problem.Detail(problemDetail.GetDetail())).Append(problem.Title(problemDetail.GetTitle()))
+			prb := problem.Of(problemDetail.GetStatus()).Append(problem.Detail(problemDetail.GetDetailError())).Append(problem.Title(problemDetail.GetTitle()))
 			if _, err := prb.WriteTo(c.Response()); err != nil {
 				c.Logger().Error(err)
 			}

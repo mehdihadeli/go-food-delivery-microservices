@@ -172,7 +172,7 @@ execute_k6_catalogs_write_service:
 	cd services/catalogs/write_service/ && 	go run ./cmd/main.go
 	k6 run ./performance_tests/catalogs/write_service/script.js --insecure-skip-tls-verify
 
-## Execute k6 for catalog read service
+## Execute k6 for catalog read_position service
 execute_k6_catalogs_read_service:
 	@echo Executing k6 for catalogs read service
 	cd services/catalogs/read_service/ && 	go run ./cmd/main.go

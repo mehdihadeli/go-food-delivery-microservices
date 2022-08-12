@@ -6,10 +6,11 @@ package mapper
 import (
 	"flag"
 	"fmt"
-	"github.com/goccy/go-reflect"
+	"github.com/iancoleman/strcase"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/logrous"
+	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
 	"github.com/pkg/errors"
-
-	"github.com/golang/glog"
+	"reflect"
 )
 
 var (
@@ -58,11 +59,33 @@ func CreateMap[TSrc any, TDst any]() error {
 		return ErrUnsupportedMap
 	}
 
-	k := mappingsEntry{SourceType: srcType, DestinationType: desType}
-	if _, ok := maps[k]; ok {
-		return ErrMapAlreadyExists
+	if srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Struct {
+		pointerStructTypeKey := mappingsEntry{SourceType: srcType, DestinationType: desType}
+		nonePointerStructTypeKey := mappingsEntry{SourceType: srcType.Elem(), DestinationType: desType.Elem()}
+		if _, ok := maps[nonePointerStructTypeKey]; ok {
+			return ErrMapAlreadyExists
+		}
+		if _, ok := maps[pointerStructTypeKey]; ok {
+			return ErrMapAlreadyExists
+		}
+
+		// add pointer struct map and none pointer struct map to registry
+		maps[nonePointerStructTypeKey] = nil
+		maps[pointerStructTypeKey] = nil
+	} else {
+		nonePointerStructTypeKey := mappingsEntry{SourceType: srcType, DestinationType: desType}
+		pointerStructTypeKey := mappingsEntry{SourceType: reflect.New(srcType).Type(), DestinationType: reflect.New(desType).Type()}
+		if _, ok := maps[nonePointerStructTypeKey]; ok {
+			return ErrMapAlreadyExists
+		}
+		if _, ok := maps[pointerStructTypeKey]; ok {
+			return ErrMapAlreadyExists
+		}
+
+		// add pointer struct map and none pointer struct map to registry
+		maps[nonePointerStructTypeKey] = nil
+		maps[pointerStructTypeKey] = nil
 	}
-	maps[k] = nil
 
 	if srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Struct {
 		srcType = srcType.Elem()
@@ -131,62 +154,14 @@ func Map[TDes any, TSrc any](src TSrc) (TDes, error) {
 	}
 
 	desTypeValue := reflect.ValueOf(&des).Elem()
+	fmt.Println(desTypeValue.Kind())
 
-	err := processValues(reflect.ValueOf(src), desTypeValue)
+	err := processValues[TSrc, TDes](reflect.ValueOf(src), desTypeValue)
 	if err != nil {
 		return *new(TDes), err
 	}
 
 	return des, nil
-}
-
-func processValues(src reflect.Value, dest reflect.Value) error {
-	// if src of dest is an interface - get underlying type
-	if src.Kind() == reflect.Interface {
-		src = src.Elem()
-	}
-
-	if dest.Kind() == reflect.Interface {
-		dest = dest.Elem()
-	}
-
-	// get provided values' kinds
-	srcKind := src.Kind()
-	destKind := dest.Kind()
-
-	// skip invalid kinds
-	if srcKind == reflect.Invalid || destKind == reflect.Invalid {
-		return nil
-	}
-
-	// check if kinds are equal
-	if srcKind != destKind {
-		// TODO dynamic cast, m.b. with Mapper extensions
-		return nil
-	}
-
-	// if types are equal set dest value
-	if src.Type() == dest.Type() {
-		dest.Set(src)
-		return nil
-	}
-
-	// resolve kind and choose mapping function
-	// or set dest value
-	switch src.Kind() {
-	case reflect.Struct:
-		mapStructs(src, dest)
-	case reflect.Slice:
-		mapSlices(src, dest)
-	case reflect.Map:
-		mapMaps(src, dest)
-	case reflect.Ptr:
-		mapPointers(src, dest)
-	default:
-		dest.Set(src)
-	}
-
-	return nil
 }
 
 func configProfile(srcType reflect.Type, destType reflect.Type) {
@@ -196,11 +171,11 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 	// check for provided types kind.
 	// if not struct - skip.
 	if srcType.Kind() != reflect.Struct {
-		glog.Errorf("expected reflect.Struct kind for type %s, but got %s", srcType.String(), srcType.Kind().String())
+		logrous.DefaultLogger.Errorf("expected reflect.Struct kind for type %s, but got %s", srcType.String(), srcType.Kind().String())
 	}
 
 	if destType.Kind() != reflect.Struct {
-		glog.Errorf("expected reflect.Struct kind for type %s, but got %s", destType.String(), destType.Kind().String())
+		logrous.DefaultLogger.Errorf("expected reflect.Struct kind for type %s, but got %s", destType.String(), destType.Kind().String())
 	}
 
 	// profile is slice of src and dest structs fields names
@@ -214,6 +189,12 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 		// case src key equals dest key
 		if _, ok := destMeta.keysToTags[srcKey]; ok {
 			profile = append(profile, [2]string{srcKey, srcKey})
+			continue
+		}
+
+		// case src key to pascal case equals dest key
+		if _, ok := destMeta.keysToTags[strcase.ToCamel(srcKey)]; ok {
+			profile = append(profile, [2]string{srcKey, strcase.ToCamel(srcKey)})
 			continue
 		}
 
@@ -266,23 +247,25 @@ func getTypeMeta(val reflect.Type) typeMeta {
 }
 
 // mapStructs func perform structs casts.
-func mapStructs(src reflect.Value, dest reflect.Value) {
+func mapStructs[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 	// get values types
 	// if types or their slices were not registered - abort
 	profile, ok := profiles[getProfileKey(src.Type(), dest.Type())]
 	if !ok {
-		glog.Errorf("no conversion specified for types %s and %s", src.Type().String(), dest.Type().String())
+		logrous.DefaultLogger.Errorf("no conversion specified for types %s and %s", src.Type().String(), dest.Type().String())
 		return
 	}
 
 	// iterate over struct fields and map values
 	for _, keys := range profile {
-		processValues(src.FieldByName(keys[SrcKeyIndex]), dest.FieldByName(keys[DestKeyIndex]))
+		d := reflectionHelper.GetFieldValue(dest.FieldByName(keys[DestKeyIndex]))
+		s := reflectionHelper.GetFieldValue(src.FieldByName(keys[SrcKeyIndex]))
+		processValues[TDes, TSrc](s, d)
 	}
 }
 
 // mapSlices func perform slices casts.
-func mapSlices(src reflect.Value, dest reflect.Value) {
+func mapSlices[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 	// Make dest slice
 	dest.Set(reflect.MakeSlice(dest.Type(), src.Len(), src.Cap()))
 
@@ -292,23 +275,23 @@ func mapSlices(src reflect.Value, dest reflect.Value) {
 		srcVal := src.Index(i)
 		destVal := dest.Index(i)
 
-		processValues(srcVal, destVal)
+		processValues[TDes, TSrc](srcVal, destVal)
 	}
 }
 
 // mapPointers func perform pointers casts.
-func mapPointers(src reflect.Value, dest reflect.Value) {
+func mapPointers[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 	// create new struct from provided dest type
 	val := reflect.New(dest.Type().Elem()).Elem()
 
-	processValues(src.Elem(), val)
+	processValues[TDes, TSrc](src.Elem(), val)
 
 	// assign address of instantiated struct to destination
 	dest.Set(val.Addr())
 }
 
 // mapMaps func perform maps casts.
-func mapMaps(src reflect.Value, dest reflect.Value) {
+func mapMaps[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 	// Make dest map
 	dest.Set(reflect.MakeMapWithSize(dest.Type(), src.Len()))
 
@@ -318,11 +301,61 @@ func mapMaps(src reflect.Value, dest reflect.Value) {
 	destMapIter := dest.MapRange()
 
 	for destMapIter.Next() && srcMapIter.Next() {
-		destKey := reflect.New(reflect.ToType(destMapIter.Key().Type())).Elem()
-		destValue := reflect.New(reflect.ToType(destMapIter.Value().Type())).Elem()
-		processValues(reflect.ToValue(srcMapIter.Key()), destKey)
-		processValues(reflect.ToValue(srcMapIter.Value()), destValue)
+		destKey := reflect.New(destMapIter.Key().Type()).Elem()
+		destValue := reflect.New(destMapIter.Value().Type()).Elem()
+		processValues[TDes, TSrc](srcMapIter.Key(), destKey)
+		processValues[TDes, TSrc](srcMapIter.Value(), destValue)
 
 		dest.SetMapIndex(destKey, destValue)
 	}
+}
+
+func processValues[TDes any, TSrc any](src reflect.Value, dest reflect.Value) error {
+	// if src of dest is an interface - get underlying type
+	if src.Kind() == reflect.Interface {
+		src = src.Elem()
+	}
+
+	if dest.Kind() == reflect.Interface {
+		dest = dest.Elem()
+	}
+
+	// get provided values' kinds
+	srcKind := src.Kind()
+	destKind := dest.Kind()
+
+	// skip invalid kinds
+	if srcKind == reflect.Invalid || destKind == reflect.Invalid {
+		return nil
+	}
+
+	// check if kinds are equal
+	if srcKind != destKind {
+		// TODO dynamic cast, m.b. with Mapper extensions
+		return nil
+	}
+
+	// if types are equal set dest value
+	if src.Type() == dest.Type() {
+		reflectionHelper.SetFieldValue(dest, src.Interface())
+		//dest.Set(src)
+		return nil
+	}
+
+	// resolve kind and choose mapping function
+	// or set dest value
+	switch src.Kind() {
+	case reflect.Struct:
+		mapStructs[TDes, TSrc](src, dest)
+	case reflect.Slice:
+		mapSlices[TDes, TSrc](src, dest)
+	case reflect.Map:
+		mapMaps[TDes, TSrc](src, dest)
+	case reflect.Ptr:
+		mapPointers[TDes, TSrc](src, dest)
+	default:
+		dest.Set(src)
+	}
+
+	return nil
 }

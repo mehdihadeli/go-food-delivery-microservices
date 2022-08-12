@@ -8,12 +8,10 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Aug 06 19:25:52 2022
+# Make data base, printed on Fri Aug 12 23:59:39 2022
 
 # Variables
 
-# environment
-FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
 SYSTEMDRIVE = C:
 # environment
@@ -41,9 +39,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_23472_FIOWBENMQREMKBLC
-# environment
-FPS_BROWSER_USER_PROFILE_STRING = Default
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_1568_YTHCEYTPLBRIFZFC
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -95,7 +91,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 23472
+VSCODE_PID = 1568
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -219,7 +215,7 @@ PROCESSOR_REVISION = a503
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=103/1024=10%, Rehash=0, Collisions=11/134=8%
+# Load=101/1024=10%, Rehash=0, Collisions=10/132=8%
 
 # Pattern-specific Variable Values
 
@@ -227,13 +223,14 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 
 # Directories
 
-# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1659728279): 23 files, no impossibilities.
+# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1660039154): 22 files, no impossibilities.
 
-# 23 files, no impossibilities in 1 directories.
+# 22 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
-# No implicit rules.
+#  
+No implicit rules.
 
 # Files
 
@@ -263,7 +260,7 @@ cert:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-08-03 17:43:33
+#  Last modified 2022-08-06 21:52:07
 #  File has been updated.
 #  Successfully updated.
 
@@ -373,7 +370,8 @@ swagger_orders:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 153):
+# 
+  recipe to execute (from 'Makefile', line 153):
 	@echo Starting swagger generating
 	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/orders/ -o ./services/orders/docs
 	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/orders/ -o ./api_docs/orders/openapi/
@@ -485,7 +483,8 @@ proto_orders_order_service:
 
 .PHONY:
 #  Implicit rule search has not been done.
-#  Modification time never checked.
+#  Modification time  
+never checked.
 #  File has not been updated.
 
 # files hash-table stats:
@@ -496,12 +495,12 @@ proto_orders_order_service:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 53 / storage = 850 B / avg = 16 B
-# current buf: size = 8174 B / used = 850 B / count = 53 / avg = 16 B
+# strcache buffers: 1 (0) / strings = 52 / storage = 846 B / avg = 16 B
+# current buf: size = 8174 B / used = 846 B / count = 52 / avg = 16 B
 
-# strcache performance: lookups = 84 / hit rate = 36%
+# strcache performance: lookups = 83 / hit rate = 37%
 # hash-table stats:
-# Load=53/8192=1%, Rehash=0, Collisions=0/84=0%
-# Finished Make data base on Sat Aug 06 19:25:52 2022
+# Load=52/8192=1%, Rehash=0, Collisions=0/83=0%
+# Finished Make data base on Fri Aug 12 23:59:39 2022
 
  

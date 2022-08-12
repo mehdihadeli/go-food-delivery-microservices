@@ -37,8 +37,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	appLogger := logrous.NewLogrusLogger(cfg.Logger)
-	appLogger.WithName(web.GetMicroserviceName(cfg))
+	logrusLogger := logrous.NewLogrusLogger(cfg.Logger)
+	logrusLogger.WithName(web.GetMicroserviceName(cfg))
 
-	appLogger.Fatal(server.NewServer(appLogger, cfg).Run())
+	logrusLogger.Fatal(server.NewServer(logrusLogger, cfg).Run())
 }

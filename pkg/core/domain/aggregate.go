@@ -2,87 +2,98 @@ package domain
 
 import (
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain/types"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
+	"github.com/ahmetb/go-linq/v3"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
 const (
-	newAggregateVersion                  = 0
-	aggregateUncommittedEventsInitialCap = 10
+	newAggregateVersion = 0
 )
 
 // AggregateRoot base aggregate contains all main necessary fields
 type AggregateRoot struct {
-	ID                uuid.UUID
-	Version           int64
-	UncommittedEvents []interface{}
-	Type              types.AggregateType
+	*Entity
+	originalVersion   int64
+	uncommittedEvents []IDomainEvent
 }
 
-func NewAggregateRoot() *AggregateRoot {
+type AggregateDataModel struct {
+	*EntityDataModel
+	OriginalVersion int64 `json:"originalVersion" bson:"originalVersion,omitempty"`
+}
 
-	return &AggregateRoot{
-		Version:           newAggregateVersion,
-		UncommittedEvents: make([]interface{}, 0, aggregateUncommittedEventsInitialCap),
+type IAggregateRoot interface {
+	IEntity
+
+	// OriginalVersion Gets the original version is the aggregate version we got from the store. This is used to ensure optimistic concurrency,
+	// to check if there were no changes made to the aggregate state between load and save for the current operation.
+	OriginalVersion() int64
+
+	// AddDomainEvents adds a new domain event to the aggregate's uncommitted events.
+	AddDomainEvents(event IDomainEvent) error
+
+	// MarkUncommittedEventAsCommitted Mark all changes (events) as committed, clears uncommitted changes and updates the current version of the aggregate.
+	MarkUncommittedEventAsCommitted()
+
+	// HasUncommittedEvents Does the aggregate have change that have not been committed to storage
+	HasUncommittedEvents() bool
+
+	// GetUncommittedEvents Gets a list of uncommitted events for this aggregate.
+	GetUncommittedEvents() []IDomainEvent
+
+	// String Returns a string representation of the aggregate.
+	String() string
+}
+
+func NewAggregateRoot(id uuid.UUID, aggregateType string) *AggregateRoot {
+	aggregate := &AggregateRoot{
+		originalVersion: newAggregateVersion,
 	}
+	aggregate.Entity = NewEntity(id, aggregateType)
+
+	return aggregate
 }
 
-// SetID set AggregateRoot ID
-func (a *AggregateRoot) SetID(id uuid.UUID) {
-	a.ID = id
+func (a *AggregateRoot) AddDomainEvent(event IDomainEvent) error {
+	exists := linq.From(a.uncommittedEvents).Contains(event)
+	if exists {
+		return errors.New("event already exists")
+	}
+	a.uncommittedEvents = append(a.uncommittedEvents, event)
+
+	return nil
 }
 
-// GetID get AggregateRoot ID
-func (a *AggregateRoot) GetID() uuid.UUID {
-	return a.ID
+func (a *AggregateRoot) OriginalVersion() int64 {
+	return a.originalVersion
 }
 
-// SetType set AggregateRoot AggregateType
-func (a *AggregateRoot) SetType(aggregateType types.AggregateType) {
-	a.Type = aggregateType
-}
+func (a *AggregateRoot) AddDomainEvents(event IDomainEvent) {
 
-// GetType get AggregateRoot AggregateType
-func (a *AggregateRoot) GetType() types.AggregateType {
-	return a.Type
-}
-
-// GetVersion get AggregateRoot version
-func (a *AggregateRoot) GetVersion() int64 {
-	return a.Version
-}
-
-// AddEvent add a new event to the AggregateRoot uncommitted Event's
-func (a *AggregateRoot) AddEvent(event interface{}) {
-	if utils.ContainsFunc(a.UncommittedEvents, func(e interface{}) bool {
-		return e == event
-	}) {
+	if linq.From(a.uncommittedEvents).Contains(event) {
 		return
 	}
-	a.UncommittedEvents = append(a.UncommittedEvents, event)
+
+	a.uncommittedEvents = append(a.uncommittedEvents, event)
 }
 
-// MarkUncommittedEventAsCommitted clear AggregateRoot uncommitted Event's
+// MarkUncommittedEventAsCommitted clear AggregateRoot uncommitted domain events
 func (a *AggregateRoot) MarkUncommittedEventAsCommitted() {
-	a.UncommittedEvents = make([]interface{}, 0, aggregateUncommittedEventsInitialCap)
+	a.uncommittedEvents = nil
 }
 
-// HasUncommittedEvents returns true if AggregateRoot has uncommitted Event's
+// HasUncommittedEvents returns true if AggregateRoot has uncommitted domain events
 func (a *AggregateRoot) HasUncommittedEvents() bool {
-	return len(a.UncommittedEvents) > 0
+	return len(a.uncommittedEvents) > 0
 }
 
-// GetUncommittedEvents get AggregateRoot uncommitted Event's
-func (a *AggregateRoot) GetUncommittedEvents() []interface{} {
-	return a.UncommittedEvents
+// GetUncommittedEvents get AggregateRoot uncommitted domain events
+func (a *AggregateRoot) GetUncommittedEvents() []IDomainEvent {
+	return a.uncommittedEvents
 }
 
 func (a *AggregateRoot) String() string {
-	return fmt.Sprintf("ID: {%s}, Version: {%v}, Type: {%v} , UncommittedEvents: {%v}",
-		a.GetID(),
-		a.GetVersion(),
-		a.GetType(),
-		len(a.GetUncommittedEvents()),
-	)
+	return fmt.Sprintf("Aggregate json: %s", jsonSerializer.ColoredPrettyPrint(a))
 }

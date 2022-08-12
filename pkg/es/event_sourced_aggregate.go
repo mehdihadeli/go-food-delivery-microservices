@@ -4,188 +4,175 @@ package es
 //https://www.eventstore.com/blog/event-sourcing-and-cqrs
 
 import (
-	"context"
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain/types"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
+	"github.com/ahmetb/go-linq/v3"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	uuid "github.com/satori/go.uuid"
 )
 
 const (
-	newEventSourcesAggregateVersion      = -1 // used for init version in the EventStoreDB
-	aggregateAppliedEventsInitialCap     = 10
-	aggregateUncommittedEventsInitialCap = 10
+	newEventSourcesAggregateVersion = -1
 )
 
-// HandleCommand Aggregate commands' handler method
-// Example
-//
-// func (a *OrderAggregate) HandleCommand(command interface{}) error {
-//	switch c := command.(type) {
-//	case *CreateOrderCommand:
-//		return a.handleCreateOrderCommand(c)
-//	case *OrderPaidCommand:
-//		return a.handleOrderPaidCommand(c)
-//	case *SubmitOrderCommand:
-//		return a.handleSubmitOrderCommand(c)
-//	default:
-//		return errors.New("invalid command type")
-//	}
-//}
-type HandleCommand interface {
-	HandleCommand(ctx context.Context, command Command) error
+type WhenFunc func(event domain.IDomainEvent) error
+
+type When interface {
+	// When Update the aggregate state with new events that are added to the event store and also for events that are already in the event store without increasing the version.
+	When(event domain.IDomainEvent) error
 }
 
-type when func(event interface{}) error
+type fold interface {
+	// Restore the aggregate state with events that are loaded form the event store and increase the current version and last commit version.
+	fold(event domain.IDomainEvent, metadata *core.Metadata) error
+}
+
+type Apply interface {
+	// Apply a new event to the aggregate state, adds the event to the list of pending changes,
+	// and increases the `CurrentVersion` property and `LastCommittedVersion` will be unchanged.
+	Apply(event domain.IDomainEvent, isNew bool) error
+}
+
+type AggregateStateProjection interface {
+	Apply
+	fold
+}
+
+// IHaveEventSourcedAggregate this interface should implement by actual aggregate root class in our domain
+type IHaveEventSourcedAggregate interface {
+	When
+	IEventSourcedAggregateRoot
+}
+
+// IEventSourcedAggregateRoot contains all methods of AggregateBase
+type IEventSourcedAggregateRoot interface {
+	domain.IEntity
+
+	// OriginalVersion Gets the original version is the aggregate version we got from the store. This is used to ensure optimistic concurrency,
+	// to check if there were no changes made to the aggregate state between load and save for the current operation.
+	OriginalVersion() int64
+
+	// CurrentVersion Gets the current version is set to original version when the aggregate is loaded from the store.
+	// It should increase for each state transition performed within the scope of the current operation.
+	CurrentVersion() int64
+
+	// AddDomainEvents adds a new domain event to the aggregate's uncommitted events.
+	AddDomainEvents(event domain.IDomainEvent) error
+
+	// MarkUncommittedEventAsCommitted Mark all changes (events) as committed, clears uncommitted changes and updates the current version of the aggregate.
+	MarkUncommittedEventAsCommitted()
+
+	// HasUncommittedEvents Does the aggregate have change that have not been committed to storage
+	HasUncommittedEvents() bool
+
+	// UncommittedEvents Gets a list of uncommitted events for this aggregate.
+	UncommittedEvents() []domain.IDomainEvent
+
+	// LoadFromHistory Loads the current state of the aggregate from a list of events.
+	LoadFromHistory(events []domain.IDomainEvent, metadata *core.Metadata) error
+
+	AggregateStateProjection
+}
 
 // EventSourcedAggregateRoot base aggregate contains all main necessary fields
 type EventSourcedAggregateRoot struct {
-	ID                uuid.UUID           `json:"id" bson:"_id,omitempty"`
-	Version           int64               `json:"version" bson:"version"`
-	Type              types.AggregateType `json:"type" bson:"type"`
-	UncommittedEvents []interface{}
-	AppliedEvents     []interface{}
-	withAppliedEvents bool
-	when              when
+	*domain.Entity
+	originalVersion   int64
+	currentVersion    int64
+	uncommittedEvents []domain.IDomainEvent
+	when              WhenFunc
 }
 
-func NewEventSourcedAggregateRoot(when when) *EventSourcedAggregateRoot {
+type EventSourcedAggregateRootDataModel struct {
+	*domain.EntityDataModel
+	OriginalVersion int64 `json:"originalVersion" bson:"originalVersion"`
+}
+
+func NewEventSourcedAggregateRoot(id uuid.UUID, aggregateType string, when WhenFunc) *EventSourcedAggregateRoot {
 	if when == nil {
 		return nil
 	}
 
-	return &EventSourcedAggregateRoot{
-
-		Version:           newEventSourcesAggregateVersion,
-		UncommittedEvents: make([]interface{}, 0, aggregateUncommittedEventsInitialCap),
-		AppliedEvents:     make([]interface{}, 0, aggregateAppliedEventsInitialCap),
-		when:              when,
-		withAppliedEvents: false,
+	aggregate := &EventSourcedAggregateRoot{
+		originalVersion: newEventSourcesAggregateVersion,
+		currentVersion:  newEventSourcesAggregateVersion,
+		when:            when,
 	}
+
+	aggregate.Entity = domain.NewEntity(id, aggregateType)
+
+	return aggregate
 }
 
-// SetID set EventSourcedAggregateRoot ID
-func (a *EventSourcedAggregateRoot) SetID(id uuid.UUID) {
-	a.ID = id
+func (a *EventSourcedAggregateRoot) OriginalVersion() int64 {
+	return a.originalVersion
 }
 
-// GetID get EventSourcedAggregateRoot ID
-func (a *EventSourcedAggregateRoot) GetID() uuid.UUID {
-	return a.ID
+func (a *EventSourcedAggregateRoot) CurrentVersion() int64 {
+	return a.currentVersion
 }
 
-// SetType set EventSourcedAggregateRoot AggregateType
-func (a *EventSourcedAggregateRoot) SetType(aggregateType types.AggregateType) {
-	a.Type = aggregateType
-}
-
-// GetType get EventSourcedAggregateRoot AggregateType
-func (a *EventSourcedAggregateRoot) GetType() types.AggregateType {
-	return a.Type
-}
-
-// GetAppliedEvents get EventSourcedAggregateRoot applied Event's
-func (a *EventSourcedAggregateRoot) GetAppliedEvents() []interface{} {
-	return a.AppliedEvents
-}
-
-// SetAppliedEvents set EventSourcedAggregateRoot applied Event's
-func (a *EventSourcedAggregateRoot) SetAppliedEvents(events []interface{}) {
-	a.AppliedEvents = events
-}
-
-// GetVersion get EventSourcedAggregateRoot version
-func (a *EventSourcedAggregateRoot) GetVersion() int64 {
-	return a.Version
-}
-
-// AddEvent add a new event to the EventSourcedAggregateRoot uncommitted Event's
-func (a *EventSourcedAggregateRoot) AddEvent(event interface{}) {
-	if utils.ContainsFunc(a.UncommittedEvents, func(e interface{}) bool {
-		return e == event
-	}) {
-		return
+func (a *EventSourcedAggregateRoot) AddDomainEvents(event domain.IDomainEvent) error {
+	exists := linq.From(a.uncommittedEvents).Contains(event)
+	if exists {
+		return ErrEventAlreadyExists
 	}
-	a.UncommittedEvents = append(a.UncommittedEvents, event)
-	a.Version++
+	a.uncommittedEvents = append(a.uncommittedEvents, event)
+
+	return nil
 }
 
-// MarkUncommittedEventAsCommitted clear EventSourcedAggregateRoot uncommitted Event's
 func (a *EventSourcedAggregateRoot) MarkUncommittedEventAsCommitted() {
-	a.UncommittedEvents = make([]interface{}, 0, aggregateUncommittedEventsInitialCap)
+	a.uncommittedEvents = nil
 }
 
-// HasUncommittedEvents returns true if EventSourcedAggregateRoot has uncommitted Event's
 func (a *EventSourcedAggregateRoot) HasUncommittedEvents() bool {
-	return len(a.UncommittedEvents) > 0
+	return len(a.uncommittedEvents) > 0
 }
 
-// GetUncommittedEvents get EventSourcedAggregateRoot uncommitted Event's
-func (a *EventSourcedAggregateRoot) GetUncommittedEvents() []interface{} {
-	return a.UncommittedEvents
+func (a *EventSourcedAggregateRoot) UncommittedEvents() []domain.IDomainEvent {
+	return a.uncommittedEvents
 }
 
-// Load add existing events from event store to aggregate using When interface method
-func (a *EventSourcedAggregateRoot) Load(events []interface{}) error {
-
-	for _, evt := range events {
-		if err := a.when(evt); err != nil {
+func (a *EventSourcedAggregateRoot) LoadFromHistory(events []domain.IDomainEvent, metadata *core.Metadata) error {
+	for _, event := range events {
+		err := a.fold(event, metadata)
+		if err != nil {
 			return err
 		}
+	}
 
-		if a.withAppliedEvents {
-			a.AppliedEvents = append(a.AppliedEvents, evt)
+	return nil
+}
+
+func (a *EventSourcedAggregateRoot) Apply(event domain.IDomainEvent, isNew bool) error {
+	if isNew {
+		err := a.AddDomainEvents(event)
+		if err != nil {
+			return err
 		}
-		a.Version++
 	}
-
-	return nil
-}
-
-// Ref: https://www.eventstore.com/blog/what-is-event-sourcing
-
-// Apply push event to aggregate uncommitted events using When method
-func (a *EventSourcedAggregateRoot) Apply(event interface{}) error {
-
-	if err := a.when(event); err != nil {
+	err := a.when(event)
+	if err != nil {
 		return err
 	}
-
-	a.AddEvent(event)
+	a.currentVersion++
 
 	return nil
 }
 
-// RaiseEvent push event to aggregate applied events using When method, used for load directly from eventstore
-func (a *EventSourcedAggregateRoot) RaiseEvent(event interface{}) error {
-
-	if err := a.when(event); err != nil {
+func (a *EventSourcedAggregateRoot) fold(event domain.IDomainEvent, metadata *core.Metadata) error {
+	err := a.when(event)
+	if err != nil {
 		return err
 	}
-
-	if a.withAppliedEvents {
-		a.AppliedEvents = append(a.AppliedEvents, event)
-	}
-
-	a.Version++
+	a.originalVersion++
+	a.currentVersion++
 
 	return nil
-}
-
-// ToSnapshot prepare EventSourcedAggregateRoot for saving Snapshot.
-func (a *EventSourcedAggregateRoot) ToSnapshot() {
-	if a.withAppliedEvents {
-		a.AppliedEvents = append(a.AppliedEvents, a.UncommittedEvents...)
-	}
-	a.MarkUncommittedEventAsCommitted()
 }
 
 func (a *EventSourcedAggregateRoot) String() string {
-	return fmt.Sprintf("ID: {%s}, Version: {%v}, Type: {%v}, AppliedEvents: {%v}, UncommittedEvents: {%v}",
-		a.GetID(),
-		a.GetVersion(),
-		a.GetType(),
-		len(a.GetAppliedEvents()),
-		len(a.GetUncommittedEvents()),
-	)
+	return fmt.Sprintf("Aggregate json is: %s", jsonSerializer.ColoredPrettyPrint(a))
 }

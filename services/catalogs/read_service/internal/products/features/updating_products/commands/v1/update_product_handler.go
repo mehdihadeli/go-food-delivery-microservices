@@ -31,7 +31,7 @@ func (c *UpdateProductCommandHandler) Handle(ctx context.Context, command *Updat
 	_, err := c.mongoRepository.GetProductById(ctx, command.ProductID)
 
 	if err != nil {
-		return nil, httpErrors.NewNotFoundError(fmt.Sprintf("product with id %s not found", command.ProductID))
+		return nil, httpErrors.NewNotFoundError(err, fmt.Sprintf("product with id %s not found", command.ProductID))
 	}
 
 	product := &models.Product{ProductID: command.ProductID.String(), Name: command.Name, Description: command.Description, Price: command.Price, UpdatedAt: command.UpdatedAt}

@@ -35,15 +35,15 @@ func (c *CreateOrderCommandHandler) Handle(ctx context.Context, command *CreateO
 		return nil, err
 	}
 
-	order, err := aggregate.CreateNewOrder(command.OrderID, shopItems, command.AccountEmail, command.DeliveryAddress, command.DeliveryTime, command.CreatedAt)
+	order, err := aggregate.CreateNewOrder(shopItems, command.AccountEmail, command.DeliveryAddress, command.DeliveryTime, command.CreatedAt)
 
 	if err != nil {
 		return nil, tracing.TraceWithErr(span, err)
 	}
-	err = c.aggregateStore.Store(ctx, order, nil)
+	_, err = c.aggregateStore.Store(order, nil, ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return &dtos.CreateOrderResponseDto{OrderID: order.ID}, nil
+	return &dtos.CreateOrderResponseDto{OrderID: order.Id()}, nil
 }

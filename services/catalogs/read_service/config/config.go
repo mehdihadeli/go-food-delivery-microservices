@@ -15,7 +15,6 @@ import (
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/redis"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/pkg/errors"
@@ -25,7 +24,7 @@ import (
 var configPath string
 
 func init() {
-	flag.StringVar(&configPath, "config", "", "catalogs read microservice config path")
+	flag.StringVar(&configPath, "config", "", "catalogs read_position microservice config path")
 }
 
 type Config struct {
@@ -37,7 +36,6 @@ type Config struct {
 	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
 	Context          Context                        `mapstructure:"context" envPrefix:"Context_"`
 	Redis            *redis.Config                  `mapstructure:"redis" envPrefix:"Redis_"`
-	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq" envPrefix:"Rabbitmq_"`
 	Kafka            *kafkaClient.Config            `mapstructure:"kafka" envPrefix:"Kafka_"`
 	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
 	Jaeger           *tracing.Config                `mapstructure:"jaeger" envPrefix:"Jaeger_"`

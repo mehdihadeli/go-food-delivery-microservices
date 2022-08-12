@@ -486,7 +486,7 @@
     data-hotkey="g n"
     data-target="notification-indicator.link"
 
-    data-analytics-event="{&quot;category&quot;:&quot;Header&quot;,&quot;action&quot;:&quot;go to notifications&quot;,&quot;label&quot;:&quot;icon:read&quot;}">
+    data-analytics-event="{&quot;category&quot;:&quot;Header&quot;,&quot;action&quot;:&quot;go to notifications&quot;,&quot;label&quot;:&quot;icon:read_position&quot;}">
 
     <span
       data-target="notification-indicator.badge"

@@ -15,7 +15,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -36,7 +35,6 @@ type Config struct {
 	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
 	Context          Context                        `mapstructure:"context" envPrefix:"Context_"`
 	Postgresql       *postgres.Config               `mapstructure:"postgres" envPrefix:"Postgresql_"`
-	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq" envPrefix:"Rabbitmq_"`
 	GormPostgres     *gorm_postgres.Config          `mapstructure:"gormPostgres" envPrefix:"GormPostgres_"`
 	Kafka            *kafkaClient.Config            `mapstructure:"kafka" envPrefix:"Kafka_"`
 	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
