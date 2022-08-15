@@ -33,12 +33,6 @@ func (q *GetOrderByIdHandler) Handle(ctx context.Context, query *GetOrderByIdQue
 		return nil, httpErrors.NewNotFoundError(err, fmt.Sprintf("order with id %s not found", order.Id))
 	}
 
-	i := order.ShopItems()
-	i1 := *i[0]
-
-	s, err := mapper.Map[ordersDto.ShopItemDto](i1)
-	fmt.Print(s)
-
 	orderDto, err := mapper.Map[*ordersDto.OrderDto](order)
 	if err != nil {
 		return nil, err

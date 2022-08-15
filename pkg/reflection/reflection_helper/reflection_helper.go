@@ -10,8 +10,9 @@ import (
 )
 
 func GetFieldValueByIndex[T any](object T, index int) interface{} {
-	if reflect.ValueOf(object).Kind() == reflect.Ptr {
-		val := reflect.ValueOf(object).Elem()
+	v := reflect.ValueOf(&object).Elem()
+	if v.Kind() == reflect.Ptr {
+		val := v.Elem()
 		field := val.Field(index)
 		// for all exported fields (public)
 		if field.CanInterface() {
@@ -20,9 +21,9 @@ func GetFieldValueByIndex[T any](object T, index int) interface{} {
 			// for all unexported fields (private)
 			return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Interface()
 		}
-	} else if reflect.ValueOf(object).Kind() == reflect.Struct {
+	} else if v.Kind() == reflect.Struct {
 		// for all exported fields (public)
-		val := reflect.ValueOf(object)
+		val := v
 		field := val.Field(index)
 		if field.CanInterface() {
 			return field.Interface()
@@ -40,8 +41,9 @@ func GetFieldValueByIndex[T any](object T, index int) interface{} {
 }
 
 func GetFieldValueByName[T any](object T, name string) interface{} {
-	if reflect.ValueOf(object).Kind() == reflect.Ptr {
-		val := reflect.ValueOf(object).Elem()
+	v := reflect.ValueOf(&object).Elem()
+	if v.Kind() == reflect.Ptr {
+		val := v.Elem()
 		field := val.FieldByName(name)
 		// for all exported fields (public)
 		if field.CanInterface() {
@@ -50,9 +52,9 @@ func GetFieldValueByName[T any](object T, name string) interface{} {
 			// for all unexported fields (private)
 			return reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Interface()
 		}
-	} else if reflect.ValueOf(object).Kind() == reflect.Struct {
+	} else if v.Kind() == reflect.Struct {
 		// for all exported fields (public)
-		val := reflect.ValueOf(object)
+		val := v
 		field := val.FieldByName(name)
 		if field.CanInterface() {
 			return field.Interface()
@@ -70,9 +72,11 @@ func GetFieldValueByName[T any](object T, name string) interface{} {
 }
 
 func SetFieldValueByIndex[T any](object T, index int, value interface{}) {
+	v := reflect.ValueOf(&object).Elem()
+
 	//https://stackoverflow.com/questions/6395076/using-reflect-how-do-you-set-the-value-of-a-struct-field
-	if reflect.ValueOf(object).Kind() == reflect.Ptr {
-		val := reflect.ValueOf(object).Elem()
+	if v.Kind() == reflect.Ptr {
+		val := v.Elem()
 		field := val.Field(index)
 		// for all exported fields (public)
 		if field.CanInterface() && field.CanAddr() && field.CanSet() {
@@ -81,9 +85,9 @@ func SetFieldValueByIndex[T any](object T, index int, value interface{}) {
 			// for all unexported fields (private)
 			reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Set(reflect.ValueOf(value))
 		}
-	} else if reflect.ValueOf(object).Kind() == reflect.Struct {
+	} else if v.Kind() == reflect.Struct {
 		// for all exported fields (public)
-		val := reflect.ValueOf(&object).Elem()
+		val := v
 		field := val.Field(index)
 		if field.CanInterface() && field.CanAddr() && field.CanSet() {
 			field.Set(reflect.ValueOf(value))
@@ -101,9 +105,11 @@ func SetFieldValueByIndex[T any](object T, index int, value interface{}) {
 }
 
 func SetFieldValueByName[T any](object T, name string, value interface{}) {
+	v := reflect.ValueOf(&object).Elem()
+
 	//https://stackoverflow.com/questions/6395076/using-reflect-how-do-you-set-the-value-of-a-struct-field
-	if reflect.ValueOf(object).Kind() == reflect.Ptr {
-		val := reflect.ValueOf(object).Elem()
+	if v.Kind() == reflect.Ptr {
+		val := v.Elem()
 		field := val.FieldByName(name)
 		// for all exported fields (public)
 		if field.CanInterface() && field.CanAddr() && field.CanSet() {
@@ -112,9 +118,9 @@ func SetFieldValueByName[T any](object T, name string, value interface{}) {
 			// for all unexported fields (private)
 			reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Set(reflect.ValueOf(value))
 		}
-	} else if reflect.ValueOf(object).Kind() == reflect.Struct {
+	} else if v.Kind() == reflect.Struct {
 		// for all exported fields (public)
-		val := reflect.ValueOf(&object).Elem()
+		val := v
 		field := val.FieldByName(name)
 		if field.CanInterface() && field.CanAddr() && field.CanSet() {
 			field.Set(reflect.ValueOf(value))
@@ -150,4 +156,53 @@ func SetFieldValue(field reflect.Value, value interface{}) {
 			Elem().
 			Set(reflect.ValueOf(value))
 	}
+}
+
+func GetFieldValueFromMethodAndObject[T interface{}](object T, name string) reflect.Value {
+	v := reflect.ValueOf(&object).Elem()
+	if v.Kind() == reflect.Ptr {
+		val := v
+		method := val.MethodByName(name)
+		if method.Kind() == reflect.Func {
+			res := method.Call(nil)
+			return res[0]
+		}
+	} else if v.Kind() == reflect.Struct {
+		val := v
+		method := v.MethodByName(name)
+		if method.Kind() == reflect.Func {
+			res := method.Call(nil)
+			return res[0]
+		} else {
+			s := reflect.NewAt(val.Type(), unsafe.Pointer(val.UnsafeAddr())).Elem()
+			method := s.MethodByName(name)
+			res := method.Call(nil)
+			return res[0]
+		}
+	}
+
+	return *new(reflect.Value)
+}
+
+func GetFieldValueFromMethodAndReflectValue(val reflect.Value, name string) reflect.Value {
+	if val.Kind() == reflect.Ptr {
+		method := val.MethodByName(name)
+		if method.Kind() == reflect.Func {
+			res := method.Call(nil)
+			return res[0]
+		}
+	} else if val.Kind() == reflect.Struct {
+		method := val.MethodByName(name)
+		if method.Kind() == reflect.Func {
+			res := method.Call(nil)
+			return res[0]
+		} else {
+			s := reflect.New(val.Type())
+			method := s.MethodByName(name)
+			res := method.Call(nil)
+			return res[0]
+		}
+	}
+
+	return *new(reflect.Value)
 }

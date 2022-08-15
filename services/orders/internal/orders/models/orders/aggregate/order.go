@@ -5,8 +5,10 @@ package aggregate
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	changingDeliveryAddressEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/changing_delivery_address/events/v1"
 	creatingOrderEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/events/v1"
 	updatingShoppingCardEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/updating_shopping_card/events/v1"
@@ -15,6 +17,24 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"time"
 )
+
+type OrderData struct {
+	*es.EventSourcedAggregateRootDataModel
+	OriginalVersion int64                         `json:"original_version" bson:"original_version"`
+	ShopItems       []*value_objects.ShopItemData `json:"shop_items" bson:"shopItems"`
+	AccountEmail    string                        `json:"account_email" bson:"accountEmail"`
+	DeliveryAddress string                        `json:"delivery_address" bson:"deliveryAddress"`
+	CancelReason    string                        `json:"cancel_reason" bson:"cancelReason"`
+	TotalPrice      float64                       `json:"total_price" bson:"totalPrice"`
+	DeliveredTime   time.Time                     `json:"delivered_time" bson:"deliveredTime"`
+	Paid            bool                          `json:"paid" bson:"paid"`
+	Submitted       bool                          `json:"submitted" bson:"submitted"`
+	Completed       bool                          `json:"completed" bson:"completed"`
+	Canceled        bool                          `json:"canceled" bson:"canceled"`
+	Payment         *entities.PaymentData         `json:"payment" bson:"payment"`
+	CreatedAt       time.Time                     `json:"created_at" bson:"createdAt"`
+	UpdatedAt       time.Time                     `json:"updated_at" bson:"updatedAt"`
+}
 
 type Order struct {
 	*es.EventSourcedAggregateRoot
@@ -43,7 +63,12 @@ func CreateNewOrder(shopItems []*value_objects.ShopItem, accountEmail, deliveryA
 	order := &Order{}
 	order.NewEmptyAggregate()
 
-	event, err := creatingOrderEvents.NewOrderCreatedEventV1(shopItems, accountEmail, deliveryAddress, deliveredTime, createdAt)
+	itemsDto, err := mapper.Map[[]*dtos.ShopItemDto](shopItems)
+	if err != nil {
+		return nil, err
+	}
+
+	event, err := creatingOrderEvents.NewOrderCreatedEventV1(itemsDto, accountEmail, deliveryAddress, deliveredTime, createdAt)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +112,6 @@ func (o *Order) UpdateShoppingCard(shopItems []*value_objects.ShopItem) error {
 }
 
 func (o *Order) When(event domain.IDomainEvent) error {
-
 	switch evt := event.(type) {
 
 	case *creatingOrderEvents.OrderCreatedEventV1:
@@ -111,10 +135,20 @@ func (o *Order) When(event domain.IDomainEvent) error {
 }
 
 func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) error {
+	//f, err := mapper.Map[*value_objects.ShopItem](evt.ShopItems[0])
+	//fmt.Print(f)
+	//
+	//c, err := mapper.Map[*dtos.ShopItemDto](f)
+	//fmt.Print(c)
+
+	items, err := mapper.Map[[]*value_objects.ShopItem](evt.ShopItems)
+	if err != nil {
+		return err
+	}
 
 	o.accountEmail = evt.AccountEmail
-	o.shopItems = evt.ShopItems
-	o.totalPrice = getShopItemsTotalPrice(evt.ShopItems)
+	o.shopItems = items
+	o.totalPrice = getShopItemsTotalPrice(items)
 	o.deliveryAddress = evt.DeliveryAddress
 	o.deliveredTime = evt.DeliveredTime
 	o.createdAt = evt.CreatedAt
@@ -241,7 +275,7 @@ func (o *Order) String() string {
 func getShopItemsTotalPrice(shopItems []*value_objects.ShopItem) float64 {
 	var totalPrice float64 = 0
 	for _, item := range shopItems {
-		totalPrice += item.Price * float64(item.Quantity)
+		totalPrice += item.Price() * float64(item.Quantity())
 	}
 
 	return totalPrice

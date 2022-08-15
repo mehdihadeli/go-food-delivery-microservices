@@ -23,17 +23,17 @@ import (
 	"reflect"
 )
 
-type esdbAggregateStore[T es.IHaveEventSourcedAggregate] struct {
+type esdbAggregateStore[T es.IHaveEventSourcedAggregate, TData interface{}] struct {
 	log        logger.Logger
 	eventStore store.EventStore
 	serializer *EsdbSerializer
 }
 
-func NewEventStoreAggregateStore[T es.IHaveEventSourcedAggregate](log logger.Logger, eventStore store.EventStore, serializer *EsdbSerializer) *esdbAggregateStore[T] {
-	return &esdbAggregateStore[T]{log: log, eventStore: eventStore, serializer: serializer}
+func NewEventStoreAggregateStore[T es.IHaveEventSourcedAggregate, TData interface{}](log logger.Logger, eventStore store.EventStore, serializer *EsdbSerializer) *esdbAggregateStore[T, TData] {
+	return &esdbAggregateStore[T, TData]{log: log, eventStore: eventStore, serializer: serializer}
 }
 
-func (a *esdbAggregateStore[T]) StoreWithVersion(
+func (a *esdbAggregateStore[T, TData]) StoreWithVersion(
 	aggregate T,
 	metadata *core.Metadata,
 	expectedVersion expectedStreamVersion.ExpectedStreamVersion,
@@ -69,7 +69,7 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(
 	return streamAppendResult, nil
 }
 
-func (a *esdbAggregateStore[T]) Store(aggregate T, metadata *core.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error) {
+func (a *esdbAggregateStore[T, TData]) Store(aggregate T, metadata *core.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Store")
 	defer span.Finish()
 	span.LogFields(log.String("Aggregate", jsonSerializer.ColoredPrettyPrint(aggregate)))
@@ -87,7 +87,7 @@ func (a *esdbAggregateStore[T]) Store(aggregate T, metadata *core.Metadata, ctx 
 	return streamAppendResult, nil
 }
 
-func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggregateId uuid.UUID, position readPosition.StreamReadPosition) (T, error) {
+func (a *esdbAggregateStore[T, TData]) LoadWithReadPosition(ctx context.Context, aggregateId uuid.UUID, position readPosition.StreamReadPosition) (T, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.LoadWithReadPosition")
 	defer span.Finish()
@@ -139,7 +139,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 	return aggregate, nil
 }
 
-func (a *esdbAggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID) (T, error) {
+func (a *esdbAggregateStore[T, TData]) Load(ctx context.Context, aggregateId uuid.UUID) (T, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Load")
 	defer span.Finish()
@@ -150,7 +150,7 @@ func (a *esdbAggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID)
 	return a.LoadWithReadPosition(ctx, aggregateId, position)
 }
 
-func (a *esdbAggregateStore[T]) Exists(ctx context.Context, aggregateId uuid.UUID) (bool, error) {
+func (a *esdbAggregateStore[T, TData]) Exists(ctx context.Context, aggregateId uuid.UUID) (bool, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Exists")
 	defer span.Finish()
 	span.LogFields(log.String("AggregateId", aggregateId.String()))
@@ -161,7 +161,7 @@ func (a *esdbAggregateStore[T]) Exists(ctx context.Context, aggregateId uuid.UUI
 	return a.eventStore.StreamExists(streamId, ctx)
 }
 
-func (a *esdbAggregateStore[T]) getStreamEvents(streamId streamName.StreamName, position readPosition.StreamReadPosition, ctx context.Context) ([]*es.StreamEvent, error) {
+func (a *esdbAggregateStore[T, TData]) getStreamEvents(streamId streamName.StreamName, position readPosition.StreamReadPosition, ctx context.Context) ([]*es.StreamEvent, error) {
 	pageSize := 500
 	var streamEvents []*es.StreamEvent
 

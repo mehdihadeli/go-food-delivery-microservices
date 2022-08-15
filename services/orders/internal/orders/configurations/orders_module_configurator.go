@@ -30,7 +30,7 @@ func (c *ordersModuleConfigurator) ConfigureOrdersModule(ctx context.Context) er
 
 	serializer := eventstroredb.NewEsdbSerializer(esSerializer.NewJsonMetadataSerializer(), esSerializer.NewJsonEventSerializer())
 	eventStore := eventstroredb.NewEventStoreDbEventStore(c.Log, c.Esdb, serializer)
-	aggregateStore := eventstroredb.NewEventStoreAggregateStore[*aggregate.Order](c.Log, eventStore, serializer)
+	aggregateStore := eventstroredb.NewEventStoreAggregateStore[*aggregate.Order, any](c.Log, eventStore, serializer)
 
 	err = c.configOrdersMediator(aggregateStore)
 	if err != nil {

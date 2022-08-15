@@ -12,35 +12,37 @@ import (
 func ConfigureMappings() error {
 	if err := mapper.CreateCustomMap[*value_objects.ShopItem, *grpcOrderService.ShopItem](func(src *value_objects.ShopItem) *grpcOrderService.ShopItem {
 		return &grpcOrderService.ShopItem{
-			Title:       src.Title,
-			Description: src.Description,
-			Quantity:    src.Quantity,
-			Price:       src.Price,
+			Title:       src.Title(),
+			Description: src.Description(),
+			Quantity:    src.Quantity(),
+			Price:       src.Price(),
 		}
 	}); err != nil {
 		return err
 	}
 
 	if err := mapper.CreateCustomMap[*grpcOrderService.ShopItem, *value_objects.ShopItem](func(src *grpcOrderService.ShopItem) *value_objects.ShopItem {
-		return &value_objects.ShopItem{
-			Title:       src.Title,
-			Description: src.Description,
-			Quantity:    src.Quantity,
-			Price:       src.Price,
-		}
+		return value_objects.CreateNewShopItem(src.Title, src.Description, src.Quantity, src.Price)
 	}); err != nil {
 		return err
 	}
 
+	// Order -> OrderDto
+	err := mapper.CreateMap[*aggregate.Order, *dtos.OrderDto]()
+	if err != nil {
+		return err
+	}
+
 	// ShopItem -> ShopItemDto
-	err := mapper.CreateMap[*value_objects.ShopItem, *dtos.ShopItemDto]()
-	//err := mapper.CreateMap[value_objects.ShopItem, dtos.ShopItemDto]()
+	err = mapper.CreateMap[*value_objects.ShopItem, *dtos.ShopItemDto]()
 	if err != nil {
 		return err
 	}
 
 	// ShopItemDto -> ShopItem
-	err = mapper.CreateMap[*dtos.ShopItemDto, *value_objects.ShopItem]()
+	err = mapper.CreateCustomMap[*dtos.ShopItemDto, *value_objects.ShopItem](func(src *dtos.ShopItemDto) *value_objects.ShopItem {
+		return value_objects.CreateNewShopItem(src.Title, src.Description, src.Quantity, src.Price)
+	})
 	if err != nil {
 		return err
 	}
@@ -53,12 +55,6 @@ func ConfigureMappings() error {
 
 	// PaymentDto -> Payment
 	err = mapper.CreateMap[*dtos.PaymentDto, *entities.Payment]()
-	if err != nil {
-		return err
-	}
-
-	// Order -> OrderDto
-	err = mapper.CreateMap[*aggregate.Order, *dtos.OrderDto]()
 	if err != nil {
 		return err
 	}

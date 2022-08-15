@@ -6,6 +6,7 @@ package mapper
 import (
 	"flag"
 	"fmt"
+	"github.com/ahmetb/go-linq/v3"
 	"github.com/iancoleman/strcase"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/logrous"
 	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
@@ -48,6 +49,17 @@ type MapFunc[TSrc any, TDst any] func(TSrc) TDst
 
 var profiles = map[string][][2]string{}
 var maps = map[mappingsEntry]interface{}{}
+var mapperConfig *MapperConfig
+
+func init() {
+	mapperConfig = &MapperConfig{
+		MapUnexportedFields: false,
+	}
+}
+
+func Configure(config *MapperConfig) {
+	mapperConfig = config
+}
 
 func CreateMap[TSrc any, TDst any]() error {
 	var src TSrc
@@ -119,13 +131,13 @@ func CreateCustomMap[TSrc any, TDst any](fn MapFunc[TSrc, TDst]) error {
 	}
 	maps[k] = fn
 
-	if srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Struct {
-		srcType = srcType.Elem()
-	}
-
-	if desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Struct {
-		desType = desType.Elem()
-	}
+	//if srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Struct {
+	//	srcType = srcType.Elem()
+	//}
+	//
+	//if desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Struct {
+	//	desType = desType.Elem()
+	//}
 
 	return nil
 }
@@ -134,13 +146,17 @@ func Map[TDes any, TSrc any](src TSrc) (TDes, error) {
 	var des TDes
 	srcType := reflect.TypeOf(src)
 	desType := reflect.TypeOf(des)
+	desIsArray := false
+	srcIsArray := false
 
-	if srcType.Kind() == reflect.Array || srcType.Kind() == reflect.Slice {
+	if srcType.Kind() == reflect.Array || (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Array) || srcType.Kind() == reflect.Slice || (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Slice) {
 		srcType = srcType.Elem()
+		srcIsArray = true
 	}
 
-	if desType.Kind() == reflect.Array || desType.Kind() == reflect.Slice {
+	if desType.Kind() == reflect.Array || (desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Array) || desType.Kind() == reflect.Slice || (desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Slice) {
 		desType = desType.Elem()
+		desIsArray = true
 	}
 
 	k := mappingsEntry{SourceType: srcType, DestinationType: desType}
@@ -149,14 +165,21 @@ func Map[TDes any, TSrc any](src TSrc) (TDes, error) {
 		return *new(TDes), ErrMapNotExist
 	}
 	if fn != nil {
-		mfn := fn.(MapFunc[TSrc, TDes])
-		return mfn(src), nil
+		fnReflect := reflect.ValueOf(fn)
+
+		if desIsArray && srcIsArray {
+			linq.From(src).Select(func(x interface{}) interface{} {
+				return fnReflect.Call([]reflect.Value{reflect.ValueOf(x)})[0].Interface()
+			}).ToSlice(&des)
+
+			return des, nil
+		} else {
+			return fnReflect.Call([]reflect.Value{reflect.ValueOf(src)})[0].Interface().(TDes), nil
+		}
 	}
 
 	desTypeValue := reflect.ValueOf(&des).Elem()
-	fmt.Println(desTypeValue.Kind())
-
-	err := processValues[TSrc, TDes](reflect.ValueOf(src), desTypeValue)
+	err := processValues[TDes, TSrc](reflect.ValueOf(src), desTypeValue)
 	if err != nil {
 		return *new(TDes), err
 	}
@@ -186,15 +209,13 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 	destMeta := getTypeMeta(destType)
 
 	for srcKey, srcTag := range srcMeta.keysToTags {
+		if _, ok := destMeta.keysToTags[strcase.ToCamel(srcKey)]; ok {
+			profile = append(profile, [2]string{srcKey, strcase.ToCamel(srcKey)})
+		}
+
 		// case src key equals dest key
 		if _, ok := destMeta.keysToTags[srcKey]; ok {
 			profile = append(profile, [2]string{srcKey, srcKey})
-			continue
-		}
-
-		// case src key to pascal case equals dest key
-		if _, ok := destMeta.keysToTags[strcase.ToCamel(srcKey)]; ok {
-			profile = append(profile, [2]string{srcKey, strcase.ToCamel(srcKey)})
 			continue
 		}
 
@@ -237,13 +258,28 @@ func getTypeMeta(val reflect.Type) typeMeta {
 		fieldTag := field.Tag.Get("mapper")
 
 		keysToTags[fieldName] = fieldTag
-		tagsToKeys[fieldTag] = fieldName
+		if fieldTag != "" {
+			tagsToKeys[fieldTag] = fieldName
+		}
 	}
 
 	return typeMeta{
 		keysToTags: keysToTags,
 		tagsToKeys: tagsToKeys,
 	}
+}
+
+func getTypeMethods(val reflect.Type) []string {
+	methodsNum := val.NumMethod()
+	var keys []string
+
+	for i := 0; i < methodsNum; i++ {
+
+		methodName := val.Method(i).Name
+		keys = append(keys, methodName)
+	}
+
+	return keys
 }
 
 // mapStructs func perform structs casts.
@@ -258,9 +294,26 @@ func mapStructs[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 
 	// iterate over struct fields and map values
 	for _, keys := range profile {
-		d := reflectionHelper.GetFieldValue(dest.FieldByName(keys[DestKeyIndex]))
-		s := reflectionHelper.GetFieldValue(src.FieldByName(keys[SrcKeyIndex]))
-		processValues[TDes, TSrc](s, d)
+		destinationField := dest.FieldByName(keys[DestKeyIndex])
+		sourceField := src.FieldByName(keys[SrcKeyIndex])
+		var sourceFiledValue reflect.Value
+		//var destinationFieldValue reflect.Value
+		if !sourceField.CanInterface() {
+			if mapperConfig.MapUnexportedFields {
+				sourceFiledValue = reflectionHelper.GetFieldValue(sourceField)
+			} else {
+				// for getting pointer for non-pointer struct we can use reflect.Addr() for calling pointer receivers properties
+				sourceFiledValue = reflectionHelper.GetFieldValueFromMethodAndReflectValue(src.Addr(), strcase.ToCamel(keys[SrcKeyIndex]))
+			}
+		} else {
+			if mapperConfig.MapUnexportedFields {
+				sourceFiledValue = reflectionHelper.GetFieldValue(sourceField)
+			} else {
+				sourceFiledValue = sourceField
+			}
+		}
+
+		processValues[TDes, TSrc](sourceFiledValue, destinationField)
 	}
 }
 

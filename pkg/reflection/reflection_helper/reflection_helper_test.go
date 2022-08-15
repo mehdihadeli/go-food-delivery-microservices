@@ -19,6 +19,14 @@ type PersonPrivate struct {
 	age  int
 }
 
+func (p PersonPrivate) Name() string {
+	return p.name
+}
+
+func (p PersonPrivate) Age() int {
+	return p.age
+}
+
 func Test_Field_Values_For_Exported_Fields_And_Addressable_Struct(t *testing.T) {
 	p := &PersonPublic{Name: "John", Age: 30}
 
@@ -193,4 +201,18 @@ func Test_Set_Field_For_UnExported_Fields_And_UnAddressable_Struct(t *testing.T)
 
 	assert.Equal(t, "John", name.Interface())
 	assert.Equal(t, 20, age.Interface())
+}
+
+func Test_Get_Unexported_Field_From_Method_And_Addressable_Struct(t *testing.T) {
+	p := &PersonPrivate{name: "John", age: 20}
+	name := GetFieldValueFromMethodAndObject(p, "Name")
+
+	assert.Equal(t, "John", name.Interface())
+}
+
+func Test_Get_Unexported_Field_From_Method_And_UnAddressable_Struct(t *testing.T) {
+	p := PersonPrivate{name: "John", age: 20}
+	name := GetFieldValueFromMethodAndObject(p, "Name")
+
+	assert.Equal(t, "John", name.Interface())
 }
