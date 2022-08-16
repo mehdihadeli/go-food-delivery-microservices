@@ -25,6 +25,7 @@ type IEntity interface {
 	UpdatedAt() time.Time
 	SetUpdatedAt(updatedAt time.Time)
 	SetEntityType(entityType string)
+	SetId(id uuid.UUID)
 }
 
 // NewEntity creates a new Entity
@@ -58,4 +59,8 @@ func (e *Entity) SetUpdatedAt(updatedAt time.Time) {
 
 func (e *Entity) SetEntityType(entityType string) {
 	e.entityType = entityType
+}
+
+func (e *Entity) SetId(id uuid.UUID) {
+	e.id = id
 }

@@ -35,7 +35,7 @@ func (c *CreateOrderCommandHandler) Handle(ctx context.Context, command *CreateO
 		return nil, err
 	}
 
-	order, err := aggregate.CreateNewOrder(shopItems, command.AccountEmail, command.DeliveryAddress, command.DeliveryTime, command.CreatedAt)
+	order, err := aggregate.NewOrder(command.OrderID, shopItems, command.AccountEmail, command.DeliveryAddress, command.DeliveryTime, command.CreatedAt)
 
 	if err != nil {
 		return nil, tracing.TraceWithErr(span, err)

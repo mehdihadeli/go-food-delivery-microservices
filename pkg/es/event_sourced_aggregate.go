@@ -53,6 +53,8 @@ type IEventSourcedAggregateRoot interface {
 	// to check if there were no changes made to the aggregate state between load and save for the current operation.
 	OriginalVersion() int64
 
+	SetOriginalVersion(version int64)
+
 	// CurrentVersion Gets the current version is set to original version when the aggregate is loaded from the store.
 	// It should increase for each state transition performed within the scope of the current operation.
 	CurrentVersion() int64
@@ -107,6 +109,10 @@ func NewEventSourcedAggregateRoot(id uuid.UUID, aggregateType string, when WhenF
 
 func (a *EventSourcedAggregateRoot) OriginalVersion() int64 {
 	return a.originalVersion
+}
+
+func (a *EventSourcedAggregateRoot) SetOriginalVersion(version int64) {
+	a.originalVersion = version
 }
 
 func (a *EventSourcedAggregateRoot) CurrentVersion() int64 {

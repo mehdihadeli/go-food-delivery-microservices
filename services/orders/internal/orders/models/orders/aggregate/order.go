@@ -18,24 +18,6 @@ import (
 	"time"
 )
 
-type OrderData struct {
-	*es.EventSourcedAggregateRootDataModel
-	OriginalVersion int64                         `json:"original_version" bson:"original_version"`
-	ShopItems       []*value_objects.ShopItemData `json:"shop_items" bson:"shopItems"`
-	AccountEmail    string                        `json:"account_email" bson:"accountEmail"`
-	DeliveryAddress string                        `json:"delivery_address" bson:"deliveryAddress"`
-	CancelReason    string                        `json:"cancel_reason" bson:"cancelReason"`
-	TotalPrice      float64                       `json:"total_price" bson:"totalPrice"`
-	DeliveredTime   time.Time                     `json:"delivered_time" bson:"deliveredTime"`
-	Paid            bool                          `json:"paid" bson:"paid"`
-	Submitted       bool                          `json:"submitted" bson:"submitted"`
-	Completed       bool                          `json:"completed" bson:"completed"`
-	Canceled        bool                          `json:"canceled" bson:"canceled"`
-	Payment         *entities.PaymentData         `json:"payment" bson:"payment"`
-	CreatedAt       time.Time                     `json:"created_at" bson:"createdAt"`
-	UpdatedAt       time.Time                     `json:"updated_at" bson:"updatedAt"`
-}
-
 type Order struct {
 	*es.EventSourcedAggregateRoot
 	shopItems       []*value_objects.ShopItem
@@ -55,11 +37,11 @@ type Order struct {
 
 func (o *Order) NewEmptyAggregate() {
 	//http://arch-stable.blogspot.com/2012/05/golang-call-inherited-constructor.html
-	base := es.NewEventSourcedAggregateRoot(uuid.NewV4(), typeMapper.GetTypeName(o), o.When)
+	base := es.NewEventSourcedAggregateRoot(*new(uuid.UUID), typeMapper.GetTypeName(o), o.When)
 	o.EventSourcedAggregateRoot = base
 }
 
-func CreateNewOrder(shopItems []*value_objects.ShopItem, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*Order, error) {
+func NewOrder(id uuid.UUID, shopItems []*value_objects.ShopItem, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*Order, error) {
 	order := &Order{}
 	order.NewEmptyAggregate()
 
@@ -68,7 +50,8 @@ func CreateNewOrder(shopItems []*value_objects.ShopItem, accountEmail, deliveryA
 		return nil, err
 	}
 
-	event, err := creatingOrderEvents.NewOrderCreatedEventV1(itemsDto, accountEmail, deliveryAddress, deliveredTime, createdAt)
+	event, err := creatingOrderEvents.NewOrderCreatedEventV1(id, 0, itemsDto, accountEmail, deliveryAddress, deliveredTime, createdAt)
+
 	if err != nil {
 		return nil, err
 	}
@@ -135,12 +118,6 @@ func (o *Order) When(event domain.IDomainEvent) error {
 }
 
 func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) error {
-	//f, err := mapper.Map[*value_objects.ShopItem](evt.ShopItems[0])
-	//fmt.Print(f)
-	//
-	//c, err := mapper.Map[*dtos.ShopItemDto](f)
-	//fmt.Print(c)
-
 	items, err := mapper.Map[[]*value_objects.ShopItem](evt.ShopItems)
 	if err != nil {
 		return err
@@ -152,11 +129,12 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 	o.deliveryAddress = evt.DeliveryAddress
 	o.deliveredTime = evt.DeliveredTime
 	o.createdAt = evt.CreatedAt
+	o.SetId(evt.GetAggregateId())
+	o.SetOriginalVersion(evt.GetAggregateSequenceNumber())
 
 	return nil
 }
 
-//
 //func (o *Order) onOrderPaid(evt *es.Event) error {
 //	var payment Payment
 //	if err := evt.GetJsonData(&payment); err != nil {

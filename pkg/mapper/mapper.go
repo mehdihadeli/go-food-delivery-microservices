@@ -207,6 +207,7 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 	// get types metadata
 	srcMeta := getTypeMeta(srcType)
 	destMeta := getTypeMeta(destType)
+	srcMethods := getTypeMethods(srcType)
 
 	for srcKey, srcTag := range srcMeta.keysToTags {
 		if _, ok := destMeta.keysToTags[strcase.ToCamel(srcKey)]; ok {
@@ -234,6 +235,13 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 		// case src tag equals dest tag
 		if destKey, ok := destMeta.tagsToKeys[srcTag]; ok {
 			profile = append(profile, [2]string{srcKey, destKey})
+			continue
+		}
+	}
+
+	for _, method := range srcMethods {
+		if _, ok := destMeta.keysToTags[method]; ok {
+			profile = append(profile, [2]string{method, method})
 			continue
 		}
 	}
@@ -297,20 +305,26 @@ func mapStructs[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 		destinationField := dest.FieldByName(keys[DestKeyIndex])
 		sourceField := src.FieldByName(keys[SrcKeyIndex])
 		var sourceFiledValue reflect.Value
-		//var destinationFieldValue reflect.Value
-		if !sourceField.CanInterface() {
-			if mapperConfig.MapUnexportedFields {
-				sourceFiledValue = reflectionHelper.GetFieldValue(sourceField)
+
+		if sourceField.Kind() != reflect.Invalid {
+			//var destinationFieldValue reflect.Value
+			if !sourceField.CanInterface() {
+				if mapperConfig.MapUnexportedFields {
+					sourceFiledValue = reflectionHelper.GetFieldValue(sourceField)
+				} else {
+					// for getting pointer for non-pointer struct we can use reflect.Addr() for calling pointer receivers properties
+					sourceFiledValue = reflectionHelper.GetFieldValueFromMethodAndReflectValue(src.Addr(), strcase.ToCamel(keys[SrcKeyIndex]))
+				}
 			} else {
-				// for getting pointer for non-pointer struct we can use reflect.Addr() for calling pointer receivers properties
-				sourceFiledValue = reflectionHelper.GetFieldValueFromMethodAndReflectValue(src.Addr(), strcase.ToCamel(keys[SrcKeyIndex]))
+				if mapperConfig.MapUnexportedFields {
+					sourceFiledValue = reflectionHelper.GetFieldValue(sourceField)
+				} else {
+					sourceFiledValue = sourceField
+				}
 			}
 		} else {
-			if mapperConfig.MapUnexportedFields {
-				sourceFiledValue = reflectionHelper.GetFieldValue(sourceField)
-			} else {
-				sourceFiledValue = sourceField
-			}
+			// there is no field corresponding to destination filed, so we search on source methods (properties) for getting src field value for example `Id()` property
+			sourceFiledValue = reflectionHelper.GetFieldValueFromMethodAndReflectValue(src.Addr(), strcase.ToCamel(keys[SrcKeyIndex]))
 		}
 
 		processValues[TDes, TSrc](sourceFiledValue, destinationField)

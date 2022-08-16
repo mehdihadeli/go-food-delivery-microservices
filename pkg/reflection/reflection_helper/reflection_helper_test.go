@@ -19,11 +19,11 @@ type PersonPrivate struct {
 	age  int
 }
 
-func (p PersonPrivate) Name() string {
+func (p *PersonPrivate) Name() string {
 	return p.name
 }
 
-func (p PersonPrivate) Age() int {
+func (p *PersonPrivate) Age() int {
 	return p.age
 }
 
@@ -215,4 +215,17 @@ func Test_Get_Unexported_Field_From_Method_And_UnAddressable_Struct(t *testing.T
 	name := GetFieldValueFromMethodAndObject(p, "Name")
 
 	assert.Equal(t, "John", name.Interface())
+}
+
+func Test_Convert_NoPointer_Type_To_Pointer_Type_With_Addr(t *testing.T) {
+	//https://www.geeksforgeeks.org/reflect-addr-function-in-golang-with-examples/
+
+	p := PersonPrivate{name: "John", age: 20}
+	v := reflect.ValueOf(&p).Elem()
+	pointerType := v.Addr()
+	name := pointerType.MethodByName("Name").Call(nil)[0].Interface()
+	age := pointerType.MethodByName("Age").Call(nil)[0].Interface()
+
+	assert.Equal(t, "John", name)
+	assert.Equal(t, 20, age)
 }

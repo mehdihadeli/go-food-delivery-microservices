@@ -54,6 +54,11 @@ func (a *esdbAggregateStore[T, TData]) StoreWithVersion(
 	var streamEvents []*es.StreamEvent
 
 	linq.From(aggregate.UncommittedEvents()).SelectIndexedT(func(i int, domainEvent domain.IDomainEvent) *es.StreamEvent {
+		var inInterface map[string]interface{}
+		err := jsonSerializer.DecodeWithMapStructure(domainEvent, &inInterface)
+		if err != nil {
+			return nil
+		}
 		return a.serializer.DomainEventToStreamEvent(domainEvent, metadata, int64(i)+aggregate.OriginalVersion())
 	}).ToSlice(&streamEvents)
 

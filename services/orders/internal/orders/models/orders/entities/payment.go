@@ -6,12 +6,6 @@ import (
 	"time"
 )
 
-type PaymentData struct {
-	PaymentId uuid.UUID `json:"paymentId" bson:"paymentId,omitempty" validate:"required"`
-	OrderId   uuid.UUID `json:"orderId" bson:"orderId,omitempty" validate:"required"`
-	Timestamp time.Time `json:"timestamp" bson:"timestamp,omitempty" validate:"required"`
-}
-
 type Payment struct {
 	paymentId uuid.UUID
 	orderId   uuid.UUID

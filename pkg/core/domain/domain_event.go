@@ -14,35 +14,32 @@ type IDomainEvent interface {
 
 type DomainEvent struct {
 	*core.Event
-	aggregateId             uuid.UUID
-	aggregateSequenceNumber int64
-}
-
-type DomainEventDataModel struct {
-	*core.EventDataModel
-	AggregateId             uuid.UUID `json:"aggregateId" bson:"aggregateId,omitempty"`
-	AggregateSequenceNumber int64     `json:"aggregateSequenceNumber" bson:"aggregateSequenceNumber,omitempty"`
+	AggregateId             uuid.UUID
+	AggregateSequenceNumber int64
 }
 
 func NewDomainEvent(aggregateId uuid.UUID, aggregateSequenceNumber int64, eventType string) *DomainEvent {
-	return &DomainEvent{
+	domainEvent := &DomainEvent{
 		Event:                   core.NewEvent(eventType),
-		aggregateId:             aggregateId,
-		aggregateSequenceNumber: aggregateSequenceNumber,
+		AggregateId:             aggregateId,
+		AggregateSequenceNumber: aggregateSequenceNumber,
 	}
+	domainEvent.Event = core.NewEvent(eventType)
+
+	return domainEvent
 }
 
 func (d *DomainEvent) GetAggregateId() uuid.UUID {
-	return d.aggregateId
+	return d.AggregateId
 }
 
 func (d *DomainEvent) GetAggregateSequenceNumber() int64 {
-	return d.aggregateSequenceNumber
+	return d.AggregateSequenceNumber
 }
 
 func (d *DomainEvent) WithAggregate(aggregateId uuid.UUID, aggregateSequenceNumber int64) *DomainEvent {
-	d.aggregateId = aggregateId
-	d.aggregateSequenceNumber = aggregateSequenceNumber
+	d.AggregateId = aggregateId
+	d.AggregateSequenceNumber = aggregateSequenceNumber
 
 	return d
 }

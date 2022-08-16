@@ -168,14 +168,14 @@ func GetFieldValueFromMethodAndObject[T interface{}](object T, name string) refl
 			return res[0]
 		}
 	} else if v.Kind() == reflect.Struct {
-		val := v
 		method := v.MethodByName(name)
 		if method.Kind() == reflect.Func {
 			res := method.Call(nil)
 			return res[0]
 		} else {
-			s := reflect.NewAt(val.Type(), unsafe.Pointer(val.UnsafeAddr())).Elem()
-			method := s.MethodByName(name)
+			//https://www.geeksforgeeks.org/reflect-addr-function-in-golang-with-examples/
+			pointerType := v.Addr()
+			method := pointerType.MethodByName(name)
 			res := method.Call(nil)
 			return res[0]
 		}
@@ -197,8 +197,9 @@ func GetFieldValueFromMethodAndReflectValue(val reflect.Value, name string) refl
 			res := method.Call(nil)
 			return res[0]
 		} else {
-			s := reflect.New(val.Type())
-			method := s.MethodByName(name)
+			//https://www.geeksforgeeks.org/reflect-addr-function-in-golang-with-examples/
+			pointerType := val.Addr()
+			method := pointerType.MethodByName(name)
 			res := method.Call(nil)
 			return res[0]
 		}

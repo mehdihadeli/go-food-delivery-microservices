@@ -2,7 +2,9 @@ package v1
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
+	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
+	uuid "github.com/satori/go.uuid"
 	"time"
 )
 
@@ -15,7 +17,7 @@ type OrderCreatedEventV1 struct {
 	DeliveredTime   time.Time           `json:"deliveredTime" bson:"deliveredTime,omitempty"`
 }
 
-func NewOrderCreatedEventV1(shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedEventV1, error) {
+func NewOrderCreatedEventV1(aggregateId uuid.UUID, version int64, shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedEventV1, error) {
 
 	//if shopItems == nil {
 	//	return nil, domainExceptions.ErrOrderShopItemsIsRequired
@@ -44,6 +46,8 @@ func NewOrderCreatedEventV1(shopItems []*dtos.ShopItemDto, accountEmail, deliver
 		CreatedAt:       createdAt,
 		DeliveredTime:   deliveredTime,
 	}
+
+	eventData.DomainEvent = domain.NewDomainEvent(aggregateId, version, typeMapper.GetTypeName(eventData))
 
 	return eventData, nil
 }
