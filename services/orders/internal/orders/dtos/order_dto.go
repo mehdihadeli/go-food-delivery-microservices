@@ -1,11 +1,12 @@
 package dtos
 
 import (
+	uuid "github.com/satori/go.uuid"
 	"time"
 )
 
 type OrderDto struct {
-	Id              string         `json:"id" mapper:"ID"`
+	Id              uuid.UUID      `json:"id"`
 	ShopItems       []*ShopItemDto `json:"shopItems"`
 	AccountEmail    string         `json:"accountEmail"`
 	DeliveryAddress string         `json:"deliveryAddress"`
@@ -19,4 +20,5 @@ type OrderDto struct {
 	Payment         *PaymentDto    `json:"payment"`
 	CreatedAt       time.Time      `json:"createdAt"`
 	UpdatedAt       time.Time      `json:"updatedAt"`
+	OriginalVersion int64          `json:"originalVersion"`
 }

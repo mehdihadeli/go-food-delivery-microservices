@@ -8,12 +8,10 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Aug 06 19:25:52 2022
+# Make data base, printed on Wed Aug 17 00:55:41 2022
 
 # Variables
 
-# environment
-FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
 SYSTEMDRIVE = C:
 # environment
@@ -41,9 +39,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_23472_FIOWBENMQREMKBLC
-# environment
-FPS_BROWSER_USER_PROFILE_STRING = Default
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_3928_QKBMFDVGCYKSEPFK
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -57,7 +53,7 @@ JETBRAINS RIDER = C:\Program Files\JetBrains\JetBrains Rider 2022.1.2\bin;
 # automatic
 %F = $(notdir $%)
 # environment
-VSCODE_CODE_CACHE_PATH = C:\Users\MehdiHadeli\AppData\Roaming\Code\CachedData\da76f93349a72022ca4670c1b84860304616aaa2
+VSCODE_CODE_CACHE_PATH = C:\Users\MehdiHadeli\AppData\Roaming\Code\CachedData\6d9b74a70ca9c7733b29f0456fd8195364076dda
 # environment
 LANG = C
 # default
@@ -95,7 +91,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 23472
+VSCODE_PID = 3928
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -199,7 +195,7 @@ ELECTRON_RUN_AS_NODE = 1
 # environment
 TEMP = C:\Users\MEHDIH~1\AppData\Local\Temp
 # environment
-VSCODE_IPC_HOOK = \\.\pipe\f514d32982fce962e7fdbbc6d4d7a88f-1.70.0-main-sock
+VSCODE_IPC_HOOK = \\.\pipe\f514d32982fce962e7fdbbc6d4d7a88f-1.70.1-main-sock
 # environment
 GOPROXY = https://proxy.golang.org,direct
 # default
@@ -219,7 +215,7 @@ PROCESSOR_REVISION = a503
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=103/1024=10%, Rehash=0, Collisions=11/134=8%
+# Load=101/1024=10%, Rehash=0, Collisions=10/132=8%
 
 # Pattern-specific Variable Values
 
@@ -227,9 +223,9 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 
 # Directories
 
-# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1659728279): 23 files, no impossibilities.
+# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1660039154): 22 files, no impossibilities.
 
-# 23 files, no impossibilities in 1 directories.
+# 22 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -263,7 +259,7 @@ cert:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-08-03 17:43:33
+#  Last modified 2022-08-06 21:52:07
 #  File has been updated.
 #  Successfully updated.
 
@@ -313,7 +309,8 @@ docker_logs:
 	# @echo 'publish $(VERSION) to $(REGISTRY)'
 	# docker push $(REGISTRY)/go-api-boilerplate-$(BIN):$(VERSION)
 	# @echo 'create tag latest'
-	# docker tag go-api-boilerplate-$(BIN) $(REGISTRY)/go-api-boilerplate-$(BIN):latest
+	# docker tag go-api-boilerplate-$(BIN) $(REGISTRY)/go-api-boilerplate-$(B 
+IN):latest
 	# @echo 'create tag $(VERSION)'
 	# docker tag go-api-boilerplate-$(BIN) $(REGISTRY)/go-api-boilerplate-$(BIN):$(VERSION)
 	# go build -o cmd/$(BIN)/$(BIN) cmd/$(BIN)/main.go
@@ -461,7 +458,8 @@ generate_load_test_client_catalogs_write_service:
 	@echo Generating load test client for catalogs write service
 	docker run --rm -v ${PWD}:/local  openapitools/openapi-generator-cli generate --skip-validate-spec -i  local/api_docs/catalogs/write_service/openapi/swagger.json -g k6 -o local/performance_tests/catalogs/write_service/k6-test/
 
-docker_path:
+docker_path: 
+
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
@@ -496,12 +494,12 @@ proto_orders_order_service:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 53 / storage = 850 B / avg = 16 B
-# current buf: size = 8174 B / used = 850 B / count = 53 / avg = 16 B
+# strcache buffers: 1 (0) / strings = 52 / storage = 846 B / avg = 16 B
+# current buf: size = 8174 B / used = 846 B / count = 52 / avg = 16 B
 
-# strcache performance: lookups = 84 / hit rate = 36%
+# strcache performance: lookups = 83 / hit rate = 37%
 # hash-table stats:
-# Load=53/8192=1%, Rehash=0, Collisions=0/84=0%
-# Finished Make data base on Sat Aug 06 19:25:52 2022
+# Load=52/8192=1%, Rehash=0, Collisions=0/83=0%
+# Finished Make data base on Wed Aug 17 00:55:41 2022
 
  

@@ -22,7 +22,7 @@ func (ct *CustomTime) UnmarshalJSON(b []byte) (err error) {
 	//nt, err := time.Parse(time.RFC3339, s)
 	nt, err := dateparse.ParseLocal(s)
 	if err != nil {
-		return httpErrors.NewBadRequestError(fmt.Sprintf("invalid time format: %s", s))
+		return httpErrors.NewBadRequestError(err, fmt.Sprintf("invalid time format: %s", s))
 	}
 	*ct = CustomTime(nt)
 	return

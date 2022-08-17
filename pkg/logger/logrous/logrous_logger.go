@@ -11,7 +11,6 @@ import (
 
 type logrusLogger struct {
 	level    string
-	devMode  bool
 	encoding string
 	logger   *logrus.Logger
 }
@@ -26,7 +25,11 @@ var loggerLevelMap = map[string]logrus.Level{
 	"fatal": logrus.FatalLevel,
 }
 
-func (l *logrusLogger) getLoggerLevel() logrus.Level {
+var (
+	DefaultLogger logger.Logger
+)
+
+func (l *logrusLogger) GetLoggerLevel() logrus.Level {
 	level, exist := loggerLevelMap[l.level]
 	if !exist {
 		return logrus.DebugLevel
@@ -37,20 +40,29 @@ func (l *logrusLogger) getLoggerLevel() logrus.Level {
 
 // NewLogrusLogger creates a new logrus logger
 func NewLogrusLogger(cfg *logger.Config) logger.Logger {
-	logrusLogger := &logrusLogger{level: cfg.LogLevel, devMode: cfg.DevMode, encoding: cfg.Encoder}
+	logrusLogger := &logrusLogger{level: cfg.LogLevel, encoding: cfg.Encoder}
 	logrusLogger.initLogger()
 
 	return logrusLogger
 }
 
+func init() {
+	DefaultLogger = NewLogrusLogger(&logger.Config{
+		LogLevel: "debug",
+		Encoder:  "json",
+	})
+}
+
 // InitLogger Init logger
 func (l *logrusLogger) initLogger() {
 	env := os.Getenv("APP_ENV")
-	if env == "" {
-		env = constants.Dev
+	if env == constants.Production {
+
+	} else {
+
 	}
 
-	logLevel := l.getLoggerLevel()
+	logLevel := l.GetLoggerLevel()
 
 	// Create a new instance of the logger. You can have any number of instances.
 	logrusLogger := logrus.New()
@@ -77,11 +89,6 @@ func (l *logrusLogger) initLogger() {
 	l.logger = logrusLogger
 }
 
-func (l *logrusLogger) Sync() error {
-	//TODO implement me
-	panic("implement me")
-}
-
 func (l *logrusLogger) Debug(args ...interface{}) {
 	l.logger.Debug(args...)
 }
@@ -95,7 +102,7 @@ func (l *logrusLogger) Info(args ...interface{}) {
 }
 
 func (l *logrusLogger) Infof(template string, args ...interface{}) {
-	logrus.Infof(template, args...)
+	l.logger.Infof(template, args...)
 }
 
 func (l *logrusLogger) Warn(args ...interface{}) {
@@ -103,7 +110,7 @@ func (l *logrusLogger) Warn(args ...interface{}) {
 }
 
 func (l *logrusLogger) Warnf(template string, args ...interface{}) {
-	logrus.Warnf(template, args...)
+	l.logger.Warnf(template, args...)
 }
 
 func (l *logrusLogger) WarnMsg(msg string, err error) {
@@ -139,7 +146,7 @@ func (l *logrusLogger) WithName(name string) {
 }
 
 func (l *logrusLogger) HttpMiddlewareAccessLogger(method string, uri string, status int, size int64, time time.Duration) {
-	l.logger.Info(
+	l.Info(
 		constants.HTTP,
 		logrus.WithField(constants.METHOD, method),
 		logrus.WithField(constants.URI, uri),
@@ -150,7 +157,7 @@ func (l *logrusLogger) HttpMiddlewareAccessLogger(method string, uri string, sta
 }
 
 func (l *logrusLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration, metaData map[string][]string, err error) {
-	l.logger.Info(
+	l.Info(
 		constants.GRPC,
 		logrus.WithField(constants.METHOD, method),
 		logrus.WithField(constants.TIME, time),
@@ -160,7 +167,7 @@ func (l *logrusLogger) GrpcMiddlewareAccessLogger(method string, time time.Durat
 }
 
 func (l *logrusLogger) GrpcClientInterceptorLogger(method string, req interface{}, reply interface{}, time time.Duration, metaData map[string][]string, err error) {
-	l.logger.Info(
+	l.Info(
 		constants.GRPC,
 		logrus.WithField(constants.METHOD, method),
 		logrus.WithField(constants.REQUEST, req),
@@ -172,7 +179,7 @@ func (l *logrusLogger) GrpcClientInterceptorLogger(method string, req interface{
 }
 
 func (l *logrusLogger) KafkaProcessMessage(topic string, partition int, message string, workerID int, offset int64, time time.Time) {
-	l.logger.Debug(
+	l.Debug(
 		"Processing Kafka message",
 		logrus.WithField(constants.Topic, topic),
 		logrus.WithField(constants.Partition, partition),
@@ -184,7 +191,7 @@ func (l *logrusLogger) KafkaProcessMessage(topic string, partition int, message 
 }
 
 func (l *logrusLogger) KafkaLogCommittedMessage(topic string, partition int, offset int64) {
-	l.logger.Info(
+	l.Info(
 		"Committed Kafka message",
 		logrus.WithField(constants.Topic, topic),
 		logrus.WithField(constants.Partition, partition),

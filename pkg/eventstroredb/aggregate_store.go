@@ -2,213 +2,185 @@ package eventstroredb
 
 import (
 	"context"
-	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/goccy/go-reflect"
+	"fmt"
+	"github.com/ahmetb/go-linq/v3"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
-	esSerializer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/serializer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
+	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/append_result"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/store"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_name"
+	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/read_position"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
-	"io"
-	"math"
+	"reflect"
 )
 
-const (
-	count = math.MaxInt64
-)
-
-type aggregateStore[T contracts.IEventSourcedAggregateRoot] struct {
-	log logger.Logger
-	db  *esdb.Client
+type esdbAggregateStore[T es.IHaveEventSourcedAggregate, TData interface{}] struct {
+	log        logger.Logger
+	eventStore store.EventStore
+	serializer *EsdbSerializer
 }
 
-func NewEventStoreAggregateStore[T contracts.IEventSourcedAggregateRoot](log logger.Logger, db *esdb.Client) *aggregateStore[T] {
-	return &aggregateStore[T]{log: log, db: db}
+func NewEventStoreAggregateStore[T es.IHaveEventSourcedAggregate, TData interface{}](log logger.Logger, eventStore store.EventStore, serializer *EsdbSerializer) *esdbAggregateStore[T, TData] {
+	return &esdbAggregateStore[T, TData]{log: log, eventStore: eventStore, serializer: serializer}
 }
 
-func (a *aggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID) (T, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "aggregateStore.Load")
+func (a *esdbAggregateStore[T, TData]) StoreWithVersion(
+	aggregate T,
+	metadata *core.Metadata,
+	expectedVersion expectedStreamVersion.ExpectedStreamVersion,
+	ctx context.Context) (*appendResult.AppendEventsResult, error) {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.StoreWithVersion")
 	defer span.Finish()
+	span.LogFields(log.String("Aggregate", jsonSerializer.ColoredPrettyPrint(aggregate)))
+
+	if len(aggregate.UncommittedEvents()) == 0 {
+		a.log.Debugf("No events to store for aggregateId %s", aggregate.Id())
+		return appendResult.NoOp, nil
+	}
+
+	streamId := streamName.For[T](aggregate)
+	span.LogFields(log.String("StreamId", streamId.String()))
+
+	var streamEvents []*es.StreamEvent
+
+	linq.From(aggregate.UncommittedEvents()).SelectIndexedT(func(i int, domainEvent domain.IDomainEvent) *es.StreamEvent {
+		var inInterface map[string]interface{}
+		err := jsonSerializer.DecodeWithMapStructure(domainEvent, &inInterface)
+		if err != nil {
+			return nil
+		}
+		return a.serializer.DomainEventToStreamEvent(domainEvent, metadata, int64(i)+aggregate.OriginalVersion())
+	}).ToSlice(&streamEvents)
+
+	streamAppendResult, err := a.eventStore.AppendEvents(streamId, expectedVersion, streamEvents, ctx)
+	if err != nil {
+		tracing.TraceErr(span, err)
+		return nil, errors.Wrapf(err, "failed to store aggregate {%s}", jsonSerializer.ColoredPrettyPrint(aggregate))
+	}
+
+	a.log.Debugf("StreamAppendResult for aggregateId %s: %s", aggregate.Id(), jsonSerializer.ColoredPrettyPrint(streamAppendResult))
+	aggregate.MarkUncommittedEventAsCommitted()
+
+	return streamAppendResult, nil
+}
+
+func (a *esdbAggregateStore[T, TData]) Store(aggregate T, metadata *core.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Store")
+	defer span.Finish()
+	span.LogFields(log.String("Aggregate", jsonSerializer.ColoredPrettyPrint(aggregate)))
+
+	expectedVersion := expectedStreamVersion.FromInt64(aggregate.OriginalVersion())
+
+	streamAppendResult, err := a.StoreWithVersion(aggregate, metadata, expectedVersion, ctx)
+	if err != nil {
+		tracing.TraceErr(span, err)
+		return nil, errors.Wrapf(err, "failed to store aggregate {%s}", jsonSerializer.ColoredPrettyPrint(aggregate))
+	}
+
+	a.log.Debugf("StreamAppendResult for aggregateId %s: %s", aggregate.Id(), jsonSerializer.ColoredPrettyPrint(streamAppendResult))
+
+	return streamAppendResult, nil
+}
+
+func (a *esdbAggregateStore[T, TData]) LoadWithReadPosition(ctx context.Context, aggregateId uuid.UUID, position readPosition.StreamReadPosition) (T, error) {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.LoadWithReadPosition")
+	defer span.Finish()
+	span.LogFields(log.String("AggregateId", aggregateId.String()))
 
 	var typeNameType T
-	aggregateInstance := typeMapper.TypePointerInstanceByName(typeMapper.GetTypeName(typeNameType))
+	aggregateInstance := typeMapper.InstancePointerByTypeName(typeMapper.GetTypeName(typeNameType))
 	aggregate, ok := aggregateInstance.(T)
 	if !ok {
-		return *new(T), errors.New("aggregateStore.Load: aggregate is not a T")
+		return *new(T), errors.New(fmt.Sprintf("aggregate is not a %s", typeMapper.GetTypeName(typeNameType)))
 	}
 
 	method := reflect.ValueOf(aggregate).MethodByName("NewEmptyAggregate")
 	if !method.IsValid() {
-		return *new(T), errors.New("aggregateStore.Load: aggregate does not have a NewEmptyAggregate method")
+		return *new(T), errors.New("aggregate does not have a `NewEmptyAggregate` method")
 	}
 
 	method.Call([]reflect.Value{})
 
 	streamId := streamName.ForID[T](aggregateId)
-	span.LogFields(log.String("AggregateId", aggregateId.String()))
-	span.LogFields(log.String("StreamId", streamId))
+	span.LogFields(log.String("StreamId", streamId.String()))
 
-	stream, err := a.db.ReadStream(ctx, streamId, esdb.ReadStreamOptions{}, count)
+	streamEvents, err := a.getStreamEvents(streamId, position, ctx)
+	if errors.Is(err, ErrStreamNotFound(err)) || len(streamEvents) == 0 {
+		tracing.TraceErr(span, ErrAggregateNotFound(err, aggregateId.String()))
+		return *new(T), ErrAggregateNotFound(err, aggregateId.String())
+	}
 	if err != nil {
 		tracing.TraceErr(span, err)
-		return *new(T), errors.Wrap(err, "db.ReadStream")
-	}
-	defer stream.Close()
-
-	for {
-		event, err := stream.Recv()
-		if errors.Is(err, esdb.ErrStreamNotFound) {
-			tracing.TraceErr(span, err)
-			return *new(T), errors.Wrap(err, "stream.Recv")
-		}
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			tracing.TraceErr(span, err)
-			return *new(T), errors.Wrap(err, "stream.Recv")
-		}
-
-		esEvent, err := esSerializer.ToESEventFromRecordedEvent(event.Event)
-
-		deserializedEvent, err := esSerializer.DeserializeEventFromESEvent(esEvent)
-		if err != nil {
-			a.log.Errorf("(loadEvents) serializer.DeserializeEvent err: %v", err)
-			return *new(T), tracing.TraceWithErr(span, errors.Wrap(err, "serializer.DeserializeEvent"))
-		}
-		a.log.Debugf("(loadEvents) deserializedEvents: %v", serializer.ColoredPrettyPrint(deserializedEvent))
-
-		deserializedMeta, err := esSerializer.DeserializeMetadataFromESEvent(esEvent)
-		if err != nil {
-			return *new(T), err
-		}
-		a.log.Debugf("(loadMeta) deserializedMeta: %v", serializer.ColoredPrettyPrint(deserializedMeta))
-
-		if err := aggregate.RaiseEvent(deserializedEvent); err != nil {
-			tracing.TraceErr(span, err)
-			return *new(T), errors.Wrap(err, "RaiseEvent")
-		}
-		a.log.Debugf("(Load) esEvent: {%s}", esEvent.String())
+		return *new(T), errors.Wrapf(err, "failed to load aggregate {%s}", aggregateId.String())
 	}
 
-	a.log.Debugf("(Load) aggregate: {%s}", aggregate.String())
+	var metadata *core.Metadata
+	var domainEvents []domain.IDomainEvent
+
+	linq.From(streamEvents).Distinct().SelectT(func(streamEvent *es.StreamEvent) domain.IDomainEvent {
+		metadata = streamEvent.Metadata
+		return streamEvent.Event
+	}).ToSlice(&domainEvents)
+
+	err = aggregate.LoadFromHistory(domainEvents, metadata)
+	if err != nil {
+		tracing.TraceErr(span, err)
+		return *new(T), err
+	}
+
+	a.log.Debugf("Loaded aggregate {%s} from streamId {%s}", jsonSerializer.ColoredPrettyPrint(aggregate), streamId.String())
 
 	return aggregate, nil
 }
 
-func (a *aggregateStore[T]) Store(ctx context.Context, aggregate T, metadata *domain.Metadata) error {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "aggregateStore.Save")
+func (a *esdbAggregateStore[T, TData]) Load(ctx context.Context, aggregateId uuid.UUID) (T, error) {
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Load")
 	defer span.Finish()
-	span.LogFields(log.String("aggregate", aggregate.String()))
+	span.LogFields(log.String("AggregateId", aggregateId.String()))
 
-	if len(aggregate.GetUncommittedEvents()) == 0 {
-		a.log.Debugf("(Save) [no uncommittedEvents] len: {%d}", len(aggregate.GetUncommittedEvents()))
-		return nil
-	}
+	position := readPosition.Start
 
-	eventsData := make([]esdb.EventData, 0, len(aggregate.GetUncommittedEvents()))
-	for _, event := range aggregate.GetUncommittedEvents() {
-
-		event, err := esSerializer.SerializeToESEvent(aggregate, event, metadata)
-		if err != nil {
-			a.log.Errorf("(Save) serializer.SerializeEvent err: %v", err)
-			return tracing.TraceWithErr(span, errors.Wrap(err, "serializer.SerializeEvent"))
-		}
-
-		eventsData = append(eventsData, esSerializer.ToEventData(event))
-	}
-
-	// check for aggregate.GetVersion() == 0 or len(aggregate.GetAppliedEvents()) == 0 means new aggregate
-	var expectedRevision esdb.ExpectedRevision
-	if aggregate.GetVersion() == 0 {
-		expectedRevision = esdb.NoStream{}
-		a.log.Debugf("(Save) expectedRevision: {%T}", expectedRevision)
-
-		appendStream, err := a.db.AppendToStream(
-			ctx,
-			streamName.For(aggregate),
-			esdb.AppendToStreamOptions{ExpectedRevision: expectedRevision},
-			eventsData...,
-		)
-		if err != nil {
-			tracing.TraceErr(span, err)
-			return errors.Wrap(err, "db.AppendToStream")
-		}
-
-		a.log.Debugf("(Save) stream: {%+v}", appendStream)
-		return nil
-	}
-
-	readOps := esdb.ReadStreamOptions{Direction: esdb.Backwards, From: esdb.End{}}
-	stream, err := a.db.ReadStream(context.Background(), streamName.For(aggregate), readOps, 1)
-	if err != nil {
-		tracing.TraceErr(span, err)
-		return errors.Wrap(err, "db.ReadStream")
-	}
-	defer stream.Close()
-
-	lastEvent, err := stream.Recv()
-	if err != nil {
-		tracing.TraceErr(span, err)
-		return errors.Wrap(err, "stream.Recv")
-	}
-
-	expectedRevision = esdb.Revision(lastEvent.OriginalEvent().EventNumber)
-	a.log.Debugf("(Save) expectedRevision: {%T}", expectedRevision)
-
-	appendStream, err := a.db.AppendToStream(
-		ctx,
-		streamName.For(aggregate),
-		esdb.AppendToStreamOptions{ExpectedRevision: expectedRevision},
-		eventsData...,
-	)
-	if err != nil {
-		tracing.TraceErr(span, err)
-		return errors.Wrap(err, "db.AppendToStream")
-	}
-
-	a.log.Debugf("(Save) stream: {%+v}", appendStream)
-	aggregate.MarkUncommittedEventAsCommitted()
-	return nil
+	return a.LoadWithReadPosition(ctx, aggregateId, position)
 }
 
-func (a *aggregateStore[T]) Exists(ctx context.Context, aggregateId uuid.UUID) (bool, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "aggregateStore.Exists")
+func (a *esdbAggregateStore[T, TData]) Exists(ctx context.Context, aggregateId uuid.UUID) (bool, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Exists")
 	defer span.Finish()
-	streamId := streamName.ForID[T](aggregateId)
-
 	span.LogFields(log.String("AggregateId", aggregateId.String()))
-	span.LogFields(log.String("StreamId", streamId))
 
-	readStreamOptions := esdb.ReadStreamOptions{Direction: esdb.Backwards, From: esdb.Revision(1)}
+	streamId := streamName.ForID[T](aggregateId)
+	span.LogFields(log.String("StreamId", streamId.String()))
 
-	stream, err := a.db.ReadStream(ctx, streamId, readStreamOptions, 1)
-	if err != nil {
-		return false, errors.Wrap(err, "db.ReadStream")
-	}
-	defer stream.Close()
+	return a.eventStore.StreamExists(streamId, ctx)
+}
 
-	for {
-		_, err := stream.Recv()
-		if errors.Is(err, esdb.ErrStreamNotFound) {
-			tracing.TraceErr(span, err)
-			return false, errors.Wrap(esdb.ErrStreamNotFound, "stream.Recv")
+func (a *esdbAggregateStore[T, TData]) getStreamEvents(streamId streamName.StreamName, position readPosition.StreamReadPosition, ctx context.Context) ([]*es.StreamEvent, error) {
+	pageSize := 500
+	var streamEvents []*es.StreamEvent
+
+	for true {
+		events, err := a.eventStore.ReadEvents(streamId, position, uint64(pageSize), ctx)
+		if err != nil {
+			return nil, err
 		}
-		if errors.Is(err, io.EOF) {
+		streamEvents = append(streamEvents, events...)
+		if len(events) < pageSize {
 			break
 		}
-		if err != nil {
-			tracing.TraceErr(span, err)
-			return false, errors.Wrap(err, "stream.Recv")
-		}
+		position = readPosition.FromInt64(int64(len(events)) + position.Value())
 	}
 
-	return true, nil
+	return streamEvents, nil
 }

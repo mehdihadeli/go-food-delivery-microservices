@@ -2,18 +2,32 @@ package store
 
 import (
 	"context"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
+	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/append_result"
+	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/read_position"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
 	uuid "github.com/satori/go.uuid"
 )
 
 // AggregateStore is responsible for loading and saving Aggregate.
-type AggregateStore[T contracts.IEventSourcedAggregateRoot] interface {
-	// Load loads the most recent version of an aggregate to provided  into params aggregate with a type and id.
+type AggregateStore[T es.IHaveEventSourcedAggregate] interface {
+
+	// StoreWithVersion store the new or update aggregate state with expected version
+	StoreWithVersion(
+		aggregate T,
+		metadata *core.Metadata,
+		expectedVersion expectedStreamVersion.ExpectedStreamVersion,
+		ctx context.Context) (*appendResult.AppendEventsResult, error)
+
+	// Store the new or update aggregate state
+	Store(aggregate T, metadata *core.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error)
+
+	// Load loads the most recent version of an aggregate to provided  into params aggregate with an id and start read position.
 	Load(ctx context.Context, aggregateId uuid.UUID) (T, error)
 
-	// Store save the uncommitted events for an aggregate.
-	Store(ctx context.Context, aggregate T, metadata *domain.Metadata) error
+	// LoadWithReadPosition loads the most recent version of an aggregate to provided  into params aggregate with an id and read position.
+	LoadWithReadPosition(ctx context.Context, aggregateId uuid.UUID, position readPosition.StreamReadPosition) (T, error)
 
 	// Exists check aggregate exists by AggregateId.
 	Exists(ctx context.Context, aggregateId uuid.UUID) (bool, error)

@@ -1,8 +1,10 @@
 package v1
 
 import (
+	"github.com/go-playground/validator"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
+	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	creatingOrderv1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/commands/v1"
@@ -48,7 +50,7 @@ func (ep *createOrderEndpoint) createOrder() echo.HandlerFunc {
 		if err := ep.Validator.StructCtx(ctx, request); err != nil {
 			ep.Log.Errorf("(validate) err: {%v}", err)
 			tracing.TraceErr(span, err)
-			return err
+			return httpErrors.NewValidationError(err.(validator.ValidationErrors))
 		}
 
 		command := creatingOrderv1.NewCreateOrderCommand(request.ShopItems, request.AccountEmail, request.DeliveryAddress, time.Time(request.DeliveryTime))

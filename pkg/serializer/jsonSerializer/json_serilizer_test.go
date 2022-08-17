@@ -1,4 +1,4 @@
-package serializer
+package jsonSerializer
 
 import (
 	"github.com/goccy/go-reflect"

@@ -1,7 +1,13 @@
 package typeMapper
 
+//https://stackoverflow.com/a/34722791/581476
+//https://stackoverflow.com/questions/7850140/how-do-you-create-a-new-instance-of-a-struct-from-its-type-at-run-time-in-go
+//https://www.reddit.com/r/golang/comments/38u4j4/how_to_create_an_object_with_reflection/
+
 import (
+	"fmt"
 	"reflect"
+	"strings"
 	"unsafe"
 )
 
@@ -25,14 +31,31 @@ func discoverTypes() {
 			emptyInterface := (*emptyInterface)(unsafe.Pointer(&typ))
 			emptyInterface.data = resolveTypeOff(rodata, off)
 			if typ.Kind() == reflect.Ptr && typ.Elem().Kind() == reflect.Struct {
+
+				// by default just discover pointer types, but we also register this pointer type actual struct type to the registry
+				loadedTypePtr := typ
 				loadedType := typ.Elem()
+
 				pkgTypes := packages[loadedType.PkgPath()]
+				pkgTypesPtr := packages[loadedTypePtr.PkgPath()]
+
 				if pkgTypes == nil {
 					pkgTypes = map[string]reflect.Type{}
 					packages[loadedType.PkgPath()] = pkgTypes
 				}
+				if pkgTypesPtr == nil {
+					pkgTypesPtr = map[string]reflect.Type{}
+					packages[loadedTypePtr.PkgPath()] = pkgTypesPtr
+				}
+				f := strings.Contains(loadedType.String(), "Test")
+				if f {
+					fmt.Println(loadedType.String())
+				}
+
 				types[loadedType.String()] = loadedType
+				types[loadedTypePtr.String()] = loadedTypePtr
 				pkgTypes[loadedType.Name()] = loadedType
+				pkgTypesPtr[loadedTypePtr.Name()] = loadedTypePtr
 			}
 		}
 	}
@@ -62,28 +85,48 @@ func TypeByPackageName(pkgPath string, name string) reflect.Type {
 	return nil
 }
 
-//https://stackoverflow.com/a/34722791/581476
+// InstanceByTypeName return an empty instance of the type by its name
+// If the type is a pointer type, it will return a pointer instance of the type and
+// if the type is a struct type, it will return an empty struct
+func InstanceByTypeName(name string) interface{} {
+	typ := TypeByName(name)
 
-// TypeInstanceByName return an empty instance of the type by its name
-func TypeInstanceByName(name string) interface{} {
-	//https://stackoverflow.com/questions/7850140/how-do-you-create-a-new-instance-of-a-struct-from-its-type-at-run-time-in-go
-	//https://www.reddit.com/r/golang/comments/38u4j4/how_to_create_an_object_with_reflection/
-	return reflect.New(TypeByName(name)).Elem().Interface()
+	return getInstanceFromType(typ)
 }
 
-// TypePointerInstanceByName return an empty pointer instance of the type by its name
-func TypePointerInstanceByName(name string) interface{} {
-	//https://stackoverflow.com/questions/7850140/how-do-you-create-a-new-instance-of-a-struct-from-its-type-at-run-time-in-go
-	//https://www.reddit.com/r/golang/comments/38u4j4/how_to_create_an_object_with_reflection/
-	return reflect.New(TypeByName(name)).Interface()
+// InstancePointerByTypeName return an empty pointer instance of the type by its name
+// If the type is a pointer type, it will return a pointer instance of the type and
+// if the type is a struct type, it will return a pointer to the struct
+func InstancePointerByTypeName(name string) interface{} {
+	typ := TypeByName(name)
+	if typ.Kind() == reflect.Ptr {
+		var res = reflect.New(typ.Elem()).Interface()
+		return res
+	}
+
+	return reflect.New(typ).Interface()
 }
 
-// GenericInstanceTypeByName return an empty instance of the generic type by its name
-func GenericInstanceTypeByName[T any](typeName string) T {
-	return TypeInstanceByName(typeName).(T)
+// InstanceByPackageName return an empty instance of the type by its name and package name
+// If the type is a pointer type, it will return a pointer instance of the type and
+// if the type is a struct type, it will return an empty struct
+func InstanceByPackageName(pkgPath string, name string) interface{} {
+	typ := TypeByPackageName(pkgPath, name)
+
+	return getInstanceFromType(typ)
 }
 
-// TypeInstanceByPackageName return an empty instance of the type by its name and package name
-func TypeInstanceByPackageName(pkgPath string, name string) interface{} {
-	return reflect.New(TypeByPackageName(pkgPath, name)).Elem().Interface()
+func getInstanceFromType(typ reflect.Type) interface{} {
+	if typ.Kind() == reflect.Ptr {
+		var res = reflect.New(typ.Elem()).Interface()
+		return res
+	}
+
+	return reflect.Zero(typ).Interface()
+	// return reflect.New(typ).Elem().Interface()
+}
+
+// GenericInstanceByTypeName return an empty instance of the generic type by its name
+func GenericInstanceByTypeName[T any](typeName string) T {
+	return InstanceByTypeName(typeName).(T)
 }

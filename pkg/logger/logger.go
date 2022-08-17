@@ -6,16 +6,14 @@ import (
 
 type Config struct {
 	LogLevel string `mapstructure:"level"`
-	DevMode  bool   `mapstructure:"devMode"`
 	Encoder  string `mapstructure:"encoder"`
 }
 
-func NewLoggerConfig(logLevel string, devMode bool, encoder string) *Config {
-	return &Config{LogLevel: logLevel, DevMode: devMode, Encoder: encoder}
+func NewLoggerConfig(logLevel string, encoder string) *Config {
+	return &Config{LogLevel: logLevel, Encoder: encoder}
 }
 
 type Logger interface {
-	Sync() error
 	Debug(args ...interface{})
 	Debugf(template string, args ...interface{})
 	Info(args ...interface{})

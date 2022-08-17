@@ -12,7 +12,6 @@ import (
 
 type zapLogger struct {
 	level       string
-	devMode     bool
 	encoding    string
 	sugarLogger *zap.SugaredLogger
 	logger      *zap.Logger
@@ -22,6 +21,7 @@ type ZapLogger interface {
 	logger.Logger
 	DPanic(args ...interface{})
 	DPanicf(template string, args ...interface{})
+	Sync() error
 }
 
 // For mapping config logger
@@ -33,13 +33,23 @@ var loggerLevelMap = map[string]zapcore.Level{
 	"panic": zapcore.PanicLevel,
 	"fatal": zapcore.FatalLevel,
 }
+var (
+	DefaultLogger logger.Logger
+)
 
 // NewZapLogger create new zap logger
 func NewZapLogger(cfg *logger.Config) ZapLogger {
-	zapLogger := &zapLogger{level: cfg.LogLevel, devMode: cfg.DevMode, encoding: cfg.Encoder}
+	zapLogger := &zapLogger{level: cfg.LogLevel, encoding: cfg.Encoder}
 	zapLogger.initLogger()
 
 	return zapLogger
+}
+
+func init() {
+	DefaultLogger = NewZapLogger(&logger.Config{
+		LogLevel: "debug",
+		Encoder:  "json",
+	})
 }
 
 func (l *zapLogger) getLoggerLevel() zapcore.Level {
@@ -58,10 +68,12 @@ func (l *zapLogger) initLogger() {
 	logWriter := zapcore.AddSync(os.Stdout)
 
 	var encoderCfg zapcore.EncoderConfig
-	if l.devMode {
-		encoderCfg = zap.NewDevelopmentEncoderConfig()
-	} else {
+
+	env := os.Getenv("APP_ENV")
+	if env == constants.Production {
 		encoderCfg = zap.NewProductionEncoderConfig()
+	} else {
+		encoderCfg = zap.NewDevelopmentEncoderConfig()
 	}
 
 	var encoder zapcore.Encoder
@@ -185,12 +197,17 @@ func (l *zapLogger) Fatalf(template string, args ...interface{}) {
 
 // Sync flushes any buffered log entries
 func (l *zapLogger) Sync() error {
-	go l.logger.Sync() // nolint: errcheck
+	go func() {
+		err := l.logger.Sync()
+		if err != nil {
+			l.logger.Error("error while syncing", zap.Error(err))
+		}
+	}() // nolint: errcheck
 	return l.sugarLogger.Sync()
 }
 
 func (l *zapLogger) HttpMiddlewareAccessLogger(method, uri string, status int, size int64, time time.Duration) {
-	l.logger.Info(
+	l.Info(
 		constants.HTTP,
 		zap.String(constants.METHOD, method),
 		zap.String(constants.URI, uri),
@@ -201,7 +218,7 @@ func (l *zapLogger) HttpMiddlewareAccessLogger(method, uri string, status int, s
 }
 
 func (l *zapLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration, metaData map[string][]string, err error) {
-	l.logger.Info(
+	l.Info(
 		constants.GRPC,
 		zap.String(constants.METHOD, method),
 		zap.Duration(constants.TIME, time),
@@ -211,7 +228,7 @@ func (l *zapLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration
 }
 
 func (l *zapLogger) GrpcClientInterceptorLogger(method string, req, reply interface{}, time time.Duration, metaData map[string][]string, err error) {
-	l.logger.Info(
+	l.Info(
 		constants.GRPC,
 		zap.String(constants.METHOD, method),
 		zap.Any(constants.REQUEST, req),
@@ -223,7 +240,7 @@ func (l *zapLogger) GrpcClientInterceptorLogger(method string, req, reply interf
 }
 
 func (l *zapLogger) KafkaProcessMessage(topic string, partition int, message string, workerID int, offset int64, time time.Time) {
-	l.logger.Debug(
+	l.Debug(
 		"Processing Kafka message",
 		zap.String(constants.Topic, topic),
 		zap.Int(constants.Partition, partition),
@@ -235,7 +252,7 @@ func (l *zapLogger) KafkaProcessMessage(topic string, partition int, message str
 }
 
 func (l *zapLogger) KafkaLogCommittedMessage(topic string, partition int, offset int64) {
-	l.logger.Info(
+	l.Info(
 		"Committed Kafka message",
 		zap.String(constants.Topic, topic),
 		zap.Int(constants.Partition, partition),

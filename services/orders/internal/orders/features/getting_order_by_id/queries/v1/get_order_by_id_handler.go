@@ -30,7 +30,7 @@ func (q *GetOrderByIdHandler) Handle(ctx context.Context, query *GetOrderByIdQue
 
 	order, err := q.aggregateStore.Load(ctx, query.OrderId)
 	if err != nil {
-		return nil, httpErrors.NewNotFoundError(fmt.Sprintf("order with id %s not found", order.ID))
+		return nil, httpErrors.NewNotFoundError(err, fmt.Sprintf("order with id %s not found", order.Id))
 	}
 
 	orderDto, err := mapper.Map[*ordersDto.OrderDto](order)

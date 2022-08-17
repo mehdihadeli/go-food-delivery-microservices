@@ -44,7 +44,7 @@ package eventstroredb
 //		esEvent, err := esSerializer.ToESEventFromRecordedEvent(event.Event)
 //		if err != nil {
 //			tracing.TraceErr(span, err)
-//			return 0, errors.Wrap(err, "serializer.ToESEventFromRecordedEvent")
+//			return 0, errors.Wrap(err, "json_serializer.ToESEventFromRecordedEvent")
 //		}
 //		if err := aggregate.RaiseEvent(esEvent); err != nil {
 //			tracing.TraceErr(span, err)

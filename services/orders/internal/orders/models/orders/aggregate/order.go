@@ -3,11 +3,12 @@ package aggregate
 //https://www.eventstore.com/blog/what-is-event-sourcing
 
 import (
-	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain/types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	changingDeliveryAddressEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/changing_delivery_address/events/v1"
 	creatingOrderEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/events/v1"
 	updatingShoppingCardEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/updating_shopping_card/events/v1"
@@ -19,39 +20,43 @@ import (
 
 type Order struct {
 	*es.EventSourcedAggregateRoot
-	ShopItems       []*value_objects.ShopItem `json:"shopItems" bson:"shopItems,omitempty"`
-	AccountEmail    string                    `json:"accountEmail" bson:"accountEmail,omitempty"`
-	DeliveryAddress string                    `json:"deliveryAddress" bson:"deliveryAddress,omitempty"`
-	CancelReason    string                    `json:"cancelReason" bson:"cancelReason,omitempty"`
-	TotalPrice      float64                   `json:"totalPrice" bson:"totalPrice,omitempty"`
-	DeliveredTime   time.Time                 `json:"deliveredTime" bson:"deliveredTime,omitempty"`
-	Paid            bool                      `json:"paid" bson:"paid,omitempty"`
-	Submitted       bool                      `json:"submitted" bson:"submitted,omitempty"`
-	Completed       bool                      `json:"completed" bson:"completed,omitempty"`
-	Canceled        bool                      `json:"canceled" bson:"canceled,omitempty"`
-	Payment         *entities.Payment         `json:"payment" bson:"payment,omitempty"`
-	CreatedAt       time.Time                 `json:"createdAt" bson:"createdAt,omitempty"`
-	UpdatedAt       time.Time                 `json:"updatedAt"  bson:"createdAt"`
+	shopItems       []*value_objects.ShopItem
+	accountEmail    string
+	deliveryAddress string
+	cancelReason    string
+	totalPrice      float64
+	deliveredTime   time.Time
+	paid            bool
+	submitted       bool
+	completed       bool
+	canceled        bool
+	payment         *entities.Payment
+	createdAt       time.Time
+	updatedAt       time.Time
 }
 
 func (o *Order) NewEmptyAggregate() {
 	//http://arch-stable.blogspot.com/2012/05/golang-call-inherited-constructor.html
-	base := es.NewEventSourcedAggregateRoot(o.When)
-	base.SetType(types.AggregateType(typeMapper.GetTypeName(o)))
+	base := es.NewEventSourcedAggregateRoot(*new(uuid.UUID), typeMapper.GetTypeName(o), o.When)
 	o.EventSourcedAggregateRoot = base
 }
 
-func CreateNewOrder(orderId uuid.UUID, shopItems []*value_objects.ShopItem, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*Order, error) {
+func NewOrder(id uuid.UUID, shopItems []*value_objects.ShopItem, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*Order, error) {
 	order := &Order{}
 	order.NewEmptyAggregate()
-	order.SetID(orderId)
 
-	event, err := creatingOrderEvents.NewOrderCreatedEventV1(shopItems, accountEmail, deliveryAddress, deliveredTime, createdAt)
+	itemsDto, err := mapper.Map[[]*dtos.ShopItemDto](shopItems)
 	if err != nil {
 		return nil, err
 	}
 
-	err = order.Apply(event)
+	event, err := creatingOrderEvents.NewOrderCreatedEventV1(id, 0, itemsDto, accountEmail, deliveryAddress, deliveredTime, createdAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = order.Apply(event, true)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +71,7 @@ func (o *Order) ChangeDeliveryAddress(address string) error {
 		return err
 	}
 
-	err = o.Apply(event)
+	err = o.Apply(event, true)
 	if err != nil {
 		return err
 	}
@@ -81,7 +86,7 @@ func (o *Order) UpdateShoppingCard(shopItems []*value_objects.ShopItem) error {
 		return err
 	}
 
-	err = o.Apply(event)
+	err = o.Apply(event, true)
 	if err != nil {
 		return err
 	}
@@ -89,8 +94,7 @@ func (o *Order) UpdateShoppingCard(shopItems []*value_objects.ShopItem) error {
 	return nil
 }
 
-func (o *Order) When(event interface{}) error {
-
+func (o *Order) When(event domain.IDomainEvent) error {
 	switch evt := event.(type) {
 
 	case *creatingOrderEvents.OrderCreatedEventV1:
@@ -114,18 +118,23 @@ func (o *Order) When(event interface{}) error {
 }
 
 func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) error {
+	items, err := mapper.Map[[]*value_objects.ShopItem](evt.ShopItems)
+	if err != nil {
+		return err
+	}
 
-	o.AccountEmail = evt.AccountEmail
-	o.ShopItems = evt.ShopItems
-	o.TotalPrice = getShopItemsTotalPrice(evt.ShopItems)
-	o.DeliveryAddress = evt.DeliveryAddress
-	o.DeliveredTime = evt.DeliveredTime
-	o.CreatedAt = evt.CreatedAt
+	o.accountEmail = evt.AccountEmail
+	o.shopItems = items
+	o.totalPrice = getShopItemsTotalPrice(items)
+	o.deliveryAddress = evt.DeliveryAddress
+	o.deliveredTime = evt.DeliveredTime
+	o.createdAt = evt.CreatedAt
+	o.SetId(evt.GetAggregateId())
+	o.SetOriginalVersion(evt.GetAggregateSequenceNumber())
 
 	return nil
 }
 
-//
 //func (o *Order) onOrderPaid(evt *es.Event) error {
 //	var payment Payment
 //	if err := evt.GetJsonData(&payment); err != nil {
@@ -193,31 +202,58 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //	return nil
 //}
 
+func (o *Order) ShopItems() []*value_objects.ShopItem {
+	return o.shopItems
+}
+
+func (o *Order) AccountEmail() string {
+	return o.accountEmail
+}
+
+func (o *Order) DeliveryAddress() string {
+	return o.deliveryAddress
+}
+
+func (o *Order) DeliveredTime() time.Time {
+	return o.deliveredTime
+}
+
+func (o *Order) CreatedAt() time.Time {
+	return o.createdAt
+}
+
+func (o *Order) TotalPrice() float64 {
+	return o.totalPrice
+}
+
+func (o *Order) Paid() bool {
+	return o.paid
+}
+
+func (o *Order) Submitted() bool {
+	return o.submitted
+}
+
+func (o *Order) Completed() bool {
+	return o.completed
+}
+
+func (o *Order) Canceled() bool {
+	return o.canceled
+}
+
+func (o *Order) CancelReason() string {
+	return o.cancelReason
+}
+
 func (o *Order) String() string {
-
-	serializer.PrettyPrint(o)
-
-	return fmt.Sprintf("ID: {%s}, ShopItems: {%+v}, Paid: {%v}, Submitted: {%v}, "+
-		"Completed: {%v}, Canceled: {%v}, CancelReason: {%s}, TotalPrice: {%v}, AccountEmail: {%s}, DeliveryAddress: {%s}, DeliveredTime: {%s}, Payment: {%s}",
-		o.ID,
-		o.ShopItems,
-		o.Paid,
-		o.Submitted,
-		o.Completed,
-		o.Canceled,
-		o.CancelReason,
-		o.TotalPrice,
-		o.AccountEmail,
-		o.DeliveryAddress,
-		o.DeliveredTime.String(),
-		o.Payment.String(),
-	)
+	return jsonSerializer.PrettyPrint(o)
 }
 
 func getShopItemsTotalPrice(shopItems []*value_objects.ShopItem) float64 {
 	var totalPrice float64 = 0
 	for _, item := range shopItems {
-		totalPrice += item.Price * float64(item.Quantity)
+		totalPrice += item.Price() * float64(item.Quantity())
 	}
 
 	return totalPrice

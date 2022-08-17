@@ -10,7 +10,6 @@ import (
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -31,7 +30,6 @@ type Config struct {
 	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc"`
 	Http             *customEcho.EchoHttpConfig     `mapstructure:"http"`
 	Context          Context                        `mapstructure:"context"`
-	Rabbitmq         *rabbitmq.RabbitMQConfig       `mapstructure:"rabbitmq"`
 	Kafka            *kafkaClient.Config            `mapstructure:"kafka"`
 	Probes           probes.Config                  `mapstructure:"probes"`
 	Jaeger           *tracing.Config                `mapstructure:"jaeger"`

@@ -7,9 +7,9 @@ import (
 )
 
 type Payment struct {
-	PaymentId uuid.UUID `json:"paymentId" bson:"paymentId,omitempty" validate:"required"`
-	OrderId   uuid.UUID `json:"orderId" bson:"orderId,omitempty" validate:"required"`
-	Timestamp time.Time `json:"timestamp" bson:"timestamp,omitempty" validate:"required"`
+	paymentId uuid.UUID
+	orderId   uuid.UUID
+	timestamp time.Time
 }
 
 func (p *Payment) String() string {
@@ -17,5 +17,5 @@ func (p *Payment) String() string {
 		return "nil"
 	}
 
-	return fmt.Sprintf("PaymentID: {%s}, OrderId: {%s},  Timestamp: {%s}", p.PaymentId, p, p.OrderId, p.Timestamp)
+	return fmt.Sprintf("PaymentID: {%s}, OrderId: {%s},  Timestamp: {%s}", p.paymentId, p, p.orderId, p.timestamp)
 }
