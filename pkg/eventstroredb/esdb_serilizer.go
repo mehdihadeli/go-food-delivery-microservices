@@ -70,6 +70,9 @@ func (e *EsdbSerializer) ExpectedStreamVersionToEsdbExpectedRevision(expectedVer
 	if expectedVersion.IsAny() {
 		return esdb.Any{}
 	}
+	if expectedVersion.IsStreamExists() {
+		return esdb.StreamExists{}
+	}
 
 	return esdb.StreamRevision{Value: uint64(expectedVersion.Value())}
 }
@@ -115,7 +118,6 @@ func (e *EsdbSerializer) EsdbPositionToStreamReadPosition(position esdb.Position
 }
 
 func (e *EsdbSerializer) ResolvedEventToStreamEvent(resolveEvent *esdb.ResolvedEvent) (*es.StreamEvent, error) {
-
 	deserializedEvent, err := e.eventSerializer.Deserialize(resolveEvent.Event.Data, resolveEvent.Event.EventType, resolveEvent.Event.ContentType)
 	if err != nil {
 		return nil, err
@@ -158,6 +160,45 @@ func (e *EsdbSerializer) ResolvedEventsToStreamEvents(resolveEvents []*esdb.Reso
 
 func (e *EsdbSerializer) EsdbWriteResultToAppendEventResult(writeResult *esdb.WriteResult) *appendResult.AppendEventsResult {
 	return appendResult.From(writeResult.CommitPosition, writeResult.NextExpectedVersion)
+}
+
+func (e *EsdbSerializer) Serialize(data interface{}, metadata *core.Metadata) (*esdb.EventData, error) {
+	serializedData, err := e.eventSerializer.SerializeObject(data)
+	if err != nil {
+		return nil, err
+	}
+
+	serializedMeta, err := e.metadataSerializer.Serialize(metadata)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := uuid.NewV4()
+	return &esdb.EventData{
+		EventID:     id,
+		EventType:   serializedData.EventType,
+		Data:        serializedData.Data,
+		ContentType: esdb.JsonContentType,
+		Metadata:    serializedMeta,
+	}, nil
+}
+
+func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interface{}, *core.Metadata, error) {
+	eventType := resolveEvent.Event.EventType
+	data := resolveEvent.Event.Data
+	meta := resolveEvent.Event.UserMetadata
+
+	payload, err := e.eventSerializer.DeserializeObject(data, eventType, resolveEvent.Event.ContentType)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	metadata, err := e.metadataSerializer.Deserialize(meta)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return payload, metadata, nil
 }
 
 func (e *EsdbSerializer) DomainEventToStreamEvent(domainEvent domain.IDomainEvent, meta *core.Metadata, position int64) *es.StreamEvent {

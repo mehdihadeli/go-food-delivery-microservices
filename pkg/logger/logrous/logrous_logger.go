@@ -74,7 +74,7 @@ func (l *logrusLogger) initLogger() {
 	logrusLogger.SetOutput(os.Stdout)
 
 	if env == constants.Dev {
-		logrusLogger.SetReportCaller(true)
+		logrusLogger.SetReportCaller(false)
 		logrusLogger.SetFormatter(&logrus.TextFormatter{
 			DisableColors: false,
 			ForceColors:   true,

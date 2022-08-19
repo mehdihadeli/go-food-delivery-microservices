@@ -14,6 +14,10 @@ func NewJsonMetadataSerializer() *JsonMetadataSerializer {
 }
 
 func (s *JsonMetadataSerializer) Serialize(meta *core.Metadata) ([]byte, error) {
+	if meta == nil {
+		return nil, nil
+	}
+
 	marshal, err := jsonSerializer.Marshal(meta)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to marshal metadata")
@@ -23,7 +27,12 @@ func (s *JsonMetadataSerializer) Serialize(meta *core.Metadata) ([]byte, error) 
 }
 
 func (s *JsonMetadataSerializer) Deserialize(bytes []byte) (*core.Metadata, error) {
+	if bytes == nil {
+		return nil, nil
+	}
+
 	var meta core.Metadata
+
 	err := jsonSerializer.Unmarshal(bytes, &meta)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal metadata")

@@ -37,20 +37,21 @@ type Order struct {
 
 func (o *Order) NewEmptyAggregate() {
 	//http://arch-stable.blogspot.com/2012/05/golang-call-inherited-constructor.html
-	base := es.NewEventSourcedAggregateRoot(*new(uuid.UUID), typeMapper.GetTypeName(o), o.When)
+	base := es.NewEventSourcedAggregateRoot(typeMapper.GetTypeName(o), o.When)
 	o.EventSourcedAggregateRoot = base
 }
 
 func NewOrder(id uuid.UUID, shopItems []*value_objects.ShopItem, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*Order, error) {
 	order := &Order{}
 	order.NewEmptyAggregate()
+	order.SetId(id)
 
 	itemsDto, err := mapper.Map[[]*dtos.ShopItemDto](shopItems)
 	if err != nil {
 		return nil, err
 	}
 
-	event, err := creatingOrderEvents.NewOrderCreatedEventV1(id, 0, itemsDto, accountEmail, deliveryAddress, deliveredTime, createdAt)
+	event, err := creatingOrderEvents.NewOrderCreatedEventV1(id, itemsDto, accountEmail, deliveryAddress, deliveredTime, createdAt)
 
 	if err != nil {
 		return nil, err
@@ -129,8 +130,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 	o.deliveryAddress = evt.DeliveryAddress
 	o.deliveredTime = evt.DeliveredTime
 	o.createdAt = evt.CreatedAt
-	o.SetId(evt.GetAggregateId())
-	o.SetOriginalVersion(evt.GetAggregateSequenceNumber())
+	o.SetId(evt.GetAggregateId()) // o.SetId(evt.OrderId)
 
 	return nil
 }

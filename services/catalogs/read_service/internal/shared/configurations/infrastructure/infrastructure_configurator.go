@@ -57,8 +57,6 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 
 	infrastructure := &InfrastructureConfigurations{Cfg: ic.cfg, EchoServer: ic.echoServer, GrpcServer: ic.grpcServer, Log: ic.log, Validator: validator.New()}
 
-	infrastructure.Im = interceptors.NewInterceptorManager(ic.log)
-
 	metrics := ic.configCatalogsMetrics()
 	infrastructure.Metrics = metrics
 

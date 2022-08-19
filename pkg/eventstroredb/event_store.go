@@ -18,6 +18,8 @@ import (
 	"math"
 )
 
+//https://developers.eventstore.com/clients/grpc/reading-events.html#reading-from-a-stream
+//https://developers.eventstore.com/clients/grpc/appending-events.html#append-your-first-event
 type eventStoreDbEventStore struct {
 	log        logger.Logger
 	client     *esdb.Client

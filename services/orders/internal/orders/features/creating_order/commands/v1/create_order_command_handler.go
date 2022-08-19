@@ -25,7 +25,6 @@ func NewCreateOrderHandler(log logger.Logger, cfg *config.Config, aggregateStore
 }
 
 func (c *CreateOrderCommandHandler) Handle(ctx context.Context, command *CreateOrderCommand) (*dtos.CreateOrderResponseDto, error) {
-
 	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateOrderCommandHandler.Handle")
 	defer span.Finish()
 	span.LogFields(log.Object("command", command))

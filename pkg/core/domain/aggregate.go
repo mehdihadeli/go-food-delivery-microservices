@@ -47,11 +47,20 @@ type IAggregateRoot interface {
 	String() string
 }
 
-func NewAggregateRoot(id uuid.UUID, aggregateType string) *AggregateRoot {
+func NewAggregateRootWithId(id uuid.UUID, aggregateType string) *AggregateRoot {
 	aggregate := &AggregateRoot{
 		originalVersion: newAggregateVersion,
 	}
-	aggregate.Entity = NewEntity(id, aggregateType)
+	aggregate.Entity = NewEntityWithId(id, aggregateType)
+
+	return aggregate
+}
+
+func NewAggregateRoot(aggregateType string) *AggregateRoot {
+	aggregate := &AggregateRoot{
+		originalVersion: newAggregateVersion,
+	}
+	aggregate.Entity = NewEntity(aggregateType)
 
 	return aggregate
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 )
 
-func NewEventStoreDB(cfg EventStoreConfig) (*esdb.Client, error) {
+func NewEventStoreDB(cfg *EventStoreConfig) (*esdb.Client, error) {
 	settings, err := esdb.ParseConnectionString(cfg.ConnectionString)
 	if err != nil {
 		return nil, err

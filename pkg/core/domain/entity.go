@@ -28,10 +28,18 @@ type IEntity interface {
 	SetId(id uuid.UUID)
 }
 
-// NewEntity creates a new Entity
-func NewEntity(id uuid.UUID, entityType string) *Entity {
+// NewEntityWithId creates a new Entity with an id
+func NewEntityWithId(id uuid.UUID, entityType string) *Entity {
 	return &Entity{
 		id:         id,
+		createdAt:  time.Now(),
+		entityType: entityType,
+	}
+}
+
+// NewEntity creates a new Entity
+func NewEntity(entityType string) *Entity {
+	return &Entity{
 		createdAt:  time.Now(),
 		entityType: entityType,
 	}
