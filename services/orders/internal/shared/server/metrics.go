@@ -16,10 +16,10 @@ func (s *Server) RunMetrics(cancel context.CancelFunc) {
 			DisablePrintStack: true,
 			DisableStackAll:   true,
 		}))
-		metricsServer.GET(s.Cfg.Probes.PrometheusPath, echo.WrapHandler(promhttp.Handler()))
-		s.Log.Infof("Metrics server is running on port: %s", s.Cfg.Probes.PrometheusPort)
-		if err := metricsServer.Start(s.Cfg.Probes.PrometheusPort); err != nil {
-			s.Log.Errorf("metricsServer.Start: %v", err)
+		metricsServer.GET(s.cfg.Probes.PrometheusPath, echo.WrapHandler(promhttp.Handler()))
+		s.log.Infof("Metrics server is running on port: %s", s.cfg.Probes.PrometheusPort)
+		if err := metricsServer.Start(s.cfg.Probes.PrometheusPort); err != nil {
+			s.log.Errorf("metricsServer.Start: %v", err)
 			cancel()
 		}
 	}()

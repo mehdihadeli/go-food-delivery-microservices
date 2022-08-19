@@ -6,33 +6,33 @@ import (
 )
 
 type IEvent interface {
-	EventId() uuid.UUID
-	EventType() string
-	OccurredOn() time.Time
+	GetEventId() uuid.UUID
+	GetEventType() string
+	GetOccurredOn() time.Time
 }
 
 type Event struct {
-	eventId    uuid.UUID
-	eventType  string
-	occurredOn time.Time
+	EventId    uuid.UUID `json:"event_id"`
+	EventType  string    `json:"event_type"`
+	OccurredOn time.Time `json:"occurred_on"`
 }
 
 func NewEvent(eventType string) *Event {
 	return &Event{
-		eventId:    uuid.NewV4(),
-		occurredOn: time.Now(),
-		eventType:  eventType,
+		EventId:    uuid.NewV4(),
+		OccurredOn: time.Now(),
+		EventType:  eventType,
 	}
 }
 
-func (e *Event) EventId() uuid.UUID {
-	return e.eventId
+func (e *Event) GetEventId() uuid.UUID {
+	return e.EventId
 }
 
-func (e *Event) EventType() string {
-	return e.eventType
+func (e *Event) GetEventType() string {
+	return e.EventType
 }
 
-func (e *Event) OccurredOn() time.Time {
-	return e.occurredOn
+func (e *Event) GetOccurredOn() time.Time {
+	return e.OccurredOn
 }

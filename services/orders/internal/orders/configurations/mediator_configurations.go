@@ -11,7 +11,6 @@ import (
 )
 
 func (c *ordersModuleConfigurator) configOrdersMediator(aggregateStore store.AggregateStore[*aggregate.Order]) error {
-
 	//https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
 	err := mediatr.RegisterRequestHandler[*creatingOrderV1.CreateOrderCommand, *creatingOrderDtos.CreateOrderResponseDto](creatingOrderV1.NewCreateOrderHandler(c.Log, c.Cfg, aggregateStore))
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 
 type OrderCreatedEventV1 struct {
 	*domain.DomainEvent
+	OrderId         uuid.UUID           `json:"order_id"`
 	ShopItems       []*dtos.ShopItemDto `json:"shopItems" bson:"shopItems,omitempty"`
 	AccountEmail    string              `json:"accountEmail" bson:"accountEmail,omitempty"`
 	DeliveryAddress string              `json:"deliveryAddress" bson:"deliveryAddress,omitempty"`
@@ -17,8 +18,7 @@ type OrderCreatedEventV1 struct {
 	DeliveredTime   time.Time           `json:"deliveredTime" bson:"deliveredTime,omitempty"`
 }
 
-func NewOrderCreatedEventV1(aggregateId uuid.UUID, version int64, shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedEventV1, error) {
-
+func NewOrderCreatedEventV1(aggregateId uuid.UUID, shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedEventV1, error) {
 	//if shopItems == nil {
 	//	return nil, domainExceptions.ErrOrderShopItemsIsRequired
 	//}
@@ -41,13 +41,14 @@ func NewOrderCreatedEventV1(aggregateId uuid.UUID, version int64, shopItems []*d
 
 	eventData := &OrderCreatedEventV1{
 		ShopItems:       shopItems,
+		OrderId:         aggregateId,
 		AccountEmail:    accountEmail,
 		DeliveryAddress: deliveryAddress,
 		CreatedAt:       createdAt,
 		DeliveredTime:   deliveredTime,
 	}
 
-	eventData.DomainEvent = domain.NewDomainEvent(aggregateId, version, typeMapper.GetTypeName(eventData))
+	eventData.DomainEvent = domain.NewDomainEvent(typeMapper.GetTypeName(eventData))
 
 	return eventData, nil
 }

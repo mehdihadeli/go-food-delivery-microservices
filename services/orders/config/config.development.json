@@ -83,5 +83,11 @@
   },
   "eventStoreConfig": {
     "connectionString": "esdb://localhost:2113?tls=false"
+  },
+  "subscriptions": {
+    "orderSubscription": {
+      "subscriptionId": "orders-subscription",
+      "prefix": ["order-"]
+    }
   }
 }

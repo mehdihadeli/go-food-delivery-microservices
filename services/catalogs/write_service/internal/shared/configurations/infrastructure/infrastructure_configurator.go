@@ -7,7 +7,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/interceptors"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
@@ -23,7 +22,6 @@ type InfrastructureConfiguration struct {
 	Validator         *validator.Validate
 	KafkaConn         *kafka.Conn
 	KafkaProducer     kafkaClient.Producer
-	Im                interceptors.InterceptorManager
 	Pgx               *postgres.Pgx
 	Gorm              *gorm_postgres.Gorm
 	Metrics           *CatalogsServiceMetrics
@@ -52,8 +50,6 @@ func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config, echoSe
 func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*InfrastructureConfiguration, error, func()) {
 
 	infrastructure := &InfrastructureConfiguration{Cfg: ic.cfg, EchoServer: ic.echoServer, GrpcServer: ic.grpcServer, Log: ic.log, Validator: validator.New()}
-
-	infrastructure.Im = interceptors.NewInterceptorManager(ic.log)
 
 	metrics := ic.configCatalogsMetrics()
 	infrastructure.Metrics = metrics

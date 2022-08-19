@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/go-playground/validator"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/interceptors"
@@ -18,20 +20,22 @@ import (
 )
 
 type InfrastructureConfiguration struct {
-	Log               logger.Logger
-	Cfg               *config.Config
-	Validator         *validator.Validate
-	KafkaConn         *kafka.Conn
-	KafkaProducer     kafkaClient.Producer
-	Im                interceptors.InterceptorManager
-	Pgx               *postgres.Pgx
-	Gorm              *gorm.DB
-	Metrics           *OrdersServiceMetrics
-	EchoServer        customEcho.EchoHttpServer
-	GrpcServer        grpcServer.GrpcServer
-	Esdb              *esdb.Client
-	ElasticClient     *v7.Client
-	CustomMiddlewares cutomMiddlewares.CustomMiddlewares
+	Log                  logger.Logger
+	Cfg                  *config.Config
+	Validator            *validator.Validate
+	KafkaConn            *kafka.Conn
+	KafkaProducer        kafkaClient.Producer
+	Im                   interceptors.InterceptorManager
+	Pgx                  *postgres.Pgx
+	Gorm                 *gorm.DB
+	Metrics              *OrdersServiceMetrics
+	Esdb                 *esdb.Client
+	EsdbSerializer       *eventstroredb.EsdbSerializer
+	CheckpointRepository contracts.SubscriptionCheckpointRepository
+	ElasticClient        *v7.Client
+	CustomMiddlewares    cutomMiddlewares.CustomMiddlewares
+	EchoServer           customEcho.EchoHttpServer
+	GrpcServer           grpcServer.GrpcServer
 }
 
 type InfrastructureConfigurator interface {
@@ -45,13 +49,12 @@ type infrastructureConfigurator struct {
 	grpcServer grpcServer.GrpcServer
 }
 
-func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config, echoServer customEcho.EchoHttpServer, grpcServer grpcServer.GrpcServer) *infrastructureConfigurator {
-	return &infrastructureConfigurator{log: log, cfg: cfg, echoServer: echoServer, grpcServer: grpcServer}
+func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config, echo customEcho.EchoHttpServer, grpcServer grpcServer.GrpcServer) *infrastructureConfigurator {
+	return &infrastructureConfigurator{log: log, cfg: cfg, echoServer: echo, grpcServer: grpcServer}
 }
 
 func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*InfrastructureConfiguration, error, func()) {
-
-	infrastructure := &InfrastructureConfiguration{Cfg: ic.cfg, EchoServer: ic.echoServer, GrpcServer: ic.grpcServer, Log: ic.log, Validator: validator.New()}
+	infrastructure := &InfrastructureConfiguration{Cfg: ic.cfg, Log: ic.log, Validator: validator.New(), EchoServer: ic.echoServer, GrpcServer: ic.grpcServer}
 
 	infrastructure.Im = interceptors.NewInterceptorManager(ic.log)
 
@@ -72,12 +75,14 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	//}
 	//infrastructure.ElasticClient = el
 
-	es, err, eventStoreCleanup := ic.configEventStore()
+	es, checkpointRepository, esdbSerializer, err, eventStoreCleanup := ic.configEventStore()
 	if err != nil {
 		return nil, err, nil
 	}
 	cleanup = append(cleanup, eventStoreCleanup)
 	infrastructure.Esdb = es
+	infrastructure.CheckpointRepository = checkpointRepository
+	infrastructure.EsdbSerializer = esdbSerializer
 
 	kafkaConn, kafkaProducer, err, kafkaCleanup := ic.configKafka(ctx)
 	if err != nil {
@@ -88,8 +93,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	infrastructure.KafkaProducer = kafkaProducer
 
 	ic.configSwagger()
-	ic.configMiddlewares(metrics)
-	ic.configureHealthCheckEndpoints(ctx)
+	ic.configMiddlewares(infrastructure.Metrics)
 
 	if err != nil {
 		return nil, err, nil

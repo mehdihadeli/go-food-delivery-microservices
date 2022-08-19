@@ -2,6 +2,7 @@ package domain
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -14,15 +15,14 @@ type IDomainEvent interface {
 
 type DomainEvent struct {
 	*core.Event
-	AggregateId             uuid.UUID
-	AggregateSequenceNumber int64
+	AggregateId             uuid.UUID `json:"aggregate_id"`
+	AggregateSequenceNumber int64     `json:"aggregate_sequence_number"`
 }
 
-func NewDomainEvent(aggregateId uuid.UUID, aggregateSequenceNumber int64, eventType string) *DomainEvent {
+func NewDomainEvent(eventType string) *DomainEvent {
 	domainEvent := &DomainEvent{
 		Event:                   core.NewEvent(eventType),
-		AggregateId:             aggregateId,
-		AggregateSequenceNumber: aggregateSequenceNumber,
+		AggregateSequenceNumber: expectedStreamVersion.NoStream.Value(),
 	}
 	domainEvent.Event = core.NewEvent(eventType)
 

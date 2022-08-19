@@ -238,8 +238,7 @@ func (e *ProblemDetail) ErrBody() error {
 
 // Error  Error() interface method
 func (e *ProblemDetail) Error() string {
-
-	return fmt.Sprintf("status: %d - title: %s - detail message: %s", e.Status, e.Title, e.GetDetailError())
+	return fmt.Sprintf("status: %d - title: %s - %s", e.Status, e.Title, e.GetDetailError())
 }
 
 func (e *ProblemDetail) GetStatus() int {

@@ -8,12 +8,9 @@ import (
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	uuid "github.com/satori/go.uuid"
-)
-
-const (
-	newEventSourcesAggregateVersion = -1
 )
 
 type WhenFunc func(event domain.IDomainEvent) error
@@ -42,6 +39,7 @@ type AggregateStateProjection interface {
 // IHaveEventSourcedAggregate this interface should implement by actual aggregate root class in our domain
 type IHaveEventSourcedAggregate interface {
 	When
+	NewEmptyAggregate()
 	IEventSourcedAggregateRoot
 }
 
@@ -91,18 +89,34 @@ type EventSourcedAggregateRootDataModel struct {
 	OriginalVersion int64 `json:"originalVersion" bson:"originalVersion"`
 }
 
-func NewEventSourcedAggregateRoot(id uuid.UUID, aggregateType string, when WhenFunc) *EventSourcedAggregateRoot {
+func NewEventSourcedAggregateRootWithId(id uuid.UUID, aggregateType string, when WhenFunc) *EventSourcedAggregateRoot {
 	if when == nil {
 		return nil
 	}
 
 	aggregate := &EventSourcedAggregateRoot{
-		originalVersion: newEventSourcesAggregateVersion,
-		currentVersion:  newEventSourcesAggregateVersion,
+		originalVersion: expectedStreamVersion.NoStream.Value(),
+		currentVersion:  expectedStreamVersion.NoStream.Value(),
 		when:            when,
 	}
 
-	aggregate.Entity = domain.NewEntity(id, aggregateType)
+	aggregate.Entity = domain.NewEntityWithId(id, aggregateType)
+
+	return aggregate
+}
+
+func NewEventSourcedAggregateRoot(aggregateType string, when WhenFunc) *EventSourcedAggregateRoot {
+	if when == nil {
+		return nil
+	}
+
+	aggregate := &EventSourcedAggregateRoot{
+		originalVersion: expectedStreamVersion.NoStream.Value(),
+		currentVersion:  expectedStreamVersion.NoStream.Value(),
+		when:            when,
+	}
+
+	aggregate.Entity = domain.NewEntity(aggregateType)
 
 	return aggregate
 }
@@ -120,10 +134,14 @@ func (a *EventSourcedAggregateRoot) CurrentVersion() int64 {
 }
 
 func (a *EventSourcedAggregateRoot) AddDomainEvents(event domain.IDomainEvent) error {
-	exists := linq.From(a.uncommittedEvents).Contains(event)
+	exists := linq.From(a.uncommittedEvents).AnyWithT(func(e domain.IDomainEvent) bool {
+		return e.GetEventId() == event.GetEventId()
+	})
+
 	if exists {
 		return ErrEventAlreadyExists
 	}
+	event.WithAggregate(a.Id(), a.CurrentVersion()+1)
 	a.uncommittedEvents = append(a.uncommittedEvents, event)
 
 	return nil

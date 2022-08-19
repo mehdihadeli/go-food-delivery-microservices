@@ -23,21 +23,31 @@ func init() {
 }
 
 type Config struct {
-	DeliveryType     string                         `mapstructure:"deliveryType"`
-	ServiceName      string                         `mapstructure:"serviceName"`
-	Logger           *logger.Config                 `mapstructure:"logger"`
-	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics"`
-	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc"`
-	Http             *customEcho.EchoHttpConfig     `mapstructure:"http"`
-	Context          Context                        `mapstructure:"context"`
-	Kafka            *kafkaClient.Config            `mapstructure:"kafka"`
-	Probes           probes.Config                  `mapstructure:"probes"`
-	Jaeger           *tracing.Config                `mapstructure:"jaeger"`
-	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
+	DeliveryType     string                          `mapstructure:"deliveryType"`
+	ServiceName      string                          `mapstructure:"serviceName"`
+	Logger           *logger.Config                  `mapstructure:"logger"`
+	KafkaTopics      KafkaTopics                     `mapstructure:"kafkaTopics"`
+	GRPC             *grpc.GrpcConfig                `mapstructure:"grpc"`
+	Http             *customEcho.EchoHttpConfig      `mapstructure:"http"`
+	Context          Context                         `mapstructure:"context"`
+	Kafka            *kafkaClient.Config             `mapstructure:"kafka"`
+	Probes           probes.Config                   `mapstructure:"probes"`
+	Jaeger           *tracing.Config                 `mapstructure:"jaeger"`
+	EventStoreConfig *eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
+	Subscriptions    *Subscriptions                  `mapstructure:"subscriptions"`
 }
 
 type Context struct {
 	Timeout int `mapstructure:"timeout"`
+}
+
+type Subscriptions struct {
+	OrderSubscription *Subscription `mapstructure:"orderSubscription"`
+}
+
+type Subscription struct {
+	Prefix         []string `mapstructure:"prefix" validate:"required"`
+	SubscriptionId string   `mapstructure:"subscriptionId" validate:"required"`
 }
 
 type KafkaTopics struct {

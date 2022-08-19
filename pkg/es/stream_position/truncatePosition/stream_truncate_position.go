@@ -1,5 +1,6 @@
 package truncatePosition
 
+// StreamTruncatePosition an int64 for accepts negative and positive value
 type StreamTruncatePosition int64
 
 func (e StreamTruncatePosition) Value() int64 {
