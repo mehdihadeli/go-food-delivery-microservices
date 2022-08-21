@@ -70,11 +70,8 @@ func TypeByName(typeName string) reflect.Type {
 }
 
 func GetTypeName(input interface{}) string {
-	if t := reflect.TypeOf(input); t.Kind() == reflect.Ptr {
-		return t.Elem().String()
-	} else {
-		return t.String()
-	}
+	t := reflect.TypeOf(input)
+	return t.String()
 }
 
 // TypeByPackageName return the type by its package and name
@@ -128,5 +125,7 @@ func getInstanceFromType(typ reflect.Type) interface{} {
 
 // GenericInstanceByTypeName return an empty instance of the generic type by its name
 func GenericInstanceByTypeName[T any](typeName string) T {
-	return InstanceByTypeName(typeName).(T)
+	var res = InstanceByTypeName(typeName).(T)
+
+	return res
 }

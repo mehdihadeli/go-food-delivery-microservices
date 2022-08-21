@@ -8,7 +8,7 @@ import (
 
 func TestTypes(t *testing.T) {
 	s := Test{A: 10}
-	fmt.Print(s)
+	s2 := &Test{A: 10}
 
 	q2 := TypeByName("*typeMapper.Test")
 	q22 := InstanceByTypeName("*typeMapper.Test").(*Test)
@@ -20,6 +20,11 @@ func TestTypes(t *testing.T) {
 
 	r := GenericInstanceByTypeName[*Test]("*typeMapper.Test")
 	r2 := GenericInstanceByTypeName[Test]("typeMapper.Test")
+
+	typeName := GetTypeName(s)
+	typeName2 := GetTypeName(s2)
+	assert.Equal(t, "typeMapper.Test", typeName)
+	assert.Equal(t, "*typeMapper.Test", typeName2)
 
 	q1.A = 100
 	q22.A = 100

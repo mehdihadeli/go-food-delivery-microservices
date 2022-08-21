@@ -211,6 +211,22 @@ func GetFieldValueFromMethodAndReflectValue(val reflect.Value, name string) refl
 	return *new(reflect.Value)
 }
 
+func SetValue[T any](data T, value interface{}) {
+	var inputValue reflect.Value
+	if reflect.ValueOf(data).Kind() == reflect.Ptr {
+		inputValue = reflect.ValueOf(data).Elem()
+	} else {
+		inputValue = reflect.ValueOf(data)
+	}
+
+	valueReflect := reflect.ValueOf(value)
+	if valueReflect.Kind() == reflect.Ptr {
+		inputValue.Set(valueReflect.Elem())
+	} else {
+		inputValue.Set(valueReflect)
+	}
+}
+
 func ObjectTypePath(obj any) string {
 	objType := reflect.TypeOf(obj).Elem()
 	path := fmt.Sprintf("%s.%s", objType.PkgPath(), objType.Name())
