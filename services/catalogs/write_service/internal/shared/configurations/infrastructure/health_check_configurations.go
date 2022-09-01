@@ -14,7 +14,7 @@ func (ic *infrastructureConfigurator) configureHealthCheckEndpoints(ctx context.
 	//	_, _, err := s.elasticClient.Ping(s.cfg.Elastic.URL).Do(ctx)
 	//	if err != nil {
 	//		s.log.Warnf("(ElasticSearch Readiness Check) err: {%v}", err)
-	//		return errors.Wrap(err, "client.Ping")
+	//		return http_errors.Wrap(err, "client.Ping")
 	//	}
 	//	return nil
 	//}, time.Duration(s.cfg.Probes.CheckIntervalSeconds)*time.Second))
@@ -23,7 +23,7 @@ func (ic *infrastructureConfigurator) configureHealthCheckEndpoints(ctx context.
 	//	_, _, err := s.elasticClient.Ping(s.cfg.Elastic.URL).Do(ctx)
 	//	if err != nil {
 	//		s.log.Warnf("(ElasticSearch Liveness Check) err: {%v}", err)
-	//		return errors.Wrap(err, "client.Ping")
+	//		return http_errors.Wrap(err, "client.Ping")
 	//	}
 	//	return nil
 	//}, time.Duration(s.cfg.Probes.CheckIntervalSeconds)*time.Second))

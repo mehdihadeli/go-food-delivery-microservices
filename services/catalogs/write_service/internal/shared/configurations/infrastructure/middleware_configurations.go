@@ -9,7 +9,7 @@ func (ic *infrastructureConfigurator) configMiddlewares(metrics *CatalogsService
 	ic.echoServer.SetupDefaultMiddlewares()
 
 	middlewares := customMiddlewares.NewCustomMiddlewares(ic.log, ic.cfg, getHttpMetricsCb(metrics))
-	ic.echoServer.AddMiddlewares(middlewares.RequestLoggerMiddleware, middlewares.RequestMetricsMiddleware)
+	ic.echoServer.AddMiddlewares(middlewares.RequestMetricsMiddleware)
 }
 
 func getHttpMetricsCb(metrics *CatalogsServiceMetrics) func(err error) {

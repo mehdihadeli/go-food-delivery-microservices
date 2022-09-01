@@ -3,6 +3,7 @@ package eventstroredb
 import (
 	"context"
 	"fmt"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
@@ -59,8 +60,7 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata *core.Met
 
 	streamAppendResult, err := a.eventStore.AppendEvents(streamId, expectedVersion, streamEvents, ctx)
 	if err != nil {
-		tracing.TraceErr(span, err)
-		return nil, errors.Wrapf(err, "failed to store aggregate {%s}", jsonSerializer.ColoredPrettyPrint(aggregate))
+		return nil, tracing.TraceWithErr(span, errors.Wrapf(err, "failed to store aggregate {%s}", jsonSerializer.ColoredPrettyPrint(aggregate)))
 	}
 
 	a.log.Debugf("StreamAppendResult for aggregateId %s: %s", aggregate.Id(), jsonSerializer.ColoredPrettyPrint(streamAppendResult))
@@ -78,8 +78,7 @@ func (a *esdbAggregateStore[T]) Store(aggregate T, metadata *core.Metadata, ctx 
 
 	streamAppendResult, err := a.StoreWithVersion(aggregate, metadata, expectedVersion, ctx)
 	if err != nil {
-		tracing.TraceErr(span, err)
-		return nil, errors.Wrapf(err, "failed to store aggregate {%s}", jsonSerializer.ColoredPrettyPrint(aggregate))
+		return nil, tracing.TraceWithErr(span, errors.Wrapf(err, "failed to store aggregate {%s}", jsonSerializer.ColoredPrettyPrint(aggregate)))
 	}
 
 	a.log.Debugf("StreamAppendResult for aggregateId %s: %s", aggregate.Id(), jsonSerializer.ColoredPrettyPrint(streamAppendResult))
@@ -120,13 +119,11 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 	span.LogFields(log.String("StreamId", streamId.String()))
 
 	streamEvents, err := a.getStreamEvents(streamId, position, ctx)
-	if errors.Is(err, ErrStreamNotFound(err)) || len(streamEvents) == 0 {
-		tracing.TraceErr(span, ErrAggregateNotFound(err, aggregateId.String()))
-		return *new(T), ErrAggregateNotFound(err, aggregateId.String())
+	if errors.Is(err, esdb.ErrStreamNotFound) || len(streamEvents) == 0 {
+		return *new(T), tracing.TraceWithErr(span, ErrAggregateNotFound(err, aggregateId.String()))
 	}
 	if err != nil {
-		tracing.TraceErr(span, err)
-		return *new(T), errors.Wrapf(err, "failed to load aggregate {%s}", aggregateId.String())
+		return *new(T), tracing.TraceWithErr(span, errors.Wrapf(err, "failed to load aggregate {%s}", aggregateId.String()))
 	}
 
 	var metadata *core.Metadata
@@ -139,8 +136,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 
 	err = aggregate.LoadFromHistory(domainEvents, metadata)
 	if err != nil {
-		tracing.TraceErr(span, err)
-		return *new(T), err
+		return *new(T), tracing.TraceWithErr(span, err)
 	}
 
 	a.log.Debugf("Loaded aggregate {%s} from streamId {%s}", jsonSerializer.ColoredPrettyPrint(aggregate), streamId.String())

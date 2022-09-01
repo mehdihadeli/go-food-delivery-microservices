@@ -1,8 +1,7 @@
-package utils
+package customEcho
 
 import (
 	"context"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/pkg/errors"
 	"net/http"
 	"time"
@@ -41,35 +40,6 @@ func GetConfigPath(configPath string) string {
 // GetIPAddress Get user ip address
 func GetIPAddress(c echo.Context) string {
 	return c.Request().RemoteAddr
-}
-
-// ErrResponseWithLog Error response with logging error for echo context
-func ErrResponseWithLog(ctx echo.Context, logger logger.Logger, err error) error {
-	logger.Errorf(
-		"ErrResponseWithLog, RequestID: %s, IPAddress: %s, Error: %s",
-		GetRequestID(ctx),
-		GetIPAddress(ctx),
-		err,
-	)
-	return err
-}
-
-// LogResponseError Error response with logging error for echo context
-func LogResponseError(ctx echo.Context, logger logger.Logger, err error) {
-	logger.Errorf(
-		"ErrResponseWithLog, RequestID: %s, IPAddress: %s, Error: %s",
-		GetRequestID(ctx),
-		GetIPAddress(ctx),
-		err,
-	)
-}
-
-// ReadRequest Read request body and validate
-func ReadRequest(ctx echo.Context, request interface{}) error {
-	if err := ctx.Bind(request); err != nil {
-		return err
-	}
-	return validate.StructCtx(ctx.Request().Context(), request)
 }
 
 var allowedImagesContentTypes = map[string]string{

@@ -45,7 +45,10 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 	response := &creatingProduct.CreateProductResponseDto{ProductID: createdProduct.ProductID}
 	bytes, _ := json.Marshal(response)
 
-	c.redisRepository.PutProduct(ctx, createdProduct.ProductID, createdProduct)
+	err = c.redisRepository.PutProduct(ctx, createdProduct.ProductID, createdProduct)
+	if err != nil {
+		return nil, err
+	}
 
 	span.LogFields(log.String("CreateProductResponseDto", string(bytes)))
 

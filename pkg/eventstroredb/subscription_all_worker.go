@@ -40,7 +40,7 @@ func NewEsdbSubscriptionAllWorker(log logger.Logger, db *esdb.Client, cfg *Event
 
 func (s *esdbSubscriptionAllWorker) SubscribeAll(ctx context.Context, subscriptionOption *EventStoreDBSubscriptionToAllOptions) error {
 	if subscriptionOption.SubscriptionId == "" {
-		subscriptionOption.SubscriptionId = "default"
+		subscriptionOption.SubscriptionId = "defaultLogger"
 	}
 
 	if subscriptionOption.FilterOptions == nil {

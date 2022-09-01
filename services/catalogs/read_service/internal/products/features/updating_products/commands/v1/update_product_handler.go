@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/mehdihadeli/go-mediatr"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
@@ -24,14 +24,13 @@ func NewUpdateProductCommandHandler(log logger.Logger, cfg *config.Config, mongo
 }
 
 func (c *UpdateProductCommandHandler) Handle(ctx context.Context, command *UpdateProductCommand) (*mediatr.Unit, error) {
-
 	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdateProductCommandHandler.Handle")
 	defer span.Finish()
 
 	_, err := c.mongoRepository.GetProductById(ctx, command.ProductID)
 
 	if err != nil {
-		return nil, httpErrors.NewNotFoundError(err, fmt.Sprintf("product with id %s not found", command.ProductID))
+		return nil, customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("product with id %s not found", command.ProductID))
 	}
 
 	product := &models.Product{ProductID: command.ProductID.String(), Name: command.Name, Description: command.Description, Price: command.Price, UpdatedAt: command.UpdatedAt}
@@ -41,7 +40,10 @@ func (c *UpdateProductCommandHandler) Handle(ctx context.Context, command *Updat
 		return nil, err
 	}
 
-	c.redisRepository.PutProduct(ctx, updatedProduct.ProductID, updatedProduct)
+	err = c.redisRepository.PutProduct(ctx, updatedProduct.ProductID, updatedProduct)
+	if err != nil {
+		return nil, err
+	}
 
 	c.log.Infof("(product updated) id: {%s}", command.ProductID)
 

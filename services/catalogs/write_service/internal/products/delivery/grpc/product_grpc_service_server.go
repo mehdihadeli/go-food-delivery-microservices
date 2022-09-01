@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"github.com/mehdihadeli/go-mediatr"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	productsService "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
@@ -43,7 +44,7 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 	if err := s.Validator.StructCtx(ctx, command); err != nil {
 		s.Log.Errorf("(validate) err: {%v}", err)
 		tracing.TraceErr(span, err)
-		return nil, s.errResponse(codes.InvalidArgument, err)
+		return nil, errors.ErrResponse(tracing.TraceWithErr(span, err))
 	}
 
 	result, err := mediatr.Send[*creatingProductV1.CreateProductCommand, *creatingProductDtos.CreateProductResponseDto](ctx, command)

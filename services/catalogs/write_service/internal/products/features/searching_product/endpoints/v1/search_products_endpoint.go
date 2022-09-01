@@ -44,7 +44,6 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 
 		if err != nil {
 			tracing.TraceErr(span, err)
-			utils.LogResponseError(c, ep.Log, err)
 			return err
 		}
 

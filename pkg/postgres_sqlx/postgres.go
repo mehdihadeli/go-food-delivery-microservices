@@ -72,7 +72,7 @@ func NewSqlxConn(cfg *Config) (*Sqlx, error) {
 
 	// stdlib package doesn't have a compat layer for pgxpool
 	// so had to use standard sql api for pool configuration.
-	db.SetMaxOpenConns(maxConn)                           // the default is 0 (unlimited)
+	db.SetMaxOpenConns(maxConn)                           // the defaultLogger is 0 (unlimited)
 	db.SetMaxIdleConns(maxIdleConn)                       // defaultMaxIdleConns = 2
 	db.SetConnMaxLifetime(time.Duration(maxLifetimeConn)) // 0, connections are reused forever
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/mehdihadeli/go-mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/custom_errors"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
@@ -38,7 +38,7 @@ func (c *UpdateProductCommandHandler) Handle(ctx context.Context, command *Updat
 	_, err := c.pgRepo.GetProductById(ctx, command.ProductID)
 
 	if err != nil {
-		return nil, httpErrors.NewNotFoundError(fmt.Sprintf("product with id %s not found", command.ProductID))
+		return nil, customErrors.NewNotFoundError(fmt.Sprintf("product with id %s not found", command.ProductID))
 	}
 
 	product := &models.Product{ProductID: command.ProductID, Name: command.Name, Description: command.Description, Price: command.Price, UpdatedAt: command.UpdatedAt}

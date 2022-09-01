@@ -3,11 +3,13 @@ package customEcho
 import (
 	"context"
 	"fmt"
+	"github.com/brpaz/echozap"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo/custom_hadnlers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"go.uber.org/zap"
 	"strings"
 )
 
@@ -64,10 +66,36 @@ func (s *echoHttpServer) GracefulShutdown(ctx context.Context) error {
 }
 
 func (s *echoHttpServer) SetupDefaultMiddlewares() {
+	// handling internal echo middlewares logs with our log provider
+	if s.log.LogType() == logger.Zap {
+		s.log.Configure(func(internalLog interface{}) {
+			//https://github.com/brpaz/echozap
+			s.echo.Use(echozap.ZapLogger(internalLog.(*zap.Logger)))
+		})
+	} else if s.log.LogType() == logger.Logrus {
+		s.log.Configure(func(internalLog interface{}) {
+
+		})
+	}
 
 	s.echo.HideBanner = false
 	s.echo.HTTPErrorHandler = customHadnlers.ProblemHandler
+	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogContentLength: true,
+		LogLatency:       true,
+		LogError:         false,
+		LogMethod:        true,
+		LogRequestID:     true,
+		LogURI:           true,
+		LogResponseSize:  true,
+		LogURIPath:       true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			s.log.Infow(fmt.Sprintf("[Request Middleware] REQUEST: uri: %v, status: %v\n", v.URI, v.Status), logger.Fields{"URI": v.URI, "Status": v.Status})
+			return nil
+		},
+	}))
 
+	s.echo.Use(middleware.BodyLimit(constants.BodyLimit))
 	s.echo.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize:         constants.StackSize,
 		DisablePrintStack: true,
@@ -81,8 +109,6 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 			return strings.Contains(c.Request().URL.Path, "swagger")
 		},
 	}))
-
-	s.echo.Use(middleware.BodyLimit(constants.BodyLimit))
 }
 
 func (s *echoHttpServer) ApplyVersioningFromHeader() {

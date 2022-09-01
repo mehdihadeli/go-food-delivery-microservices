@@ -9,6 +9,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web"
+	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -30,12 +31,12 @@ func (c *ordersServiceConfigurator) ConfigureOrdersService(ctx context.Context) 
 	pc := configurations.NewOrdersModuleConfigurator(c.InfrastructureConfiguration)
 	err := pc.ConfigureOrdersModule(ctx)
 	if err != nil {
-		return err
+		return errors.WithMessage(err, "[OrdersServiceConfigurator_ConfigureOrdersService.ConfigureOrdersModule] error in order module configurator")
 	}
 
 	err = c.migrateOrders()
 	if err != nil {
-		return err
+		return errors.WithMessage(err, "[OrdersServiceConfigurator_ConfigureOrdersService.migrateOrders] error in the orders migration")
 	}
 
 	c.ehcoServer.GetEchoInstance().GET("", func(ec echo.Context) error {

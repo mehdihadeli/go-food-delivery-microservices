@@ -8,9 +8,9 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,56 +18,57 @@ import (
 )
 
 type Server struct {
-	Log          logger.Logger
-	Cfg          *config.Config
-	EchoServer   customEcho.EchoHttpServer
-	doneCh       chan struct{}
-	GrpcServer   grpcServer.GrpcServer
-	HealthServer *http.Server
+	log    logger.Logger
+	cfg    *config.Config
+	doneCh chan struct{}
 }
 
 func NewServer(log logger.Logger, cfg *config.Config) *Server {
-	g := grpcServer.NewGrpcServer(cfg.GRPC, log)
-	h := customEcho.NewEchoHttpServer(cfg.Http, log)
-	return &Server{Log: log, Cfg: cfg, EchoServer: h, GrpcServer: g, HealthServer: NewHealthCheckServer(cfg)}
+	return &Server{log: log, cfg: cfg}
 }
 
 func (s *Server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	catalogsConfigurator := catalogs.NewCatalogsServiceConfigurator(s.Log, s.Cfg, s.EchoServer, s.GrpcServer)
-	err, catalogsCleanup := catalogsConfigurator.ConfigureCatalogsService(ctx)
+	grpcServer := grpcServer.NewGrpcServer(s.cfg.GRPC, s.log)
+	echoServer := customEcho.NewEchoHttpServer(s.cfg.Http, s.log)
+
+	ic := infrastructure.NewInfrastructureConfigurator(s.log, s.cfg, echoServer, grpcServer)
+	infrastructureConfigurations, err, infraCleanup := ic.ConfigInfrastructures(ctx)
 	if err != nil {
 		return err
 	}
-	defer catalogsCleanup()
+	defer infraCleanup()
 
-	deliveryType := s.Cfg.DeliveryType
+	catalogsConfigurator := catalogs.NewCatalogsServiceConfigurator(infrastructureConfigurations, echoServer, grpcServer)
+	err = catalogsConfigurator.ConfigureCatalogsService(ctx)
+	if err != nil {
+		return err
+	}
+
+	deliveryType := s.cfg.DeliveryType
 
 	s.RunMetrics(cancel)
-
-	healthCleanup := s.RunHealthCheck(ctx)
-	defer healthCleanup()
 
 	switch deliveryType {
 	case "http":
 		go func() {
-			if err := s.EchoServer.RunHttpServer(nil); err != nil {
-				s.Log.Errorf("(s.RunHttpServer) err: {%v}", err)
+			if err := echoServer.RunHttpServer(nil); err != nil {
+				s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
 				cancel()
 			}
 		}()
-		s.Log.Infof("%s is listening on Http PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.Http.Port)
+		s.log.Infof("%s is listening on Http PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.Http.Port)
 
 	case "grpc":
 		go func() {
-			if err := s.GrpcServer.RunGrpcServer(nil); err != nil {
-				s.Log.Errorf("(s.RunGrpcServer) err: {%v}", err)
+			if err := grpcServer.RunGrpcServer(nil); err != nil {
+				s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
 				cancel()
 			}
 		}()
-		s.Log.Infof("%s is listening on Grpc PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.GRPC.Port)
+		s.log.Infof("%s is listening on Grpc PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.GRPC.Port)
 	default:
 		panic(fmt.Sprintf("server type %s is not supported", deliveryType))
 	}
@@ -77,17 +78,17 @@ func (s *Server) Run() error {
 
 	switch deliveryType {
 	case "http":
-		s.Log.Infof("%s is shutting down Http PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.Http.Port)
-		if err := s.EchoServer.GracefulShutdown(ctx); err != nil {
-			s.Log.Warnf("(Shutdown) err: {%v}", err)
+		s.log.Infof("%s is shutting down Http PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.Http.Port)
+		if err := echoServer.GracefulShutdown(ctx); err != nil {
+			s.log.Warnf("(Shutdown) err: {%v}", err)
 		}
 	case "grpc":
-		s.Log.Infof("%s is shutting down Grpc PORT: {%s}", web.GetMicroserviceName(s.Cfg), s.Cfg.GRPC.Port)
-		s.GrpcServer.GracefulShutdown()
+		s.log.Infof("%s is shutting down Grpc PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.GRPC.Port)
+		grpcServer.GracefulShutdown()
 	}
 
 	<-s.doneCh
-	s.Log.Infof("%s server exited properly", web.GetMicroserviceName(s.Cfg))
+	s.log.Infof("%s server exited properly", web.GetMicroserviceName(s.cfg))
 
 	return nil
 }

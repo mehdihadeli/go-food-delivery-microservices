@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -14,4 +15,8 @@ type Product struct {
 	Price       float64   `json:"price"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+func (p *Product) String() string {
+	return jsonSerializer.PrettyPrint(p)
 }

@@ -33,8 +33,7 @@
   },
   "logger": {
     "level": "debug",
-    "devMode": false,
-    "encoder": "json"
+    "logType": 0
   },
   "kafka": {
     "brokers": [

@@ -15,7 +15,7 @@ func Test_Deserialize_Unstructured_Data_Into_Empty_Interface(t *testing.T) {
 	//https://www.sohamkamani.com/golang/json/#decoding-json-to-maps---unstructured-data
 	//https://developpaper.com/mapstructure-of-go/
 	//https://pkg.go.dev/encoding/json#Unmarshal
-	// when we assign an object type to interface is not pointer object or we don't assign interface, default unmarshaler can't deserialize it to the object type and serialize it to map[string]interface{}
+	// when we assign an object type to interface is not pointer object or we don't assign interface, defaultLogger unmarshaler can't deserialize it to the object type and serialize it to map[string]interface{}
 
 	//To unmarshal JSON into an interface value, Unmarshal stores map[string]interface{}
 	var jsonMap interface{}
@@ -46,7 +46,7 @@ func Test_Deserialize_Unstructured_Data_Into_Map(t *testing.T) {
 	//https://www.sohamkamani.com/golang/json/#decoding-json-to-maps---unstructured-data
 	//https://developpaper.com/mapstructure-of-go/
 	//https://pkg.go.dev/encoding/json#Unmarshal
-	// when we assign an object type to interface is not pointer object or we don't assign interface, default unmarshaler can't deserialize it to the object type and serialize it to map[string]interface{}
+	// when we assign an object type to interface is not pointer object or we don't assign interface, defaultLogger unmarshaler can't deserialize it to the object type and serialize it to map[string]interface{}
 
 	//To unmarshal a JSON object into a map, Unmarshal first establishes a map to use. If the map is nil, Unmarshal allocates a new map. Otherwise Unmarshal reuses the existing map, keeping existing entries. Unmarshal then stores key-value pairs from the JSON object into the map.
 	var jsonMap map[string]interface{}
@@ -75,7 +75,7 @@ func Test_Deserialize_Unstructured_Data_Into_Map(t *testing.T) {
 
 func Test_Deserialize_Structured_Data_Struct(t *testing.T) {
 	//https://pkg.go.dev/encoding/json#Unmarshal
-	//when we assign object to explicit struct type, default unmarshaler can deserialize it to the struct
+	//when we assign object to explicit struct type, defaultLogger unmarshaler can deserialize it to the struct
 
 	// To unmarshal JSON into a struct, Unmarshal matches incoming object keys to the keys used by Marshal (either the struct field name or its tag), preferring an exact match but also accepting a case-insensitive match.
 	var jsonMap person = person{}
@@ -105,7 +105,7 @@ func Test_Deserialize_Structured_Data_Struct(t *testing.T) {
 
 func Test_Deserialize_Structured_Data_Struct2(t *testing.T) {
 	//https://pkg.go.dev/encoding/json#Unmarshal
-	//when we assign object to explicit struct type, default unmarshaler can deserialize it to the struct
+	//when we assign object to explicit struct type, defaultLogger unmarshaler can deserialize it to the struct
 
 	// To unmarshal JSON into a struct, Unmarshal matches incoming object keys to the keys used by Marshal (either the struct field name or its tag), preferring an exact match but also accepting a case-insensitive match.
 	var jsonMap interface{} = &person{}
@@ -128,7 +128,7 @@ func Test_Deserialize_Structured_Data_Struct2(t *testing.T) {
 
 func Test_Deserialize_Structured_Data_Pointer(t *testing.T) {
 	//https://pkg.go.dev/encoding/json#Unmarshal
-	//when we assign object to explicit struct type, default unmarshaler can deserialize it to the struct
+	//when we assign object to explicit struct type, defaultLogger unmarshaler can deserialize it to the struct
 
 	// To unmarshal JSON into a pointer, Unmarshal first handles the case of the JSON being the JSON literal null. In that case, Unmarshal sets the pointer to nil. Otherwise, Unmarshal unmarshals the JSON into the value pointed at by the pointer. If the pointer is nil, Unmarshal allocates a new value for it to point to.To unmarshal JSON into a struct, Unmarshal matches incoming object keys to the keys used by Marshal (either the struct field name or its tag), preferring an exact match but also accepting a case-insensitive match.
 	var jsonMap *person = &person{}

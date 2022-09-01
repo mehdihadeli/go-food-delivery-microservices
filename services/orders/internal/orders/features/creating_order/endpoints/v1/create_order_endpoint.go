@@ -42,14 +42,12 @@ func (ep *createOrderEndpoint) createOrder() echo.HandlerFunc {
 
 		request := &dtos.CreateOrderRequestDto{}
 		if err := c.Bind(request); err != nil {
-			ep.Log.WarnMsg("Bind", err)
-			tracing.TraceErr(span, err)
+			ep.Log.Errorf("(Bind) err: %v", tracing.TraceWithErr(span, err))
 			return err
 		}
 
 		if err := ep.Validator.StructCtx(ctx, request); err != nil {
-			ep.Log.Errorf("(validate) err: {%v}", err)
-			tracing.TraceErr(span, err)
+			ep.Log.Errorf("(validate) err: %v", tracing.TraceWithErr(span, err))
 			return httpErrors.NewValidationError(err.(validator.ValidationErrors))
 		}
 
@@ -57,8 +55,7 @@ func (ep *createOrderEndpoint) createOrder() echo.HandlerFunc {
 		result, err := mediatr.Send[*creatingOrderv1.CreateOrderCommand, *dtos.CreateOrderResponseDto](ctx, command)
 
 		if err != nil {
-			ep.Log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", command.OrderID, err)
-			tracing.TraceErr(span, err)
+			ep.Log.Errorf("(CreateOrder.Handle) id: %s, err: %v", command.OrderID, tracing.TraceWithErr(span, err))
 			return err
 		}
 

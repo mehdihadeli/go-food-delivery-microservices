@@ -1,44 +1,39 @@
 package customHadnlers
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
-	"net/http"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
+	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/problemDetails"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 )
-import "schneider.vip/problem"
 
 func ProblemHandler(err error, c echo.Context) {
-	if prb, ok := err.(problem.Problem); ok {
-		if !c.Response().Committed {
-			if _, err := prb.WriteTo(c.Response()); err != nil {
-				c.Logger().Error(err)
-			}
-		}
-	}
-	if problemDetail, ok := err.(httpErrors.ProblemDetailErr); ok {
-		if !c.Response().Committed {
+	prb := problemDetails.ParseError(err)
 
-			prb := problem.Of(problemDetail.GetStatus()).Append(problem.Detail(problemDetail.GetDetailError())).Append(problem.Title(problemDetail.GetTitle()))
-			if _, err := prb.WriteTo(c.Response()); err != nil {
-				c.Logger().Error(err)
-			}
-		}
-	} else if echoErr, ok := err.(*echo.HTTPError); ok {
+	if prb != nil {
 		if !c.Response().Committed {
-			prb := problem.Of(echoErr.Code).Append(problem.Detail(echoErr.Message.(string)))
 			if _, err := prb.WriteTo(c.Response()); err != nil {
-				c.Logger().Error(err)
+				defaultLogger.Logger.Error(err)
+			}
+			defaultLogger.Logger.Error(prb.Error())
+			if core.IsDevelopment() {
+				stackTrace := prb.GetStackTrace()
+				fmt.Println(stackTrace)
 			}
 		}
 	} else {
 		if !c.Response().Committed {
-			prb := problem.Of(http.StatusInternalServerError).Append(problem.Detail(err.Error()))
+			prb := problemDetails.NewInternalServerProblemDetail(err.Error(), httpErrors.ErrorsWithStack(err))
 			if _, err := prb.WriteTo(c.Response()); err != nil {
-				c.Logger().Error(err)
+				defaultLogger.Logger.Error(err)
 			}
-
-			// or
-			//c.JSON(c.Response().Status, err)
+			defaultLogger.Logger.Error(prb.Error())
+			if core.IsDevelopment() {
+				stackTrace := prb.GetStackTrace()
+				fmt.Println(stackTrace)
+			}
 		}
 	}
 }

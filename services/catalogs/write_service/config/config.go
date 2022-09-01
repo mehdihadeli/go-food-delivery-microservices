@@ -12,7 +12,7 @@ import (
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -29,13 +29,13 @@ func init() {
 type Config struct {
 	DeliveryType     string                         `mapstructure:"deliveryType" env:"DeliveryType"`
 	ServiceName      string                         `mapstructure:"serviceName" env:"ServiceName"`
-	Logger           *logger.Config                 `mapstructure:"logger" envPrefix:"Logger_"`
+	Logger           *logger.LogConfig              `mapstructure:"logger" envPrefix:"Logger_"`
 	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics" envPrefix:"KafkaTopics_"`
 	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
 	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
 	Context          Context                        `mapstructure:"context" envPrefix:"Context_"`
 	Postgresql       *postgres.Config               `mapstructure:"postgres" envPrefix:"Postgresql_"`
-	GormPostgres     *gorm_postgres.Config          `mapstructure:"gormPostgres" envPrefix:"GormPostgres_"`
+	GormPostgres     *gormPostgres.Config           `mapstructure:"gormPostgres" envPrefix:"GormPostgres_"`
 	Kafka            *kafkaClient.Config            `mapstructure:"kafka" envPrefix:"Kafka_"`
 	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
 	Jaeger           *tracing.Config                `mapstructure:"jaeger" envPrefix:"Jaeger_"`

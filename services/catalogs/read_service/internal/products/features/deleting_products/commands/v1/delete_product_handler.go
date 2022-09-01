@@ -31,7 +31,10 @@ func (c *DeleteProductCommandHandler) Handle(ctx context.Context, command *Delet
 
 	c.log.Infof("(product deleted) id: {%s}", command.ProductID)
 
-	c.redisRepository.DelProduct(ctx, command.ProductID.String())
+	err := c.redisRepository.DeleteProduct(ctx, command.ProductID.String())
+	if err != nil {
+		return nil, err
+	}
 
 	return &mediatr.Unit{}, nil
 }

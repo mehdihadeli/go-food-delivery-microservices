@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	"math"
 	"strconv"
 
@@ -29,6 +30,10 @@ func NewListResult[T any](items []T, size int, page int, totalItems int64) *List
 	listResult.TotalPage = getTotalPages(totalItems, size)
 
 	return listResult
+}
+
+func (p *ListResult[T]) String() string {
+	return jsonSerializer.PrettyPrint(p)
 }
 
 // GetTotalPages Get total pages int

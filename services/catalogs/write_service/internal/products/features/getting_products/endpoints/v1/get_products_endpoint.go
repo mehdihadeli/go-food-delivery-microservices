@@ -42,7 +42,6 @@ func (ep *getProductsEndpoint) getAllProducts() echo.HandlerFunc {
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 		if err != nil {
-			utils.LogResponseError(c, ep.Log, err)
 			return err
 		}
 

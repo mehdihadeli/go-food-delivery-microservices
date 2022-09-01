@@ -4,6 +4,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
+	domainExceptions "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/exceptions/domain"
 	uuid "github.com/satori/go.uuid"
 	"time"
 )
@@ -19,25 +20,25 @@ type OrderCreatedEventV1 struct {
 }
 
 func NewOrderCreatedEventV1(aggregateId uuid.UUID, shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedEventV1, error) {
-	//if shopItems == nil {
-	//	return nil, domainExceptions.ErrOrderShopItemsIsRequired
-	//}
-	//
-	//if deliveryAddress == "" {
-	//	return nil, domainExceptions.ErrInvalidDeliveryAddress
-	//}
-	//
-	//if accountEmail == "" {
-	//	return nil, domainExceptions.ErrInvalidAccountEmail
-	//}
-	//
-	//if createdAt.IsZero() {
-	//	return nil, domainExceptions.ErrInvalidTime
-	//}
-	//
-	//if deliveredTime.IsZero() {
-	//	return nil, domainExceptions.ErrInvalidTime
-	//}
+	if shopItems == nil || len(shopItems) == 0 {
+		return nil, domainExceptions.ErrOrderShopItemsIsRequired
+	}
+
+	if deliveryAddress == "" {
+		return nil, domainExceptions.ErrInvalidDeliveryAddress
+	}
+
+	if accountEmail == "" {
+		return nil, domainExceptions.ErrInvalidAccountEmail
+	}
+
+	if createdAt.IsZero() {
+		return nil, domainExceptions.ErrInvalidTime
+	}
+
+	if deliveredTime.IsZero() {
+		return nil, domainExceptions.ErrInvalidTime
+	}
 
 	eventData := &OrderCreatedEventV1{
 		ShopItems:       shopItems,

@@ -141,9 +141,9 @@
 
   <meta name="browser-stats-url" content="https://api.github.com/_private/browser/stats">
 
-  <meta name="browser-errors-url" content="https://api.github.com/_private/browser/errors">
+  <meta name="browser-http_errors-url" content="https://api.github.com/_private/browser/http_errors">
 
-  <meta name="browser-optimizely-client-errors-url" content="https://api.github.com/_private/browser/optimizely_client/errors">
+  <meta name="browser-optimizely-client-http_errors-url" content="https://api.github.com/_private/browser/optimizely_client/http_errors">
 
   <link rel="mask-icon" href="https://github.githubassets.com/pinned-octocat.svg" color="#000000">
   <link rel="alternate icon" class="js-site-favicon" type="image/png" href="https://github.githubassets.com/favicons/favicon.png">
@@ -257,7 +257,7 @@
     </div>
 
     <div class="border rounded-2 flex-shrink-0 color-bg-subtle px-1 color-fg-muted ml-1 f6 d-none js-jump-to-badge-search">
-      <span class="js-jump-to-badge-search-text-default d-none" aria-label="in this repository">
+      <span class="js-jump-to-badge-search-text-defaultLogger d-none" aria-label="in this repository">
         In this repository
       </span>
       <span class="js-jump-to-badge-search-text-global d-none" aria-label="in all of GitHub">
@@ -304,7 +304,7 @@
     </div>
 
     <div class="border rounded-2 flex-shrink-0 color-bg-subtle px-1 color-fg-muted ml-1 f6 d-none js-jump-to-badge-search">
-      <span class="js-jump-to-badge-search-text-default d-none" aria-label="in this repository">
+      <span class="js-jump-to-badge-search-text-defaultLogger d-none" aria-label="in this repository">
         In this repository
       </span>
       <span class="js-jump-to-badge-search-text-global d-none" aria-label="in all of GitHub">
@@ -342,7 +342,7 @@
     </div>
 
     <div class="border rounded-2 flex-shrink-0 color-bg-subtle px-1 color-fg-muted ml-1 f6 d-none js-jump-to-badge-search">
-      <span class="js-jump-to-badge-search-text-default d-none" aria-label="in this user">
+      <span class="js-jump-to-badge-search-text-defaultLogger d-none" aria-label="in this user">
         In this user
       </span>
       <span class="js-jump-to-badge-search-text-global d-none" aria-label="in all of GitHub">
@@ -380,7 +380,7 @@
     </div>
 
     <div class="border rounded-2 flex-shrink-0 color-bg-subtle px-1 color-fg-muted ml-1 f6 d-none js-jump-to-badge-search">
-      <span class="js-jump-to-badge-search-text-default d-none" aria-label="in this repository">
+      <span class="js-jump-to-badge-search-text-defaultLogger d-none" aria-label="in this repository">
         In this repository
       </span>
       <span class="js-jump-to-badge-search-text-global d-none" aria-label="in all of GitHub">
@@ -563,7 +563,7 @@
   <path d="M15 8a7.002 7.002 0 00-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke" />
 </svg>
         </p>
-        <p class="ml-1 mb-2 mt-2 color-fg-default" data-show-on-error>
+        <p class="ml-1 mb-2 mt-2 color-fg-defaultLogger" data-show-on-error>
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-alert">
     <path fill-rule="evenodd" d="M8.22 1.754a.25.25 0 00-.44 0L1.698 13.132a.25.25 0 00.22.368h12.164a.25.25 0 00.22-.368L8.22 1.754zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0114.082 15H1.918a1.75 1.75 0 01-1.543-2.575L6.457 1.047zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-5.25a.75.75 0 00-1.5 0v2.5a.75.75 0 001.5 0v-2.5z"></path>
 </svg>
@@ -624,7 +624,7 @@
   </summary>
   <details-dialog class="command-palette-details-dialog d-flex flex-column flex-justify-center height-fit" aria-label="command palette">
     <command-palette
-      class="command-palette color-bg-default rounded-3 border color-shadow-small"
+      class="command-palette color-bg-defaultLogger rounded-3 border color-shadow-small"
       data-return-to=/batazor/microservice-template-ddd/blob/main/ops/docker-compose/infrastructure/traefik.yaml
       data-user-id="3678399"
       data-activation-hotkey="Mod+k,Mod+Alt+k"
@@ -686,7 +686,7 @@
             data-placeholder="Search or jump to..."
         ></command-palette-mode>
       <command-palette-mode
-        class="js-command-palette-default-mode"
+        class="js-command-palette-defaultLogger-mode"
         data-char=""
         data-placeholder="Search or jump to..."
       ></command-palette-mode>
@@ -726,14 +726,14 @@
           </svg>
         </div>
         <command-palette-scope >
-          <div data-target="command-palette-scope.placeholder" hidden class="color-fg-subtle">/&nbsp;&nbsp;<span class="text-semibold color-fg-default">...</span>&nbsp;&nbsp;/&nbsp;&nbsp;</div>
+          <div data-target="command-palette-scope.placeholder" hidden class="color-fg-subtle">/&nbsp;&nbsp;<span class="text-semibold color-fg-defaultLogger">...</span>&nbsp;&nbsp;/&nbsp;&nbsp;</div>
               <command-palette-token
                 data-text="batazor"
                 data-id="MDQ6VXNlcjE2NDM3OTc="
                 data-type="owner"
                 data-value="batazor"
                 data-targets="command-palette-scope.tokens"
-                class="color-fg-default text-semibold"
+                class="color-fg-defaultLogger text-semibold"
                 style="white-space:nowrap;line-height:20px;"
                 >batazor<span class="color-fg-subtle text-normal">&nbsp;&nbsp;/&nbsp;&nbsp;</span></command-palette-token>
               <command-palette-token
@@ -742,7 +742,7 @@
                 data-type="repository"
                 data-value="microservice-template-ddd"
                 data-targets="command-palette-scope.tokens"
-                class="color-fg-default text-semibold"
+                class="color-fg-defaultLogger text-semibold"
                 style="white-space:nowrap;line-height:20px;"
                 >microservice-temp...<span class="color-fg-subtle text-normal">&nbsp;&nbsp;/&nbsp;&nbsp;</span></command-palette-token>
         </command-palette-scope>
@@ -784,8 +784,8 @@
       </command-palette-input>
 
       <command-palette-page-stack
-        data-default-scope-id="MDEwOlJlcG9zaXRvcnkzMTI1MzQ2Mzc="
-        data-default-scope-type="Repository"
+        data-defaultLogger-scope-id="MDEwOlJlcG9zaXRvcnkzMTI1MzQ2Mzc="
+        data-defaultLogger-scope-type="Repository"
         data-action="command-palette-page-octicons-cached:command-palette-page-stack#cacheOcticons"
       >
           <command-palette-tip
@@ -993,7 +993,7 @@
             We’ve encountered an error and some results aren't available at this time. Type a new search or try again later.
           </div>
         </command-palette-tip>
-        <command-palette-tip class="h4 color-fg-default pl-3 pb-2 pt-3" data-on-empty data-scope-types="*" data-match-mode="[^?]|^$">
+        <command-palette-tip class="h4 color-fg-defaultLogger pl-3 pb-2 pt-3" data-on-empty data-scope-types="*" data-match-mode="[^?]|^$">
           No results matched your search
         </command-palette-tip>
 
@@ -1002,8 +1002,8 @@
             <div data-targets="command-palette-page-stack.localOcticons" data-octicon-id="arrow-right-color-fg-muted">
               <svg height="16" class="octicon octicon-arrow-right color-fg-muted" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.22 2.97a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06l2.97-2.97H3.75a.75.75 0 010-1.5h7.44L8.22 4.03a.75.75 0 010-1.06z"></path></svg>
             </div>
-            <div data-targets="command-palette-page-stack.localOcticons" data-octicon-id="arrow-right-color-fg-default">
-              <svg height="16" class="octicon octicon-arrow-right color-fg-default" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.22 2.97a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06l2.97-2.97H3.75a.75.75 0 010-1.5h7.44L8.22 4.03a.75.75 0 010-1.06z"></path></svg>
+            <div data-targets="command-palette-page-stack.localOcticons" data-octicon-id="arrow-right-color-fg-defaultLogger">
+              <svg height="16" class="octicon octicon-arrow-right color-fg-defaultLogger" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill-rule="evenodd" d="M8.22 2.97a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06l2.97-2.97H3.75a.75.75 0 010-1.5h7.44L8.22 4.03a.75.75 0 010-1.06z"></path></svg>
             </div>
             <div data-targets="command-palette-page-stack.localOcticons" data-octicon-id="codespaces-color-fg-muted">
               <svg height="16" class="octicon octicon-codespaces color-fg-muted" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill-rule="evenodd" d="M2 1.75C2 .784 2.784 0 3.75 0h8.5C13.216 0 14 .784 14 1.75v5a1.75 1.75 0 01-1.75 1.75h-8.5A1.75 1.75 0 012 6.75v-5zm1.75-.25a.25.25 0 00-.25.25v5c0 .138.112.25.25.25h8.5a.25.25 0 00.25-.25v-5a.25.25 0 00-.25-.25h-8.5zM0 11.25c0-.966.784-1.75 1.75-1.75h12.5c.966 0 1.75.784 1.75 1.75v3A1.75 1.75 0 0114.25 16H1.75A1.75 1.75 0 010 14.25v-3zM1.75 11a.25.25 0 00-.25.25v3c0 .138.112.25.25.25h12.5a.25.25 0 00.25-.25v-3a.25.25 0 00-.25-.25H1.75z"></path><path fill-rule="evenodd" d="M3 12.75a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5a.75.75 0 01-.75-.75zm4 0a.75.75 0 01.75-.75h4.5a.75.75 0 010 1.5h-4.5a.75.75 0 01-.75-.75z"></path></svg>
@@ -1071,7 +1071,7 @@
               data-group-title="Top result"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="0"
+              data-defaultLogger-priority="0"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1079,7 +1079,7 @@
               data-group-title="Commands"
               data-group-hint="Type &gt; to filter"
               data-group-limits="{&quot;static_items_page&quot;:50,&quot;issue&quot;:50,&quot;pull_request&quot;:50,&quot;discussion&quot;:50}"
-              data-default-priority="1"
+              data-defaultLogger-priority="1"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1087,7 +1087,7 @@
               data-group-title="Global Commands"
               data-group-hint="Type &gt; to filter"
               data-group-limits="{&quot;issue&quot;:0,&quot;pull_request&quot;:0,&quot;discussion&quot;:0}"
-              data-default-priority="2"
+              data-defaultLogger-priority="2"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1095,7 +1095,7 @@
               data-group-title="This Page"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="3"
+              data-defaultLogger-priority="3"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1103,15 +1103,15 @@
               data-group-title="Files"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="4"
+              data-defaultLogger-priority="4"
             >
             </command-palette-item-group>
             <command-palette-item-group
-              data-group-id="default"
+              data-group-id="defaultLogger"
               data-group-title="Default"
               data-group-hint=""
               data-group-limits="{&quot;static_items_page&quot;:50}"
-              data-default-priority="5"
+              data-defaultLogger-priority="5"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1119,7 +1119,7 @@
               data-group-title="Pages"
               data-group-hint=""
               data-group-limits="{&quot;repository&quot;:10}"
-              data-default-priority="6"
+              data-defaultLogger-priority="6"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1127,7 +1127,7 @@
               data-group-title="Access Policies"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="7"
+              data-defaultLogger-priority="7"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1135,7 +1135,7 @@
               data-group-title="Organizations"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="8"
+              data-defaultLogger-priority="8"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1143,7 +1143,7 @@
               data-group-title="Repositories"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="9"
+              data-defaultLogger-priority="9"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1151,7 +1151,7 @@
               data-group-title="Issues, pull requests, and discussions"
               data-group-hint="Type # to filter"
               data-group-limits="{}"
-              data-default-priority="10"
+              data-defaultLogger-priority="10"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1159,7 +1159,7 @@
               data-group-title="Teams"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="11"
+              data-defaultLogger-priority="11"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1167,7 +1167,7 @@
               data-group-title="Users"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="12"
+              data-defaultLogger-priority="12"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1175,7 +1175,7 @@
               data-group-title="Projects"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="13"
+              data-defaultLogger-priority="13"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1183,7 +1183,7 @@
               data-group-title="Footer"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="14"
+              data-defaultLogger-priority="14"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1191,7 +1191,7 @@
               data-group-title="Modes"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="15"
+              data-defaultLogger-priority="15"
             >
             </command-palette-item-group>
             <command-palette-item-group
@@ -1199,7 +1199,7 @@
               data-group-title="Use filters in issues, pull requests, discussions, and projects"
               data-group-hint=""
               data-group-limits="{}"
-              data-default-priority="16"
+              data-defaultLogger-priority="16"
             >
             </command-palette-item-group>
 
@@ -1763,7 +1763,7 @@
               <header class="d-sm-none SelectMenu-header pb-0 border-bottom-0 px-2 px-sm-3">
                 <h1 class="f3 SelectMenu-title d-inline-flex">
                   <button
-                    class="color-bg-default border-0 px-2 py-0 m-0 Link--secondary f5"
+                    class="color-bg-defaultLogger border-0 px-2 py-0 m-0 Link--secondary f5"
                     aria-label="Return to menu"
                     type="button"
                     data-action="click:notifications-list-subscription-form#closeCustomDialog"
@@ -2280,7 +2280,7 @@
             
             cache-key="v0:1657832596.777735"
             current-committish="bWFpbg=="
-            default-branch="bWFpbg=="
+            defaultLogger-branch="bWFpbg=="
             name-with-owner="YmF0YXpvci9taWNyb3NlcnZpY2UtdGVtcGxhdGUtZGRk"
             prefetch-on-mouseover
           >
@@ -2309,7 +2309,7 @@
     <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
 </svg>
     <span class="flex-1 css-truncate css-truncate-overflow {{ isFilteringClass }}">{{ refName }}</span>
-    <span hidden="{{ isNotDefault }}" class="Label Label--secondary flex-self-start">default</span>
+    <span hidden="{{ isNotDefault }}" class="Label Label--secondary flex-self-start">defaultLogger</span>
   </a>
 </template>
 
@@ -2331,7 +2331,7 @@
             query-endpoint="/batazor/microservice-template-ddd/refs"
             cache-key="v0:1657832596.777735"
             current-committish="bWFpbg=="
-            default-branch="bWFpbg=="
+            defaultLogger-branch="bWFpbg=="
             name-with-owner="YmF0YXpvci9taWNyb3NlcnZpY2UtdGVtcGxhdGUtZGRk"
           >
 
@@ -2349,7 +2349,7 @@
     <path fill-rule="evenodd" d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
 </svg>
     <span class="flex-1 css-truncate css-truncate-overflow {{ isFilteringClass }}">{{ refName }}</span>
-    <span hidden="{{ isNotDefault }}" class="Label Label--secondary flex-self-start">default</span>
+    <span hidden="{{ isNotDefault }}" class="Label Label--secondary flex-self-start">defaultLogger</span>
   </a>
 </template>
 
@@ -2480,7 +2480,7 @@
   </div>
 
   <div class="Box-body d-flex flex-items-center flex-auto border-bottom-0 flex-wrap" >
-    <details class="details-reset details-overlay details-overlay-dark lh-default color-fg-default float-left mr-3" id="blob_contributors_box">
+    <details class="details-reset details-overlay details-overlay-dark lh-defaultLogger color-fg-defaultLogger float-left mr-3" id="blob_contributors_box">
       <summary class="Link--primary">
         <svg text="gray" aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-people">
     <path fill-rule="evenodd" d="M5.5 3.5a2 2 0 100 4 2 2 0 000-4zM2 5.5a3.5 3.5 0 115.898 2.549 5.507 5.507 0 013.034 4.084.75.75 0 11-1.482.235 4.001 4.001 0 00-7.9 0 .75.75 0 01-1.482-.236A5.507 5.507 0 013.102 8.05 3.49 3.49 0 012 5.5zM11 4a.75.75 0 100 1.5 1.5 1.5 0 01.666 2.844.75.75 0 00-.416.672v.352a.75.75 0 00.574.73c1.2.289 2.162 1.2 2.522 2.372a.75.75 0 101.434-.44 5.01 5.01 0 00-2.56-3.012A3 3 0 0011 4z"></path>
@@ -2567,15 +2567,15 @@
       <div class="SelectMenu-modal width-full">
         <div class="SelectMenu-list SelectMenu-list--borderless py-2">
           <form class="SelectMenu-item js-update-url-with-hash " data-turbo="false" action="/batazor/microservice-template-ddd/edit/main/ops/docker-compose/infrastructure/traefik.yaml" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="2zCROiGJzLEnvpP6VkcKKFSlHXiJiUnamfiy2y-9LYMGv7n_Hk6bBrGt3nBMjDpBmd2wKOiVY1WV7ehVTYX5sg" autocomplete="off" />
-            <button title="Fork this project and edit the file" data-test-selector="edit-text-button" type="submit" data-view-component="true" class="btn-invisible btn width-full d-flex flex-justify-between color-fg-default text-normal p-0">  <div>Edit this file</div>
+            <button title="Fork this project and edit the file" data-test-selector="edit-text-button" type="submit" data-view-component="true" class="btn-invisible btn width-full d-flex flex-justify-between color-fg-defaultLogger text-normal p-0">  <div>Edit this file</div>
               <div class="color-fg-muted">E</div>
   
 </button></form>
-            <a aria-label="Open this file in github.dev" data-test-selector="github-dev-link" data-dropdown-tracking="{&quot;type&quot;:&quot;blob_edit_dropdown.dev_link_click&quot;,&quot;context&quot;:{&quot;repository_id&quot;:312534637,&quot;actor_id&quot;:3678399,&quot;edit_enabled&quot;:true,&quot;small_screen&quot;:false}}" href="https://github.dev/" data-view-component="true" class="SelectMenu-item js-github-dev-shortcut js-blob-dropdown-click width-full d-flex flex-justify-between color-fg-default f5 text-normal">
+            <a aria-label="Open this file in github.dev" data-test-selector="github-dev-link" data-dropdown-tracking="{&quot;type&quot;:&quot;blob_edit_dropdown.dev_link_click&quot;,&quot;context&quot;:{&quot;repository_id&quot;:312534637,&quot;actor_id&quot;:3678399,&quot;edit_enabled&quot;:true,&quot;small_screen&quot;:false}}" href="https://github.dev/" data-view-component="true" class="SelectMenu-item js-github-dev-shortcut js-blob-dropdown-click width-full d-flex flex-justify-between color-fg-defaultLogger f5 text-normal">
               <div>Open in github.dev</div>
               <div class="color-fg-muted">.</div>
 </a>
-            <a data-platforms="windows,mac" data-test-selector="github-desktop-link" aria-label="Open this file in GitHub Desktop" href="x-github-client://openRepo/https://github.com/batazor/microservice-template-ddd?branch=main&amp;filepath=ops%2Fdocker-compose%2Finfrastructure%2Ftraefik.yaml" data-view-component="true" class="SelectMenu-item no-wrap js-remove-unless-platform width-full text-normal color-fg-default f5">
+            <a data-platforms="windows,mac" data-test-selector="github-desktop-link" aria-label="Open this file in GitHub Desktop" href="x-github-client://openRepo/https://github.com/batazor/microservice-template-ddd?branch=main&amp;filepath=ops%2Fdocker-compose%2Finfrastructure%2Ftraefik.yaml" data-view-component="true" class="SelectMenu-item no-wrap js-remove-unless-platform width-full text-normal color-fg-defaultLogger f5">
               Open in GitHub Desktop
 </a>        </div>
       </div>
@@ -2774,7 +2774,7 @@
 </div>
 
   <details class="details-reset details-overlay BlobToolbar position-absolute js-file-line-actions dropdown d-none" aria-hidden="true">
-    <summary class="btn-octicon ml-0 px-2 p-0 color-bg-default border color-border-default rounded-2" aria-label="Inline file action toolbar">
+    <summary class="btn-octicon ml-0 px-2 p-0 color-bg-defaultLogger border color-border-defaultLogger rounded-2" aria-label="Inline file action toolbar">
       <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-kebab-horizontal">
     <path d="M8 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM1.5 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm13 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"></path>
 </svg>
@@ -2898,7 +2898,7 @@
     <span class="js-stale-session-flash-signed-out" hidden>You signed out in another tab or window. <a href="">Reload</a> to refresh your session.</span>
   </div>
     <template id="site-details-dialog">
-  <details class="details-reset details-overlay details-overlay-dark lh-default color-fg-default hx_rsm" open>
+  <details class="details-reset details-overlay details-overlay-dark lh-defaultLogger color-fg-defaultLogger hx_rsm" open>
     <summary role="button" aria-label="Close dialog"></summary>
     <details-dialog class="Box Box--overlay d-flex flex-column anim-fade-in fast hx_rsm-dialog hx_rsm-modal">
       <button class="Box-btn-octicon m-0 btn-octicon position-absolute right-0 top-0" type="button" aria-label="Close dialog" data-close-dialog>

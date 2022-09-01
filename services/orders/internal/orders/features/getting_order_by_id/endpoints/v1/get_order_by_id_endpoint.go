@@ -40,24 +40,21 @@ func (ep *getOrderByIdEndpoint) getOrderByID() echo.HandlerFunc {
 
 		request := &dtos.GetOrderByIdRequestDto{}
 		if err := c.Bind(request); err != nil {
-			ep.Log.WarnMsg("Bind", err)
-			tracing.TraceErr(span, err)
+			ep.Log.Errorf("(Bind) err: %v", tracing.TraceWithErr(span, err))
 			return err
 		}
 
 		query := &v1.GetOrderByIdQuery{OrderId: request.OrderId}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
-			ep.Log.WarnMsg("validate", err)
-			tracing.TraceErr(span, err)
+			ep.Log.Errorf("(validate) err: %v", tracing.TraceWithErr(span, err))
 			return err
 		}
 
 		queryResult, err := mediatr.Send[*v1.GetOrderByIdQuery, *dtos.GetOrderByIdResponseDto](ctx, query)
 
 		if err != nil {
-			ep.Log.WarnMsg("GetOrderById", err)
-			tracing.TraceErr(span, err)
+			ep.Log.Errorf("(GetOrderById.Handle) id: %s, err: %v", query.OrderId, tracing.TraceWithErr(span, err))
 			return err
 		}
 

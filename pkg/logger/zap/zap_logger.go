@@ -1,18 +1,17 @@
 package zap
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"os"
-	"time"
-
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"os"
+	"time"
 )
 
 type zapLogger struct {
 	level       string
-	encoding    string
 	sugarLogger *zap.SugaredLogger
 	logger      *zap.Logger
 }
@@ -33,23 +32,13 @@ var loggerLevelMap = map[string]zapcore.Level{
 	"panic": zapcore.PanicLevel,
 	"fatal": zapcore.FatalLevel,
 }
-var (
-	DefaultLogger logger.Logger
-)
 
 // NewZapLogger create new zap logger
-func NewZapLogger(cfg *logger.Config) ZapLogger {
-	zapLogger := &zapLogger{level: cfg.LogLevel, encoding: cfg.Encoder}
+func NewZapLogger(cfg *logger.LogConfig) ZapLogger {
+	zapLogger := &zapLogger{level: cfg.LogLevel}
 	zapLogger.initLogger()
 
 	return zapLogger
-}
-
-func init() {
-	DefaultLogger = NewZapLogger(&logger.Config{
-		LogLevel: "debug",
-		Encoder:  "json",
-	})
 }
 
 func (l *zapLogger) getLoggerLevel() zapcore.Level {
@@ -68,31 +57,37 @@ func (l *zapLogger) initLogger() {
 	logWriter := zapcore.AddSync(os.Stdout)
 
 	var encoderCfg zapcore.EncoderConfig
+	var encoder zapcore.Encoder
 
-	env := os.Getenv("APP_ENV")
-	if env == constants.Production {
+	if core.IsProduction() {
 		encoderCfg = zap.NewProductionEncoderConfig()
+		encoderCfg.NameKey = "[SERVICE]"
+		encoderCfg.TimeKey = "[TIME]"
+		encoderCfg.LevelKey = "[LEVEL]"
+		encoderCfg.FunctionKey = "[CALLER]"
+		encoderCfg.CallerKey = "[LINE]"
+		encoderCfg.MessageKey = "[MESSAGE]"
+		encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+		encoderCfg.EncodeLevel = zapcore.CapitalLevelEncoder
+		encoderCfg.EncodeCaller = zapcore.ShortCallerEncoder
+		encoderCfg.EncodeName = zapcore.FullNameEncoder
+		encoderCfg.EncodeDuration = zapcore.StringDurationEncoder
+		encoder = zapcore.NewJSONEncoder(encoderCfg)
 	} else {
 		encoderCfg = zap.NewDevelopmentEncoderConfig()
-	}
-
-	var encoder zapcore.Encoder
-	encoderCfg.NameKey = "[SERVICE]"
-	encoderCfg.TimeKey = "[TIME]"
-	encoderCfg.LevelKey = "[LEVEL]"
-	encoderCfg.FunctionKey = "[CALLER]"
-	encoderCfg.CallerKey = "[LINE]"
-	encoderCfg.MessageKey = "[MESSAGE]"
-	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoderCfg.EncodeLevel = zapcore.CapitalLevelEncoder
-	encoderCfg.EncodeCaller = zapcore.ShortCallerEncoder
-	encoderCfg.EncodeName = zapcore.FullNameEncoder
-	encoderCfg.EncodeDuration = zapcore.StringDurationEncoder
-
-	if l.encoding == "console" {
+		encoderCfg.NameKey = "[SERVICE]"
+		encoderCfg.TimeKey = "[TIME]"
+		encoderCfg.LevelKey = "[LEVEL]"
+		encoderCfg.FunctionKey = "[CALLER]"
+		encoderCfg.CallerKey = "[LINE]"
+		encoderCfg.MessageKey = "[MESSAGE]"
+		encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+		encoderCfg.EncodeName = zapcore.FullNameEncoder
+		encoderCfg.EncodeDuration = zapcore.StringDurationEncoder
+		encoderCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		encoderCfg.EncodeCaller = zapcore.FullCallerEncoder
+		encoderCfg.ConsoleSeparator = " | "
 		encoder = zapcore.NewConsoleEncoder(encoderCfg)
-	} else {
-		encoder = zapcore.NewJSONEncoder(encoderCfg)
 	}
 
 	core := zapcore.NewCore(encoder, logWriter, zap.NewAtomicLevelAt(logLevel))
@@ -102,7 +97,13 @@ func (l *zapLogger) initLogger() {
 	l.sugarLogger = logger.Sugar()
 }
 
-// Logger methods
+func (l *zapLogger) Configure(cfg func(internalLog interface{})) {
+	cfg(l.logger)
+}
+
+func (l *zapLogger) LogType() logger.LogType {
+	return logger.Zap
+}
 
 // WithName add logger microservice name
 func (l *zapLogger) WithName(name string) {
@@ -120,6 +121,11 @@ func (l *zapLogger) Debugf(template string, args ...interface{}) {
 	l.sugarLogger.Debugf(template, args...)
 }
 
+func (l *zapLogger) Debugw(msg string, fields logger.Fields) {
+	zapFields := mapToFields(fields)
+	l.logger.Debug(msg, zapFields...)
+}
+
 // Info uses fmt.Sprint to construct and log a message
 func (l *zapLogger) Info(args ...interface{}) {
 	l.sugarLogger.Info(args...)
@@ -128,6 +134,12 @@ func (l *zapLogger) Info(args ...interface{}) {
 // Infof uses fmt.Sprintf to log a templated message.
 func (l *zapLogger) Infof(template string, args ...interface{}) {
 	l.sugarLogger.Infof(template, args...)
+}
+
+// Infow logs a message with some additional context.
+func (l *zapLogger) Infow(msg string, fields logger.Fields) {
+	zapFields := mapToFields(fields)
+	l.logger.Info(msg, zapFields...)
 }
 
 // Printf uses fmt.Sprintf to log a templated message
@@ -153,6 +165,12 @@ func (l *zapLogger) Warnf(template string, args ...interface{}) {
 // Error uses fmt.Sprint to construct and log a message.
 func (l *zapLogger) Error(args ...interface{}) {
 	l.sugarLogger.Error(args...)
+}
+
+// Errorw logs a message with some additional context.
+func (l *zapLogger) Errorw(msg string, fields logger.Fields) {
+	zapFields := mapToFields(fields)
+	l.logger.Error(msg, zapFields...)
 }
 
 // Errorf uses fmt.Sprintf to log a templated message.
@@ -206,17 +224,6 @@ func (l *zapLogger) Sync() error {
 	return l.sugarLogger.Sync()
 }
 
-func (l *zapLogger) HttpMiddlewareAccessLogger(method, uri string, status int, size int64, time time.Duration) {
-	l.Info(
-		constants.HTTP,
-		zap.String(constants.METHOD, method),
-		zap.String(constants.URI, uri),
-		zap.Int(constants.STATUS, status),
-		zap.Int64(constants.SIZE, size),
-		zap.Duration(constants.TIME, time),
-	)
-}
-
 func (l *zapLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration, metaData map[string][]string, err error) {
 	l.Info(
 		constants.GRPC,
@@ -258,4 +265,13 @@ func (l *zapLogger) KafkaLogCommittedMessage(topic string, partition int, offset
 		zap.Int(constants.Partition, partition),
 		zap.Int64(constants.Offset, offset),
 	)
+}
+
+func mapToFields(fields map[string]interface{}) []zap.Field {
+	var zapFields []zap.Field
+	for k, v := range fields {
+		zapFields = append(zapFields, zap.Any(k, v))
+	}
+
+	return zapFields
 }

@@ -1,4 +1,4 @@
-package gorm_postgres
+package gormPostgres
 
 import (
 	"context"

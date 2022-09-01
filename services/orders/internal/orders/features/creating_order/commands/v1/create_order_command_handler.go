@@ -31,7 +31,7 @@ func (c *CreateOrderCommandHandler) Handle(ctx context.Context, command *CreateO
 
 	shopItems, err := mapper.Map[[]*value_objects.ShopItem](command.ShopItems)
 	if err != nil {
-		return nil, err
+		return nil, tracing.TraceWithErr(span, err)
 	}
 
 	order, err := aggregate.NewOrder(command.OrderID, shopItems, command.AccountEmail, command.DeliveryAddress, command.DeliveryTime, command.CreatedAt)
@@ -41,7 +41,7 @@ func (c *CreateOrderCommandHandler) Handle(ctx context.Context, command *CreateO
 	}
 	_, err = c.aggregateStore.Store(order, nil, ctx)
 	if err != nil {
-		return nil, err
+		return nil, tracing.TraceWithErr(span, err)
 	}
 
 	return &dtos.CreateOrderResponseDto{OrderID: order.Id()}, nil

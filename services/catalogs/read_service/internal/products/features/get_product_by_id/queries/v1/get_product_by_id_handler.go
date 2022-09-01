@@ -42,7 +42,10 @@ func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProdu
 		product = reidsProduct
 	} else {
 		product = mongoProduct
-		q.redisRepository.PutProduct(ctx, product.ProductID, product)
+		err := q.redisRepository.PutProduct(ctx, product.ProductID, product)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	productDto, err := mapper.Map[*dto.ProductDto](product)

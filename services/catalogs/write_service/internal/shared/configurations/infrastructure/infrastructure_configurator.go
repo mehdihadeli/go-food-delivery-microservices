@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/go-playground/validator"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
@@ -23,7 +23,7 @@ type InfrastructureConfiguration struct {
 	KafkaConn         *kafka.Conn
 	KafkaProducer     kafkaClient.Producer
 	Pgx               *postgres.Pgx
-	Gorm              *gorm_postgres.Gorm
+	Gorm              *gormPostgres.Gorm
 	Metrics           *CatalogsServiceMetrics
 	EchoServer        customEcho.EchoHttpServer
 	GrpcServer        grpcServer.GrpcServer

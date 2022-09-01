@@ -30,7 +30,7 @@ func init() {
 type Config struct {
 	DeliveryType     string                         `mapstructure:"deliveryType" env:"DeliveryType"`
 	ServiceName      string                         `mapstructure:"serviceName" env:"ServiceName"`
-	Logger           *logger.Config                 `mapstructure:"logger" envPrefix:"Logger_"`
+	Logger           *logger.LogConfig              `mapstructure:"logger" envPrefix:"Logger_"`
 	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics" envPrefix:"KafkaTopics_"`
 	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
 	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
