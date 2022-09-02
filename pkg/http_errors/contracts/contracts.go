@@ -21,10 +21,6 @@ type Formatter interface {
 	Format(f fmt.State, verb rune)
 }
 
-type StackError interface {
-	WithStack() error
-}
-
 type WithStack interface {
 	error
 	StackTracer

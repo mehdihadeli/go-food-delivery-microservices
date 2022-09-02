@@ -1,12 +1,13 @@
 package customErrors
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/contracts"
 	"github.com/pkg/errors"
 )
 
 func NewValidationError(message string) error {
 	ve := &validationError{
-		badRequestError: NewBadRequestError(message),
+		WithStack: NewBadRequestError(message).(contracts.WithStack),
 	}
 
 	return ve
@@ -14,14 +15,14 @@ func NewValidationError(message string) error {
 
 func NewValidationErrorWrap(err error, message string) error {
 	ve := &validationError{
-		badRequestError: NewBadRequestErrorWrap(err, message),
+		WithStack: NewBadRequestErrorWrap(err, message).(contracts.WithStack),
 	}
 
 	return ve
 }
 
 type validationError struct {
-	*badRequestError
+	contracts.WithStack
 }
 
 type ValidationError interface {
@@ -33,16 +34,22 @@ func (v *validationError) IsValidationError() bool {
 	return true
 }
 
-func (v *validationError) WithStack() error {
-	// with this we use `Cause`, `Unwrap` method of new stack error but this struct `Cause`, `Unwrap` will call with next `Unwrap` on this object
-	// Format this error (stackErr) with sprintf, First write Causer of error and then will write call stack for this point of code
-	return errors.WithStack(v)
+func (v *validationError) IsBadRequestError() bool {
+	return true
+}
+
+func (v *validationError) GetCustomError() CustomError {
+	return GetCustomError(v)
 }
 
 func IsValidationError(err error) bool {
-	var validationError ValidationError
+	v, ok := err.(ValidationError)
+	if ok && v.IsValidationError() {
+		return true
+	}
 
-	//us, ok := errors.Cause(err).(iBadRequest)
+	var validationError ValidationError
+	//us, ok := errors.Cause(err).(ValidationError)
 	if errors.As(err, &validationError) {
 		return validationError.IsValidationError()
 	}

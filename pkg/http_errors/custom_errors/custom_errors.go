@@ -52,11 +52,15 @@ func NewCustomErrorStack(err error, code int, message string) contracts.WithStac
 }
 
 func IsCustomError(err error) bool {
-	var internalErr CustomError
+	var customErr CustomError
 
-	//us, ok := errors.Cause(err).(iBadRequest)
-	if errors.As(err, &internalErr) {
+	_, ok := err.(CustomError)
+	if ok && customErr.IsCustomError() {
 		return true
+	}
+
+	if errors.As(err, &customErr) {
+		return customErr.IsCustomError()
 	}
 
 	return false
@@ -107,6 +111,12 @@ func (e *customError) Format(s fmt.State, verb rune) {
 func GetCustomError(err error) CustomError {
 	if IsCustomError(err) {
 		var internalErr CustomError
+
+		c, ok := err.(CustomError)
+		if ok {
+			return c
+		}
+
 		errors.As(err, &internalErr)
 
 		return internalErr

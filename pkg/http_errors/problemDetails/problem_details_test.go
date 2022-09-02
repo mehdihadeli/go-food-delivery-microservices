@@ -46,7 +46,7 @@ func Test_Parse_Error(t *testing.T) {
 	assert.Equal(t, badRequestPrb.GetStatus(), 400)
 
 	// NotFound ProblemDetail
-	notFoundError := customErrors.NewNotFoundError("bad-request error")
+	notFoundError := customErrors.NewNotFoundError("notfound error")
 	notfoundPrb := ParseError(notFoundError)
 	assert.NotNil(t, notFoundError)
 	assert.Equal(t, notfoundPrb.GetStatus(), 404)

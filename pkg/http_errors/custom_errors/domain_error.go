@@ -5,29 +5,29 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewDomainError(message string, code int) *domainError {
+func NewDomainError(message string, code int) error {
 	de := &domainError{
-		customError: NewCustomError(nil, code, message),
+		WithStack: NewCustomErrorStack(nil, code, message),
 	}
 
 	return de
 }
 
-func NewDomainErrorWrap(err error, code int, message string) *domainError {
+func NewDomainErrorWrap(err error, code int, message string) error {
 	de := &domainError{
-		customError: NewCustomError(err, code, message),
+		WithStack: NewCustomErrorStack(err, code, message),
 	}
 
 	return de
 }
 
 type domainError struct {
-	*customError
+	contracts.WithStack
 }
 
 type DomainError interface {
-	CustomError
-	contracts.StackError
+	contracts.WithStack
+	GetCustomError() CustomError
 	IsDomainError() bool
 }
 
@@ -35,15 +35,17 @@ func (d *domainError) IsDomainError() bool {
 	return true
 }
 
-func (d *domainError) WithStack() error {
-	// with this we use `Cause`, `Unwrap` method of new stack error but this struct `Cause`, `Unwrap` will call with next `Unwrap` on this object
-	// Format this error (stackErr) with sprintf, First write Causer of error and then will write call stack for this point of code
-	return errors.WithStack(d)
+func (d *domainError) GetCustomError() CustomError {
+	return GetCustomError(d)
 }
 
 func IsDomainError(err error) bool {
-	var domainErr DomainError
+	d, ok := err.(DomainError)
+	if ok && d.IsDomainError() {
+		return true
+	}
 
+	var domainErr DomainError
 	//us, ok := errors.Cause(err).(DomainError)
 	if errors.As(err, &domainErr) {
 		return domainErr.IsDomainError()

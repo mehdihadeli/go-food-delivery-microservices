@@ -13,8 +13,8 @@ func ErrorsWithStack(err error) string {
 	return res
 }
 
-// ErrorsWithoutTrace just returns error messages without its callstack
-func ErrorsWithoutTrace(err error, format bool) string {
+// ErrorsWithoutStack just returns error messages without its callstack
+func ErrorsWithoutStack(err error, format bool) string {
 	res := fmt.Sprintf("%v\n", err)
 
 	if format {

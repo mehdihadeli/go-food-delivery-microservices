@@ -6,48 +6,50 @@ import (
 	"net/http"
 )
 
-func NewUnAuthorizedError(message string) *unauthorizedError {
+func NewUnAuthorizedError(message string) error {
 	ue := &unauthorizedError{
-		customError: NewCustomError(nil, http.StatusUnauthorized, message),
+		WithStack: NewCustomErrorStack(nil, http.StatusUnauthorized, message),
 	}
 
 	return ue
 }
 
-func NewUnAuthorizedErrorWrap(err error, message string) *unauthorizedError {
+func NewUnAuthorizedErrorWrap(err error, message string) error {
 	ue := &unauthorizedError{
-		customError: NewCustomError(err, http.StatusUnauthorized, message),
+		WithStack: NewCustomErrorStack(err, http.StatusUnauthorized, message),
 	}
 
 	return ue
 }
 
 type unauthorizedError struct {
-	*customError
+	contracts.WithStack
 }
 
 type UnauthorizedError interface {
-	CustomError
-	contracts.StackError
+	contracts.WithStack
 	IsUnAuthorizedError() bool
+	GetCustomError() CustomError
 }
 
 func (u *unauthorizedError) IsUnAuthorizedError() bool {
 	return true
 }
 
-func (u *unauthorizedError) WithStack() error {
-	// with this we use `Cause`, `Unwrap` method of new stack error but this struct `Cause`, `Unwrap` will call with next `Unwrap` on this object
-	// Format this error (stackErr) with sprintf, First write Causer of error and then will write call stack for this point of code
-	return errors.WithStack(u)
+func (u *unauthorizedError) GetCustomError() CustomError {
+	return GetCustomError(u)
 }
 
 func IsUnAuthorizedError(err error) bool {
-	var unAuthorizedErr UnauthorizedError
+	u, ok := err.(UnauthorizedError)
+	if ok && u.IsUnAuthorizedError() {
+		return true
+	}
 
+	var unauthorizedError UnauthorizedError
 	//us, ok := errors.Cause(err).(UnauthorizedError)
-	if errors.As(err, &unAuthorizedErr) {
-		return unAuthorizedErr.IsUnAuthorizedError()
+	if errors.As(err, &unauthorizedError) {
+		return unauthorizedError.IsUnAuthorizedError()
 	}
 
 	return false

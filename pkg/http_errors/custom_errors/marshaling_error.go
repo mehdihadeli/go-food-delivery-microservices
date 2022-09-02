@@ -1,25 +1,28 @@
 package customErrors
 
-import "github.com/pkg/errors"
+import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/contracts"
+	"github.com/pkg/errors"
+)
 
-func NewMarshalingError(message string) *marshalingError {
+func NewMarshalingError(message string) error {
 	ue := &marshalingError{
-		internalServerError: NewInternalServerError(message),
+		WithStack: NewInternalServerError(message).(contracts.WithStack),
 	}
 
 	return ue
 }
 
-func NewMarshalingErrorWrap(err error, message string) *marshalingError {
+func NewMarshalingErrorWrap(err error, message string) error {
 	ue := &marshalingError{
-		internalServerError: NewInternalServerErrorWrap(err, message),
+		WithStack: NewInternalServerErrorWrap(err, message).(contracts.WithStack),
 	}
 
 	return ue
 }
 
 type marshalingError struct {
-	internalServerError error
+	contracts.WithStack
 }
 
 type MarshalingError interface {
@@ -31,15 +34,21 @@ func (m *marshalingError) IsMarshalingError() bool {
 	return true
 }
 
-//func (m *marshalingError) WithStack() error {
-//	// with this we use `Cause`, `Unwrap` method of new stack error but this struct `Cause`, `Unwrap` will call with next `Unwrap` on this object
-//	// Format this error (stackErr) with sprintf, First write Causer of error and then will write call stack for this point of code
-//	return errors.WithStack(m)
-//}
+func (m *marshalingError) IsInternalServerError() bool {
+	return true
+}
+
+func (m *marshalingError) GetCustomError() CustomError {
+	return GetCustomError(m)
+}
 
 func IsMarshalingError(err error) bool {
-	var marshalingError MarshalingError
+	m, ok := err.(MarshalingError)
+	if ok && m.IsMarshalingError() {
+		return true
+	}
 
+	var marshalingError MarshalingError
 	//us, ok := errors.Cause(err).(MarshalingError)
 	if errors.As(err, &marshalingError) {
 		return marshalingError.IsMarshalingError()

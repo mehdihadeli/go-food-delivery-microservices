@@ -5,29 +5,29 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewApiError(message string, code int) *apiError {
+func NewApiError(message string, code int) error {
 	ae := &apiError{
-		customError: NewCustomError(nil, code, message),
+		WithStack: NewCustomErrorStack(nil, code, message),
 	}
 
 	return ae
 }
 
-func NewApiErrorWrap(err error, code int, message string) *apiError {
+func NewApiErrorWrap(err error, code int, message string) error {
 	ae := &apiError{
-		customError: NewCustomError(err, code, message),
+		WithStack: NewCustomErrorStack(err, code, message),
 	}
 
 	return ae
 }
 
 type apiError struct {
-	*customError
+	contracts.WithStack
 }
 
 type ApiError interface {
-	CustomError
-	contracts.StackError
+	contracts.WithStack
+	GetCustomError() CustomError
 	IsApiError() bool
 }
 
@@ -35,16 +35,18 @@ func (a *apiError) IsApiError() bool {
 	return true
 }
 
-func (a *apiError) WithStack() error {
-	// with this we use `Cause`, `Unwrap` method of new stack error but this struct `Cause`, `Unwrap` will call with next `Unwrap` on this object
-	// Format this error (stackErr) with sprintf, First write Causer of error and then will write call stack for this point of code
-	return errors.WithStack(a)
+func (a *apiError) GetCustomError() CustomError {
+	return GetCustomError(a)
 }
 
 func IsApiError(err error) bool {
-	var apiError ApiError
+	a, ok := err.(ApiError)
+	if ok && a.IsApiError() {
+		return true
+	}
 
-	//us, ok := errors.Cause(err).(applicationError)
+	var apiError ApiError
+	//us, ok := errors.Cause(err).(ApiError)
 	if errors.As(err, &apiError) {
 		return apiError.IsApiError()
 	}

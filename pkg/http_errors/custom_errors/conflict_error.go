@@ -6,45 +6,47 @@ import (
 	"net/http"
 )
 
-func NewConflictError(message string) *conflictError {
+func NewConflictError(message string) error {
 	ce := &conflictError{
-		customError: NewCustomError(nil, http.StatusConflict, message),
+		WithStack: NewCustomErrorStack(nil, http.StatusConflict, message),
 	}
 
 	return ce
 }
 
-func NewConflictErrorWrap(err error, message string) *conflictError {
+func NewConflictErrorWrap(err error, message string) error {
 	ce := &conflictError{
-		customError: NewCustomError(err, http.StatusConflict, message),
+		WithStack: NewCustomErrorStack(err, http.StatusConflict, message),
 	}
 
 	return ce
 }
 
 type conflictError struct {
-	*customError
+	contracts.WithStack
+}
+
+type ConflictError interface {
+	contracts.WithStack
+	GetCustomError() CustomError
+	IsConflictError() bool
 }
 
 func (c *conflictError) IsConflictError() bool {
 	return true
 }
 
-func (c *conflictError) WithStack() error {
-	// with this we use `Cause`, `Unwrap` method of new stack error but this struct `Cause`, `Unwrap` will call with next `Unwrap` on this object
-	// Format this error (stackErr) with sprintf, First write Causer of error and then will write call stack for this point of code
-	return errors.WithStack(c)
-}
-
-type ConflictError interface {
-	CustomError
-	contracts.StackError
-	IsConflictError() bool
+func (c *conflictError) GetCustomError() CustomError {
+	return GetCustomError(c)
 }
 
 func IsConflictError(err error) bool {
-	var conflictError ConflictError
+	c, ok := err.(ConflictError)
+	if ok && c.IsConflictError() {
+		return true
+	}
 
+	var conflictError ConflictError
 	//us, ok := errors.Cause(err).(ConflictError)
 	if errors.As(err, &conflictError) {
 		return conflictError.IsConflictError()

@@ -1,6 +1,7 @@
 package customErrors
 
 import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/contracts"
 	"github.com/pkg/errors"
 	"net/http"
 )
@@ -22,32 +23,30 @@ func NewInternalServerErrorWrap(err error, message string) error {
 }
 
 type internalServerError struct {
-	WithStack
+	contracts.WithStack
 }
 
 func (i *internalServerError) IsInternalServerError() bool {
 	return true
 }
 
-//func (i *internalServerError) WithStack() error {
-//	// with this we use `Cause`, `Unwrap` method of new stack error but this struct `Cause`, `Unwrap` will call with next `Unwrap` on this object
-//	// Format this error (stackErr) with sprintf, First write Causer of error and then will write call stack for this point of code
-//	return errors.WithStack(i)
-//}
+func (i *internalServerError) GetCustomError() CustomError {
+	return GetCustomError(i)
+}
 
 type InternalServerError interface {
-	WithStack
+	contracts.WithStack
 	IsInternalServerError() bool
+	GetCustomError() CustomError
 }
 
 func IsInternalServerError(err error) bool {
-	var internalErr InternalServerError
-
-	_, ok := err.(InternalServerError)
-	if ok && internalErr.IsInternalServerError() {
+	i, ok := err.(InternalServerError)
+	if ok && i.IsInternalServerError() {
 		return true
 	}
 
+	var internalErr InternalServerError
 	//us, ok := errors.Cause(err).(InternalServerError)
 	if errors.As(err, &internalErr) {
 		return internalErr.IsInternalServerError()

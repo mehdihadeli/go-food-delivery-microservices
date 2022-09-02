@@ -5,29 +5,29 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewApplicationError(message string, code int) *applicationError {
+func NewApplicationError(message string, code int) error {
 	ae := &applicationError{
-		customError: NewCustomError(nil, code, message),
+		WithStack: NewCustomErrorStack(nil, code, message),
 	}
 
 	return ae
 }
 
-func NewApplicationErrorWrap(err error, code int, message string) *applicationError {
+func NewApplicationErrorWrap(err error, code int, message string) error {
 	ae := &applicationError{
-		customError: NewCustomError(err, code, message),
+		WithStack: NewCustomErrorStack(err, code, message),
 	}
 
 	return ae
 }
 
 type applicationError struct {
-	*customError
+	contracts.WithStack
 }
 
 type ApplicationError interface {
-	CustomError
-	contracts.StackError
+	contracts.WithStack
+	GetCustomError() CustomError
 	IsApplicationError() bool
 }
 
@@ -35,16 +35,18 @@ func (a *applicationError) IsApplicationError() bool {
 	return true
 }
 
-func (a *applicationError) WithStack() error {
-	// with this we use `Cause`, `Unwrap` method of new stack error but this struct `Cause`, `Unwrap` will call with next `Unwrap` on this object
-	// Format this error (stackErr) with sprintf, First write Causer of error and then will write call stack for this point of code
-	return errors.WithStack(a)
+func (a *applicationError) GetCustomError() CustomError {
+	return GetCustomError(a)
 }
 
 func IsApplicationError(err error) bool {
-	var applicationError ApplicationError
+	a, ok := err.(ApplicationError)
+	if ok && a.IsApplicationError() {
+		return true
+	}
 
-	//us, ok := errors.Cause(err).(applicationError)
+	var applicationError ApplicationError
+	//us, ok := errors.Cause(err).(ApplicationError)
 	if errors.As(err, &applicationError) {
 		return applicationError.IsApplicationError()
 	}
