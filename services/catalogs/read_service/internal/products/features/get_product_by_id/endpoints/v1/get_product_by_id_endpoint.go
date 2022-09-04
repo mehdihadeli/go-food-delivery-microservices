@@ -1,9 +1,13 @@
 package v1
 
 import (
+	"fmt"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id/dtos"
 	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id/queries/v1"
+	"github.com/pkg/errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -20,7 +24,7 @@ func NewGetProductByIdEndpoint(productEndpointBase *delivery.ProductEndpointBase
 }
 
 func (ep *getProductByIdEndpoint) MapRoute() {
-	ep.ProductsGroup.GET("/:id", ep.getProductByID())
+	ep.ProductsGroup.GET("/:id", ep.handler())
 }
 
 // GetProductByID
@@ -32,33 +36,32 @@ func (ep *getProductByIdEndpoint) MapRoute() {
 // @Param id path string true "Product ID"
 // @Success 200 {object} dtos.GetProductByIdResponseDto
 // @Router /api/v1/products/{id} [get]
-func (ep *getProductByIdEndpoint) getProductByID() echo.HandlerFunc {
+func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
 		ep.Metrics.GetProductByIdHttpRequests.Inc()
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "productsHandlers.getProductByID")
 		defer span.Finish()
 
 		request := &dtos.GetProductByIdRequestDto{}
 		if err := c.Bind(request); err != nil {
-			ep.Log.WarnMsg("Bind", err)
-			tracing.TraceErr(span, err)
-			return err
+			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductByIdEndpoint_handler.Bind] error in the binding request")
+			ep.Log.Errorf(fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			return badRequestErr
 		}
 
 		query := &gettingProductByIdV1.GetProductByIdQuery{ProductID: request.ProductId}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
-			ep.Log.WarnMsg("validate", err)
-			tracing.TraceErr(span, err)
-			return err
+			validationErr := customErrors.NewValidationErrorWrap(err, "[getProductByIdEndpoint_handler.StructCtx]  query validation failed")
+			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr))
+			return validationErr
 		}
 
 		queryResult, err := mediatr.Send[*gettingProductByIdV1.GetProductByIdQuery, *dtos.GetProductByIdResponseDto](ctx, query)
 
 		if err != nil {
-			ep.Log.WarnMsg("GetProductByIdQuery", err)
-			tracing.TraceErr(span, err)
+			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetProductByIdQuery")
+			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"productId": query.ProductID})
 			return err
 		}
 

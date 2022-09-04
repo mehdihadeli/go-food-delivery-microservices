@@ -81,6 +81,10 @@ func (p *mongoProductRepository) GetProductById(ctx context.Context, uuid uuid.U
 
 	var product models.Product
 	if err := collection.FindOne(ctx, bson.M{"_id": uuid.String()}).Decode(&product); err != nil {
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
 		return nil, tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[mongoProductRepository_GetProductById.FindOne] can't find the product with id %s into the database.", uuid)))
 	}
 

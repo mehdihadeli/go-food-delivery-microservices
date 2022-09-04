@@ -7,5 +7,9 @@ import (
 
 type ProductEndpointBase struct {
 	*infrastructure.InfrastructureConfiguration
-	ProductsGroup   *echo.Group
+	ProductsGroup *echo.Group
+}
+
+func NewProductEndpointBase(infra *infrastructure.InfrastructureConfiguration, productsGroup *echo.Group) *ProductEndpointBase {
+	return &ProductEndpointBase{ProductsGroup: productsGroup, InfrastructureConfiguration: infra}
 }

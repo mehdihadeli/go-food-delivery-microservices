@@ -2,7 +2,7 @@ package eventstroredb
 
 import (
 	"fmt"
-	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 )
 
 var ErrStreamNotFound = func(err error) error {

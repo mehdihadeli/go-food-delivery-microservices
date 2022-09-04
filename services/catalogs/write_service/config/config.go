@@ -4,20 +4,21 @@ import (
 	"flag"
 	"fmt"
 	"github.com/caarlos0/env/v6"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
-	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
-	"os"
-
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
+	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"os"
+	"path/filepath"
+	"runtime"
 )
 
 var configPath string
@@ -61,7 +62,14 @@ func InitConfig(environment string) (*Config, error) {
 		if configPathFromEnv != "" {
 			configPath = configPathFromEnv
 		} else {
-			configPath = "./config"
+			//https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
+			//https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
+			d, err := dirname()
+			if err != nil {
+				return nil, err
+			}
+
+			configPath = d
 		}
 	}
 
@@ -106,4 +114,20 @@ func InitConfig(environment string) (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func filename() (string, error) {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", errors.New("unable to get the current filename")
+	}
+	return filename, nil
+}
+
+func dirname() (string, error) {
+	filename, err := filename()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Dir(filename), nil
 }

@@ -2,7 +2,7 @@ package v1
 
 import (
 	"fmt"
-	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/commands/v1"
 	"github.com/pkg/errors"
@@ -52,7 +52,7 @@ func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 		command := v1.NewDeleteProductCommand(request.ProductID)
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[deleteProductEndpoint_handler.StructCtx] command validation failed")
-			ep.Log.Errorf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr))
+			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr)))
 			return validationErr
 		}
 

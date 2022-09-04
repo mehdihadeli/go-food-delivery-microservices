@@ -56,6 +56,10 @@ func (r *redisProductRepository) GetProduct(ctx context.Context, key string) (*m
 
 	productBytes, err := r.redisClient.HGet(ctx, r.getRedisProductPrefixKey(), key).Bytes()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, nil
+		}
+
 		return nil, tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[redisProductRepository_GetProduct.HGet] error in getting product with Key %s from database", key)))
 	}
 

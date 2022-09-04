@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"fmt"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcCtxTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
@@ -59,7 +60,6 @@ func NewGrpcServer(config *GrpcConfig, logger logger.Logger) *grpcServer {
 }
 
 func (s *grpcServer) RunGrpcServer(configGrpc func(grpcServer *grpc.Server)) error {
-
 	l, err := net.Listen("tcp", s.config.Port)
 	if err != nil {
 		return errors.Wrap(err, "net.Listen")
@@ -75,9 +75,13 @@ func (s *grpcServer) RunGrpcServer(configGrpc func(grpcServer *grpc.Server)) err
 		reflection.Register(s.server)
 	}
 
-	s.log.Infof("Writer gRPC server is listening on port: %s", s.config.Port)
+	s.log.Infof("[grpcServer.RunGrpcServer] Writer gRPC server is listening on port: %s", s.config.Port)
+
 	err = s.server.Serve(l)
-	s.log.Fatal(err)
+
+	if err != nil {
+		s.log.Error(fmt.Sprintf("[grpcServer_RunGrpcServer.Serve] grpc server serve error: %+v", err))
+	}
 
 	return err
 }

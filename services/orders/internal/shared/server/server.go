@@ -62,11 +62,14 @@ func (s *Server) Run() error {
 
 	s.RunMetrics(cancel)
 
+	var serverError error
+
 	switch deliveryType {
 	case "http":
 		go func() {
 			if err := echoServer.RunHttpServer(nil); err != nil {
 				s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
+				serverError = err
 				cancel()
 			}
 		}()
@@ -76,6 +79,7 @@ func (s *Server) Run() error {
 		go func() {
 			if err := grpcServer.RunGrpcServer(nil); err != nil {
 				s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
+				serverError = err
 				cancel()
 			}
 		}()
@@ -96,6 +100,7 @@ func (s *Server) Run() error {
 		err := esdbSubscribeAllWorker.SubscribeAll(ctx, option)
 		if err != nil {
 			s.log.Errorf("(esdbSubscribeAllWorker.SubscribeAll) err: {%v}", err)
+			serverError = err
 			cancel()
 		}
 	}()
@@ -117,7 +122,7 @@ func (s *Server) Run() error {
 	<-s.doneCh
 	s.log.Infof("%s server exited properly", web.GetMicroserviceName(s.cfg))
 
-	return nil
+	return serverError
 }
 
 func (s *Server) waitForShootDown(duration time.Duration) {

@@ -14,6 +14,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"os"
+	"path/filepath"
+	"runtime"
 )
 
 var configPath string
@@ -61,7 +63,14 @@ func InitConfig(env string) (*Config, error) {
 		if configPathFromEnv != "" {
 			configPath = configPathFromEnv
 		} else {
-			configPath = "./config"
+			//https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
+			//https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
+			d, err := dirname()
+			if err != nil {
+				return nil, err
+			}
+
+			configPath = d
 		}
 	}
 
@@ -94,4 +103,20 @@ func InitConfig(env string) (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func filename() (string, error) {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", errors.New("unable to get the current filename")
+	}
+	return filename, nil
+}
+
+func dirname() (string, error) {
+	filename, err := filename()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Dir(filename), nil
 }

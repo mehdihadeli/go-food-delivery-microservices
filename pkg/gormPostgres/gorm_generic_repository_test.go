@@ -48,7 +48,7 @@ type GormGenericRepository struct {
 }
 
 func TestRunner(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:test?mode=memory"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file:tests?mode=memory"), &gorm.Config{})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Sep 02 15:38:29 2022
+# Make data base, printed on Mon Sep 05 01:22:36 2022
 
 # Variables
 
@@ -41,7 +41,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_16204_BHPMTIUWNMLNGROB
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_72412_ONUNJBDKWBIBINNH
 # environment
 FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
@@ -95,7 +95,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 16204
+VSCODE_PID = 72412
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -164,8 +164,6 @@ USERDOMAIN = Mehdi
 GNUMAKEFLAGS := 
 # environment
 OS = Windows_NT
-# environment
-__COMPAT_LAYER = DetectorsAppHealth
 # makefile
 .DEFAULT_GOAL := run_catalogs_write_service
 # default
@@ -221,7 +219,7 @@ PROCESSOR_REVISION = a503
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=104/1024=10%, Rehash=0, Collisions=11/135=8%
+# Load=103/1024=10%, Rehash=0, Collisions=11/134=8%
 
 # Pattern-specific Variable Values
 
@@ -229,7 +227,7 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 
 # Directories
 
-# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1661190670): 21 files, no impossibilities.
+# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1662142143): 21 files, no impossibilities.
 
 # 21 files, no impossibilities in 1 directories.
 
@@ -253,8 +251,7 @@ docker-compose_infra_up:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 12):
 	@echo Starting infrastructure docker-compose
-	docker-compose -f deployments/docke 
-r-compose/docker-compose.infrastructure.yaml up --build
+	docker-compose -f deployments/docker-compose/docker-compose.infrastructure.yaml up --build
 
 cert:
 #  Implicit rule search has not been done.
@@ -387,8 +384,7 @@ proto_catalogs_write_product_kafka_messages:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 114):
 	@echo Generating products kafka messages proto
-	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_servic 
-e/internal/products/contracts/proto/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/product_kafka_messages.proto
+	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/product_kafka_messages.proto
 
 proto_catalogs_read_product_kafka_messages:
 #  Implicit rule search has not been done.
@@ -476,7 +472,8 @@ pprof_allocs:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 109):
+#  recipe to execute (from 'Ma 
+kefile', line 109):
 	go tool pprof -http :8006 http://localhost:6060/debug/pprof/allocs?seconds=10
 
 proto_orders_order_service:
@@ -500,13 +497,12 @@ proto_orders_order_service:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 51 / storage = 833 B / av 
-g = 16 B
+# strcache buffers: 1 (0) / strings = 51 / storage = 833 B / avg = 16 B
 # current buf: size = 8174 B / used = 833 B / count = 51 / avg = 16 B
 
 # strcache performance: lookups = 82 / hit rate = 37%
 # hash-table stats:
 # Load=51/8192=1%, Rehash=0, Collisions=0/82=0%
-# Finished Make data base on Fri Sep 02 15:38:29 2022
+# Finished Make data base on Mon Sep 05 01:22:36 2022
 
  

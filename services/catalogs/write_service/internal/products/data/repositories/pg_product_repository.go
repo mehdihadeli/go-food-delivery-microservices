@@ -66,6 +66,10 @@ func (p *postgresProductRepository) GetProductById(ctx context.Context, uuid uui
 
 	var product models.Product
 	if err := p.gorm.First(&product, uuid).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
 		return nil, tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[postgresProductRepository_GetProductById.First] can't find the product with id %s into the database.", uuid)))
 	}
 

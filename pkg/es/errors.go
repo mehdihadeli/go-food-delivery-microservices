@@ -2,7 +2,7 @@ package es
 
 import (
 	"fmt"
-	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/pkg/errors"
 )
 

@@ -212,7 +212,7 @@
           class="form-control input-sm header-search-input jump-to-field js-jump-to-field js-site-search-focus js-site-search-field is-clearable"
           data-hotkey=s,/
           name="q"
-          data-test-selector="nav-search-input"
+          data-tests-selector="nav-search-input"
           placeholder="Search or jump to…"
           data-unscoped-placeholder="Search or jump to…"
           data-scoped-placeholder="Search or jump to…"
@@ -2436,7 +2436,7 @@
   
 </div></div>
 
-    <include-fragment src="/batazor/microservice-template-ddd/spoofed_commit_check/8a52d67a3361d5e59d09fc2928744d00bf9cf09e" data-test-selector="spoofed-commit-check"></include-fragment>
+    <include-fragment src="/batazor/microservice-template-ddd/spoofed_commit_check/8a52d67a3361d5e59d09fc2928744d00bf9cf09e" data-tests-selector="spoofed-commit-check"></include-fragment>
 
     <div class="Box d-flex flex-column flex-shrink-0 mb-3">
   
@@ -2554,9 +2554,9 @@
 
 
           
-<div class="ml-1" data-test-selector="edit-dropdown-menu-component">
+<div class="ml-1" data-tests-selector="edit-dropdown-menu-component">
   <form class="BtnGroup-parent js-update-url-with-hash " data-turbo="false" action="/batazor/microservice-template-ddd/edit/main/ops/docker-compose/infrastructure/traefik.yaml" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="PvBd2uS-HZC6zSKPJaIJrwWo2OSJ7bbnRCRTc6H2effjf3Uf23lKJyzebwU_aTnGyNB1tOjxnGhIMQn9w86txg" autocomplete="off" />
-    <button title="Fork this project and edit the file" data-hotkey="e" data-disable-with="" data-test-selector="edit-icon-button" type="submit" data-view-component="true" class="btn-sm BtnGroup-item btn">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-pencil">
+    <button title="Fork this project and edit the file" data-hotkey="e" data-disable-with="" data-tests-selector="edit-icon-button" type="submit" data-view-component="true" class="btn-sm BtnGroup-item btn">  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-pencil">
     <path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path>
 </svg>
   
@@ -2567,15 +2567,15 @@
       <div class="SelectMenu-modal width-full">
         <div class="SelectMenu-list SelectMenu-list--borderless py-2">
           <form class="SelectMenu-item js-update-url-with-hash " data-turbo="false" action="/batazor/microservice-template-ddd/edit/main/ops/docker-compose/infrastructure/traefik.yaml" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="2zCROiGJzLEnvpP6VkcKKFSlHXiJiUnamfiy2y-9LYMGv7n_Hk6bBrGt3nBMjDpBmd2wKOiVY1WV7ehVTYX5sg" autocomplete="off" />
-            <button title="Fork this project and edit the file" data-test-selector="edit-text-button" type="submit" data-view-component="true" class="btn-invisible btn width-full d-flex flex-justify-between color-fg-defaultLogger text-normal p-0">  <div>Edit this file</div>
+            <button title="Fork this project and edit the file" data-tests-selector="edit-text-button" type="submit" data-view-component="true" class="btn-invisible btn width-full d-flex flex-justify-between color-fg-defaultLogger text-normal p-0">  <div>Edit this file</div>
               <div class="color-fg-muted">E</div>
   
 </button></form>
-            <a aria-label="Open this file in github.dev" data-test-selector="github-dev-link" data-dropdown-tracking="{&quot;type&quot;:&quot;blob_edit_dropdown.dev_link_click&quot;,&quot;context&quot;:{&quot;repository_id&quot;:312534637,&quot;actor_id&quot;:3678399,&quot;edit_enabled&quot;:true,&quot;small_screen&quot;:false}}" href="https://github.dev/" data-view-component="true" class="SelectMenu-item js-github-dev-shortcut js-blob-dropdown-click width-full d-flex flex-justify-between color-fg-defaultLogger f5 text-normal">
+            <a aria-label="Open this file in github.dev" data-tests-selector="github-dev-link" data-dropdown-tracking="{&quot;type&quot;:&quot;blob_edit_dropdown.dev_link_click&quot;,&quot;context&quot;:{&quot;repository_id&quot;:312534637,&quot;actor_id&quot;:3678399,&quot;edit_enabled&quot;:true,&quot;small_screen&quot;:false}}" href="https://github.dev/" data-view-component="true" class="SelectMenu-item js-github-dev-shortcut js-blob-dropdown-click width-full d-flex flex-justify-between color-fg-defaultLogger f5 text-normal">
               <div>Open in github.dev</div>
               <div class="color-fg-muted">.</div>
 </a>
-            <a data-platforms="windows,mac" data-test-selector="github-desktop-link" aria-label="Open this file in GitHub Desktop" href="x-github-client://openRepo/https://github.com/batazor/microservice-template-ddd?branch=main&amp;filepath=ops%2Fdocker-compose%2Finfrastructure%2Ftraefik.yaml" data-view-component="true" class="SelectMenu-item no-wrap js-remove-unless-platform width-full text-normal color-fg-defaultLogger f5">
+            <a data-platforms="windows,mac" data-tests-selector="github-desktop-link" aria-label="Open this file in GitHub Desktop" href="x-github-client://openRepo/https://github.com/batazor/microservice-template-ddd?branch=main&amp;filepath=ops%2Fdocker-compose%2Finfrastructure%2Ftraefik.yaml" data-view-component="true" class="SelectMenu-item no-wrap js-remove-unless-platform width-full text-normal color-fg-defaultLogger f5">
               Open in GitHub Desktop
 </a>        </div>
       </div>
@@ -2585,7 +2585,7 @@
 
 
           
-<div data-test-selector="remote-clipboard-copy">
+<div data-tests-selector="remote-clipboard-copy">
   </div>
 
 
@@ -2606,7 +2606,7 @@
           class="js-blob-dropdown-click btn-octicon"
           aria-haspopup="true"
           aria-label="possible actions"
-          data-test-selector="small-screen-more-options"
+          data-tests-selector="small-screen-more-options"
           data-dropdown-tracking="{&quot;type&quot;:&quot;blob_edit_dropdown.more_options_click&quot;,&quot;context&quot;:{&quot;repository_id&quot;:312534637,&quot;actor_id&quot;:3678399,&quot;github_dev_enabled&quot;:true,&quot;edit_enabled&quot;:true,&quot;small_screen&quot;:true}}"
         >
           <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true" class="octicon octicon-kebab-horizontal">
@@ -2641,7 +2641,7 @@
                 <a class="dropdown-item" href="/batazor/microservice-template-ddd/edit/main/ops/docker-compose/infrastructure/traefik.yaml">Edit file</a>
               </li>
                 <li>
-                  <a class="dropdown-item js-github-dev-shortcut js-blob-dropdown-click" data-test-selector="small-screen-github-dev-link" data-dropdown-tracking="{&quot;type&quot;:&quot;blob_edit_dropdown.dev_link_click&quot;,&quot;context&quot;:{&quot;repository_id&quot;:312534637,&quot;actor_id&quot;:3678399,&quot;edit_enabled&quot;:true,&quot;small_screen&quot;:true}}" href="https://github.dev/">Open with github.dev</a>
+                  <a class="dropdown-item js-github-dev-shortcut js-blob-dropdown-click" data-tests-selector="small-screen-github-dev-link" data-dropdown-tracking="{&quot;type&quot;:&quot;blob_edit_dropdown.dev_link_click&quot;,&quot;context&quot;:{&quot;repository_id&quot;:312534637,&quot;actor_id&quot;:3678399,&quot;edit_enabled&quot;:true,&quot;small_screen&quot;:true}}" href="https://github.dev/">Open with github.dev</a>
                 </li>
               <li>
                 <a class="dropdown-item menu-item-danger" href="/batazor/microservice-template-ddd/delete/main/ops/docker-compose/infrastructure/traefik.yaml">Delete file</a>

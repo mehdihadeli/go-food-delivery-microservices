@@ -3,10 +3,9 @@ package v1
 import (
 	"context"
 	"fmt"
-	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/kafka_messages"
-	"github.com/pkg/errors"
 	"time"
 
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
@@ -49,18 +48,18 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 
 	createdProduct, err := c.repository.CreateProduct(ctx, product)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.WithMessage(err, "[CreateProductCommandHandler_Handle.CreateProduct] error in creating product in the repository"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductCommandHandler_Handle.CreateProduct] error in creating product in the repository"))
 	}
 
 	kafkaProduct, err := mapper.Map[*kafka_messages.Product](createdProduct)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, "[CreateProductCommandHandler_Handle.Map] error in the mapping product"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductCommandHandler_Handle.Map] error in the mapping product"))
 	}
 
 	evt := &kafka_messages.ProductCreated{Product: kafkaProduct}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewMarshalingErrorWrap(err, "[CreateProductCommandHandler_Handle.Marshal] error marshalling").WithStack())
+		return nil, tracing.TraceWithErr(span, customErrors.NewMarshalingErrorWrap(err, "[CreateProductCommandHandler_Handle.Marshal] error marshalling"))
 	}
 
 	message := kafka.Message{
@@ -72,14 +71,16 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 
 	err = c.kafkaProducer.PublishMessage(ctx, message)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, "[CreateProductCommandHandler_Handle.PublishMessage] error in publishing kafka message"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductCommandHandler_Handle.PublishMessage] error in publishing kafka message"))
 	}
+
+	c.log.Infow(fmt.Sprintf("[CreateProductCommandHandler.Handle] product with id: {%s} published to the kafka", command.ProductID), logger.Fields{"productId": command.ProductID})
 
 	response := &dtos.CreateProductResponseDto{ProductID: product.ProductID}
 
 	span.LogFields(log.Object("CreateProductResponseDto", response))
 
-	c.log.Debugw(fmt.Sprintf("[CreateProductCommandHandler.Handle] product with id: {%s} created", command.ProductID), logger.Fields{"productId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[CreateProductCommandHandler.Handle] product with id: {%s} created", command.ProductID), logger.Fields{"productId": command.ProductID})
 
 	return response, nil
 }

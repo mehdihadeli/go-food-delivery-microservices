@@ -34,7 +34,7 @@ func (s *Server) Run() error {
 	grpcServer := grpcServer.NewGrpcServer(s.cfg.GRPC, s.log)
 	echoServer := customEcho.NewEchoHttpServer(s.cfg.Http, s.log)
 
-	ic := infrastructure.NewInfrastructureConfigurator(s.log, s.cfg, echoServer, grpcServer)
+	ic := infrastructure.NewInfrastructureConfigurator(s.log, s.cfg)
 	infrastructureConfigurations, err, infraCleanup := ic.ConfigInfrastructures(ctx)
 	if err != nil {
 		return err
@@ -51,11 +51,14 @@ func (s *Server) Run() error {
 
 	s.RunMetrics(cancel)
 
+	var serverError error
+
 	switch deliveryType {
 	case "http":
 		go func() {
 			if err := echoServer.RunHttpServer(nil); err != nil {
 				s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
+				serverError = err
 				cancel()
 			}
 		}()
@@ -65,6 +68,7 @@ func (s *Server) Run() error {
 		go func() {
 			if err := grpcServer.RunGrpcServer(nil); err != nil {
 				s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
+				serverError = err
 				cancel()
 			}
 		}()
@@ -90,7 +94,7 @@ func (s *Server) Run() error {
 	<-s.doneCh
 	s.log.Infof("%s server exited properly", web.GetMicroserviceName(s.cfg))
 
-	return nil
+	return serverError
 }
 
 func (s *Server) waitForShootDown(duration time.Duration) {

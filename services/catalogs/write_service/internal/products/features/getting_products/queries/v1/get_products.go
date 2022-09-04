@@ -7,3 +7,7 @@ import "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 type GetProductsQuery struct {
 	*utils.ListQuery
 }
+
+func NewGetProductsQuery(query *utils.ListQuery) *GetProductsQuery {
+	return &GetProductsQuery{ListQuery: query}
+}

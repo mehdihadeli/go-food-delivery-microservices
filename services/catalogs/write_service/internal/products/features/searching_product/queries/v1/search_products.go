@@ -6,3 +6,10 @@ type SearchProductsQuery struct {
 	SearchText string `validate:"required"`
 	*utils.ListQuery
 }
+
+func NewSearchProductsQuery(searchText string, query *utils.ListQuery) *SearchProductsQuery {
+	return &SearchProductsQuery{
+		SearchText: searchText,
+		ListQuery:  query,
+	}
+}

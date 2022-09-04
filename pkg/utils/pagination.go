@@ -74,7 +74,6 @@ func NewListQueryFromQueryParams(size string, page string) *ListQuery {
 }
 
 func GetListQueryFromCtx(c echo.Context) (*ListQuery, error) {
-
 	q := &ListQuery{}
 	var page, size, orderBy string
 
