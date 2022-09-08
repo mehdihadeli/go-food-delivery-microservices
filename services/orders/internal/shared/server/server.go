@@ -36,7 +36,7 @@ func (s *Server) Run() error {
 	grpcServer := grpcServer.NewGrpcServer(s.cfg.GRPC, s.log)
 	echoServer := customEcho.NewEchoHttpServer(s.cfg.Http, s.log)
 
-	ic := infrastructure.NewInfrastructureConfigurator(s.log, s.cfg, echoServer, grpcServer)
+	ic := infrastructure.NewInfrastructureConfigurator(s.log, s.cfg)
 	infrastructureConfigurations, err, infraCleanup := ic.ConfigInfrastructures(ctx)
 	if err != nil {
 		return err

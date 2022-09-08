@@ -43,13 +43,8 @@ func (m *marshalingError) GetCustomError() CustomError {
 }
 
 func IsMarshalingError(err error) bool {
-	m, ok := err.(MarshalingError)
-	if ok && m.IsMarshalingError() {
-		return true
-	}
-
-	var marshalingError MarshalingError
-	//us, ok := grpc_errors.Cause(err).(MarshalingError)
+	var marshalingError *marshalingError
+	//us, ok := grpc_errors.Cause(err).(*marshalingError)
 	if errors.As(err, &marshalingError) {
 		return marshalingError.IsMarshalingError()
 	}

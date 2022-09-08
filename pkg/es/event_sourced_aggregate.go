@@ -10,6 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
 	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -139,7 +140,7 @@ func (a *EventSourcedAggregateRoot) AddDomainEvents(event domain.IDomainEvent) e
 	})
 
 	if exists {
-		return ErrEventAlreadyExists
+		return EventAlreadyExistsError
 	}
 	event.WithAggregate(a.Id(), a.CurrentVersion()+1)
 	a.uncommittedEvents = append(a.uncommittedEvents, event)
@@ -163,7 +164,7 @@ func (a *EventSourcedAggregateRoot) LoadFromHistory(events []domain.IDomainEvent
 	for _, event := range events {
 		err := a.fold(event, metadata)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "[EventSourcedAggregateRoot_LoadFromHistory:fold] error in loading event from history")
 		}
 	}
 
@@ -174,12 +175,12 @@ func (a *EventSourcedAggregateRoot) Apply(event domain.IDomainEvent, isNew bool)
 	if isNew {
 		err := a.AddDomainEvents(event)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "[EventSourcedAggregateRoot_Apply:AddDomainEvents] error in adding domain event to the domain events list")
 		}
 	}
 	err := a.when(event)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "[EventSourcedAggregateRoot_Apply:when] error in the whenFunc")
 	}
 	a.currentVersion++
 
@@ -189,7 +190,7 @@ func (a *EventSourcedAggregateRoot) Apply(event domain.IDomainEvent, isNew bool)
 func (a *EventSourcedAggregateRoot) fold(event domain.IDomainEvent, metadata *core.Metadata) error {
 	err := a.when(event)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "[EventSourcedAggregateRoot_fold:when] error in the applying whenFunc")
 	}
 	a.originalVersion++
 	a.currentVersion++

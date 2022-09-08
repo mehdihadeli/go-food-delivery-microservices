@@ -41,7 +41,7 @@ func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProdu
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetProductByIdQueryHandler_Handle.Map] error in the mapping product"))
 	}
 
-	q.log.Infow(fmt.Sprintf("[GetProductByIdQueryHandler.Handle] product with id: {%s} fetched", query.ProductID), logger.Fields{"productId": query.ProductID})
+	q.log.Infow(fmt.Sprintf("[GetProductByIdQueryHandler.Handle] product with id: {%d} fetched", query.ProductID), logger.Fields{"ProductId": query.ProductID})
 
 	return &dtos.GetProductByIdResponseDto{Product: productDto}, nil
 }

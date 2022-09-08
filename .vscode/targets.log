@@ -8,12 +8,10 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Mon Sep 05 01:22:36 2022
+# Make data base, printed on Thu Sep 08 16:46:44 2022
 
 # Variables
 
-# environment
-FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
 SYSTEMDRIVE = C:
 # environment
@@ -41,9 +39,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_72412_ONUNJBDKWBIBINNH
-# environment
-FPS_BROWSER_USER_PROFILE_STRING = Default
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_7856_EDSFPGKNVMDVDVSL
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -95,7 +91,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 72412
+VSCODE_PID = 7856
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -219,7 +215,7 @@ PROCESSOR_REVISION = a503
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=103/1024=10%, Rehash=0, Collisions=11/134=8%
+# Load=101/1024=10%, Rehash=0, Collisions=10/132=8%
 
 # Pattern-specific Variable Values
 
@@ -472,8 +468,7 @@ pprof_allocs:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Ma 
-kefile', line 109):
+#  recipe to execute (from 'Makefile', line 109):
 	go tool pprof -http :8006 http://localhost:6060/debug/pprof/allocs?seconds=10
 
 proto_orders_order_service:
@@ -503,6 +498,6 @@ proto_orders_order_service:
 # strcache performance: lookups = 82 / hit rate = 37%
 # hash-table stats:
 # Load=51/8192=1%, Rehash=0, Collisions=0/82=0%
-# Finished Make data base on Mon Sep 05 01:22:36 2022
+# Finished Make data base on Thu Sep 08 16:46:44 2022
 
  

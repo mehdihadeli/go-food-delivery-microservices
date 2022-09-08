@@ -41,13 +41,8 @@ func (b *badRequestError) GetCustomError() CustomError {
 }
 
 func IsBadRequestError(err error) bool {
-	b, ok := err.(BadRequestError)
-	if ok && b.IsBadRequestError() {
-		return true
-	}
-
-	var badRequestError BadRequestError
-	//us, ok := grpc_errors.Cause(err).(BadRequestError)
+	var badRequestError *badRequestError
+	//us, ok := grpc_errors.Cause(err).(*badRequestError)
 	if errors.As(err, &badRequestError) {
 		return badRequestError.IsBadRequestError()
 	}

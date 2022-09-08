@@ -11,8 +11,12 @@ import (
 
 func Test_BadRequest_Err(t *testing.T) {
 	d := errors.New("handling bad request error")
-	err := NewBadRequestErrorWrap(d, "this is a bad request error")
-	err = errors.WithMessage(err, "outer error wrapper")
+	badErr := NewBadRequestErrorWrap(d, "this is a bad request error")
+	assert.True(t, IsBadRequestError(badErr))
+
+	err := errors.WithMessage(badErr, "outer error wrapper")
+	assert.True(t, IsBadRequestError(err))
+	assert.True(t, IsCustomError(err))
 
 	if IsBadRequestError(err) {
 		var bad BadRequestError
@@ -40,8 +44,11 @@ func Test_BadRequest_Err(t *testing.T) {
 
 func Test_NotFound_Err(t *testing.T) {
 	d := errors.New("handling not found error")
-	err := NewNotFoundErrorWrap(d, "this is a not found error")
-	err = errors.WithMessage(err, "outer error wrapper")
+	notFoundErr := NewNotFoundErrorWrap(d, "this is a not found error")
+	assert.True(t, IsNotFoundError(notFoundErr))
+
+	err := errors.WithMessage(notFoundErr, "outer error wrapper")
+	assert.True(t, IsNotFoundError(err))
 
 	if IsNotFoundError(err) {
 		var notFound NotFoundError
@@ -69,8 +76,12 @@ func Test_NotFound_Err(t *testing.T) {
 
 func Test_Domain_Err(t *testing.T) {
 	d := errors.New("handling domain error")
-	err := NewDomainErrorWrap(d, 400, "this is a domain error")
-	err = errors.WithMessage(err, "outer error wrapper")
+
+	domainErr := NewDomainErrorWithCodeWrap(d, 400, "this is a domain error")
+	assert.True(t, IsDomainError(domainErr))
+
+	err := errors.WithMessage(domainErr, "outer error wrapper")
+	assert.True(t, IsDomainError(err))
 
 	if IsDomainError(err) {
 		var domainErr DomainError
@@ -127,8 +138,8 @@ func Test_Application_Err(t *testing.T) {
 
 func Test_Internal_Server_Error(t *testing.T) {
 	d := errors.New("handling internal server error")
-	err := NewInternalServerErrorWrap(d, "this is a internal server error")
-	err = errors.WithMessage(err, "this is a internal server error")
+	internalServerErr := NewInternalServerErrorWrap(d, "this is a internal server error")
+	err := errors.WithMessage(internalServerErr, "this is a internal server error")
 
 	if IsInternalServerError(err) {
 		var internalErr CustomError
@@ -155,8 +166,8 @@ func Test_Internal_Server_Error(t *testing.T) {
 
 func Test_Marshaling_Error(t *testing.T) {
 	d := errors.New("handling marshaling error")
-	err := NewMarshalingErrorWrap(d, "this is a marshaling error")
-	err = errors.WithMessage(err, "this is a marshaling error")
+	marshalErr := NewMarshalingErrorWrap(d, "this is a marshaling error")
+	err := errors.WithMessage(marshalErr, "this is a marshaling error")
 
 	if IsMarshalingError(err) && IsInternalServerError(err) {
 		var marshalingErr MarshalingError

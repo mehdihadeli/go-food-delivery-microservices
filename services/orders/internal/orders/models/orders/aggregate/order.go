@@ -5,13 +5,12 @@ package aggregate
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	domainExceptions "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/exceptions/domain"
-	changingDeliveryAddressEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/changing_delivery_address/events/v1"
 	creatingOrderEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/events/v1"
 	updatingShoppingCardEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/updating_shopping_card/events/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/entities"
@@ -48,44 +47,26 @@ func NewOrder(id uuid.UUID, shopItems []*value_objects.ShopItem, accountEmail, d
 	order.NewEmptyAggregate()
 	order.SetId(id)
 
-	return nil, domainExceptions.ErrOrderShopItemsIsRequired
-
 	if shopItems == nil || len(shopItems) == 0 {
-		return nil, domainExceptions.ErrOrderShopItemsIsRequired
+		return nil, domainExceptions.NewOrderShopItemsRequiredError("[Order_NewOrder] order items is required")
 	}
 
 	itemsDto, err := mapper.Map[[]*dtos.ShopItemDto](shopItems)
 	if err != nil {
-		return nil, httpErrors.NewDomainErrorWrap(err, "(NewOrder): mapping shop items to dto")
+		return nil, customErrors.NewDomainErrorWrap(err, "[Order_NewOrder.Map] error in the mapping []ShopItems to []ShopItemsDto")
 	}
 
 	event, err := creatingOrderEvents.NewOrderCreatedEventV1(id, itemsDto, accountEmail, deliveryAddress, deliveredTime, createdAt)
-
 	if err != nil {
-		return nil, httpErrors.NewDomainErrorWrap(err, "(NewOrder): error in creating order created event")
+		return nil, customErrors.NewDomainErrorWrap(err, "[Order_NewOrder.NewOrderCreatedEventV1] error in creating order created event")
 	}
 
 	err = order.Apply(event, true)
 	if err != nil {
-		return nil, httpErrors.NewDomainErrorWrap(err, "(NewOrder): error in applying created event")
+		return nil, customErrors.NewDomainErrorWrap(err, "[Order_NewOrder.Apply] error in applying created event")
 	}
 
 	return order, nil
-}
-
-func (o *Order) ChangeDeliveryAddress(address string) error {
-
-	event, err := changingDeliveryAddressEvents.NewDeliveryAddressChangedEventV1(address)
-	if err != nil {
-		return err
-	}
-
-	err = o.Apply(event, true)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (o *Order) UpdateShoppingCard(shopItems []*value_objects.ShopItem) error {
@@ -122,7 +103,7 @@ func (o *Order) When(event domain.IDomainEvent) error {
 	//	return o.onChangeDeliveryAddress(evt)
 
 	default:
-		return es.ErrInvalidEventType
+		return es.InvalidEventTypeError
 	}
 }
 

@@ -60,7 +60,7 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetProductByIdQuery")
-			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"productId": query.ProductID})
+			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": query.ProductID})
 			return err
 		}
 

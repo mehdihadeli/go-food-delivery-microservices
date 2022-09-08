@@ -96,11 +96,6 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 	}))
 
 	s.echo.Use(middleware.BodyLimit(constants.BodyLimit))
-	s.echo.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
-		StackSize:         constants.StackSize,
-		DisablePrintStack: true,
-		DisableStackAll:   true,
-	}))
 	s.echo.Use(middleware.RequestID())
 	s.echo.Use(middleware.Logger())
 	s.echo.Use(middleware.GzipWithConfig(middleware.GzipConfig{

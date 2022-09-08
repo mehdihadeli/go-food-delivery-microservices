@@ -41,13 +41,8 @@ func (n *notFoundError) GetCustomError() CustomError {
 }
 
 func IsNotFoundError(err error) bool {
-	n, ok := err.(NotFoundError)
-	if ok && n.IsNotFoundError() {
-		return true
-	}
-
-	var notFoundError NotFoundError
-	//us, ok := grpc_errors.Cause(err).(NotFoundError)
+	var notFoundError *notFoundError
+	//us, ok := grpc_errors.Cause(err).(*notFoundError)
 	if errors.As(err, &notFoundError) {
 		return notFoundError.IsNotFoundError()
 	}

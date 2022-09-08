@@ -41,13 +41,8 @@ type InternalServerError interface {
 }
 
 func IsInternalServerError(err error) bool {
-	i, ok := err.(InternalServerError)
-	if ok && i.IsInternalServerError() {
-		return true
-	}
-
-	var internalErr InternalServerError
-	//us, ok := grpc_errors.Cause(err).(InternalServerError)
+	var internalErr *internalServerError
+	//us, ok := grpc_errors.Cause(err).(*internalServerError)
 	if errors.As(err, &internalErr) {
 		return internalErr.IsInternalServerError()
 	}

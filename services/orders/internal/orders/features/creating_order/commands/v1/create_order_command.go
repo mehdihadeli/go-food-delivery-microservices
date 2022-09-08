@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+//https://echo.labstack.com/guide/request/
+//https://github.com/go-playground/validator
+
 type CreateOrderCommand struct {
 	OrderID         uuid.UUID           `validate:"required"`
 	ShopItems       []*dtos.ShopItemDto `validate:"required"`

@@ -43,13 +43,8 @@ func (v *validationError) GetCustomError() CustomError {
 }
 
 func IsValidationError(err error) bool {
-	v, ok := err.(ValidationError)
-	if ok && v.IsValidationError() {
-		return true
-	}
-
-	var validationError ValidationError
-	//us, ok := grpc_errors.Cause(err).(ValidationError)
+	var validationError *validationError
+	//us, ok := grpc_errors.Cause(err).(*validationError)
 	if errors.As(err, &validationError) {
 		return validationError.IsValidationError()
 	}

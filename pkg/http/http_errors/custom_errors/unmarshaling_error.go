@@ -6,7 +6,7 @@ import (
 )
 
 func NewUnMarshalingError(message string) error {
-	ue := &marshalingError{
+	ue := &unMarshalingError{
 		WithStack: NewInternalServerError(message).(contracts.WithStack),
 	}
 
@@ -14,7 +14,7 @@ func NewUnMarshalingError(message string) error {
 }
 
 func NewUnMarshalingErrorWrap(err error, message string) error {
-	ue := &marshalingError{
+	ue := &unMarshalingError{
 		WithStack: NewInternalServerErrorWrap(err, message).(contracts.WithStack),
 	}
 
@@ -43,13 +43,8 @@ func (u *unMarshalingError) GetCustomError() CustomError {
 }
 
 func IsUnMarshalingError(err error) bool {
-	u, ok := err.(UnMarshalingError)
-	if ok && u.IsUnMarshalingError() {
-		return true
-	}
-
-	var unMarshalingError UnMarshalingError
-	//us, ok := grpc_errors.Cause(err).(UnMarshalingError)
+	var unMarshalingError *unMarshalingError
+	//us, ok := grpc_errors.Cause(err).(*unMarshalingError)
 	if errors.As(err, &unMarshalingError) {
 		return unMarshalingError.IsUnMarshalingError()
 	}

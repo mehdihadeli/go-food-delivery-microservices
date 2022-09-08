@@ -57,13 +57,8 @@ func (a *applicationError) GetCustomError() CustomError {
 }
 
 func IsApplicationError(err error) bool {
-	a, ok := err.(ApplicationError)
-	if ok && a.IsApplicationError() {
-		return true
-	}
-
-	var applicationError ApplicationError
-	//us, ok := grpc_errors.Cause(err).(ApplicationError)
+	var applicationError *applicationError
+	//us, ok := grpc_errors.Cause(err).(*applicationError)
 	if errors.As(err, &applicationError) {
 		return applicationError.IsApplicationError()
 	}

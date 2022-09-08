@@ -7,6 +7,6 @@ import (
 )
 
 var (
-	ErrEventAlreadyExists = customErrors.NewConflictError(fmt.Sprintf("domain event already exists in event registry"))
-	ErrInvalidEventType   = errors.New("invalid event type")
+	EventAlreadyExistsError = customErrors.NewConflictError(fmt.Sprintf("domain event already exists in event registry"))
+	InvalidEventTypeError   = errors.New("invalid event type")
 )

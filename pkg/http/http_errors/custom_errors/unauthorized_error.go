@@ -41,13 +41,8 @@ func (u *unauthorizedError) GetCustomError() CustomError {
 }
 
 func IsUnAuthorizedError(err error) bool {
-	u, ok := err.(UnauthorizedError)
-	if ok && u.IsUnAuthorizedError() {
-		return true
-	}
-
-	var unauthorizedError UnauthorizedError
-	//us, ok := grpc_errors.Cause(err).(UnauthorizedError)
+	var unauthorizedError *unauthorizedError
+	//us, ok := grpc_errors.Cause(err).(*unauthorizedError)
 	if errors.As(err, &unauthorizedError) {
 		return unauthorizedError.IsUnAuthorizedError()
 	}

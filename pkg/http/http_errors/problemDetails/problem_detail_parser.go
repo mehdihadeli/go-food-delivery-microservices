@@ -22,6 +22,8 @@ func ParseError(err error) ProblemDetailErr {
 			return NewDomainProblemDetail(customErr.Status(), customErr.Error(), stackTrace)
 		case customErrors.IsApplicationError(err):
 			return NewApplicationProblemDetail(customErr.Status(), customErr.Error(), stackTrace)
+		case customErrors.IsApiError(err):
+			return NewApiProblemDetail(customErr.Status(), customErr.Error(), stackTrace)
 		case customErrors.IsBadRequestError(err):
 			return NewBadRequestProblemDetail(customErr.Error(), stackTrace)
 		case customErrors.IsNotFoundError(err):
@@ -36,8 +38,6 @@ func ParseError(err error) ProblemDetailErr {
 			return NewConflictProblemDetail(customErr.Error(), stackTrace)
 		case customErrors.IsInternalServerError(err):
 			return NewInternalServerProblemDetail(customErr.Error(), stackTrace)
-		case customErrors.IsApiError(err):
-			return NewApiProblemDetail(customErr.Status(), customErr.Error(), stackTrace)
 		case customErrors.IsCustomError(err):
 			return NewProblemDetailFromCodeAndDetail(customErr.Status(), customErr.Error(), stackTrace)
 		case customErrors.IsUnMarshalingError(err):

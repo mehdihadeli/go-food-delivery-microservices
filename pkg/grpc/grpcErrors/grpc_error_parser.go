@@ -43,6 +43,8 @@ func ParseError(err error) GrpcErr {
 			return NewDomainGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
 		case customErrors.IsApplicationError(err):
 			return NewApplicationGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
+		case customErrors.IsApiError(err):
+			return NewApiGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
 		case customErrors.IsBadRequestError(err):
 			return NewBadRequestGrpcError(customErr.Error(), stackTrace)
 		case customErrors.IsNotFoundError(err):
@@ -57,8 +59,6 @@ func ParseError(err error) GrpcErr {
 			return NewConflictGrpcError(customErr.Error(), stackTrace)
 		case customErrors.IsInternalServerError(err):
 			return NewInternalServerGrpcError(customErr.Error(), stackTrace)
-		case customErrors.IsApiError(err):
-			return NewApiGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
 		case customErrors.IsCustomError(err):
 			return NewGrpcError(codes.Code(customErr.Status()), codes.Code(customErr.Status()).String(), customErr.Error(), stackTrace)
 		case customErrors.IsUnMarshalingError(err):

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	domainExceptions "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/exceptions/domain"
@@ -21,23 +22,23 @@ type OrderCreatedEventV1 struct {
 
 func NewOrderCreatedEventV1(aggregateId uuid.UUID, shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedEventV1, error) {
 	if shopItems == nil || len(shopItems) == 0 {
-		return nil, domainExceptions.ErrOrderShopItemsIsRequired
+		return nil, domainExceptions.NewOrderShopItemsRequiredError("shopItems is required")
 	}
 
 	if deliveryAddress == "" {
-		return nil, domainExceptions.ErrInvalidDeliveryAddress
+		return nil, domainExceptions.NewInvalidDeliveryAddressError("deliveryAddress is invalid")
 	}
 
 	if accountEmail == "" {
-		return nil, domainExceptions.ErrInvalidAccountEmail
+		return nil, domainExceptions.NewInvalidEmailAddressError("accountEmail is invalid")
 	}
 
 	if createdAt.IsZero() {
-		return nil, domainExceptions.ErrInvalidTime
+		return nil, customErrors.NewDomainError("createdAt can't be zero")
 	}
 
 	if deliveredTime.IsZero() {
-		return nil, domainExceptions.ErrInvalidTime
+		return nil, customErrors.NewDomainError("deliveredTime can't be zero")
 	}
 
 	eventData := &OrderCreatedEventV1{

@@ -41,13 +41,8 @@ func (f *forbiddenError) GetCustomError() CustomError {
 }
 
 func IsForbiddenError(err error) bool {
-	f, ok := err.(ForbiddenError)
-	if ok && f.IsForbiddenError() {
-		return true
-	}
-
-	var forbiddenError ForbiddenError
-	//us, ok := grpc_errors.Cause(err).(ForbiddenError)
+	var forbiddenError *forbiddenError
+	//us, ok := grpc_errors.Cause(err).(*forbiddenError)
 	if errors.As(err, &forbiddenError) {
 		return forbiddenError.IsForbiddenError()
 	}

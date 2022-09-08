@@ -3,9 +3,18 @@ package customErrors
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
 	"github.com/pkg/errors"
+	"net/http"
 )
 
-func NewDomainError(message string, code int) error {
+func NewDomainError(message string) error {
+	de := &domainError{
+		WithStack: NewCustomErrorStack(nil, http.StatusBadRequest, message),
+	}
+
+	return de
+}
+
+func NewDomainErrorWithCode(message string, code int) error {
 	de := &domainError{
 		WithStack: NewCustomErrorStack(nil, code, message),
 	}
@@ -13,7 +22,15 @@ func NewDomainError(message string, code int) error {
 	return de
 }
 
-func NewDomainErrorWrap(err error, code int, message string) error {
+func NewDomainErrorWrap(err error, message string) error {
+	de := &domainError{
+		WithStack: NewCustomErrorStack(err, http.StatusBadRequest, message),
+	}
+
+	return de
+}
+
+func NewDomainErrorWithCodeWrap(err error, code int, message string) error {
 	de := &domainError{
 		WithStack: NewCustomErrorStack(err, code, message),
 	}
@@ -40,13 +57,8 @@ func (d *domainError) GetCustomError() CustomError {
 }
 
 func IsDomainError(err error) bool {
-	d, ok := err.(DomainError)
-	if ok && d.IsDomainError() {
-		return true
-	}
-
-	var domainErr DomainError
-	//us, ok := grpc_errors.Cause(err).(DomainError)
+	var domainErr *domainError
+	//us, ok := grpc_errors.Cause(err).(*domainError)
 	if errors.As(err, &domainErr) {
 		return domainErr.IsDomainError()
 	}

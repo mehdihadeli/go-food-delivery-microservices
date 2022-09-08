@@ -80,7 +80,7 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 
 	span.LogFields(log.Object("CreateProductResponseDto", response))
 
-	c.log.Infow(fmt.Sprintf("[CreateProductCommandHandler.Handle] product with id: {%s} created", command.ProductID), logger.Fields{"productId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[CreateProductCommandHandler.Handle] product with id: {%s} created", command.ProductID), logger.Fields{"ProductId": command.ProductID})
 
 	return response, nil
 }

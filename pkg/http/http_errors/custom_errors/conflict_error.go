@@ -41,13 +41,8 @@ func (c *conflictError) GetCustomError() CustomError {
 }
 
 func IsConflictError(err error) bool {
-	c, ok := err.(ConflictError)
-	if ok && c.IsConflictError() {
-		return true
-	}
-
-	var conflictError ConflictError
-	//us, ok := grpc_errors.Cause(err).(ConflictError)
+	var conflictError *conflictError
+	//us, ok := grpc_errors.Cause(err).(*conflictError)
 	if errors.As(err, &conflictError) {
 		return conflictError.IsConflictError()
 	}

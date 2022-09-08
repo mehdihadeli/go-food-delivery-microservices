@@ -40,13 +40,8 @@ func (a *apiError) GetCustomError() CustomError {
 }
 
 func IsApiError(err error) bool {
-	a, ok := err.(ApiError)
-	if ok && a.IsApiError() {
-		return true
-	}
-
-	var apiError ApiError
-	//us, ok := grpc_errors.Cause(err).(ApiError)
+	var apiError *apiError
+	//us, ok := grpc_errors.Cause(err).(*apiError)
 	if errors.As(err, &apiError) {
 		return apiError.IsApiError()
 	}
