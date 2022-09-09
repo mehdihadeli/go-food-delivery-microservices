@@ -1,6 +1,7 @@
 package config
 
 import (
+	"emperror.dev/errors"
 	"flag"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
@@ -11,9 +12,10 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"os"
+	"path/filepath"
+	"runtime"
 )
 
 var configPath string
@@ -25,7 +27,7 @@ func init() {
 type Config struct {
 	DeliveryType     string                          `mapstructure:"deliveryType"`
 	ServiceName      string                          `mapstructure:"serviceName"`
-	Logger           *logger.Config                  `mapstructure:"logger"`
+	Logger           *logger.LogConfig               `mapstructure:"logger"`
 	KafkaTopics      KafkaTopics                     `mapstructure:"kafkaTopics"`
 	GRPC             *grpc.GrpcConfig                `mapstructure:"grpc"`
 	Http             *customEcho.EchoHttpConfig      `mapstructure:"http"`
@@ -61,7 +63,14 @@ func InitConfig(env string) (*Config, error) {
 		if configPathFromEnv != "" {
 			configPath = configPathFromEnv
 		} else {
-			configPath = "./config"
+			//https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
+			//https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
+			d, err := dirname()
+			if err != nil {
+				return nil, err
+			}
+
+			configPath = d
 		}
 	}
 
@@ -72,11 +81,11 @@ func InitConfig(env string) (*Config, error) {
 	viper.SetConfigType(constants.Yaml)
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, errors.Wrap(err, "viper.ReadInConfig")
+		return nil, errors.WrapIf(err, "viper.ReadInConfig")
 	}
 
 	if err := viper.Unmarshal(cfg); err != nil {
-		return nil, errors.Wrap(err, "viper.Unmarshal")
+		return nil, errors.WrapIf(err, "viper.Unmarshal")
 	}
 
 	grpcPort := os.Getenv(constants.GrpcPort)
@@ -94,4 +103,20 @@ func InitConfig(env string) (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func filename() (string, error) {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", errors.New("unable to get the current filename")
+	}
+	return filename, nil
+}
+
+func dirname() (string, error) {
+	filename, err := filename()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Dir(filename), nil
 }

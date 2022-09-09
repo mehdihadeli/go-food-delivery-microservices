@@ -29,7 +29,7 @@ func NewUniversalRedisClient(cfg *Config) redis.UniversalClient {
 	universalClient := redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs:           []string{cfg.Addr},
 		Password:        cfg.Password, // no password set
-		DB:              cfg.DB,       // use default DB
+		DB:              cfg.DB,       // use defaultLogger DB
 		MaxRetries:      maxRetries,
 		MinRetryBackoff: minRetryBackoff,
 		MaxRetryBackoff: maxRetryBackoff,

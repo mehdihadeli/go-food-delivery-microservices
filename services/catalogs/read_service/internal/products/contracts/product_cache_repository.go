@@ -6,8 +6,8 @@ import (
 )
 
 type ProductCacheRepository interface {
-	PutProduct(ctx context.Context, key string, product *models.Product)
+	PutProduct(ctx context.Context, key string, product *models.Product) error
 	GetProduct(ctx context.Context, key string) (*models.Product, error)
-	DelProduct(ctx context.Context, key string)
-	DelAllProducts(ctx context.Context)
+	DeleteProduct(ctx context.Context, key string) error
+	DeleteAllProducts(ctx context.Context) error
 }

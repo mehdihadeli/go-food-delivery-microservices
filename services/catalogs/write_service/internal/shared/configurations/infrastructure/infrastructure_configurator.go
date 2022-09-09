@@ -4,9 +4,7 @@ import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/go-playground/validator"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
-	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
-	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
@@ -23,33 +21,28 @@ type InfrastructureConfiguration struct {
 	KafkaConn         *kafka.Conn
 	KafkaProducer     kafkaClient.Producer
 	Pgx               *postgres.Pgx
-	Gorm              *gorm_postgres.Gorm
+	Gorm              *gormPostgres.Gorm
 	Metrics           *CatalogsServiceMetrics
-	EchoServer        customEcho.EchoHttpServer
-	GrpcServer        grpcServer.GrpcServer
 	Esdb              *esdb.Client
 	ElasticClient     *v7.Client
 	CustomMiddlewares cutomMiddlewares.CustomMiddlewares
 }
 
 type InfrastructureConfigurator interface {
-	ConfigureInfrastructure() error
+	ConfigInfrastructures(ctx context.Context) (*InfrastructureConfiguration, error, func())
 }
 
 type infrastructureConfigurator struct {
-	log        logger.Logger
-	cfg        *config.Config
-	echoServer customEcho.EchoHttpServer
-	grpcServer grpcServer.GrpcServer
+	log logger.Logger
+	cfg *config.Config
 }
 
-func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config, echoServer customEcho.EchoHttpServer, grpcServer grpcServer.GrpcServer) *infrastructureConfigurator {
-	return &infrastructureConfigurator{log: log, cfg: cfg, echoServer: echoServer, grpcServer: grpcServer}
+func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config) InfrastructureConfigurator {
+	return &infrastructureConfigurator{log: log, cfg: cfg}
 }
 
 func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*InfrastructureConfiguration, error, func()) {
-
-	infrastructure := &InfrastructureConfiguration{Cfg: ic.cfg, EchoServer: ic.echoServer, GrpcServer: ic.grpcServer, Log: ic.log, Validator: validator.New()}
+	infrastructure := &InfrastructureConfiguration{Cfg: ic.cfg, Log: ic.log, Validator: validator.New()}
 
 	metrics := ic.configCatalogsMetrics()
 	infrastructure.Metrics = metrics
@@ -82,10 +75,6 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	cleanup = append(cleanup, kafkaCleanup)
 	infrastructure.KafkaConn = kafkaConn
 	infrastructure.KafkaProducer = kafkaProducer
-
-	ic.configSwagger()
-	ic.configMiddlewares(metrics)
-	ic.configureHealthCheckEndpoints(ctx)
 
 	if err != nil {
 		return nil, err, nil

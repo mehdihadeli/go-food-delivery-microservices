@@ -1,6 +1,7 @@
 package eventstroredb
 
 import (
+	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/gofrs/uuid"
@@ -12,7 +13,7 @@ import (
 	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/read_position"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/truncatePosition"
 	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
-	"github.com/pkg/errors"
+	esErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb/errors"
 	uuid2 "github.com/satori/go.uuid"
 	"io"
 	"strings"
@@ -98,13 +99,13 @@ func (e *EsdbSerializer) EsdbReadStreamToResolvedEvents(stream *esdb.ReadStream)
 	for {
 		event, err := stream.Recv()
 		if errors.Is(err, esdb.ErrStreamNotFound) {
-			return nil, ErrStreamNotFound(err)
+			return nil, esErrors.NewStreamNotFoundError(err, event.Event.StreamID)
 		}
 		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
-			return nil, ErrReadFromStream(err)
+			return nil, esErrors.NewReadStreamError(err)
 		}
 
 		events = append(events, event)

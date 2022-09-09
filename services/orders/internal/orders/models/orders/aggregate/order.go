@@ -5,11 +5,12 @@ package aggregate
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
-	changingDeliveryAddressEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/changing_delivery_address/events/v1"
+	domainExceptions "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/exceptions/domain"
 	creatingOrderEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/events/v1"
 	updatingShoppingCardEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/updating_shopping_card/events/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/entities"
@@ -46,38 +47,26 @@ func NewOrder(id uuid.UUID, shopItems []*value_objects.ShopItem, accountEmail, d
 	order.NewEmptyAggregate()
 	order.SetId(id)
 
+	if shopItems == nil || len(shopItems) == 0 {
+		return nil, domainExceptions.NewOrderShopItemsRequiredError("[Order_NewOrder] order items is required")
+	}
+
 	itemsDto, err := mapper.Map[[]*dtos.ShopItemDto](shopItems)
 	if err != nil {
-		return nil, err
+		return nil, customErrors.NewDomainErrorWrap(err, "[Order_NewOrder.Map] error in the mapping []ShopItems to []ShopItemsDto")
 	}
 
 	event, err := creatingOrderEvents.NewOrderCreatedEventV1(id, itemsDto, accountEmail, deliveryAddress, deliveredTime, createdAt)
-
 	if err != nil {
-		return nil, err
+		return nil, customErrors.NewDomainErrorWrap(err, "[Order_NewOrder.NewOrderCreatedEventV1] error in creating order created event")
 	}
 
 	err = order.Apply(event, true)
 	if err != nil {
-		return nil, err
+		return nil, customErrors.NewDomainErrorWrap(err, "[Order_NewOrder.Apply] error in applying created event")
 	}
 
 	return order, nil
-}
-
-func (o *Order) ChangeDeliveryAddress(address string) error {
-
-	event, err := changingDeliveryAddressEvents.NewDeliveryAddressChangedEventV1(address)
-	if err != nil {
-		return err
-	}
-
-	err = o.Apply(event, true)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (o *Order) UpdateShoppingCard(shopItems []*value_objects.ShopItem) error {
@@ -114,7 +103,7 @@ func (o *Order) When(event domain.IDomainEvent) error {
 	//	return o.onChangeDeliveryAddress(evt)
 
 	default:
-		return es.ErrInvalidEventType
+		return es.InvalidEventTypeError
 	}
 }
 
@@ -124,8 +113,14 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 		return err
 	}
 
+	payment, err := mapper.Map[*entities.Payment](evt.Payment)
+	if err != nil {
+		return err
+	}
+
 	o.accountEmail = evt.AccountEmail
 	o.shopItems = items
+	o.payment = payment
 	o.totalPrice = getShopItemsTotalPrice(items)
 	o.deliveryAddress = evt.DeliveryAddress
 	o.deliveredTime = evt.DeliveredTime
@@ -138,7 +133,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onOrderPaid(evt *es.Event) error {
 //	var payment Payment
 //	if err := evt.GetJsonData(&payment); err != nil {
-//		return errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.Paid = true
@@ -156,7 +151,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onOrderCompleted(evt *es.Event) error {
 //	var eventData completingOrderEvents.OrderCompletedEvent
 //	if err := evt.GetJsonData(&eventData); err != nil {
-//		return errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.Completed = true
@@ -169,7 +164,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onOrderCanceled(evt *es.Event) error {
 //	var eventData cancelingOrderEvents.OrderCanceledEvent
 //	if err := evt.GetJsonData(&eventData); err != nil {
-//		return errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.Canceled = true
@@ -182,7 +177,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onShoppingCartUpdated(evt *es.Event) error {
 //	var eventData updatingShoppingCardEvents.ShoppingCartUpdatedEvent
 //	if err := evt.GetJsonData(&eventData); err != nil {
-//		return errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.ShopItems = eventData.ShopItems
@@ -194,7 +189,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onChangeDeliveryAddress(evt *es.Event) error {
 //	var eventData changingDeliveryAddressEvents.DeliveryAddressChangedEvent
 //	if err := evt.GetJsonData(&eventData); err != nil {
-//		return errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.DeliveryAddress = eventData.DeliveryAddress
@@ -204,6 +199,10 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 
 func (o *Order) ShopItems() []*value_objects.ShopItem {
 	return o.shopItems
+}
+
+func (o *Order) Payment() *entities.Payment {
+	return o.payment
 }
 
 func (o *Order) AccountEmail() string {

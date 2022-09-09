@@ -44,7 +44,7 @@ type PGXQuerier interface {
 	// It returns the number of rows copied and an error.
 	//
 	// CopyFrom requires all values use the binary format. Almost all types
-	// implemented by pgx use the binary format by default. Types implementing
+	// implemented by pgx use the binary format by defaultLogger. Types implementing
 	// Encoder can only be used if they encode to the binary format.
 	CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
 

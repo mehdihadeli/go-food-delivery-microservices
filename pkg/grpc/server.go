@@ -1,13 +1,14 @@
 package grpc
 
 import (
+	"emperror.dev/errors"
+	"fmt"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcCtxTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpcOpentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
@@ -59,10 +60,9 @@ func NewGrpcServer(config *GrpcConfig, logger logger.Logger) *grpcServer {
 }
 
 func (s *grpcServer) RunGrpcServer(configGrpc func(grpcServer *grpc.Server)) error {
-
 	l, err := net.Listen("tcp", s.config.Port)
 	if err != nil {
-		return errors.Wrap(err, "net.Listen")
+		return errors.WrapIf(err, "net.Listen")
 	}
 
 	if configGrpc != nil {
@@ -75,9 +75,13 @@ func (s *grpcServer) RunGrpcServer(configGrpc func(grpcServer *grpc.Server)) err
 		reflection.Register(s.server)
 	}
 
-	s.log.Infof("Writer gRPC server is listening on port: %s", s.config.Port)
+	s.log.Infof("[grpcServer.RunGrpcServer] Writer gRPC server is listening on port: %s", s.config.Port)
+
 	err = s.server.Serve(l)
-	s.log.Fatal(err)
+
+	if err != nil {
+		s.log.Error(fmt.Sprintf("[grpcServer_RunGrpcServer.Serve] grpc server serve error: %+v", err))
+	}
 
 	return err
 }

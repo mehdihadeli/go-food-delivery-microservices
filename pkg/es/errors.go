@@ -1,12 +1,12 @@
 package es
 
 import (
+	"emperror.dev/errors"
 	"fmt"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
-	"github.com/pkg/errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 )
 
 var (
-	ErrEventAlreadyExists = httpErrors.NewConflictError(nil, fmt.Sprintf("domain event already exists in event registry"))
-	ErrInvalidEventType   = errors.New("invalid event type")
+	EventAlreadyExistsError = customErrors.NewConflictError(fmt.Sprintf("domain event already exists in event registry"))
+	InvalidEventTypeError   = errors.New("invalid event type")
 )

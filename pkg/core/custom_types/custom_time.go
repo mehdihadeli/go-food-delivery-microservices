@@ -6,7 +6,7 @@ package customTypes
 import (
 	"fmt"
 	"github.com/araddon/dateparse"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"strings"
 	"time"
 )
@@ -22,7 +22,7 @@ func (ct *CustomTime) UnmarshalJSON(b []byte) (err error) {
 	//nt, err := time.Parse(time.RFC3339, s)
 	nt, err := dateparse.ParseLocal(s)
 	if err != nil {
-		return httpErrors.NewBadRequestError(err, fmt.Sprintf("invalid time format: %s", s))
+		return customErrors.NewBadRequestErrorWrap(err, fmt.Sprintf("invalid time format: %s", s))
 	}
 	*ct = CustomTime(nt)
 	return

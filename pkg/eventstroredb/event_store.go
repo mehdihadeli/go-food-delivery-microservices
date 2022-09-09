@@ -2,6 +2,8 @@ package eventstroredb
 
 import (
 	"context"
+	"emperror.dev/errors"
+	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
@@ -10,8 +12,8 @@ import (
 	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/read_position"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/truncatePosition"
 	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
+	esErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
@@ -43,8 +45,7 @@ func (e *eventStoreDbEventStore) StreamExists(streamName streamName.StreamName, 
 			From:      esdb.End{}},
 		1)
 	if err != nil {
-		tracing.TraceErr(span, err)
-		return false, err
+		return false, tracing.TraceWithErr(span, errors.WithMessage(esErrors.NewReadStreamError(err), "[eventStoreDbEventStore_StreamExists:ReadStream] error in reading stream"))
 	}
 
 	defer stream.Close()
@@ -58,7 +59,6 @@ func (e *eventStoreDbEventStore) AppendEvents(
 	events []*es.StreamEvent,
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
-
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.AppendEvents")
 	span.LogFields(log.String("StreamName", streamName.String()))
 	defer span.Finish()
@@ -82,13 +82,14 @@ func (e *eventStoreDbEventStore) AppendEvents(
 		},
 		eventsData...)
 	if err != nil {
-		tracing.TraceErr(span, ErrAppendToStream(err, streamName.String()))
-		return nil, ErrAppendToStream(err, streamName.String())
+		return nil, tracing.TraceWithErr(span, errors.WithMessage(esErrors.NewAppendToStreamError(err, streamName.String()), "[eventStoreDbEventStore_AppendEvents:AppendToStream] error in appending to stream"))
 	}
 
 	appendEventsResult = e.serializer.EsdbWriteResultToAppendEventResult(res)
 
-	e.log.Infof("AppendEvents result: %s", jsonSerializer.ColoredPrettyPrint(appendEventsResult))
+	span.LogFields(log.Object("AppendEventsResult", appendEventsResult))
+
+	e.log.Info("[eventStoreDbEventStore_AppendEvents] events append to stream successfully")
 
 	return appendEventsResult, nil
 }
@@ -105,11 +106,12 @@ func (e *eventStoreDbEventStore) AppendNewEvents(
 
 	appendEventsResult, err := e.AppendEvents(streamName, expectedStreamVersion.NoStream, events, ctx)
 	if err != nil {
-		tracing.TraceErr(span, ErrAppendToStream(err, streamName.String()))
-		return nil, ErrAppendToStream(err, streamName.String())
+		return nil, tracing.TraceWithErr(span, errors.WithMessage(esErrors.NewAppendToStreamError(err, streamName.String()), "[eventStoreDbEventStore_AppendNewEvents:AppendEvents] error in appending to stream"))
 	}
 
-	e.log.Infof("AppendNewEvents result: %s", jsonSerializer.ColoredPrettyPrint(appendEventsResult))
+	span.LogFields(log.Object("AppendNewEvents", appendEventsResult))
+
+	e.log.Info("[eventStoreDbEventStore_AppendNewEvents] events append to stream successfully")
 
 	return appendEventsResult, nil
 }
@@ -135,22 +137,19 @@ func (e *eventStoreDbEventStore) ReadEvents(
 		},
 		count)
 	if err != nil {
-		tracing.TraceErr(span, ErrReadFromStream(err))
-		return nil, ErrReadFromStream(err)
+		return nil, tracing.TraceWithErr(span, errors.WithMessage(esErrors.NewReadStreamError(err), "[eventStoreDbEventStore_ReadEvents:ReadStream] error in reading stream"))
 	}
 
 	defer readStream.Close()
 
 	resolvedEvents, err := e.serializer.EsdbReadStreamToResolvedEvents(readStream)
 	if err != nil {
-		tracing.TraceErr(span, err)
-		return nil, err
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[eventStoreDbEventStore_ReadEvents.EsdbReadStreamToResolvedEvents] error in converting to resolved events"))
 	}
 
 	events, err := e.serializer.ResolvedEventsToStreamEvents(resolvedEvents)
 	if err != nil {
-		tracing.TraceErr(span, err)
-		return nil, err
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[eventStoreDbEventStore_ReadEvents.ResolvedEventsToStreamEvents] error in converting to stream events"))
 	}
 
 	return events, nil
@@ -174,7 +173,6 @@ func (e *eventStoreDbEventStore) ReadEventsFromStart(
 	count uint64,
 	ctx context.Context,
 ) ([]*es.StreamEvent, error) {
-
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.ReadEventsFromStart")
 	span.LogFields(log.String("StreamName", streamName.String()))
 	defer span.Finish()
@@ -197,22 +195,19 @@ func (e *eventStoreDbEventStore) ReadEventsBackwards(streamName streamName.Strea
 		},
 		count)
 	if err != nil {
-		tracing.TraceErr(span, ErrReadFromStream(err))
-		return nil, ErrReadFromStream(err)
+		return nil, tracing.TraceWithErr(span, errors.WithMessage(esErrors.NewReadStreamError(err), "[eventStoreDbEventStore_ReadEventsBackwards:ReadStream] error in reading stream"))
 	}
 
 	defer readStream.Close()
 
 	resolvedEvents, err := e.serializer.EsdbReadStreamToResolvedEvents(readStream)
 	if err != nil {
-		tracing.TraceErr(span, err)
-		return nil, err
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[eventStoreDbEventStore_ReadEvents.EsdbReadStreamToResolvedEvents] error in converting to resolved events"))
 	}
 
 	events, err := e.serializer.ResolvedEventsToStreamEvents(resolvedEvents)
 	if err != nil {
-		tracing.TraceErr(span, err)
-		return nil, err
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[eventStoreDbEventStore_ReadEvents.ResolvedEventsToStreamEvents] error in converting to stream events"))
 	}
 
 	return events, nil
@@ -223,7 +218,6 @@ func (e *eventStoreDbEventStore) ReadEventsBackwardsWithMaxCount(
 	readPosition readPosition.StreamReadPosition,
 	ctx context.Context,
 ) ([]*es.StreamEvent, error) {
-
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.ReadEventsBackwardsWithMaxCount")
 	span.LogFields(log.String("StreamName", streamName.String()))
 	defer span.Finish()
@@ -236,7 +230,6 @@ func (e *eventStoreDbEventStore) ReadEventsBackwardsFromEnd(
 	count uint64,
 	ctx context.Context,
 ) ([]*es.StreamEvent, error) {
-
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.ReadEventsBackwardsFromEnd")
 	span.LogFields(log.String("StreamName", streamName.String()))
 	defer span.Finish()
@@ -250,7 +243,6 @@ func (e *eventStoreDbEventStore) TruncateStream(
 	expectedVersion expectedStreamVersion.ExpectedStreamVersion,
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
-
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.TruncateStream")
 	span.LogFields(log.String("StreamName", streamName.String()))
 	defer span.Finish()
@@ -265,11 +257,12 @@ func (e *eventStoreDbEventStore) TruncateStream(
 		},
 		streamMetadata)
 	if err != nil {
-		tracing.TraceErr(span, ErrTruncateStream(err, streamName.String()))
-		return nil, ErrTruncateStream(err, streamName.String())
+		return nil, tracing.TraceWithErr(span, errors.WithMessage(esErrors.NewTruncateStreamError(err, streamName.String()), "[eventStoreDbEventStore_TruncateStream:SetStreamMetadata] error in truncating stream"))
 	}
 
-	e.log.Infof("TruncateStream result: %s", jsonSerializer.ColoredPrettyPrint(writeResult))
+	span.LogFields(log.Object("WriteResult", writeResult))
+
+	e.log.Infow(fmt.Sprintf("[eventStoreDbEventStore.TruncateStream] stream with id %s truncated successfully", streamName.String()), logger.Fields{"StreamId": streamName.String()})
 
 	return e.serializer.EsdbWriteResultToAppendEventResult(writeResult), nil
 }
@@ -291,11 +284,12 @@ func (e *eventStoreDbEventStore) DeleteStream(
 			ExpectedRevision: e.serializer.ExpectedStreamVersionToEsdbExpectedRevision(expectedVersion),
 		})
 	if err != nil {
-		tracing.TraceErr(span, ErrTruncateStream(err, streamName.String()))
-		return ErrDeleteStream(err, streamName.String())
+		return tracing.TraceWithErr(span, errors.WithMessage(esErrors.NewDeleteStreamError(err, streamName.String()), "[eventStoreDbEventStore_DeleteStream:DeleteStream] error in deleting stream"))
 	}
 
-	e.log.Infof("DeleteStream result: %s", jsonSerializer.ColoredPrettyPrint(deleteResult))
+	span.LogFields(log.Object("DeleteResult", deleteResult))
+
+	e.log.Infow(fmt.Sprintf("[eventStoreDbEventStore.DeleteStream] stream with id %s deleted successfully", streamName.String()), logger.Fields{"StreamId": streamName.String()})
 
 	return nil
 }

@@ -2,6 +2,7 @@ package logrous
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/nolleh/caption_json_formatter"
 	"github.com/sirupsen/logrus"
@@ -39,29 +40,15 @@ func (l *logrusLogger) GetLoggerLevel() logrus.Level {
 }
 
 // NewLogrusLogger creates a new logrus logger
-func NewLogrusLogger(cfg *logger.Config) logger.Logger {
-	logrusLogger := &logrusLogger{level: cfg.LogLevel, encoding: cfg.Encoder}
+func NewLogrusLogger(cfg *logger.LogConfig) logger.Logger {
+	logrusLogger := &logrusLogger{level: cfg.LogLevel}
 	logrusLogger.initLogger()
 
 	return logrusLogger
 }
 
-func init() {
-	DefaultLogger = NewLogrusLogger(&logger.Config{
-		LogLevel: "debug",
-		Encoder:  "json",
-	})
-}
-
 // InitLogger Init logger
 func (l *logrusLogger) initLogger() {
-	env := os.Getenv("APP_ENV")
-	if env == constants.Production {
-
-	} else {
-
-	}
-
 	logLevel := l.GetLoggerLevel()
 
 	// Create a new instance of the logger. You can have any number of instances.
@@ -69,11 +56,11 @@ func (l *logrusLogger) initLogger() {
 
 	logrusLogger.SetLevel(logLevel)
 
-	// Output to stdout instead of the default stderr
+	// Output to stdout instead of the defaultLogger stderr
 	// Can be any io.Writer, see below for File example
 	logrusLogger.SetOutput(os.Stdout)
 
-	if env == constants.Dev {
+	if core.IsDevelopment() {
 		logrusLogger.SetReportCaller(false)
 		logrusLogger.SetFormatter(&logrus.TextFormatter{
 			DisableColors: false,
@@ -89,6 +76,14 @@ func (l *logrusLogger) initLogger() {
 	l.logger = logrusLogger
 }
 
+func (l *logrusLogger) LogType() logger.LogType {
+	return logger.Logrus
+}
+
+func (l *logrusLogger) Configure(cfg func(internalLog interface{})) {
+	cfg(l.logger)
+}
+
 func (l *logrusLogger) Debug(args ...interface{}) {
 	l.logger.Debug(args...)
 }
@@ -97,12 +92,22 @@ func (l *logrusLogger) Debugf(template string, args ...interface{}) {
 	l.logger.Debugf(template, args...)
 }
 
+func (l *logrusLogger) Debugw(msg string, fields logger.Fields) {
+	entry := l.mapToFields(fields)
+	entry.Debug(msg)
+}
+
 func (l *logrusLogger) Info(args ...interface{}) {
 	l.logger.Info(args...)
 }
 
 func (l *logrusLogger) Infof(template string, args ...interface{}) {
 	l.logger.Infof(template, args...)
+}
+
+func (l *logrusLogger) Infow(msg string, fields logger.Fields) {
+	entry := l.mapToFields(fields)
+	entry.Info(msg)
 }
 
 func (l *logrusLogger) Warn(args ...interface{}) {
@@ -119,6 +124,11 @@ func (l *logrusLogger) WarnMsg(msg string, err error) {
 
 func (l *logrusLogger) Error(args ...interface{}) {
 	l.logger.Error(args...)
+}
+
+func (l *logrusLogger) Errorw(msg string, fields logger.Fields) {
+	entry := l.mapToFields(fields)
+	entry.Error(msg)
 }
 
 func (l *logrusLogger) Errorf(template string, args ...interface{}) {
@@ -143,17 +153,6 @@ func (l *logrusLogger) Printf(template string, args ...interface{}) {
 
 func (l *logrusLogger) WithName(name string) {
 	l.logger.WithField(constants.NAME, name)
-}
-
-func (l *logrusLogger) HttpMiddlewareAccessLogger(method string, uri string, status int, size int64, time time.Duration) {
-	l.Info(
-		constants.HTTP,
-		logrus.WithField(constants.METHOD, method),
-		logrus.WithField(constants.URI, uri),
-		logrus.WithField(constants.STATUS, status),
-		logrus.WithField(constants.SIZE, size),
-		logrus.WithField(constants.TIME, time),
-	)
 }
 
 func (l *logrusLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration, metaData map[string][]string, err error) {
@@ -197,4 +196,8 @@ func (l *logrusLogger) KafkaLogCommittedMessage(topic string, partition int, off
 		logrus.WithField(constants.Partition, partition),
 		logrus.WithField(constants.Offset, offset),
 	)
+}
+
+func (l *logrusLogger) mapToFields(fields map[string]interface{}) *logrus.Entry {
+	return l.logger.WithFields(logrus.Fields{"ss": 1})
 }

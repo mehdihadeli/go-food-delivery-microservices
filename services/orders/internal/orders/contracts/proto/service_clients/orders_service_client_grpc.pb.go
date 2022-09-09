@@ -23,14 +23,10 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OrdersServiceClient interface {
 	CreateOrder(ctx context.Context, in *CreateOrderReq, opts ...grpc.CallOption) (*CreateOrderRes, error)
-	PayOrder(ctx context.Context, in *PayOrderReq, opts ...grpc.CallOption) (*PayOrderRes, error)
 	SubmitOrder(ctx context.Context, in *SubmitOrderReq, opts ...grpc.CallOption) (*SubmitOrderRes, error)
 	UpdateShoppingCart(ctx context.Context, in *UpdateShoppingCartReq, opts ...grpc.CallOption) (*UpdateShoppingCartRes, error)
-	CancelOrder(ctx context.Context, in *CancelOrderReq, opts ...grpc.CallOption) (*CancelOrderRes, error)
-	CompleteOrder(ctx context.Context, in *CompleteOrderReq, opts ...grpc.CallOption) (*CompleteOrderRes, error)
-	ChangeDeliveryAddress(ctx context.Context, in *ChangeDeliveryAddressReq, opts ...grpc.CallOption) (*ChangeDeliveryAddressRes, error)
 	GetOrderByID(ctx context.Context, in *GetOrderByIDReq, opts ...grpc.CallOption) (*GetOrderByIDRes, error)
-	Search(ctx context.Context, in *SearchReq, opts ...grpc.CallOption) (*SearchRes, error)
+	GetOrders(ctx context.Context, in *GetOrdersReq, opts ...grpc.CallOption) (*GetOrdersRes, error)
 }
 
 type ordersServiceClient struct {
@@ -44,15 +40,6 @@ func NewOrdersServiceClient(cc grpc.ClientConnInterface) OrdersServiceClient {
 func (c *ordersServiceClient) CreateOrder(ctx context.Context, in *CreateOrderReq, opts ...grpc.CallOption) (*CreateOrderRes, error) {
 	out := new(CreateOrderRes)
 	err := c.cc.Invoke(ctx, "/orders_service.OrdersService/CreateOrder", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *ordersServiceClient) PayOrder(ctx context.Context, in *PayOrderReq, opts ...grpc.CallOption) (*PayOrderRes, error) {
-	out := new(PayOrderRes)
-	err := c.cc.Invoke(ctx, "/orders_service.OrdersService/PayOrder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,33 +64,6 @@ func (c *ordersServiceClient) UpdateShoppingCart(ctx context.Context, in *Update
 	return out, nil
 }
 
-func (c *ordersServiceClient) CancelOrder(ctx context.Context, in *CancelOrderReq, opts ...grpc.CallOption) (*CancelOrderRes, error) {
-	out := new(CancelOrderRes)
-	err := c.cc.Invoke(ctx, "/orders_service.OrdersService/CancelOrder", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *ordersServiceClient) CompleteOrder(ctx context.Context, in *CompleteOrderReq, opts ...grpc.CallOption) (*CompleteOrderRes, error) {
-	out := new(CompleteOrderRes)
-	err := c.cc.Invoke(ctx, "/orders_service.OrdersService/CompleteOrder", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *ordersServiceClient) ChangeDeliveryAddress(ctx context.Context, in *ChangeDeliveryAddressReq, opts ...grpc.CallOption) (*ChangeDeliveryAddressRes, error) {
-	out := new(ChangeDeliveryAddressRes)
-	err := c.cc.Invoke(ctx, "/orders_service.OrdersService/ChangeDeliveryAddress", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *ordersServiceClient) GetOrderByID(ctx context.Context, in *GetOrderByIDReq, opts ...grpc.CallOption) (*GetOrderByIDRes, error) {
 	out := new(GetOrderByIDRes)
 	err := c.cc.Invoke(ctx, "/orders_service.OrdersService/GetOrderByID", in, out, opts...)
@@ -113,9 +73,9 @@ func (c *ordersServiceClient) GetOrderByID(ctx context.Context, in *GetOrderByID
 	return out, nil
 }
 
-func (c *ordersServiceClient) Search(ctx context.Context, in *SearchReq, opts ...grpc.CallOption) (*SearchRes, error) {
-	out := new(SearchRes)
-	err := c.cc.Invoke(ctx, "/orders_service.OrdersService/Search", in, out, opts...)
+func (c *ordersServiceClient) GetOrders(ctx context.Context, in *GetOrdersReq, opts ...grpc.CallOption) (*GetOrdersRes, error) {
+	out := new(GetOrdersRes)
+	err := c.cc.Invoke(ctx, "/orders_service.OrdersService/GetOrders", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -127,14 +87,10 @@ func (c *ordersServiceClient) Search(ctx context.Context, in *SearchReq, opts ..
 // for forward compatibility
 type OrdersServiceServer interface {
 	CreateOrder(context.Context, *CreateOrderReq) (*CreateOrderRes, error)
-	PayOrder(context.Context, *PayOrderReq) (*PayOrderRes, error)
 	SubmitOrder(context.Context, *SubmitOrderReq) (*SubmitOrderRes, error)
 	UpdateShoppingCart(context.Context, *UpdateShoppingCartReq) (*UpdateShoppingCartRes, error)
-	CancelOrder(context.Context, *CancelOrderReq) (*CancelOrderRes, error)
-	CompleteOrder(context.Context, *CompleteOrderReq) (*CompleteOrderRes, error)
-	ChangeDeliveryAddress(context.Context, *ChangeDeliveryAddressReq) (*ChangeDeliveryAddressRes, error)
 	GetOrderByID(context.Context, *GetOrderByIDReq) (*GetOrderByIDRes, error)
-	Search(context.Context, *SearchReq) (*SearchRes, error)
+	GetOrders(context.Context, *GetOrdersReq) (*GetOrdersRes, error)
 }
 
 // UnimplementedOrdersServiceServer should be embedded to have forward compatible implementations.
@@ -144,29 +100,17 @@ type UnimplementedOrdersServiceServer struct {
 func (UnimplementedOrdersServiceServer) CreateOrder(context.Context, *CreateOrderReq) (*CreateOrderRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateOrder not implemented")
 }
-func (UnimplementedOrdersServiceServer) PayOrder(context.Context, *PayOrderReq) (*PayOrderRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PayOrder not implemented")
-}
 func (UnimplementedOrdersServiceServer) SubmitOrder(context.Context, *SubmitOrderReq) (*SubmitOrderRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitOrder not implemented")
 }
 func (UnimplementedOrdersServiceServer) UpdateShoppingCart(context.Context, *UpdateShoppingCartReq) (*UpdateShoppingCartRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateShoppingCart not implemented")
 }
-func (UnimplementedOrdersServiceServer) CancelOrder(context.Context, *CancelOrderReq) (*CancelOrderRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CancelOrder not implemented")
-}
-func (UnimplementedOrdersServiceServer) CompleteOrder(context.Context, *CompleteOrderReq) (*CompleteOrderRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CompleteOrder not implemented")
-}
-func (UnimplementedOrdersServiceServer) ChangeDeliveryAddress(context.Context, *ChangeDeliveryAddressReq) (*ChangeDeliveryAddressRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ChangeDeliveryAddress not implemented")
-}
 func (UnimplementedOrdersServiceServer) GetOrderByID(context.Context, *GetOrderByIDReq) (*GetOrderByIDRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOrderByID not implemented")
 }
-func (UnimplementedOrdersServiceServer) Search(context.Context, *SearchReq) (*SearchRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
+func (UnimplementedOrdersServiceServer) GetOrders(context.Context, *GetOrdersReq) (*GetOrdersRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOrders not implemented")
 }
 
 // UnsafeOrdersServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -194,24 +138,6 @@ func _OrdersService_CreateOrder_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OrdersServiceServer).CreateOrder(ctx, req.(*CreateOrderReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _OrdersService_PayOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PayOrderReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrdersServiceServer).PayOrder(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/orders_service.OrdersService/PayOrder",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrdersServiceServer).PayOrder(ctx, req.(*PayOrderReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -252,60 +178,6 @@ func _OrdersService_UpdateShoppingCart_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _OrdersService_CancelOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CancelOrderReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrdersServiceServer).CancelOrder(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/orders_service.OrdersService/CancelOrder",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrdersServiceServer).CancelOrder(ctx, req.(*CancelOrderReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _OrdersService_CompleteOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CompleteOrderReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrdersServiceServer).CompleteOrder(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/orders_service.OrdersService/CompleteOrder",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrdersServiceServer).CompleteOrder(ctx, req.(*CompleteOrderReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _OrdersService_ChangeDeliveryAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangeDeliveryAddressReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(OrdersServiceServer).ChangeDeliveryAddress(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/orders_service.OrdersService/ChangeDeliveryAddress",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrdersServiceServer).ChangeDeliveryAddress(ctx, req.(*ChangeDeliveryAddressReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _OrdersService_GetOrderByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetOrderByIDReq)
 	if err := dec(in); err != nil {
@@ -324,20 +196,20 @@ func _OrdersService_GetOrderByID_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _OrdersService_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SearchReq)
+func _OrdersService_GetOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOrdersReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OrdersServiceServer).Search(ctx, in)
+		return srv.(OrdersServiceServer).GetOrders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/orders_service.OrdersService/Search",
+		FullMethod: "/orders_service.OrdersService/GetOrders",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrdersServiceServer).Search(ctx, req.(*SearchReq))
+		return srv.(OrdersServiceServer).GetOrders(ctx, req.(*GetOrdersReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -354,10 +226,6 @@ var OrdersService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _OrdersService_CreateOrder_Handler,
 		},
 		{
-			MethodName: "PayOrder",
-			Handler:    _OrdersService_PayOrder_Handler,
-		},
-		{
 			MethodName: "SubmitOrder",
 			Handler:    _OrdersService_SubmitOrder_Handler,
 		},
@@ -366,24 +234,12 @@ var OrdersService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _OrdersService_UpdateShoppingCart_Handler,
 		},
 		{
-			MethodName: "CancelOrder",
-			Handler:    _OrdersService_CancelOrder_Handler,
-		},
-		{
-			MethodName: "CompleteOrder",
-			Handler:    _OrdersService_CompleteOrder_Handler,
-		},
-		{
-			MethodName: "ChangeDeliveryAddress",
-			Handler:    _OrdersService_ChangeDeliveryAddress_Handler,
-		},
-		{
 			MethodName: "GetOrderByID",
 			Handler:    _OrdersService_GetOrderByID_Handler,
 		},
 		{
-			MethodName: "Search",
-			Handler:    _OrdersService_Search_Handler,
+			MethodName: "GetOrders",
+			Handler:    _OrdersService_GetOrders_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -2,10 +2,10 @@ package eventstroredb
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/pkg/errors"
 	"io"
 	"time"
 )
@@ -40,19 +40,19 @@ func (e *esdbSubscriptionCheckpointRepository) Load(subscriptionId string, ctx c
 	if errors.Is(err, esdb.ErrStreamNotFound) {
 		return 0, nil
 	} else if err != nil {
-		return 0, errors.Wrap(err, "db.ReadStream")
+		return 0, errors.WrapIf(err, "db.ReadStream")
 	}
 
 	defer stream.Close()
 	event, err := stream.Recv()
 	if errors.Is(err, esdb.ErrStreamNotFound) {
-		return 0, errors.Wrap(err, "stream.Recv")
+		return 0, errors.WrapIf(err, "stream.Recv")
 	}
 	if errors.Is(err, io.EOF) {
 		return 0, nil
 	}
 	if err != nil {
-		return 0, errors.Wrap(err, "stream.Recv")
+		return 0, errors.WrapIf(err, "stream.Recv")
 	}
 
 	deserialized, _, err := e.esdbSerilizer.Deserialize(event)
@@ -73,7 +73,7 @@ func (e *esdbSubscriptionCheckpointRepository) Store(subscriptionId string, posi
 	streamName := getCheckpointStreamName(subscriptionId)
 	eventData, err := e.esdbSerilizer.Serialize(checkpoint, nil)
 	if err != nil {
-		return errors.Wrap(err, "esdbSerilizer.Serialize")
+		return errors.WrapIf(err, "esdbSerilizer.Serialize")
 	}
 
 	_, err = e.client.AppendToStream(ctx, streamName, esdb.AppendToStreamOptions{ExpectedRevision: esdb.StreamExists{}}, *eventData)
@@ -92,7 +92,7 @@ func (e *esdbSubscriptionCheckpointRepository) Store(subscriptionId string, posi
 			streamMeta)
 
 		if err != nil {
-			return errors.Wrap(err, "client.SetStreamMetadata")
+			return errors.WrapIf(err, "client.SetStreamMetadata")
 		}
 
 		// append event again expecting stream to not exist

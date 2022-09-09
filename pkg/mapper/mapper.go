@@ -4,13 +4,13 @@
 package mapper
 
 import (
+	"emperror.dev/errors"
 	"flag"
 	"fmt"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/iancoleman/strcase"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/logrous"
 	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
-	"github.com/pkg/errors"
 	"reflect"
 )
 

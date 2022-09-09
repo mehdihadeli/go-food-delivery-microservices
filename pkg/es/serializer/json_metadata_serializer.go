@@ -1,9 +1,9 @@
 package esSerializer
 
 import (
+	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
-	"github.com/pkg/errors"
 )
 
 type JsonMetadataSerializer struct {
@@ -20,7 +20,7 @@ func (s *JsonMetadataSerializer) Serialize(meta *core.Metadata) ([]byte, error) 
 
 	marshal, err := jsonSerializer.Marshal(meta)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to marshal metadata")
+		return nil, errors.WrapIf(err, "failed to marshal metadata")
 	}
 
 	return marshal, nil
@@ -35,7 +35,7 @@ func (s *JsonMetadataSerializer) Deserialize(bytes []byte) (*core.Metadata, erro
 
 	err := jsonSerializer.Unmarshal(bytes, &meta)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal metadata")
+		return nil, errors.WrapIf(err, "failed to unmarshal metadata")
 	}
 
 	return &meta, nil

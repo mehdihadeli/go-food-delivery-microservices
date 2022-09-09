@@ -1,10 +1,12 @@
 package v1
 
 import (
-	"github.com/go-playground/validator"
+	"emperror.dev/errors"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	creatingOrderv1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/commands/v1"
@@ -22,7 +24,7 @@ func NewCreteOrderEndpoint(endpointBase *delivery.OrderEndpointBase) *createOrde
 }
 
 func (ep *createOrderEndpoint) MapRoute() {
-	ep.OrdersGroup.POST("", ep.createOrder())
+	ep.OrdersGroup.POST("", ep.handler())
 }
 
 // Create Order
@@ -34,7 +36,7 @@ func (ep *createOrderEndpoint) MapRoute() {
 // @Param CreateOrderRequestDto body dtos.CreateOrderRequestDto true "Order data"
 // @Success 201 {object} dtos.CreateOrderResponseDto
 // @Router /api/v1/orders [post]
-func (ep *createOrderEndpoint) createOrder() echo.HandlerFunc {
+func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ep.Metrics.CreateOrderHttpRequests.Inc()
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "createOrderEndpoint.createOrder")
@@ -42,27 +44,26 @@ func (ep *createOrderEndpoint) createOrder() echo.HandlerFunc {
 
 		request := &dtos.CreateOrderRequestDto{}
 		if err := c.Bind(request); err != nil {
-			ep.Log.WarnMsg("Bind", err)
-			tracing.TraceErr(span, err)
-			return err
-		}
-
-		if err := ep.Validator.StructCtx(ctx, request); err != nil {
-			ep.Log.Errorf("(validate) err: {%v}", err)
-			tracing.TraceErr(span, err)
-			return httpErrors.NewValidationError(err.(validator.ValidationErrors))
+			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[createOrderEndpoint_handler.Bind] error in the binding request")
+			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.Bind] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			return badRequestErr
 		}
 
 		command := creatingOrderv1.NewCreateOrderCommand(request.ShopItems, request.AccountEmail, request.DeliveryAddress, time.Time(request.DeliveryTime))
+		if err := ep.Validator.StructCtx(ctx, command); err != nil {
+			validationErr := customErrors.NewValidationErrorWrap(err, "[createOrderEndpoint_handler.StructCtx] command validation failed")
+			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr)))
+			return validationErr
+		}
+
 		result, err := mediatr.Send[*creatingOrderv1.CreateOrderCommand, *dtos.CreateOrderResponseDto](ctx, command)
 
 		if err != nil {
-			ep.Log.Errorf("(CreateOrder.Handle) id: {%s}, err: {%v}", command.OrderID, err)
-			tracing.TraceErr(span, err)
+			err = errors.WithMessage(err, "[createOrderEndpoint_handler.Send] error in sending CreateOrderCommand")
+			ep.Log.Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: %v", command.OrderID, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": command.OrderID})
 			return err
 		}
 
-		ep.Log.Infof("(order created) id: {%s}", command.OrderID)
 		return c.JSON(http.StatusCreated, result)
 	}
 }

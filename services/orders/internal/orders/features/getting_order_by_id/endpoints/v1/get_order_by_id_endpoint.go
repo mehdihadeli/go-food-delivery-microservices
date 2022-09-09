@@ -1,8 +1,12 @@
 package v1
 
 import (
+	"emperror.dev/errors"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/dtos"
@@ -19,7 +23,7 @@ func NewGetOrderByIdEndpoint(productEndpointBase *delivery.OrderEndpointBase) *g
 }
 
 func (ep *getOrderByIdEndpoint) MapRoute() {
-	ep.OrdersGroup.GET("/:id", ep.getOrderByID())
+	ep.OrdersGroup.GET("/:id", ep.handler())
 }
 
 // Get Order By ID
@@ -31,33 +35,31 @@ func (ep *getOrderByIdEndpoint) MapRoute() {
 // @Param id path string true "Order ID"
 // @Success 200 {object} dtos.GetOrderByIdResponseDto
 // @Router /api/v1/orders/{id} [get]
-func (ep *getOrderByIdEndpoint) getOrderByID() echo.HandlerFunc {
+func (ep *getOrderByIdEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
 		ep.Metrics.GetOrderByIdHttpRequests.Inc()
-		ctx, span := tracing.StartHttpServerTracerSpan(c, "getOrderByIdEndpoint.getOrderByID")
+		ctx, span := tracing.StartHttpServerTracerSpan(c, "getOrderByIdEndpoint.handler")
 		defer span.Finish()
 
 		request := &dtos.GetOrderByIdRequestDto{}
 		if err := c.Bind(request); err != nil {
-			ep.Log.WarnMsg("Bind", err)
-			tracing.TraceErr(span, err)
-			return err
+			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductByIdEndpoint_handler.Bind] error in the binding request")
+			ep.Log.Errorf(fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			return badRequestErr
 		}
 
-		query := &v1.GetOrderByIdQuery{OrderId: request.OrderId}
-
+		query := v1.NewGetOrderByIdQuery(request.OrderId)
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
-			ep.Log.WarnMsg("validate", err)
-			tracing.TraceErr(span, err)
-			return err
+			validationErr := customErrors.NewValidationErrorWrap(err, "[getProductByIdEndpoint_handler.StructCtx]  query validation failed")
+			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr))
+			return validationErr
 		}
 
 		queryResult, err := mediatr.Send[*v1.GetOrderByIdQuery, *dtos.GetOrderByIdResponseDto](ctx, query)
 
 		if err != nil {
-			ep.Log.WarnMsg("GetOrderById", err)
-			tracing.TraceErr(span, err)
+			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetOrderByIdQuery")
+			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: %v", query.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": query.OrderId})
 			return err
 		}
 

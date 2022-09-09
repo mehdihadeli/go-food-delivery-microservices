@@ -8,7 +8,10 @@ import (
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"os"
+	"path/filepath"
+	"runtime"
 
+	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
@@ -17,7 +20,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/redis"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -30,7 +32,7 @@ func init() {
 type Config struct {
 	DeliveryType     string                         `mapstructure:"deliveryType" env:"DeliveryType"`
 	ServiceName      string                         `mapstructure:"serviceName" env:"ServiceName"`
-	Logger           *logger.Config                 `mapstructure:"logger" envPrefix:"Logger_"`
+	Logger           *logger.LogConfig              `mapstructure:"logger" envPrefix:"Logger_"`
 	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics" envPrefix:"KafkaTopics_"`
 	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
 	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
@@ -73,7 +75,14 @@ func InitConfig(environment string) (*Config, error) {
 		if configPathFromEnv != "" {
 			configPath = configPathFromEnv
 		} else {
-			configPath = "./config"
+			//https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
+			//https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
+			d, err := dirname()
+			if err != nil {
+				return nil, err
+			}
+
+			configPath = d
 		}
 	}
 
@@ -85,11 +94,11 @@ func InitConfig(environment string) (*Config, error) {
 	viper.SetConfigType(constants.Json)
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, errors.Wrap(err, "viper.ReadInConfig")
+		return nil, errors.WrapIf(err, "viper.ReadInConfig")
 	}
 
 	if err := viper.Unmarshal(cfg); err != nil {
-		return nil, errors.Wrap(err, "viper.Unmarshal")
+		return nil, errors.WrapIf(err, "viper.Unmarshal")
 	}
 
 	if err := env.Parse(cfg); err != nil {
@@ -123,4 +132,20 @@ func InitConfig(environment string) (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func filename() (string, error) {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", errors.New("unable to get the current filename")
+	}
+	return filename, nil
+}
+
+func dirname() (string, error) {
+	filename, err := filename()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Dir(filename), nil
 }

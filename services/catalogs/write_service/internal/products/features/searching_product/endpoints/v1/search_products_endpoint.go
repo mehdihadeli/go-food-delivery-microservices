@@ -1,6 +1,9 @@
 package v1
 
 import (
+	"emperror.dev/errors"
+	"fmt"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/queries/v1"
 	"net/http"
 
@@ -21,7 +24,7 @@ func NewSearchProductsEndpoint(productEndpointBase *delivery.ProductEndpointBase
 }
 
 func (ep *searchProductsEndpoint) MapRoute() {
-	ep.ProductsGroup.GET("/search", ep.searchProducts())
+	ep.ProductsGroup.GET("/search", ep.handler())
 }
 
 // SearchProductsQuery
@@ -33,9 +36,8 @@ func (ep *searchProductsEndpoint) MapRoute() {
 // @Param searchProductsRequestDto query dtos.SearchProductsRequestDto false "SearchProductsRequestDto"
 // @Success 200 {object} dtos.SearchProductsResponseDto
 // @Router /api/v1/products/search [get]
-func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
+func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
 		ep.Metrics.SearchProductHttpRequests.Inc()
 		ctx, span := tracing.StartHttpServerTracerSpan(c, "searchProductsEndpoint.searchProducts")
 		defer span.Finish()
@@ -43,33 +45,31 @@ func (ep *searchProductsEndpoint) searchProducts() echo.HandlerFunc {
 		listQuery, err := utils.GetListQueryFromCtx(c)
 
 		if err != nil {
-			tracing.TraceErr(span, err)
-			utils.LogResponseError(c, ep.Log, err)
+			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[searchProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string")
+			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.GetListQueryFromCtx] err: %v", tracing.TraceWithErr(span, badRequestErr)))
 			return err
 		}
 
 		request := &dtos.SearchProductsRequestDto{ListQuery: listQuery}
-
-		// https://echo.labstack.com/guide/binding/
 		if err := c.Bind(request); err != nil {
-			ep.Log.WarnMsg("Bind", err)
-			tracing.TraceErr(span, err)
-			return err
+			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[searchProductsEndpoint_handler.Bind] error in the binding request")
+			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.Bind] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			return badRequestErr
 		}
 
-		query := &v1.SearchProductsQuery{SearchText: request.SearchText, ListQuery: request.ListQuery}
+		query := v1.NewSearchProductsQuery(request.SearchText, request.ListQuery)
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
-			ep.Log.Errorf("(validate) err: {%v}", err)
-			tracing.TraceErr(span, err)
-			return err
+			validationErr := customErrors.NewValidationErrorWrap(err, "[searchProductsEndpoint_handler.StructCtx]  query validation failed")
+			ep.Log.Errorf("[searchProductsEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr))
+			return validationErr
 		}
 
 		queryResult, err := mediatr.Send[*v1.SearchProductsQuery, *dtos.SearchProductsResponseDto](ctx, query)
 
 		if err != nil {
-			ep.Log.WarnMsg("SearchProductsQuery", err)
-			tracing.TraceErr(span, err)
+			err = errors.WithMessage(err, "[searchProductsEndpoint_handler.Send] error in sending SearchProductsQuery")
+			ep.Log.Error(fmt.Sprintf("[searchProductsEndpoint_handler.Send] err: {%v}", tracing.TraceWithErr(span, err)))
 			return err
 		}
 

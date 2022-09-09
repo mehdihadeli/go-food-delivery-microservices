@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+//https://echo.labstack.com/guide/request/
+//https://github.com/go-playground/validator
+
 type CreateProductCommand struct {
 	ProductID   uuid.UUID `validate:"required"`
 	Name        string    `validate:"required,gte=0,lte=255"`
