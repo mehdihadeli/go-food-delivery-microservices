@@ -1,48 +1,44 @@
 package customErrors
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/pkg/errors"
+	"emperror.dev/errors"
 	"net/http"
 )
 
 func NewBadRequestError(message string) error {
 	br := &badRequestError{
-		WithStack: NewCustomErrorStack(nil, http.StatusBadRequest, message),
+		CustomError: NewCustomError(nil, http.StatusBadRequest, message),
 	}
-
-	return br
+	stackErr := errors.WithStackIf(br)
+	
+	return stackErr
 }
 
 func NewBadRequestErrorWrap(err error, message string) error {
 	br := &badRequestError{
-		WithStack: NewCustomErrorStack(err, http.StatusBadRequest, message),
+		CustomError: NewCustomError(err, http.StatusBadRequest, message),
 	}
+	stackErr := errors.WithStackIf(br)
 
-	return br
+	return stackErr
 }
 
 type badRequestError struct {
-	contracts.WithStack
+	CustomError
 }
 
 type BadRequestError interface {
-	contracts.WithStack
+	CustomError
 	IsBadRequestError() bool
-	GetCustomError() CustomError
 }
 
 func (b *badRequestError) IsBadRequestError() bool {
 	return true
 }
 
-func (b *badRequestError) GetCustomError() CustomError {
-	return GetCustomError(b)
-}
-
 func IsBadRequestError(err error) bool {
-	var badRequestError *badRequestError
-	//us, ok := grpc_errors.Cause(err).(*badRequestError)
+	var badRequestError BadRequestError
+	//us, ok := grpc_errors.Cause(err).(BadRequestError)
 	if errors.As(err, &badRequestError) {
 		return badRequestError.IsBadRequestError()
 	}

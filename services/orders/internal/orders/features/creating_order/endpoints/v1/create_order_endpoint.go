@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
@@ -10,7 +11,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	creatingOrderv1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/commands/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/dtos"
-	"github.com/pkg/errors"
 	"net/http"
 	"time"
 )
@@ -52,7 +52,7 @@ func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 		command := creatingOrderv1.NewCreateOrderCommand(request.ShopItems, request.AccountEmail, request.DeliveryAddress, time.Time(request.DeliveryTime))
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[createOrderEndpoint_handler.StructCtx] command validation failed")
-			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr)))
+			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr)))
 			return validationErr
 		}
 
@@ -60,7 +60,7 @@ func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[createOrderEndpoint_handler.Send] error in sending CreateOrderCommand")
-			ep.Log.Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: {%v}", command.OrderID, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": command.OrderID})
+			ep.Log.Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: %v", command.OrderID, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": command.OrderID})
 			return err
 		}
 

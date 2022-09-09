@@ -1,25 +1,38 @@
 package domain
 
 import (
+	"emperror.dev/errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/pkg/errors"
 )
 
-type InvalidEmailAddressError struct {
+type invalidEmailAddressError struct {
 	customErrors.BadRequestError
 }
 
+type InvalidEmailAddressError interface {
+	customErrors.BadRequestError
+	IsInvalidEmailAddressError() bool
+}
+
 func NewInvalidEmailAddressError(message string) error {
-	br := &InvalidEmailAddressError{
-		BadRequestError: customErrors.NewBadRequestError(message).(customErrors.BadRequestError),
+	bad := customErrors.NewBadRequestError(message)
+	customErr := customErrors.GetCustomError(bad).(customErrors.BadRequestError)
+	br := &invalidEmailAddressError{
+		BadRequestError: customErr,
 	}
 
-	return br
+	return errors.WithStackIf(br)
+}
+
+func (err *invalidEmailAddressError) IsInvalidEmailAddressError() bool {
+	return true
 }
 
 func IsInvalidEmailAddressError(err error) bool {
-	var re *InvalidEmailAddressError
-	res := errors.As(err, &re)
+	var ie InvalidEmailAddressError
+	if errors.As(err, &ie) {
+		return ie.IsInvalidEmailAddressError()
+	}
 
-	return res
+	return false
 }

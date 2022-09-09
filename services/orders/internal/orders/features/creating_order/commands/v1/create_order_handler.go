@@ -22,7 +22,7 @@ type CreateOrderCommandHandler struct {
 	aggregateStore store.AggregateStore[*aggregate.Order]
 }
 
-func NewCreateOrderHandler(log logger.Logger, cfg *config.Config, aggregateStore store.AggregateStore[*aggregate.Order]) *CreateOrderCommandHandler {
+func NewCreateOrderCommandHandler(log logger.Logger, cfg *config.Config, aggregateStore store.AggregateStore[*aggregate.Order]) *CreateOrderCommandHandler {
 	return &CreateOrderCommandHandler{log: log, cfg: cfg, aggregateStore: aggregateStore}
 }
 
@@ -34,7 +34,7 @@ func (c *CreateOrderCommandHandler) Handle(ctx context.Context, command *CreateO
 
 	shopItems, err := mapper.Map[[]*value_objects.ShopItem](command.ShopItems)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateOrderCommandHandler_Handle.Map] error in the mapping order"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateOrderCommandHandler_Handle.Map] error in the mapping shopItems"))
 	}
 
 	order, err := aggregate.NewOrder(command.OrderID, shopItems, command.AccountEmail, command.DeliveryAddress, command.DeliveryTime, command.CreatedAt)

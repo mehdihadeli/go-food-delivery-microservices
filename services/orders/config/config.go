@@ -1,6 +1,7 @@
 package config
 
 import (
+	"emperror.dev/errors"
 	"flag"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
@@ -11,7 +12,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
@@ -81,11 +81,11 @@ func InitConfig(env string) (*Config, error) {
 	viper.SetConfigType(constants.Yaml)
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, errors.Wrap(err, "viper.ReadInConfig")
+		return nil, errors.WrapIf(err, "viper.ReadInConfig")
 	}
 
 	if err := viper.Unmarshal(cfg); err != nil {
-		return nil, errors.Wrap(err, "viper.Unmarshal")
+		return nil, errors.WrapIf(err, "viper.Unmarshal")
 	}
 
 	grpcPort := os.Getenv(constants.GrpcPort)

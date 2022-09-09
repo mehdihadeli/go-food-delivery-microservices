@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-type Product_Grpc_Service_Tests struct {
+type ProductGrpcServiceTests struct {
 	*testing.T
 	*e2e.E2ETestFixture
 	*ProductGrpcServiceServer
@@ -26,11 +26,11 @@ func TestRunner(t *testing.T) {
 
 		go func() {
 			if err := fixture.GrpcServer.RunGrpcServer(nil); err != nil {
-				fixture.Log.Errorf("(s.RunGrpcServer) err: {%v}", err)
+				fixture.Log.Errorf("(s.RunGrpcServer) err: %v", err)
 			}
 		}()
 
-		productGrpcServiceTests := Product_Grpc_Service_Tests{
+		productGrpcServiceTests := ProductGrpcServiceTests{
 			T:                        t,
 			E2ETestFixture:           fixture,
 			ProductGrpcServiceServer: productGrpcService,
@@ -44,10 +44,9 @@ func TestRunner(t *testing.T) {
 		fixture.GrpcServer.GracefulShutdown()
 		fixture.Cleanup()
 	})
-
 }
 
-func (p *Product_Grpc_Service_Tests) Test_Create_Product() {
+func (p *ProductGrpcServiceTests) Test_Create_Product() {
 	request := &productService.CreateProductReq{
 		Price:       gofakeit.Price(100, 1000),
 		Name:        gofakeit.Name(),
@@ -59,7 +58,7 @@ func (p *Product_Grpc_Service_Tests) Test_Create_Product() {
 	assert.NotZero(p.T, res.ProductID)
 }
 
-func (p *Product_Grpc_Service_Tests) Test_GetProduct_By_Id() {
+func (p *ProductGrpcServiceTests) Test_GetProduct_By_Id() {
 	res, err := p.GetProductById(context.Background(), &productService.GetProductByIdReq{ProductID: "1b088075-53f0-4376-a491-ca6fe3a7f8fa"})
 	assert.NoError(p.T, err)
 	assert.NotNil(p.T, res.Product)

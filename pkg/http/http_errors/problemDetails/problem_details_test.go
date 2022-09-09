@@ -1,8 +1,8 @@
 package problemDetails
 
 import (
+	"emperror.dev/errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
@@ -40,7 +40,7 @@ func Test_BadRequest_Err(t *testing.T) {
 
 func Test_Parse_Error(t *testing.T) {
 	// Bad-Request ProblemDetail
-	badRequestError := errors.Wrap(customErrors.NewBadRequestError("bad-request error"), "bad request error")
+	badRequestError := errors.WrapIf(customErrors.NewBadRequestError("bad-request error"), "bad request error")
 	badRequestPrb := ParseError(badRequestError)
 	assert.NotNil(t, badRequestPrb)
 	assert.Equal(t, badRequestPrb.GetStatus(), 400)

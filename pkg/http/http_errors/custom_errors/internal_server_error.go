@@ -1,48 +1,44 @@
 package customErrors
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/pkg/errors"
+	"emperror.dev/errors"
 	"net/http"
 )
 
 func NewInternalServerError(message string) error {
 	br := &internalServerError{
-		WithStack: NewCustomErrorStack(nil, http.StatusInternalServerError, message),
+		CustomError: NewCustomError(nil, http.StatusInternalServerError, message),
 	}
+	stackErr := errors.WithStackIf(br)
 
-	return br
+	return stackErr
 }
 
 func NewInternalServerErrorWrap(err error, message string) error {
 	br := &internalServerError{
-		WithStack: NewCustomErrorStack(err, http.StatusInternalServerError, message),
+		CustomError: NewCustomError(err, http.StatusInternalServerError, message),
 	}
+	stackErr := errors.WithStackIf(br)
 
-	return br
+	return stackErr
 }
 
 type internalServerError struct {
-	contracts.WithStack
+	CustomError
+}
+
+type InternalServerError interface {
+	CustomError
+	IsInternalServerError() bool
 }
 
 func (i *internalServerError) IsInternalServerError() bool {
 	return true
 }
 
-func (i *internalServerError) GetCustomError() CustomError {
-	return GetCustomError(i)
-}
-
-type InternalServerError interface {
-	contracts.WithStack
-	IsInternalServerError() bool
-	GetCustomError() CustomError
-}
-
 func IsInternalServerError(err error) bool {
-	var internalErr *internalServerError
-	//us, ok := grpc_errors.Cause(err).(*internalServerError)
+	var internalErr InternalServerError
+	//us, ok := grpc_errors.Cause(err).(InternalServerError)
 	if errors.As(err, &internalErr) {
 		return internalErr.IsInternalServerError()
 	}

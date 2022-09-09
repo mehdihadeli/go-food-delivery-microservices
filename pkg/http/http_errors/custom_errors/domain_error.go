@@ -1,50 +1,52 @@
 package customErrors
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/pkg/errors"
+	"emperror.dev/errors"
 	"net/http"
 )
 
 func NewDomainError(message string) error {
 	de := &domainError{
-		WithStack: NewCustomErrorStack(nil, http.StatusBadRequest, message),
+		CustomError: NewCustomError(nil, http.StatusBadRequest, message),
 	}
+	stackErr := errors.WithStackIf(de)
 
-	return de
+	return stackErr
 }
 
 func NewDomainErrorWithCode(message string, code int) error {
 	de := &domainError{
-		WithStack: NewCustomErrorStack(nil, code, message),
+		CustomError: NewCustomError(nil, code, message),
 	}
+	stackErr := errors.WithStackIf(de)
 
-	return de
+	return stackErr
 }
 
 func NewDomainErrorWrap(err error, message string) error {
 	de := &domainError{
-		WithStack: NewCustomErrorStack(err, http.StatusBadRequest, message),
+		CustomError: NewCustomError(err, http.StatusBadRequest, message),
 	}
+	stackErr := errors.WithStackIf(de)
 
-	return de
+	return stackErr
 }
 
 func NewDomainErrorWithCodeWrap(err error, code int, message string) error {
 	de := &domainError{
-		WithStack: NewCustomErrorStack(err, code, message),
+		CustomError: NewCustomError(err, code, message),
 	}
+	stackErr := errors.WithStackIf(de)
 
-	return de
+	return stackErr
 }
 
 type domainError struct {
-	contracts.WithStack
+	CustomError
 }
 
 type DomainError interface {
-	contracts.WithStack
-	GetCustomError() CustomError
+	CustomError
 	IsDomainError() bool
 }
 
@@ -52,13 +54,9 @@ func (d *domainError) IsDomainError() bool {
 	return true
 }
 
-func (d *domainError) GetCustomError() CustomError {
-	return GetCustomError(d)
-}
-
 func IsDomainError(err error) bool {
-	var domainErr *domainError
-	//us, ok := grpc_errors.Cause(err).(*domainError)
+	var domainErr DomainError
+	//us, ok := grpc_errors.Cause(err).(DomainError)
 	if errors.As(err, &domainErr) {
 		return domainErr.IsDomainError()
 	}

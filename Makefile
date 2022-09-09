@@ -112,27 +112,27 @@ pprof_allocs:
 # Proto Catalogs Write Service
 proto_catalogs_write_product_kafka_messages:
 	@echo Generating products kafka messages proto
-	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/product_kafka_messages.proto
+	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/*.proto
 
 proto_catalogs_write_product_service:
 	@echo Generating product_service client proto
-	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients api_docs/catalogs/write_service/protobuf/products/service_clients/products_service_client.proto
+	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients api_docs/catalogs/write_service/protobuf/products/service_clients/*.proto
 
 
 
 # Proto Catalogs Read Service
 proto_catalogs_read_product_kafka_messages:
 	@echo Generating products kafka messages proto
-	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/product_kafka_messages.proto
+	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/*.proto
 
 proto_catalogs_read_product_service:
 	@echo Generating product_service client proto
-	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients api_docs/catalogs/read_service/protobuf/products/service_clients/products_service_client.proto
+	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients api_docs/catalogs/read_service/protobuf/products/service_clients/*.proto
 
 # Proto Orders Service
 proto_orders_order_service:
 	@echo Generating order_service client proto
-	protoc --go_out=./services/orders/internal/orders/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/orders/internal/orders/contracts/proto/service_clients/ api_docs/orders/protobuf/orders/service_clients/orders_service_client.proto
+	protoc --go_out=./services/orders/internal/orders/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/orders/internal/orders/contracts/proto/service_clients/ api_docs/orders/protobuf/orders/service_clients/*.proto
 
 
 # Swagger Catalogs Write Service  #https://github.com/swaggo/swag/issues/817

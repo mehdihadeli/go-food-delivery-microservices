@@ -3,11 +3,11 @@ package problemDetails
 import (
 	"context"
 	"database/sql"
+	"emperror.dev/errors"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/pkg/errors"
 	"net/http"
 )
 

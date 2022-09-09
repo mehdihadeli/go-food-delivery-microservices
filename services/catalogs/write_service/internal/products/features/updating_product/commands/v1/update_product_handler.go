@@ -41,7 +41,7 @@ func (c *UpdateProductCommandHandler) Handle(ctx context.Context, command *Updat
 	if err != nil {
 		return nil, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[UpdateProductCommandHandler_Handle.GetProductById] error in fetching product with id %s", command.ProductID))
 	}
-	
+
 	if p == nil {
 		return nil, customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("[UpdateProductCommandHandler_Handle.GetProductById] product with id %s not found", command.ProductID))
 	}

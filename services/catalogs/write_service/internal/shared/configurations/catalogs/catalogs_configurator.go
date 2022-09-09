@@ -2,6 +2,7 @@ package catalogs
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
@@ -9,7 +10,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/product_mdoule"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web"
-	"github.com/pkg/errors"
 	"net/http"
 )
 

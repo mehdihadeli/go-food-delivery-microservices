@@ -22,6 +22,8 @@ type GetOrderByIdHandler struct {
 	aggregateStore store.AggregateStore[*aggregate.Order]
 }
 
+// TODO: Should read from read side model (mongo)
+
 func NewGetOrderByIdHandler(log logger.Logger, cfg *config.Config, aggregateStore store.AggregateStore[*aggregate.Order]) *GetOrderByIdHandler {
 	return &GetOrderByIdHandler{log: log, cfg: cfg, aggregateStore: aggregateStore}
 }

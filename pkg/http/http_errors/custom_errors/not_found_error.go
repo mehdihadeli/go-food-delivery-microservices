@@ -1,48 +1,44 @@
 package customErrors
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/pkg/errors"
+	"emperror.dev/errors"
 	"net/http"
 )
 
 func NewNotFoundError(message string) error {
 	ne := &notFoundError{
-		WithStack: NewCustomErrorStack(nil, http.StatusNotFound, message),
+		CustomError: NewCustomError(nil, http.StatusNotFound, message),
 	}
+	stackErr := errors.WithStackIf(ne)
 
-	return ne
+	return stackErr
 }
 
 func NewNotFoundErrorWrap(err error, message string) error {
 	ne := &notFoundError{
-		WithStack: NewCustomErrorStack(err, http.StatusNotFound, message),
+		CustomError: NewCustomError(err, http.StatusNotFound, message),
 	}
+	stackErr := errors.WithStackIf(ne)
 
-	return ne
+	return stackErr
 }
 
 type notFoundError struct {
-	contracts.WithStack
+	CustomError
 }
 
 type NotFoundError interface {
-	contracts.WithStack
+	CustomError
 	IsNotFoundError() bool
-	GetCustomError() CustomError
 }
 
 func (n *notFoundError) IsNotFoundError() bool {
 	return true
 }
 
-func (n *notFoundError) GetCustomError() CustomError {
-	return GetCustomError(n)
-}
-
 func IsNotFoundError(err error) bool {
-	var notFoundError *notFoundError
-	//us, ok := grpc_errors.Cause(err).(*notFoundError)
+	var notFoundError NotFoundError
+	//us, ok := grpc_errors.Cause(err).(NotFoundError)
 	if errors.As(err, &notFoundError) {
 		return notFoundError.IsNotFoundError()
 	}

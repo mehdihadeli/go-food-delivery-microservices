@@ -1,15 +1,15 @@
 package httpErrors
 
 import (
+	"emperror.dev/errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func Test_StackTraceWithErrors(t *testing.T) {
 	err := errors.WithMessage(errors.New("handling bad request"), "this is a bad-request")
-	err = errors.Wrap(err, "outer error message")
+	err = errors.WrapIf(err, "outer error message")
 
 	res := ErrorsWithStack(err)
 	fmt.Println(res)
@@ -17,7 +17,7 @@ func Test_StackTraceWithErrors(t *testing.T) {
 
 func Test_StackTrace(t *testing.T) {
 	err := errors.WithMessage(errors.New("handling bad request"), "this is a bad-request")
-	err = errors.Wrap(err, "outer error message")
+	err = errors.WrapIf(err, "outer error message")
 
 	res := StackTrace(err)
 	fmt.Println(res)
@@ -25,23 +25,23 @@ func Test_StackTrace(t *testing.T) {
 
 func Test_RootStackTrace(t *testing.T) {
 	err := errors.WithMessage(errors.New("handling bad request"), "this is a bad-request")
-	err = errors.Wrap(err, "outer error message")
+	err = errors.WrapIf(err, "outer error message")
 
 	res := RootStackTrace(err)
 	fmt.Println(res)
 }
 
 func Test_All_Level_Stack_Trace(t *testing.T) {
-	err := errors.Wrap(errors.New("handling bad request"), "this is a bad-request")
-	err = errors.Wrap(err, "outer error message")
+	err := errors.WrapIf(errors.New("handling bad request"), "this is a bad-request")
+	err = errors.WrapIf(err, "outer error message")
 
 	res := ErrorsWithStack(err)
 	fmt.Println(res)
 }
 
 func Test_Errors_Without_Stack_Trace(t *testing.T) {
-	err := errors.Wrap(errors.New("handling bad request"), "this is a bad-request")
-	err = errors.Wrap(err, "outer error message")
+	err := errors.WrapIf(errors.New("handling bad request"), "this is a bad-request")
+	err = errors.WrapIf(err, "outer error message")
 
 	res := ErrorsWithoutStack(err, true)
 	fmt.Println(res)

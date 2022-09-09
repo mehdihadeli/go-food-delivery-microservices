@@ -33,7 +33,6 @@ func Test_Create_Product_E2E(t *testing.T) {
 	// create httpexpect instance
 	expect := httpexpect.New(t, s.URL)
 
-	// is it working?
 	expect.POST("/api/v1/products").
 		WithContext(context.Background()).
 		WithJSON(request).

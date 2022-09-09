@@ -1,10 +1,10 @@
 package domain
 
 import (
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 )
 

@@ -1,50 +1,52 @@
 package customErrors
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/pkg/errors"
+	"emperror.dev/errors"
 	"net/http"
 )
 
 func NewApplicationError(message string) error {
 	ae := &applicationError{
-		WithStack: NewCustomErrorStack(nil, http.StatusInternalServerError, message),
+		CustomError: NewCustomError(nil, http.StatusInternalServerError, message),
 	}
+	stackErr := errors.WithStackIf(ae)
 
-	return ae
+	return stackErr
 }
 
 func NewApplicationErrorWithCode(message string, code int) error {
 	ae := &applicationError{
-		WithStack: NewCustomErrorStack(nil, code, message),
+		CustomError: NewCustomError(nil, code, message),
 	}
+	stackErr := errors.WithStackIf(ae)
 
-	return ae
+	return stackErr
 }
 
 func NewApplicationErrorWrap(err error, message string) error {
 	ae := &applicationError{
-		WithStack: NewCustomErrorStack(err, http.StatusInternalServerError, message),
+		CustomError: NewCustomError(err, http.StatusInternalServerError, message),
 	}
+	stackErr := errors.WithStackIf(ae)
 
-	return ae
+	return stackErr
 }
 
 func NewApplicationErrorWrapWithCode(err error, code int, message string) error {
 	ae := &applicationError{
-		WithStack: NewCustomErrorStack(err, code, message),
+		CustomError: NewCustomError(err, code, message),
 	}
+	stackErr := errors.WithStackIf(ae)
 
-	return ae
+	return stackErr
 }
 
 type applicationError struct {
-	contracts.WithStack
+	CustomError
 }
 
 type ApplicationError interface {
-	contracts.WithStack
-	GetCustomError() CustomError
+	CustomError
 	IsApplicationError() bool
 }
 
@@ -52,13 +54,9 @@ func (a *applicationError) IsApplicationError() bool {
 	return true
 }
 
-func (a *applicationError) GetCustomError() CustomError {
-	return GetCustomError(a)
-}
-
 func IsApplicationError(err error) bool {
-	var applicationError *applicationError
-	//us, ok := grpc_errors.Cause(err).(*applicationError)
+	var applicationError ApplicationError
+	//us, ok := grpc_errors.Cause(err).(ApplicationError)
 	if errors.As(err, &applicationError) {
 		return applicationError.IsApplicationError()
 	}

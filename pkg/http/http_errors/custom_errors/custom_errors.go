@@ -1,9 +1,9 @@
 package customErrors
 
 import (
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/pkg/errors"
 	"io"
 )
 
@@ -39,25 +39,6 @@ func NewCustomError(err error, code int, message string) CustomError {
 	}
 
 	return m
-}
-
-func NewCustomErrorStack(err error, code int, message string) contracts.WithStack {
-	m := &customError{
-		statusCode: code,
-		err:        err,
-		message:    message,
-	}
-
-	return errors.WithStack(m).(contracts.WithStack)
-}
-
-func IsCustomError(err error) bool {
-	var customErr *customError
-	if errors.As(err, &customErr) {
-		return customErr.IsCustomError()
-	}
-
-	return false
 }
 
 func (e *customError) IsCustomError() bool {
@@ -104,11 +85,26 @@ func (e *customError) Format(s fmt.State, verb rune) {
 
 func GetCustomError(err error) CustomError {
 	if IsCustomError(err) {
-		var internalErr *customError
+		var internalErr CustomError
 		errors.As(err, &internalErr)
 
 		return internalErr
 	}
 
 	return nil
+}
+
+func IsCustomError(err error) bool {
+	var customErr CustomError
+
+	_, ok := err.(CustomError)
+	if ok {
+		return true
+	}
+
+	if errors.As(err, &customErr) {
+		return customErr.IsCustomError()
+	}
+
+	return false
 }

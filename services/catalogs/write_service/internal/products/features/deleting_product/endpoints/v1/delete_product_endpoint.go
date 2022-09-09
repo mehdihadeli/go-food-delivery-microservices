@@ -1,11 +1,11 @@
 package v1
 
 import (
+	"emperror.dev/errors"
 	"fmt"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/commands/v1"
-	"github.com/pkg/errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"

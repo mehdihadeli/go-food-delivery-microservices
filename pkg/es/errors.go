@@ -1,9 +1,9 @@
 package es
 
 import (
+	"emperror.dev/errors"
 	"fmt"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/pkg/errors"
 )
 
 var (

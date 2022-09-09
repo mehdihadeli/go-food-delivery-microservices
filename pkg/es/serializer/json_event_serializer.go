@@ -1,11 +1,11 @@
 package esSerializer
 
 import (
+	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
 	esSerializer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/serializer"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
-	"github.com/pkg/errors"
 )
 
 type JsonEventSerializer struct {
@@ -24,7 +24,7 @@ func (s *JsonEventSerializer) Serialize(event domain.IDomainEvent) (*esSerialize
 
 	data, err := jsonSerializer.Marshal(event)
 	if err != nil {
-		return nil, errors.Wrapf(err, "event.GetJsonData type: %s", eventType)
+		return nil, errors.WrapIff(err, "event.GetJsonData type: %s", eventType)
 	}
 
 	result := &esSerializer.EventSerializationResult{Data: data, ContentType: s.ContentType(), EventType: eventType}
@@ -44,7 +44,7 @@ func (s *JsonEventSerializer) Deserialize(data []byte, eventType string, content
 	}
 
 	if err := jsonSerializer.Unmarshal(data, targetEventPointer); err != nil {
-		return nil, errors.Wrapf(err, "event.GetJsonData type: %s", eventType)
+		return nil, errors.WrapIff(err, "event.GetJsonData type: %s", eventType)
 	}
 
 	return targetEventPointer.(domain.IDomainEvent), nil
@@ -59,7 +59,7 @@ func (s *JsonEventSerializer) SerializeObject(event interface{}) (*esSerializer.
 
 	data, err := jsonSerializer.Marshal(event)
 	if err != nil {
-		return nil, errors.Wrapf(err, "event.GetJsonData type: %s", eventType)
+		return nil, errors.WrapIff(err, "event.GetJsonData type: %s", eventType)
 	}
 
 	result := &esSerializer.EventSerializationResult{Data: data, ContentType: s.ContentType(), EventType: eventType}
@@ -79,7 +79,7 @@ func (s *JsonEventSerializer) DeserializeObject(data []byte, eventType string, c
 	}
 
 	if err := jsonSerializer.Unmarshal(data, targetEventPointer); err != nil {
-		return nil, errors.Wrapf(err, "event.GetJsonData type: %s", eventType)
+		return nil, errors.WrapIff(err, "event.GetJsonData type: %s", eventType)
 	}
 
 	return targetEventPointer, nil

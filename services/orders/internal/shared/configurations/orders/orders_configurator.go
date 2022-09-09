@@ -2,6 +2,7 @@ package orders
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
@@ -9,7 +10,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/order_module"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web"
-	"github.com/pkg/errors"
 	"net/http"
 )
 

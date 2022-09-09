@@ -39,6 +39,6 @@ func (c *SearchProductsQueryHandler) Handle(ctx context.Context, query *SearchPr
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsQueryHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
 	}
 	c.log.Info("[SearchProductsQueryHandler.Handle] products fetched")
-	
+
 	return &searchingProductsDtos.SearchProductsResponseDto{Products: listResultDto}, nil
 }

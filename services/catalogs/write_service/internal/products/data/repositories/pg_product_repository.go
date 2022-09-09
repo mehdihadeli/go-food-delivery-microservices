@@ -6,6 +6,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/opentracing/opentracing-go/log"
 
+	"emperror.dev/errors"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -13,7 +14,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
@@ -35,7 +35,7 @@ func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuer
 
 	result, err := gormPostgres.Paginate[*models.Product](ctx, listQuery, p.gorm)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, "[postgresProductRepository_GetAllProducts.Paginate] error in the paginate"))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[postgresProductRepository_GetAllProducts.Paginate] error in the paginate"))
 	}
 
 	p.log.Info("[postgresProductRepository.GetAllProducts] result: %+v", result)
@@ -52,7 +52,7 @@ func (p *postgresProductRepository) SearchProducts(ctx context.Context, searchTe
 
 	result, err := gormPostgres.Paginate[*models.Product](ctx, listQuery, query)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, "[postgresProductRepository_SearchProducts.Paginate] error in the paginate"))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[postgresProductRepository_SearchProducts.Paginate] error in the paginate"))
 	}
 
 	p.log.Info("[postgresProductRepository.SearchProducts] result: %+v", result)
@@ -70,7 +70,7 @@ func (p *postgresProductRepository) GetProductById(ctx context.Context, uuid uui
 			return nil, nil
 		}
 
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[postgresProductRepository_GetProductById.First] can't find the product with id %s into the database.", uuid)))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_GetProductById.First] can't find the product with id %s into the database.", uuid)))
 	}
 
 	p.log.Infow(fmt.Sprintf("[postgresProductRepository.GetProductById] result: %+v", product), logger.Fields{"AggregateID": uuid})
@@ -83,7 +83,7 @@ func (p *postgresProductRepository) CreateProduct(ctx context.Context, product *
 	defer span.Finish()
 
 	if err := p.gorm.Create(&product).Error; err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, "[postgresProductRepository_CreateProduct.Create] error in the inserting product into the database."))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[postgresProductRepository_CreateProduct.Create] error in the inserting product into the database."))
 	}
 
 	p.log.Infow(fmt.Sprintf("[postgresProductRepository.CreateProduct] result AggregateID: %s", product.ProductID), logger.Fields{"AggregateID": product.ProductID})
@@ -96,7 +96,7 @@ func (p *postgresProductRepository) UpdateProduct(ctx context.Context, updatePro
 	defer span.Finish()
 
 	if err := p.gorm.Save(updateProduct).Error; err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[postgresProductRepository_UpdateProduct.Save] error in updating product with id %s into the database.", updateProduct.ProductID)))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_UpdateProduct.Save] error in updating product with id %s into the database.", updateProduct.ProductID)))
 	}
 
 	p.log.Infow(fmt.Sprintf("[postgresProductRepository.UpdateProduct] result AggregateID: %s", updateProduct.ProductID), logger.Fields{"AggregateID": updateProduct.ProductID})
@@ -111,11 +111,11 @@ func (p *postgresProductRepository) DeleteProductByID(ctx context.Context, uuid 
 	var product models.Product
 
 	if err := p.gorm.First(&product, uuid).Error; err != nil {
-		return tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[postgresProductRepository_DeleteProductByID.First] can't find the product with id %s into the database.", uuid)))
+		return tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_DeleteProductByID.First] can't find the product with id %s into the database.", uuid)))
 	}
 
 	if err := p.gorm.Delete(&product).Error; err != nil {
-		return tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[postgresProductRepository_DeleteProductByID.Delete] error in the deleting product with id %s into the database.", uuid)))
+		return tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_DeleteProductByID.Delete] error in the deleting product with id %s into the database.", uuid)))
 	}
 
 	p.log.Infow(fmt.Sprintf("[postgresProductRepository.DeleteProductByID] result AggregateID: %s", uuid), logger.Fields{"AggregateID": uuid})

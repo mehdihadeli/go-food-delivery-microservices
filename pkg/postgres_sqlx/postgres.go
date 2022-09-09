@@ -3,13 +3,13 @@ package postgres_sqlx
 import (
 	"context"
 	"database/sql"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/jackc/pgx/v4/stdlib" // load pgx driver for PostgreSQL
 	"github.com/jmoiron/sqlx"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"os"
 	"strconv"

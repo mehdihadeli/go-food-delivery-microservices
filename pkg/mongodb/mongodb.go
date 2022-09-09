@@ -2,11 +2,11 @@ package mongodb
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/opentracing/opentracing-go"
-	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
@@ -101,7 +101,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 	count, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
 		tracing.TraceErr(span, err)
-		return nil, errors.Wrap(err, "CountDocuments")
+		return nil, errors.WrapIf(err, "CountDocuments")
 	}
 
 	limit := int64(listQuery.GetLimit())
@@ -113,7 +113,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 	})
 	if err != nil {
 		tracing.TraceErr(span, err)
-		return nil, errors.Wrap(err, "Find")
+		return nil, errors.WrapIf(err, "Find")
 	}
 	defer cursor.Close(ctx) // nolint: errcheck
 
@@ -123,14 +123,14 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection
 		var prod T
 		if err := cursor.Decode(&prod); err != nil {
 			tracing.TraceErr(span, err)
-			return nil, errors.Wrap(err, "Find")
+			return nil, errors.WrapIf(err, "Find")
 		}
 		products = append(products, prod)
 	}
 
 	if err := cursor.Err(); err != nil {
 		tracing.TraceErr(span, err)
-		return nil, errors.Wrap(err, "cursor.Err")
+		return nil, errors.WrapIf(err, "cursor.Err")
 	}
 
 	return utils.NewListResult[T](products, listQuery.GetSize(), listQuery.GetPage(), count), nil

@@ -1,25 +1,37 @@
 package domain
 
 import (
+	"emperror.dev/errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/pkg/errors"
 )
 
-type InvalidDeliveryAddressError struct {
+type invalidDeliveryAddressError struct {
 	customErrors.BadRequestError
+}
+type InvalidDeliveryAddressError interface {
+	customErrors.BadRequestError
+	IsInvalidDeliveryAddressError() bool
 }
 
 func NewInvalidDeliveryAddressError(message string) error {
-	br := &InvalidDeliveryAddressError{
-		BadRequestError: customErrors.NewBadRequestError(message).(customErrors.BadRequestError),
+	bad := customErrors.NewBadRequestError(message)
+	customErr := customErrors.GetCustomError(bad).(customErrors.BadRequestError)
+	br := &invalidDeliveryAddressError{
+		BadRequestError: customErr,
 	}
 
-	return br
+	return errors.WithStackIf(br)
+}
+
+func (err *invalidDeliveryAddressError) IsInvalidDeliveryAddressError() bool {
+	return true
 }
 
 func IsInvalidDeliveryAddressError(err error) bool {
-	var re *InvalidDeliveryAddressError
-	res := errors.As(err, &re)
+	var ia InvalidDeliveryAddressError
+	if errors.As(err, &ia) {
+		return ia.IsInvalidDeliveryAddressError()
+	}
 
-	return res
+	return false
 }

@@ -1,28 +1,33 @@
 package customErrors
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/pkg/errors"
+	"emperror.dev/errors"
 )
 
 func NewMarshalingError(message string) error {
+	internal := NewInternalServerError(message)
+	customErr := GetCustomError(internal)
 	ue := &marshalingError{
-		WithStack: NewInternalServerError(message).(contracts.WithStack),
+		InternalServerError: customErr.(InternalServerError),
 	}
+	stackErr := errors.WithStackIf(ue)
 
-	return ue
+	return stackErr
 }
 
 func NewMarshalingErrorWrap(err error, message string) error {
+	internal := NewInternalServerErrorWrap(err, message)
+	customErr := GetCustomError(internal)
 	ue := &marshalingError{
-		WithStack: NewInternalServerErrorWrap(err, message).(contracts.WithStack),
+		InternalServerError: customErr.(InternalServerError),
 	}
+	stackErr := errors.WithStackIf(ue)
 
-	return ue
+	return stackErr
 }
 
 type marshalingError struct {
-	contracts.WithStack
+	InternalServerError
 }
 
 type MarshalingError interface {
@@ -34,19 +39,12 @@ func (m *marshalingError) IsMarshalingError() bool {
 	return true
 }
 
-func (m *marshalingError) IsInternalServerError() bool {
-	return true
-}
-
-func (m *marshalingError) GetCustomError() CustomError {
-	return GetCustomError(m)
-}
-
 func IsMarshalingError(err error) bool {
-	var marshalingError *marshalingError
-	//us, ok := grpc_errors.Cause(err).(*marshalingError)
-	if errors.As(err, &marshalingError) {
-		return marshalingError.IsMarshalingError()
+	var me MarshalingError
+
+	//us, ok := grpc_errors.Cause(err).(MarshalingError)
+	if errors.As(err, &me) {
+		return me.IsMarshalingError()
 	}
 
 	return false

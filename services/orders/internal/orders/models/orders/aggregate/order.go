@@ -113,8 +113,14 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 		return err
 	}
 
+	payment, err := mapper.Map[*entities.Payment](evt.Payment)
+	if err != nil {
+		return err
+	}
+
 	o.accountEmail = evt.AccountEmail
 	o.shopItems = items
+	o.payment = payment
 	o.totalPrice = getShopItemsTotalPrice(items)
 	o.deliveryAddress = evt.DeliveryAddress
 	o.deliveredTime = evt.DeliveredTime
@@ -127,7 +133,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onOrderPaid(evt *es.Event) error {
 //	var payment Payment
 //	if err := evt.GetJsonData(&payment); err != nil {
-//		return http_errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.Paid = true
@@ -145,7 +151,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onOrderCompleted(evt *es.Event) error {
 //	var eventData completingOrderEvents.OrderCompletedEvent
 //	if err := evt.GetJsonData(&eventData); err != nil {
-//		return http_errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.Completed = true
@@ -158,7 +164,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onOrderCanceled(evt *es.Event) error {
 //	var eventData cancelingOrderEvents.OrderCanceledEvent
 //	if err := evt.GetJsonData(&eventData); err != nil {
-//		return http_errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.Canceled = true
@@ -171,7 +177,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onShoppingCartUpdated(evt *es.Event) error {
 //	var eventData updatingShoppingCardEvents.ShoppingCartUpdatedEvent
 //	if err := evt.GetJsonData(&eventData); err != nil {
-//		return http_errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.ShopItems = eventData.ShopItems
@@ -183,7 +189,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 //func (o *Order) onChangeDeliveryAddress(evt *es.Event) error {
 //	var eventData changingDeliveryAddressEvents.DeliveryAddressChangedEvent
 //	if err := evt.GetJsonData(&eventData); err != nil {
-//		return http_errors.Wrap(err, "GetJsonData")
+//		return http_errors.WrapIf(err, "GetJsonData")
 //	}
 //
 //	o.DeliveryAddress = eventData.DeliveryAddress
@@ -193,6 +199,10 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 
 func (o *Order) ShopItems() []*value_objects.ShopItem {
 	return o.shopItems
+}
+
+func (o *Order) Payment() *entities.Payment {
+	return o.payment
 }
 
 func (o *Order) AccountEmail() string {

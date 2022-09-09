@@ -3,6 +3,7 @@ package grpcErrors
 import (
 	"context"
 	"database/sql"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
@@ -10,7 +11,6 @@ import (
 	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

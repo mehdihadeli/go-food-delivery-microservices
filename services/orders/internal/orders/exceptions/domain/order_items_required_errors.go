@@ -1,25 +1,38 @@
 package domain
 
 import (
+	"emperror.dev/errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/pkg/errors"
 )
 
-type OrderShopItemsRequiredError struct {
+type orderShopItemsRequiredError struct {
 	customErrors.BadRequestError
 }
 
+type OrderShopItemsRequiredError interface {
+	customErrors.BadRequestError
+	IsOrderShopItemsRequiredError() bool
+}
+
 func NewOrderShopItemsRequiredError(message string) error {
-	br := &OrderShopItemsRequiredError{
-		BadRequestError: customErrors.NewBadRequestError(message).(customErrors.BadRequestError),
+	bad := customErrors.NewBadRequestError(message)
+	customErr := customErrors.GetCustomError(bad).(customErrors.BadRequestError)
+	br := &orderShopItemsRequiredError{
+		BadRequestError: customErr,
 	}
 
-	return br
+	return errors.WithStackIf(br)
+}
+
+func (err *orderShopItemsRequiredError) IsOrderShopItemsRequiredError() bool {
+	return true
 }
 
 func IsOrderShopItemsRequiredError(err error) bool {
-	var re *OrderShopItemsRequiredError
-	res := errors.As(err, &re)
+	var os OrderShopItemsRequiredError
+	if errors.As(err, &os) {
+		return os.IsOrderShopItemsRequiredError()
+	}
 
-	return res
+	return false
 }

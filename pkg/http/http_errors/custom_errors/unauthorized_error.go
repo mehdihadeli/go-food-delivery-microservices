@@ -1,48 +1,44 @@
 package customErrors
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/pkg/errors"
+	"emperror.dev/errors"
 	"net/http"
 )
 
 func NewUnAuthorizedError(message string) error {
 	ue := &unauthorizedError{
-		WithStack: NewCustomErrorStack(nil, http.StatusUnauthorized, message),
+		CustomError: NewCustomError(nil, http.StatusUnauthorized, message),
 	}
+	stackErr := errors.WithStackIf(ue)
 
-	return ue
+	return stackErr
 }
 
 func NewUnAuthorizedErrorWrap(err error, message string) error {
 	ue := &unauthorizedError{
-		WithStack: NewCustomErrorStack(err, http.StatusUnauthorized, message),
+		CustomError: NewCustomError(err, http.StatusUnauthorized, message),
 	}
+	stackErr := errors.WithStackIf(ue)
 
-	return ue
+	return stackErr
 }
 
 type unauthorizedError struct {
-	contracts.WithStack
+	CustomError
 }
 
 type UnauthorizedError interface {
-	contracts.WithStack
+	CustomError
 	IsUnAuthorizedError() bool
-	GetCustomError() CustomError
 }
 
 func (u *unauthorizedError) IsUnAuthorizedError() bool {
 	return true
 }
 
-func (u *unauthorizedError) GetCustomError() CustomError {
-	return GetCustomError(u)
-}
-
 func IsUnAuthorizedError(err error) bool {
-	var unauthorizedError *unauthorizedError
-	//us, ok := grpc_errors.Cause(err).(*unauthorizedError)
+	var unauthorizedError UnauthorizedError
+	//us, ok := grpc_errors.Cause(err).(UnauthorizedError)
 	if errors.As(err, &unauthorizedError) {
 		return unauthorizedError.IsUnAuthorizedError()
 	}

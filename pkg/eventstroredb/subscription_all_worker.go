@@ -2,12 +2,12 @@ package eventstroredb
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
-	"github.com/pkg/errors"
 	"time"
 )
 
@@ -122,7 +122,7 @@ func (s *esdbSubscriptionAllWorker) handleEvent(ctx context.Context, resolvedEve
 
 	streamEvent, err := s.esdbSerializer.ResolvedEventToStreamEvent(resolvedEvent)
 	if err != nil {
-		return errors.Wrap(err, "failed to convert resolved event to stream event")
+		return errors.WrapIf(err, "failed to convert resolved event to stream event")
 	}
 
 	fmt.Print(streamEvent)
@@ -133,7 +133,7 @@ func (s *esdbSubscriptionAllWorker) handleEvent(ctx context.Context, resolvedEve
 	// resolvedEvent.OriginalEvent().Position
 	err = s.subscriptionCheckpointRepository.Store(s.subscriptionId, resolvedEvent.Event.Position.Commit, ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to store subscription checkpoint")
+		return errors.WrapIf(err, "failed to store subscription checkpoint")
 	}
 
 	return nil

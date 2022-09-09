@@ -18,10 +18,7 @@ func configV1Endpoints(echoServer customEcho.EchoHttpServer, infra *infrastructu
 	echoServer.ConfigGroup("/api/v1", func(v1 *echo.Group) {
 		ordersGroup := v1.Group("/orders")
 
-		orderEndpointBase := &delivery.OrderEndpointBase{
-			OrdersGroup:                 ordersGroup,
-			InfrastructureConfiguration: infra,
-		}
+		orderEndpointBase := delivery.NewOrderEndpointBase(infra, ordersGroup)
 
 		// CreateNewOrder
 		createProductEndpoint := creatingOrderV1.NewCreteOrderEndpoint(orderEndpointBase)

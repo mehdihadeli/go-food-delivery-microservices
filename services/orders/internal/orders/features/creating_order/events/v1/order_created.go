@@ -14,6 +14,7 @@ type OrderCreatedEventV1 struct {
 	*domain.DomainEvent
 	OrderId         uuid.UUID           `json:"order_id"`
 	ShopItems       []*dtos.ShopItemDto `json:"shopItems" bson:"shopItems,omitempty"`
+	Payment         *dtos.PaymentDto    `json:"payment"`
 	AccountEmail    string              `json:"accountEmail" bson:"accountEmail,omitempty"`
 	DeliveryAddress string              `json:"deliveryAddress" bson:"deliveryAddress,omitempty"`
 	CreatedAt       time.Time           `json:"createdAt" bson:"createdAt,omitempty"`

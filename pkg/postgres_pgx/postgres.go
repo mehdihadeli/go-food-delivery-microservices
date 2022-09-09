@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
@@ -9,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"time"
 )
@@ -103,7 +103,7 @@ func NewPgxPoolConn(cfg *Config, logger pgx.Logger, logLevel pgx.LogLevel) (*Pgx
 
 	connPool, err := pgxpool.ConnectConfig(ctx, poolCfg)
 	if err != nil {
-		return nil, errors.Wrap(err, "pgx.ConnectConfig")
+		return nil, errors.WrapIf(err, "pgx.ConnectConfig")
 	}
 
 	pgxConfig, err := pgx.ParseConfig(dataSourceName)
@@ -149,7 +149,7 @@ func createDB(cfg *Config, ctx context.Context) error {
 
 	connPool, err := pgxpool.ConnectConfig(ctx, poolCfg)
 	if err != nil {
-		return errors.Wrap(err, "pgx.ConnectConfig")
+		return errors.WrapIf(err, "pgx.ConnectConfig")
 	}
 
 	var exists int

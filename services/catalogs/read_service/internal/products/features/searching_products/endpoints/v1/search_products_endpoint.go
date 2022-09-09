@@ -1,12 +1,12 @@
 package v1
 
 import (
+	"emperror.dev/errors"
 	"fmt"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products/queries/v1"
-	"github.com/pkg/errors"
 	"net/http"
 
 	"github.com/labstack/echo/v4"

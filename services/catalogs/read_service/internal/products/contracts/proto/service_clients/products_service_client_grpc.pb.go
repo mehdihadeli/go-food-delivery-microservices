@@ -87,7 +87,7 @@ func (UnimplementedProductsServiceServer) GetProductById(context.Context, *GetPr
 
 // UnsafeProductsServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to ProductsServiceServer will
-// result in compilation http_errors.
+// result in compilation errors.
 type UnsafeProductsServiceServer interface {
 	mustEmbedUnimplementedProductsServiceServer()
 }

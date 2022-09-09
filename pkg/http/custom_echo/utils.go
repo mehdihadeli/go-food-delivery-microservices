@@ -2,7 +2,7 @@ package customEcho
 
 import (
 	"context"
-	"github.com/pkg/errors"
+	"emperror.dev/errors"
 	"net/http"
 	"time"
 

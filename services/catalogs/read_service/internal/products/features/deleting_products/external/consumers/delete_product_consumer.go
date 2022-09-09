@@ -2,6 +2,7 @@ package consumers
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/avast/retry-go"
 	"github.com/mehdihadeli/go-mediatr"
@@ -12,7 +13,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	deletingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/deleting_products/commands/v1"
 	"github.com/opentracing/opentracing-go/log"
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"

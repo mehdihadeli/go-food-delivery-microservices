@@ -1,6 +1,7 @@
 package eventstroredb
 
 import (
+	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/gofrs/uuid"
@@ -13,7 +14,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/truncatePosition"
 	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
 	esErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb/errors"
-	"github.com/pkg/errors"
 	uuid2 "github.com/satori/go.uuid"
 	"io"
 	"strings"

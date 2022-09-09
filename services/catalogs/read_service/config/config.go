@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
@@ -19,7 +20,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/redis"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -94,11 +94,11 @@ func InitConfig(environment string) (*Config, error) {
 	viper.SetConfigType(constants.Json)
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, errors.Wrap(err, "viper.ReadInConfig")
+		return nil, errors.WrapIf(err, "viper.ReadInConfig")
 	}
 
 	if err := viper.Unmarshal(cfg); err != nil {
-		return nil, errors.Wrap(err, "viper.Unmarshal")
+		return nil, errors.WrapIf(err, "viper.Unmarshal")
 	}
 
 	if err := env.Parse(cfg); err != nil {

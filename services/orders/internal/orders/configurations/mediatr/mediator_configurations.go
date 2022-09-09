@@ -13,7 +13,7 @@ import (
 
 func ConfigOrdersMediator(aggregateStore store.AggregateStore[*aggregate.Order], infra *infrastructure.InfrastructureConfiguration) error {
 	//https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
-	err := mediatr.RegisterRequestHandler[*creatingOrderV1.CreateOrderCommand, *creatingOrderDtos.CreateOrderResponseDto](creatingOrderV1.NewCreateOrderHandler(infra.Log, infra.Cfg, aggregateStore))
+	err := mediatr.RegisterRequestHandler[*creatingOrderV1.CreateOrderCommand, *creatingOrderDtos.CreateOrderResponseDto](creatingOrderV1.NewCreateOrderCommandHandler(infra.Log, infra.Cfg, aggregateStore))
 	if err != nil {
 		return err
 	}

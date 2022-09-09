@@ -9,3 +9,7 @@ type OrderEndpointBase struct {
 	*infrastructure.InfrastructureConfiguration
 	OrdersGroup *echo.Group
 }
+
+func NewOrderEndpointBase(infra *infrastructure.InfrastructureConfiguration, ordersGroup *echo.Group) *OrderEndpointBase {
+	return &OrderEndpointBase{OrdersGroup: ordersGroup, InfrastructureConfiguration: infra}
+}

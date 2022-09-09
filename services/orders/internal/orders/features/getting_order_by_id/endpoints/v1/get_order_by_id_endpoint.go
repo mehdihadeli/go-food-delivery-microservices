@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
@@ -10,7 +11,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/dtos"
 	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/queries/v1"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -48,10 +48,10 @@ func (ep *getOrderByIdEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		query := &v1.GetOrderByIdQuery{OrderId: request.OrderId}
+		query := v1.NewGetOrderByIdQuery(request.OrderId)
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[getProductByIdEndpoint_handler.StructCtx]  query validation failed")
-			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr))
+			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr))
 			return validationErr
 		}
 
@@ -59,7 +59,7 @@ func (ep *getOrderByIdEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetOrderByIdQuery")
-			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": query.OrderId})
+			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: %v", query.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": query.OrderId})
 			return err
 		}
 

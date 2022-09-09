@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Sep 08 16:46:44 2022
+# Make data base, printed on Sat Sep 10 01:11:35 2022
 
 # Variables
 
@@ -39,7 +39,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_7856_EDSFPGKNVMDVDVSL
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_16540_CSZVYFXCYWPXAEMJ
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -91,7 +91,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 7856
+VSCODE_PID = 16540
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -223,7 +223,7 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 
 # Directories
 
-# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1662142143): 21 files, no impossibilities.
+# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1662745224): 21 files, no impossibilities.
 
 # 21 files, no impossibilities in 1 directories.
 
@@ -259,7 +259,7 @@ cert:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-08-06 21:52:07
+#  Last modified 2022-09-09 22:10:24
 #  File has been updated.
 #  Successfully updated.
 
@@ -285,7 +285,7 @@ proto_catalogs_write_product_service:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 118):
 	@echo Generating product_service client proto
-	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients api_docs/catalogs/write_service/protobuf/products/service_clients/products_service_client.proto
+	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients api_docs/catalogs/write_service/protobuf/products/service_clients/*.proto
 
 pprof_cpu:
 #  Implicit rule search has not been done.
@@ -380,7 +380,7 @@ proto_catalogs_write_product_kafka_messages:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 114):
 	@echo Generating products kafka messages proto
-	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/product_kafka_messages.proto
+	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/*.proto
 
 proto_catalogs_read_product_kafka_messages:
 #  Implicit rule search has not been done.
@@ -388,7 +388,7 @@ proto_catalogs_read_product_kafka_messages:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 125):
 	@echo Generating products kafka messages proto
-	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/product_kafka_messages.proto
+	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/*.proto
 
 # Not a target:
 .DEFAULT:
@@ -439,7 +439,7 @@ proto_catalogs_read_product_service:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 129):
 	@echo Generating product_service client proto
-	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients api_docs/catalogs/read_service/protobuf/products/service_clients/products_service_client.proto
+	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients api_docs/catalogs/read_service/protobuf/products/service_clients/*.proto
 
 docker-compose_infra_down:
 #  Implicit rule search has not been done.
@@ -477,7 +477,7 @@ proto_orders_order_service:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 134):
 	@echo Generating order_service client proto
-	protoc --go_out=./services/orders/internal/orders/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/orders/internal/orders/contracts/proto/service_clients/ api_docs/orders/protobuf/orders/service_clients/orders_service_client.proto
+	protoc --go_out=./services/orders/internal/orders/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/orders/internal/orders/contracts/proto/service_clients/ api_docs/orders/protobuf/orders/service_clients/*.proto
 
 .PHONY:
 #  Implicit rule search has not been done.
@@ -498,6 +498,6 @@ proto_orders_order_service:
 # strcache performance: lookups = 82 / hit rate = 37%
 # hash-table stats:
 # Load=51/8192=1%, Rehash=0, Collisions=0/82=0%
-# Finished Make data base on Thu Sep 08 16:46:44 2022
+# Finished Make data base on Sat Sep 10 01:11:35 2022
 
  

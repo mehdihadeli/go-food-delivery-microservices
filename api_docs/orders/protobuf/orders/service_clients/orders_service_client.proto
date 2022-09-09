@@ -6,22 +6,21 @@ option go_package = "./;orders_service";
 
 import "google/protobuf/timestamp.proto";
 
-
 message Payment {
-  string ID = 1;
-  google.protobuf.Timestamp  Timestamp = 2;
+  string PaymentId = 1;
+  string OrderId = 2;
+  google.protobuf.Timestamp  Timestamp = 3;
 }
 
 message ShopItem {
-  string ID = 1;
-  string Title = 2;
-  string Description = 3;
-  uint64 Quantity = 4;
-  double Price = 5;
+  string Title = 1;
+  string Description = 2;
+  uint64 Quantity = 3;
+  double Price = 4;
 }
 
 message Order {
-  string ID = 1;
+  string OrderId = 1;
   repeated ShopItem ShopItems = 2;
   bool Paid = 3;
   bool Submitted = 4;
@@ -31,39 +30,34 @@ message Order {
   string AccountEmail = 8;
   string CancelReason = 9;
   string DeliveryAddress = 10;
-  google.protobuf.Timestamp  DeliveryTimestamp = 11;
-  Payment Payment = 12;
+  google.protobuf.Timestamp  DeliveredTime = 11;
+  google.protobuf.Timestamp  CreatedAt = 12;
+  google.protobuf.Timestamp  UpdatedAt = 13;
+  Payment Payment = 14;
 }
 
 message CreateOrderReq {
   string AccountEmail = 1;
   repeated ShopItem ShopItems = 2;
   string DeliveryAddress = 3;
+  google.protobuf.Timestamp  DeliveryTime = 4;
+  Payment Payment = 5;
 }
 
 message CreateOrderRes {
-  string AggregateID = 1;
-}
-
-message PayOrderReq {
-  string AggregateID = 1;
-  Payment Payment = 2;
-}
-
-message PayOrderRes {
-  string AggregateID = 1;
+  string OrderId = 1;
 }
 
 message SubmitOrderReq {
-  string AggregateID = 1;
+  string OrderId = 1;
 }
 
 message SubmitOrderRes {
-  string AggregateID = 1;
+  string OrderId = 1;
 }
 
 message GetOrderByIDReq {
-  string AggregateID = 1;
+  string OrderId = 1;
 }
 
 message GetOrderByIDRes {
@@ -71,40 +65,19 @@ message GetOrderByIDRes {
 }
 
 message UpdateShoppingCartReq {
-  string AggregateID = 1;
+  string OrderId = 1;
   repeated ShopItem ShopItems = 2;
 }
 
 message UpdateShoppingCartRes {}
 
-message CancelOrderReq {
-  string AggregateID = 1;
-  string CancelReason = 2;
-}
-
-message CancelOrderRes {}
-
-message CompleteOrderReq {
-  string AggregateID = 1;
-  google.protobuf.Timestamp  DeliveryTimestamp = 2;
-}
-
-message CompleteOrderRes {}
-
-message ChangeDeliveryAddressReq {
-  string AggregateID = 1;
-  string DeliveryAddress = 2;
-}
-
-message ChangeDeliveryAddressRes {}
-
-message SearchReq {
+message GetOrdersReq {
   string SearchText = 1;
   int64 Page = 2;
   int64 Size = 3;
 }
 
-message SearchRes {
+message GetOrdersRes {
   Pagination Pagination = 1;
   repeated Order Orders = 2;
 }
@@ -119,12 +92,8 @@ message Pagination {
 
 service OrdersService {
   rpc CreateOrder(CreateOrderReq) returns (CreateOrderRes);
-  rpc PayOrder(PayOrderReq) returns (PayOrderRes);
   rpc SubmitOrder(SubmitOrderReq) returns (SubmitOrderRes);
   rpc UpdateShoppingCart(UpdateShoppingCartReq) returns (UpdateShoppingCartRes);
-  rpc CancelOrder(CancelOrderReq) returns (CancelOrderRes);
-  rpc CompleteOrder(CompleteOrderReq) returns (CompleteOrderRes);
-  rpc ChangeDeliveryAddress(ChangeDeliveryAddressReq) returns (ChangeDeliveryAddressRes);
   rpc GetOrderByID(GetOrderByIDReq) returns (GetOrderByIDRes);
-  rpc Search(SearchReq) returns (SearchRes);
+  rpc GetOrders(GetOrdersReq) returns (GetOrdersRes);
 }

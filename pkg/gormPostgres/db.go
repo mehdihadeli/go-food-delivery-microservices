@@ -2,13 +2,13 @@ package gormPostgres
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/opentracing/opentracing-go"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	gorm_postgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -82,7 +82,7 @@ func createDB(cfg *Config, ctx context.Context) error {
 
 	connPool, err := pgxpool.ConnectConfig(ctx, poolCfg)
 	if err != nil {
-		return errors.Wrap(err, "pgx.ConnectConfig")
+		return errors.WrapIf(err, "pgx.ConnectConfig")
 	}
 
 	var exists int
@@ -173,7 +173,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.D
 
 	if err := query.Find(&items).Error; err != nil {
 		tracing.TraceErr(span, err)
-		return nil, errors.Wrap(err, "error in finding products.")
+		return nil, errors.WrapIf(err, "error in finding products.")
 	}
 
 	return utils.NewListResult[T](items, listQuery.GetSize(), listQuery.GetPage(), totalRows), nil

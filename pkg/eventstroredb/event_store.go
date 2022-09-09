@@ -2,6 +2,7 @@ package eventstroredb
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/ahmetb/go-linq/v3"
@@ -16,7 +17,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
-	"github.com/pkg/errors"
 	"math"
 )
 
@@ -144,12 +144,12 @@ func (e *eventStoreDbEventStore) ReadEvents(
 
 	resolvedEvents, err := e.serializer.EsdbReadStreamToResolvedEvents(readStream)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, "[eventStoreDbEventStore_ReadEvents.EsdbReadStreamToResolvedEvents] error in converting to resolved events"))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[eventStoreDbEventStore_ReadEvents.EsdbReadStreamToResolvedEvents] error in converting to resolved events"))
 	}
 
 	events, err := e.serializer.ResolvedEventsToStreamEvents(resolvedEvents)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, "[eventStoreDbEventStore_ReadEvents.ResolvedEventsToStreamEvents] error in converting to stream events"))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[eventStoreDbEventStore_ReadEvents.ResolvedEventsToStreamEvents] error in converting to stream events"))
 	}
 
 	return events, nil
@@ -202,12 +202,12 @@ func (e *eventStoreDbEventStore) ReadEventsBackwards(streamName streamName.Strea
 
 	resolvedEvents, err := e.serializer.EsdbReadStreamToResolvedEvents(readStream)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, "[eventStoreDbEventStore_ReadEvents.EsdbReadStreamToResolvedEvents] error in converting to resolved events"))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[eventStoreDbEventStore_ReadEvents.EsdbReadStreamToResolvedEvents] error in converting to resolved events"))
 	}
 
 	events, err := e.serializer.ResolvedEventsToStreamEvents(resolvedEvents)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, "[eventStoreDbEventStore_ReadEvents.ResolvedEventsToStreamEvents] error in converting to stream events"))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[eventStoreDbEventStore_ReadEvents.ResolvedEventsToStreamEvents] error in converting to stream events"))
 	}
 
 	return events, nil

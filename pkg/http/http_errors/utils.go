@@ -1,9 +1,9 @@
 package httpErrors
 
 import (
+	"emperror.dev/errors"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/pkg/errors"
 	"strings"
 )
 

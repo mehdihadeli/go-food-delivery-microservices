@@ -1,8 +1,8 @@
 package contracts
 
 import (
+	"emperror.dev/errors"
 	"fmt"
-	"github.com/pkg/errors"
 )
 
 type Causer interface {
@@ -21,9 +21,8 @@ type Formatter interface {
 	Format(f fmt.State, verb rune)
 }
 
-type WithStack interface {
+type BaseError interface {
 	error
-	StackTracer
 	Wrapper
 	Causer
 	Formatter

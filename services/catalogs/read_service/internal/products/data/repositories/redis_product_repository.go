@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
@@ -11,7 +12,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -36,11 +36,11 @@ func (r *redisProductRepository) PutProduct(ctx context.Context, key string, pro
 
 	productBytes, err := json.Marshal(product)
 	if err != nil {
-		return tracing.TraceWithErr(span, errors.Wrap(err, "[redisProductRepository_PutProduct.Marshal] error marshalling product"))
+		return tracing.TraceWithErr(span, errors.WrapIf(err, "[redisProductRepository_PutProduct.Marshal] error marshalling product"))
 	}
 
 	if err := r.redisClient.HSetNX(ctx, r.getRedisProductPrefixKey(), key, productBytes).Err(); err != nil {
-		return tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[redisProductRepository_PutProduct.HSetNX] error in updating product with key %s", key)))
+		return tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[redisProductRepository_PutProduct.HSetNX] error in updating product with key %s", key)))
 	}
 
 	r.log.Infow(fmt.Sprintf("[redisProductRepository.UpdateProduct] result key: %s, prefix: %s", key, r.getRedisProductPrefixKey()), logger.Fields{"Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
@@ -60,7 +60,7 @@ func (r *redisProductRepository) GetProduct(ctx context.Context, key string) (*m
 			return nil, nil
 		}
 
-		return nil, tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[redisProductRepository_GetProduct.HGet] error in getting product with Key %s from database", key)))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[redisProductRepository_GetProduct.HGet] error in getting product with Key %s from database", key)))
 	}
 
 	var product models.Product
@@ -79,7 +79,7 @@ func (r *redisProductRepository) DeleteProduct(ctx context.Context, key string) 
 	defer span.Finish()
 
 	if err := r.redisClient.HDel(ctx, r.getRedisProductPrefixKey(), key).Err(); err != nil {
-		return tracing.TraceWithErr(span, errors.Wrap(err, fmt.Sprintf("[redisProductRepository_DeleteProduct.HDel] error in deleting product with key %s", key)))
+		return tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[redisProductRepository_DeleteProduct.HDel] error in deleting product with key %s", key)))
 	}
 
 	r.log.Infow(fmt.Sprintf("[redisProductRepository.DeleteProduct] result key: %s, prefix: %s", key, r.getRedisProductPrefixKey()), logger.Fields{"Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
@@ -92,7 +92,7 @@ func (r *redisProductRepository) DeleteAllProducts(ctx context.Context) error {
 	defer span.Finish()
 
 	if err := r.redisClient.Del(ctx, r.getRedisProductPrefixKey()).Err(); err != nil {
-		return tracing.TraceWithErr(span, errors.Wrap(err, "[redisProductRepository_DeleteAllProducts.Del] error in deleting all products"))
+		return tracing.TraceWithErr(span, errors.WrapIf(err, "[redisProductRepository_DeleteAllProducts.Del] error in deleting all products"))
 	}
 
 	r.log.Infow(fmt.Sprintf("[redisProductRepository.DeleteAllProducts] result prefix: %s", r.getRedisProductPrefixKey()), logger.Fields{"PrefixKey": r.getRedisProductPrefixKey()})
