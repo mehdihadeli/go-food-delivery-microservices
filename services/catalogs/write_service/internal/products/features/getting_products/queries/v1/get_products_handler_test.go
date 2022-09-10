@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"github.com/mehdihadeli/go-mediatr"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/integration"
@@ -11,6 +12,7 @@ import (
 )
 
 func Test_Get_All_Product_Query_Handler(t *testing.T) {
+	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
 	err := mediatr.RegisterRequestHandler[*GetProductsQuery, *dtos.GetProductsResponseDto](NewGetProductsQueryHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository))

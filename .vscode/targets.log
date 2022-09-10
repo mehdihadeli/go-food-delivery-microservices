@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Sep 10 01:11:35 2022
+# Make data base, printed on Sat Sep 10 13:16:41 2022
 
 # Variables
 
@@ -39,7 +39,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_16540_CSZVYFXCYWPXAEMJ
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_7144_KXQVVFSMVMLJPHEZ
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -91,7 +91,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 16540
+VSCODE_PID = 7144
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -209,7 +209,8 @@ ALLUSERSPROFILE = C:\ProgramData
 # environment
 SESSIONNAME = Console
 # default
-.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync load
+.FEATURES := target-specific order-only second-expansion else-if shortest-stem undefin 
+e oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync load
 # environment
 PROCESSOR_REVISION = a503
 # environment
@@ -309,7 +310,8 @@ docker_logs:
 	# @echo 'publish $(VERSION) to $(REGISTRY)'
 	# docker push $(REGISTRY)/go-api-boilerplate-$(BIN):$(VERSION)
 	# @echo 'create tag latest'
-	# docker tag go-api-boilerplate-$(BIN) $(REGISTRY)/go-api-boilerplate-$(BIN):latest
+	# docker tag go-api-boilerplate-$(B 
+IN) $(REGISTRY)/go-api-boilerplate-$(BIN):latest
 	# @echo 'create tag $(VERSION)'
 	# docker tag go-api-boilerplate-$(BIN) $(REGISTRY)/go-api-boilerplate-$(BIN):$(VERSION)
 	# go build -o cmd/$(BIN)/$(BIN) cmd/$(BIN)/main.go
@@ -458,7 +460,8 @@ generate_load_test_client_catalogs_write_service:
 	docker run --rm -v ${PWD}:/local  openapitools/openapi-generator-cli generate --skip-validate-spec -i  local/api_docs/catalogs/write_service/openapi/swagger.json -g k6 -o local/performance_tests/catalogs/write_service/k6-test/
 
 docker_path:
-#  Implicit rule search has not been done.
+#  Implicit rule search h 
+as not been done.
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 24):
@@ -498,6 +501,6 @@ proto_orders_order_service:
 # strcache performance: lookups = 82 / hit rate = 37%
 # hash-table stats:
 # Load=51/8192=1%, Rehash=0, Collisions=0/82=0%
-# Finished Make data base on Sat Sep 10 01:11:35 2022
+# Finished Make data base on Sat Sep 10 13:16:41 2022
 
  

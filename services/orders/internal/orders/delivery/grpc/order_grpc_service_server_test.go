@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	ordersService "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/proto/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/test_fixtures/e2e"
 	"github.com/stretchr/testify/assert"
@@ -15,6 +16,7 @@ type OrderGrpcServiceTests struct {
 }
 
 func TestRunner(t *testing.T) {
+	test.SkipCI(t)
 	fixture := e2e.NewE2ETestFixture()
 
 	//https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
