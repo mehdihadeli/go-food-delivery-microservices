@@ -41,7 +41,6 @@ message CreateOrderReq {
   repeated ShopItem ShopItems = 2;
   string DeliveryAddress = 3;
   google.protobuf.Timestamp  DeliveryTime = 4;
-  Payment Payment = 5;
 }
 
 message CreateOrderRes {

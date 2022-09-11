@@ -13,6 +13,7 @@ import (
 
 // we could also run the server on docker and then send rest call to the api
 func Test_Product_By_Id_E2E(t *testing.T) {
+	t.Log("Running Test_Product_By_Id_E2E")
 	test.SkipCI(t)
 	fixture := e2e.NewE2ETestFixture()
 
