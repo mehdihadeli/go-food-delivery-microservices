@@ -5,6 +5,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/mehdihadeli/go-mediatr"
 	customTypes "github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/custom_types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	ordersDto "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/test_fixtures/integration"
@@ -14,6 +15,7 @@ import (
 )
 
 func Test_Create_Order_Command_Handler(t *testing.T) {
+	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
 	err := mediatr.RegisterRequestHandler[*CreateOrderCommand, *dtos.CreateOrderResponseDto](NewCreateOrderCommandHandler(fixture.Log, fixture.Cfg, fixture.OrderAggregateStore))

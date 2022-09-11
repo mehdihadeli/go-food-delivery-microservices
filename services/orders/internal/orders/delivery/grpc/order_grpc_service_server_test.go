@@ -2,10 +2,14 @@ package grpc
 
 import (
 	"context"
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	ordersService "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/proto/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/test_fixtures/e2e"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
+	"time"
 )
 
 type OrderGrpcServiceTests struct {
@@ -15,6 +19,7 @@ type OrderGrpcServiceTests struct {
 }
 
 func TestRunner(t *testing.T) {
+	test.SkipCI(t)
 	fixture := e2e.NewE2ETestFixture()
 
 	//https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
@@ -46,15 +51,23 @@ func TestRunner(t *testing.T) {
 }
 
 func (p *OrderGrpcServiceTests) Test_Create_Order() {
-	//request := &productService.CreateProductReq{
-	//	Price:       gofakeit.Price(100, 1000),
-	//	Name:        gofakeit.Name(),
-	//	Description: gofakeit.AdjectiveDescriptive(),
-	//}
-	//
-	//res, err := p.CreateProduct(context.Background(), request)
-	//assert.NoError(p.T, err)
-	//assert.NotZero(p.T, res.ProductID)
+	req := &ordersService.CreateOrderReq{
+		AccountEmail:    gofakeit.Email(),
+		DeliveryAddress: gofakeit.Address().Address,
+		DeliveryTime:    timestamppb.New(time.Now()),
+		ShopItems: []*ordersService.ShopItem{
+			{
+				Quantity:    uint64(gofakeit.Number(1, 10)),
+				Description: gofakeit.AdjectiveDescriptive(),
+				Price:       gofakeit.Price(100, 10000),
+				Title:       gofakeit.Name(),
+			},
+		},
+	}
+
+	res, err := p.CreateOrder(context.Background(), req)
+	assert.NoError(p.T, err)
+	assert.NotZero(p.T, res.OrderId)
 }
 
 func (p *OrderGrpcServiceTests) Test_GetOrder_By_Id() {

@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"fmt"
 	uuid "github.com/satori/go.uuid"
 	"time"
 )
@@ -26,12 +25,4 @@ func (p *Payment) OrderId() uuid.UUID {
 
 func (p *Payment) Timestamp() time.Time {
 	return p.timestamp
-}
-
-func (p *Payment) String() string {
-	if p == nil {
-		return "nil"
-	}
-
-	return fmt.Sprintf("PaymentID: {%s}, OrderId: {%s}, Timestamp: {%s}", p.paymentId.String(), p, p.orderId.String(), p.timestamp)
 }

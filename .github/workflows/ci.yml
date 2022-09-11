@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 jobs:
 
@@ -21,5 +21,17 @@ jobs:
     - name: Build
       run: go build -v ./...
 
-    - name: Test
-      run: go tests -v ./...
+    - name: Building-Blocks Tests
+      run: go test -v ./...
+    
+    - name: Catalogs Write Service Tests
+      working-directory: ./services/catalogs/write_service
+      run: go test -v ./...
+
+    - name: Catalogs Read Service Tests
+      working-directory: ./services/catalogs/read_service
+      run: go test -v ./...
+
+    - name: Order Service Tests
+      working-directory: ./services/orders
+      run: go test -v ./...

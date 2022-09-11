@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	productService "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/e2e"
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,7 @@ type ProductGrpcServiceTests struct {
 }
 
 func TestRunner(t *testing.T) {
+	test.SkipCI(t)
 	fixture := e2e.NewE2ETestFixture()
 
 	//https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
