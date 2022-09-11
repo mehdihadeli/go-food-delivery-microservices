@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Sep 11 14:20:49 2022
+# Make data base, printed on Sun Sep 11 14:22:58 2022
 
 # Variables
 
@@ -39,7 +39,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_20316_TTWCXNYFTPUVJICM
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_15312_QRHNGBAZDUDBSLIE
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -91,7 +91,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 20316
+VSCODE_PID = 15312
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -496,6 +496,6 @@ proto_orders_order_service:
 # strcache performance: lookups = 82 / hit rate = 37%
 # hash-table stats:
 # Load=51/8192=1%, Rehash=0, Collisions=0/82=0%
-# Finished Make data base on Sun Sep 11 14:20:49 2022
+# Finished Make data base on Sun Sep 11 14:22:58 2022
 
  
