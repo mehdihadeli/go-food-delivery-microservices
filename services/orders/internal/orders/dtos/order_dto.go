@@ -17,7 +17,7 @@ type OrderDto struct {
 	Submitted       bool           `json:"submitted"`
 	Completed       bool           `json:"completed"`
 	Canceled        bool           `json:"canceled"`
-	Payment         *PaymentDto    `json:"payment"`
+	PaymentId       uuid.UUID      `json:"paymentId"`
 	CreatedAt       time.Time      `json:"createdAt"`
 	UpdatedAt       time.Time      `json:"updatedAt"`
 	OriginalVersion int64          `json:"originalVersion"`

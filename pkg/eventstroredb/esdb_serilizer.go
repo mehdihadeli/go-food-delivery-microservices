@@ -7,12 +7,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
-	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/append_result"
 	esSerializer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/serializer"
-	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/read_position"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/truncatePosition"
-	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
+	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/append_result"
+	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/read_position"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/truncatePosition"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
 	esErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb/errors"
 	uuid2 "github.com/satori/go.uuid"
 	"io"
@@ -31,7 +31,7 @@ func NewEsdbSerializer(metadataSerializer esSerializer.MetadataSerializer, event
 	}
 }
 
-func (e *EsdbSerializer) StreamEventToEventData(streamEvent *es.StreamEvent) (esdb.EventData, error) {
+func (e *EsdbSerializer) StreamEventToEventData(streamEvent *models.StreamEvent) (esdb.EventData, error) {
 	eventSerializationResult, err := e.eventSerializer.Serialize(streamEvent.Event)
 	if err != nil {
 		return *new(esdb.EventData), err
@@ -118,7 +118,7 @@ func (e *EsdbSerializer) EsdbPositionToStreamReadPosition(position esdb.Position
 	return readPosition.FromInt64(int64(position.Commit))
 }
 
-func (e *EsdbSerializer) ResolvedEventToStreamEvent(resolveEvent *esdb.ResolvedEvent) (*es.StreamEvent, error) {
+func (e *EsdbSerializer) ResolvedEventToStreamEvent(resolveEvent *esdb.ResolvedEvent) (*models.StreamEvent, error) {
 	deserializedEvent, err := e.eventSerializer.Deserialize(resolveEvent.Event.Data, resolveEvent.Event.EventType, resolveEvent.Event.ContentType)
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func (e *EsdbSerializer) ResolvedEventToStreamEvent(resolveEvent *esdb.ResolvedE
 		return nil, err
 	}
 
-	return &es.StreamEvent{
+	return &models.StreamEvent{
 		EventID:  id,
 		Event:    deserializedEvent,
 		Metadata: deserializedMeta,
@@ -143,12 +143,12 @@ func (e *EsdbSerializer) ResolvedEventToStreamEvent(resolveEvent *esdb.ResolvedE
 	}, nil
 }
 
-func (e *EsdbSerializer) ResolvedEventsToStreamEvents(resolveEvents []*esdb.ResolvedEvent) ([]*es.StreamEvent, error) {
-	var streamEvents []*es.StreamEvent
+func (e *EsdbSerializer) ResolvedEventsToStreamEvents(resolveEvents []*esdb.ResolvedEvent) ([]*models.StreamEvent, error) {
+	var streamEvents []*models.StreamEvent
 
 	linq.From(resolveEvents).WhereT(func(item *esdb.ResolvedEvent) bool {
 		return strings.HasPrefix(item.Event.EventType, "$") == false
-	}).SelectT(func(item *esdb.ResolvedEvent) *es.StreamEvent {
+	}).SelectT(func(item *esdb.ResolvedEvent) *models.StreamEvent {
 		event, err := e.ResolvedEventToStreamEvent(item)
 		if err != nil {
 			return nil
@@ -202,8 +202,8 @@ func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interfac
 	return payload, metadata, nil
 }
 
-func (e *EsdbSerializer) DomainEventToStreamEvent(domainEvent domain.IDomainEvent, meta *core.Metadata, position int64) *es.StreamEvent {
-	return &es.StreamEvent{
+func (e *EsdbSerializer) DomainEventToStreamEvent(domainEvent domain.IDomainEvent, meta *core.Metadata, position int64) *models.StreamEvent {
+	return &models.StreamEvent{
 		EventID:  uuid2.NewV4(),
 		Event:    domainEvent,
 		Metadata: meta,

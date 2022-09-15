@@ -11,11 +11,6 @@ definitions:
         items:
           $ref: '#/definitions/dtos.ShopItemDto'
         type: array
-    required:
-    - accountEmail
-    - deliveryAddress
-    - deliveryTime
-    - shopItems
     type: object
   dtos.CreateOrderResponseDto:
     properties:
@@ -25,9 +20,14 @@ definitions:
   dtos.GetOrderByIdResponseDto:
     properties:
       order:
-        $ref: '#/definitions/dtos.OrderDto'
+        $ref: '#/definitions/dtos.OrderReadDto'
     type: object
-  dtos.OrderDto:
+  dtos.GetOrdersResponseDto:
+    properties:
+      orders:
+        type: object
+    type: object
+  dtos.OrderReadDto:
     properties:
       accountEmail:
         type: string
@@ -45,28 +45,21 @@ definitions:
         type: string
       id:
         type: string
+      orderId:
+        type: string
       paid:
         type: boolean
-      payment:
-        $ref: '#/definitions/dtos.PaymentDto'
+      paymentId:
+        type: string
       shopItems:
         items:
-          $ref: '#/definitions/dtos.ShopItemDto'
+          $ref: '#/definitions/dtos.ShopItemReadDto'
         type: array
       submitted:
         type: boolean
       totalPrice:
         type: number
       updatedAt:
-        type: string
-    type: object
-  dtos.PaymentDto:
-    properties:
-      OrderId:
-        type: string
-      paymentId:
-        type: string
-      timestamp:
         type: string
     type: object
   dtos.ShopItemDto:
@@ -80,12 +73,59 @@ definitions:
       title:
         type: string
     type: object
+  dtos.ShopItemReadDto:
+    properties:
+      description:
+        type: string
+      price:
+        type: number
+      quantity:
+        type: integer
+      title:
+        type: string
+    type: object
+  utils.FilterModel:
+    properties:
+      comparison:
+        type: string
+      field:
+        type: string
+      value:
+        type: string
+    type: object
 info:
   contact:
     name: Mehdi Hadeli
     url: https://github.com/mehdihadeli
+  description: Orders Service Api
+  title: Orders Service Api
+  version: "1.0"
 paths:
   /api/v1/orders:
+    get:
+      consumes:
+      - application/json
+      description: Get all orders
+      parameters:
+      - in: query
+        name: orderBy
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.GetOrdersResponseDto'
+      summary: Get all orders
+      tags:
+      - Orders
     post:
       consumes:
       - application/json

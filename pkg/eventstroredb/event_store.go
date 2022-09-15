@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/ahmetb/go-linq/v3"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/append_result"
-	streamName "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_name"
-	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/read_position"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/truncatePosition"
-	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
+	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/append_result"
+	streamName "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_name"
+	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/read_position"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/truncatePosition"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
+
 	esErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -56,7 +57,7 @@ func (e *eventStoreDbEventStore) StreamExists(streamName streamName.StreamName, 
 func (e *eventStoreDbEventStore) AppendEvents(
 	streamName streamName.StreamName,
 	expectedVersion expectedStreamVersion.ExpectedStreamVersion,
-	events []*es.StreamEvent,
+	events []*models.StreamEvent,
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.AppendEvents")
@@ -64,7 +65,7 @@ func (e *eventStoreDbEventStore) AppendEvents(
 	defer span.Finish()
 
 	var eventsData []esdb.EventData
-	linq.From(events).SelectT(func(s *es.StreamEvent) esdb.EventData {
+	linq.From(events).SelectT(func(s *models.StreamEvent) esdb.EventData {
 		data, err := e.serializer.StreamEventToEventData(s)
 		if err != nil {
 			return *new(esdb.EventData)
@@ -89,14 +90,14 @@ func (e *eventStoreDbEventStore) AppendEvents(
 
 	span.LogFields(log.Object("AppendEventsResult", appendEventsResult))
 
-	e.log.Info("[eventStoreDbEventStore_AppendEvents] events append to stream successfully")
+	e.log.Infow("[eventStoreDbEventStore_AppendEvents] events append to stream successfully", logger.Fields{"AppendEventsResult": appendEventsResult, "StreamId": streamName.String()})
 
 	return appendEventsResult, nil
 }
 
 func (e *eventStoreDbEventStore) AppendNewEvents(
 	streamName streamName.StreamName,
-	events []*es.StreamEvent,
+	events []*models.StreamEvent,
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
 
@@ -111,7 +112,7 @@ func (e *eventStoreDbEventStore) AppendNewEvents(
 
 	span.LogFields(log.Object("AppendNewEvents", appendEventsResult))
 
-	e.log.Info("[eventStoreDbEventStore_AppendNewEvents] events append to stream successfully")
+	e.log.Infow("[eventStoreDbEventStore_AppendNewEvents] events append to stream successfully", logger.Fields{"AppendEventsResult": appendEventsResult, "StreamId": streamName.String()})
 
 	return appendEventsResult, nil
 }
@@ -121,7 +122,7 @@ func (e *eventStoreDbEventStore) ReadEvents(
 	readPosition readPosition.StreamReadPosition,
 	count uint64,
 	ctx context.Context,
-) ([]*es.StreamEvent, error) {
+) ([]*models.StreamEvent, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.ReadEvents")
 	span.LogFields(log.String("StreamName", streamName.String()))
@@ -159,7 +160,7 @@ func (e *eventStoreDbEventStore) ReadEventsWithMaxCount(
 	streamName streamName.StreamName,
 	readPosition readPosition.StreamReadPosition,
 	ctx context.Context,
-) ([]*es.StreamEvent, error) {
+) ([]*models.StreamEvent, error) {
 
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.ReadEventsWithMaxCount")
 	span.LogFields(log.String("StreamName", streamName.String()))
@@ -172,7 +173,7 @@ func (e *eventStoreDbEventStore) ReadEventsFromStart(
 	streamName streamName.StreamName,
 	count uint64,
 	ctx context.Context,
-) ([]*es.StreamEvent, error) {
+) ([]*models.StreamEvent, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.ReadEventsFromStart")
 	span.LogFields(log.String("StreamName", streamName.String()))
 	defer span.Finish()
@@ -180,7 +181,7 @@ func (e *eventStoreDbEventStore) ReadEventsFromStart(
 	return e.ReadEvents(streamName, readPosition.Start, count, ctx)
 }
 
-func (e *eventStoreDbEventStore) ReadEventsBackwards(streamName streamName.StreamName, readPosition readPosition.StreamReadPosition, count uint64, ctx context.Context) ([]*es.StreamEvent, error) {
+func (e *eventStoreDbEventStore) ReadEventsBackwards(streamName streamName.StreamName, readPosition readPosition.StreamReadPosition, count uint64, ctx context.Context) ([]*models.StreamEvent, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.ReadEventsBackwards")
 	span.LogFields(log.String("StreamName", streamName.String()))
 	defer span.Finish()
@@ -217,7 +218,7 @@ func (e *eventStoreDbEventStore) ReadEventsBackwardsWithMaxCount(
 	streamName streamName.StreamName,
 	readPosition readPosition.StreamReadPosition,
 	ctx context.Context,
-) ([]*es.StreamEvent, error) {
+) ([]*models.StreamEvent, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.ReadEventsBackwardsWithMaxCount")
 	span.LogFields(log.String("StreamName", streamName.String()))
 	defer span.Finish()
@@ -229,7 +230,7 @@ func (e *eventStoreDbEventStore) ReadEventsBackwardsFromEnd(
 	streamName streamName.StreamName,
 	count uint64,
 	ctx context.Context,
-) ([]*es.StreamEvent, error) {
+) ([]*models.StreamEvent, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "eventStoreDbEventStore.ReadEventsBackwardsFromEnd")
 	span.LogFields(log.String("StreamName", streamName.String()))
 	defer span.Finish()
@@ -262,7 +263,7 @@ func (e *eventStoreDbEventStore) TruncateStream(
 
 	span.LogFields(log.Object("WriteResult", writeResult))
 
-	e.log.Infow(fmt.Sprintf("[eventStoreDbEventStore.TruncateStream] stream with id %s truncated successfully", streamName.String()), logger.Fields{"StreamId": streamName.String()})
+	e.log.Infow(fmt.Sprintf("[eventStoreDbEventStore.TruncateStream] stream with id %s truncated successfully", streamName.String()), logger.Fields{"WriteResult": writeResult, "StreamId": streamName.String()})
 
 	return e.serializer.EsdbWriteResultToAppendEventResult(writeResult), nil
 }
@@ -289,7 +290,7 @@ func (e *eventStoreDbEventStore) DeleteStream(
 
 	span.LogFields(log.Object("DeleteResult", deleteResult))
 
-	e.log.Infow(fmt.Sprintf("[eventStoreDbEventStore.DeleteStream] stream with id %s deleted successfully", streamName.String()), logger.Fields{"StreamId": streamName.String()})
+	e.log.Infow(fmt.Sprintf("[eventStoreDbEventStore.DeleteStream] stream with id %s deleted successfully", streamName.String()), logger.Fields{"DeleteResult": deleteResult, "StreamId": streamName.String()})
 
 	return nil
 }

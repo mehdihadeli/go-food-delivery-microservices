@@ -17,13 +17,14 @@ import (
 func Test_Create_Order_Command_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
+	defer fixture.Cleanup()
 
 	err := mediatr.RegisterRequestHandler[*CreateOrderCommand, *dtos.CreateOrderResponseDto](NewCreateOrderCommandHandler(fixture.Log, fixture.Cfg, fixture.OrderAggregateStore))
 	if err != nil {
 		return
 	}
 
-	defer fixture.Cleanup()
+	fixture.Run()
 
 	orderDto := dtos.CreateOrderRequestDto{
 		AccountEmail:    gofakeit.Email(),
@@ -44,4 +45,5 @@ func Test_Create_Order_Command_Handler(t *testing.T) {
 
 	assert.NotNil(t, result)
 	assert.Equal(t, command.OrderID, result.OrderID)
+	time.Sleep(time.Second * 2)
 }

@@ -20,6 +20,44 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/v1/orders": {
+            "get": {
+                "description": "Get all orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Get all orders",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "orderBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.GetOrdersResponseDto"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Create new order",
                 "consumes": [
@@ -89,12 +127,6 @@ const docTemplate = `{
     "definitions": {
         "dtos.CreateOrderRequestDto": {
             "type": "object",
-            "required": [
-                "accountEmail",
-                "deliveryAddress",
-                "deliveryTime",
-                "shopItems"
-            ],
             "properties": {
                 "accountEmail": {
                     "type": "string"
@@ -125,11 +157,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "order": {
-                    "$ref": "#/definitions/dtos.OrderDto"
+                    "$ref": "#/definitions/dtos.OrderReadDto"
                 }
             }
         },
-        "dtos.OrderDto": {
+        "dtos.GetOrdersResponseDto": {
+            "type": "object",
+            "properties": {
+                "orders": {
+                    "type": "object"
+                }
+            }
+        },
+        "dtos.OrderReadDto": {
             "type": "object",
             "properties": {
                 "accountEmail": {
@@ -156,16 +196,19 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "orderId": {
+                    "type": "string"
+                },
                 "paid": {
                     "type": "boolean"
                 },
-                "payment": {
-                    "$ref": "#/definitions/dtos.PaymentDto"
+                "paymentId": {
+                    "type": "string"
                 },
                 "shopItems": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dtos.ShopItemDto"
+                        "$ref": "#/definitions/dtos.ShopItemReadDto"
                     }
                 },
                 "submitted": {
@@ -175,20 +218,6 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "dtos.PaymentDto": {
-            "type": "object",
-            "properties": {
-                "OrderId": {
-                    "type": "string"
-                },
-                "paymentId": {
-                    "type": "string"
-                },
-                "timestamp": {
                     "type": "string"
                 }
             }
@@ -209,18 +238,49 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "dtos.ShopItemReadDto": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.FilterModel": {
+            "type": "object",
+            "properties": {
+                "comparison": {
+                    "type": "string"
+                },
+                "field": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Orders Service Api",
+	Description:      "Orders Service Api",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

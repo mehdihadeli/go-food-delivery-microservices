@@ -28,7 +28,7 @@ func Test_Order_By_Id_E2E(t *testing.T) {
 	expect := httpexpect.New(t, s.URL)
 
 	expect.GET("/api/v1/orders/{id}").
-		WithPath("id", "97e2d953-ed25-4afb-8578-782cc5d365ba").
+		WithPath("id", "1b4b0599-bc3c-4c1d-94af-fd1895713620").
 		WithContext(context.Background()).
 		Expect().
 		Status(http.StatusOK)

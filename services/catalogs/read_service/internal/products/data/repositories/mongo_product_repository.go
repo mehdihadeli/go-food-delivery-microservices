@@ -13,6 +13,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
@@ -29,7 +30,7 @@ type mongoProductRepository struct {
 	mongoClient *mongo.Client
 }
 
-func NewMongoProductRepository(log logger.Logger, cfg *config.Config, mongoClient *mongo.Client) *mongoProductRepository {
+func NewMongoProductRepository(log logger.Logger, cfg *config.Config, mongoClient *mongo.Client) contracts.ProductRepository {
 	return &mongoProductRepository{log: log, cfg: cfg, mongoClient: mongoClient}
 }
 
@@ -44,7 +45,8 @@ func (p *mongoProductRepository) GetAllProducts(ctx context.Context, listQuery *
 		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[mongoProductRepository_GetAllProducts.Paginate] error in the paginate"))
 	}
 
-	p.log.Info("[mongoProductRepository.GetAllProducts] result: %+v", result)
+	p.log.Infow("[mongoProductRepository.GetAllProducts] products loaded", logger.Fields{"ProductsResult": result})
+	span.LogFields(log.Object("ProductsResult", result))
 
 	return result, nil
 }
@@ -68,13 +70,15 @@ func (p *mongoProductRepository) SearchProducts(ctx context.Context, searchText 
 		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[mongoProductRepository_SearchProducts.Paginate] error in the paginate"))
 	}
 
-	p.log.Info("[mongoProductRepository.SearchProducts] result: %+v", result)
+	p.log.Infow(fmt.Sprintf("[mongoProductRepository.SearchProducts] products loaded for search term '%s'", searchText), logger.Fields{"ProductsResult": result})
+	span.LogFields(log.Object("ProductsResult", result))
+
 	return result, nil
 }
 
 func (p *mongoProductRepository) GetProductById(ctx context.Context, uuid uuid.UUID) (*models.Product, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.GetProductById")
-	span.LogFields(log.String("AggregateID", uuid.String()))
+	span.LogFields(log.String("ProductId", uuid.String()))
 	defer span.Finish()
 
 	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
@@ -88,13 +92,14 @@ func (p *mongoProductRepository) GetProductById(ctx context.Context, uuid uuid.U
 		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[mongoProductRepository_GetProductById.FindOne] can't find the product with id %s into the database.", uuid)))
 	}
 
-	p.log.Infow(fmt.Sprintf("[mongoProductRepository.GetProductById] result: %+v", product), logger.Fields{"AggregateID": uuid})
+	span.LogFields(log.Object("Product", product))
+	p.log.Infow(fmt.Sprintf("[mongoProductRepository.GetProductById] product with id %s laoded", uuid.String()), logger.Fields{"Product": product, "ProductId": uuid})
+
 	return &product, nil
 }
 
 func (p *mongoProductRepository) CreateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.CreateProduct")
-	span.LogFields(log.Object("Aggregate", product))
 	defer span.Finish()
 
 	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
@@ -103,13 +108,14 @@ func (p *mongoProductRepository) CreateProduct(ctx context.Context, product *mod
 		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[mongoProductRepository_CreateProduct.InsertOne] error in the inserting product into the database."))
 	}
 
-	p.log.Infow(fmt.Sprintf("[mongoProductRepository.CreateProduct] result AggregateID: %s", product.ProductID), logger.Fields{"AggregateID": product.ProductID})
+	span.LogFields(log.Object("Product", product))
+	p.log.Infow(fmt.Sprintf("[mongoProductRepository.CreateProduct] product with id '%s' created", product.ProductID), logger.Fields{"Product": product, "ProductId": product.ProductID})
+
 	return product, nil
 }
 
 func (p *mongoProductRepository) UpdateProduct(ctx context.Context, updateProduct *models.Product) (*models.Product, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.UpdateProduct")
-	span.LogFields(log.Object("Aggregate", updateProduct))
 	defer span.Finish()
 
 	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
@@ -123,13 +129,15 @@ func (p *mongoProductRepository) UpdateProduct(ctx context.Context, updateProduc
 		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[mongoProductRepository_UpdateProduct.FindOneAndUpdate] error in updating product with id %s into the database.", updateProduct.ProductID)))
 	}
 
-	p.log.Infow(fmt.Sprintf("[mongoProductRepository.UpdateProduct] result AggregateID: %s", updateProduct.ProductID), logger.Fields{"AggregateID": updateProduct.ProductID})
+	span.LogFields(log.Object("Product", updateProduct))
+	p.log.Infow(fmt.Sprintf("[mongoProductRepository.UpdateProduct] product with id '%s' updated", updateProduct.ProductID), logger.Fields{"Product": updateProduct, "ProductId": updateProduct.ProductID})
+
 	return &updated, nil
 }
 
 func (p *mongoProductRepository) DeleteProductByID(ctx context.Context, uuid uuid.UUID) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoProductRepository.DeleteProductByID")
-	span.LogFields(log.String("AggregateID", uuid.String()))
+	span.LogFields(log.String("ProductId", uuid.String()))
 	defer span.Finish()
 
 	collection := p.mongoClient.Database(p.cfg.Mongo.Db).Collection(p.cfg.MongoCollections.Products)
@@ -139,6 +147,7 @@ func (p *mongoProductRepository) DeleteProductByID(ctx context.Context, uuid uui
 			"[mongoProductRepository_DeleteProductByID.FindOneAndDelete] error in deleting product with id %d from the database.", uuid)))
 	}
 
-	p.log.Infow(fmt.Sprintf("[mongoProductRepository.DeleteProductByID] result AggregateID: %s", uuid), logger.Fields{"AggregateID": uuid})
+	p.log.Infow(fmt.Sprintf("[mongoProductRepository.DeleteProductByID] product with id %s deleted", uuid), logger.Fields{"Product": uuid})
+
 	return nil
 }

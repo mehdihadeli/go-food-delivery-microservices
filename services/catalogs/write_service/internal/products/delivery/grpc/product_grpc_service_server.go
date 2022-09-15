@@ -15,10 +15,8 @@ import (
 	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/queries/v1"
 	updatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/commands/v1"
 
-	gettingProductByIdDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
-
 	creatingProductDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
+	gettingProductByIdDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	"github.com/opentracing/opentracing-go/log"
 	uuid "github.com/satori/go.uuid"
@@ -119,13 +117,7 @@ func (s *ProductGrpcServiceServer) GetProductById(ctx context.Context, req *prod
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}
 
-	product, err := mapper.Map[*models.Product](queryResult.Product)
-	if err != nil {
-		err = errors.WithMessage(err, "[ProductGrpcServiceServer_GetProductById.Map] error in mapping product")
-		return nil, grpcErrors.ErrGrpcResponse(tracing.TraceWithErr(span, err))
-	}
-
-	pr, err := mapper.Map[*productsService.Product](product)
+	product, err := mapper.Map[*productsService.Product](queryResult.Product)
 	if err != nil {
 		err = errors.WithMessage(err, "[ProductGrpcServiceServer_GetProductById.Map] error in mapping product")
 		return nil, grpcErrors.ErrGrpcResponse(tracing.TraceWithErr(span, err))
@@ -133,5 +125,5 @@ func (s *ProductGrpcServiceServer) GetProductById(ctx context.Context, req *prod
 
 	s.Metrics.SuccessGrpcRequests.Inc()
 
-	return &productsService.GetProductByIdRes{Product: pr}, nil
+	return &productsService.GetProductByIdRes{Product: product}, nil
 }

@@ -4,23 +4,23 @@ package aggregate
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/errors"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	domainExceptions "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/exceptions/domain"
-	creatingOrderEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/events/v1"
+	creatingOrderEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/events/domain/v1"
 	updatingShoppingCardEvents "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/updating_shopping_card/events/v1"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/entities"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/value_objects"
 	uuid "github.com/satori/go.uuid"
 	"time"
 )
 
 type Order struct {
-	*es.EventSourcedAggregateRoot
+	*models.EventSourcedAggregateRoot
 	shopItems       []*value_objects.ShopItem
 	accountEmail    string
 	deliveryAddress string
@@ -31,14 +31,14 @@ type Order struct {
 	submitted       bool
 	completed       bool
 	canceled        bool
-	payment         *entities.Payment
+	paymentId       uuid.UUID
 	createdAt       time.Time
 	updatedAt       time.Time
 }
 
 func (o *Order) NewEmptyAggregate() {
 	//http://arch-stable.blogspot.com/2012/05/golang-call-inherited-constructor.html
-	base := es.NewEventSourcedAggregateRoot(typeMapper.GetTypeName(o), o.When)
+	base := models.NewEventSourcedAggregateRoot(typeMapper.GetTypeName(o), o.When)
 	o.EventSourcedAggregateRoot = base
 }
 
@@ -89,21 +89,9 @@ func (o *Order) When(event domain.IDomainEvent) error {
 
 	case *creatingOrderEvents.OrderCreatedEventV1:
 		return o.onOrderCreated(evt)
-	//case payingOrderEvents.OrderPaid:
-	//	return o.onOrderPaid(evt)
-	//case submittingOrderEvents.OrderSubmitted:
-	//	return o.onOrderSubmitted(evt)
-	//case completingOrderEvents.OrderCompleted:
-	//	return o.onOrderCompleted(evt)
-	//case cancelingOrderEvents.OrderCanceled:
-	//	return o.onOrderCanceled(evt)
-	//case updatingShoppingCardEvents.ShoppingCartUpdated:
-	//	return o.onShoppingCartUpdated(evt)
-	//case changingDeliveryAddressEvents.DeliveryAddressChanged:
-	//	return o.onChangeDeliveryAddress(evt)
 
 	default:
-		return es.InvalidEventTypeError
+		return errors.InvalidEventTypeError
 	}
 }
 
@@ -113,15 +101,8 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 		return err
 	}
 
-	payment, err := mapper.Map[*entities.Payment](evt.Payment)
-	if err != nil {
-		return err
-	}
-
 	o.accountEmail = evt.AccountEmail
 	o.shopItems = items
-	o.payment = payment
-	o.totalPrice = getShopItemsTotalPrice(items)
 	o.deliveryAddress = evt.DeliveryAddress
 	o.deliveredTime = evt.DeliveredTime
 	o.createdAt = evt.CreatedAt
@@ -130,79 +111,12 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) err
 	return nil
 }
 
-//func (o *Order) onOrderPaid(evt *es.Event) error {
-//	var payment Payment
-//	if err := evt.GetJsonData(&payment); err != nil {
-//		return http_errors.WrapIf(err, "GetJsonData")
-//	}
-//
-//	o.Paid = true
-//	o.Payment = payment
-//
-//	return nil
-//}
-//
-//func (o *Order) onOrderSubmitted(evt *es.Event) error {
-//	o.Submitted = true
-//
-//	return nil
-//}
-//
-//func (o *Order) onOrderCompleted(evt *es.Event) error {
-//	var eventData completingOrderEvents.OrderCompletedEvent
-//	if err := evt.GetJsonData(&eventData); err != nil {
-//		return http_errors.WrapIf(err, "GetJsonData")
-//	}
-//
-//	o.Completed = true
-//	o.DeliveredTime = eventData.DeliveryTimestamp
-//	o.Canceled = false
-//
-//	return nil
-//}
-//
-//func (o *Order) onOrderCanceled(evt *es.Event) error {
-//	var eventData cancelingOrderEvents.OrderCanceledEvent
-//	if err := evt.GetJsonData(&eventData); err != nil {
-//		return http_errors.WrapIf(err, "GetJsonData")
-//	}
-//
-//	o.Canceled = true
-//	o.Completed = false
-//	o.CancelReason = eventData.CancelReason
-//
-//	return nil
-//}
-//
-//func (o *Order) onShoppingCartUpdated(evt *es.Event) error {
-//	var eventData updatingShoppingCardEvents.ShoppingCartUpdatedEvent
-//	if err := evt.GetJsonData(&eventData); err != nil {
-//		return http_errors.WrapIf(err, "GetJsonData")
-//	}
-//
-//	o.ShopItems = eventData.ShopItems
-//	o.TotalPrice = getShopItemsTotalPrice(eventData.ShopItems)
-//
-//	return nil
-//}
-//
-//func (o *Order) onChangeDeliveryAddress(evt *es.Event) error {
-//	var eventData changingDeliveryAddressEvents.DeliveryAddressChangedEvent
-//	if err := evt.GetJsonData(&eventData); err != nil {
-//		return http_errors.WrapIf(err, "GetJsonData")
-//	}
-//
-//	o.DeliveryAddress = eventData.DeliveryAddress
-//
-//	return nil
-//}
-
 func (o *Order) ShopItems() []*value_objects.ShopItem {
 	return o.shopItems
 }
 
-func (o *Order) Payment() *entities.Payment {
-	return o.payment
+func (o *Order) PaymentId() uuid.UUID {
+	return o.paymentId
 }
 
 func (o *Order) AccountEmail() string {
@@ -222,7 +136,7 @@ func (o *Order) CreatedAt() time.Time {
 }
 
 func (o *Order) TotalPrice() float64 {
-	return o.totalPrice
+	return getShopItemsTotalPrice(o.shopItems)
 }
 
 func (o *Order) Paid() bool {

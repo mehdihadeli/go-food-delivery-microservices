@@ -5,7 +5,9 @@ import (
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"time"
@@ -19,6 +21,7 @@ type esdbSubscriptionAllWorker struct {
 	esdbSerializer                   *EsdbSerializer
 	subscriptionCheckpointRepository contracts.SubscriptionCheckpointRepository
 	subscriptionId                   string
+	projectionPublisher              projection.IProjectionPublisher
 }
 
 type EsdbSubscriptionAllWorker interface {
@@ -34,8 +37,8 @@ type EventStoreDBSubscriptionToAllOptions struct {
 	Prefix                      string
 }
 
-func NewEsdbSubscriptionAllWorker(log logger.Logger, db *esdb.Client, cfg *EventStoreConfig, esdbSerializer *EsdbSerializer, subscriptionRepository contracts.SubscriptionCheckpointRepository) *esdbSubscriptionAllWorker {
-	return &esdbSubscriptionAllWorker{db: db, cfg: cfg, log: log, esdbSerializer: esdbSerializer, subscriptionCheckpointRepository: subscriptionRepository}
+func NewEsdbSubscriptionAllWorker(log logger.Logger, db *esdb.Client, cfg *EventStoreConfig, esdbSerializer *EsdbSerializer, subscriptionRepository contracts.SubscriptionCheckpointRepository, projectionPublisher projection.IProjectionPublisher) *esdbSubscriptionAllWorker {
+	return &esdbSubscriptionAllWorker{db: db, cfg: cfg, log: log, esdbSerializer: esdbSerializer, subscriptionCheckpointRepository: subscriptionRepository, projectionPublisher: projectionPublisher}
 }
 
 func (s *esdbSubscriptionAllWorker) SubscribeAll(ctx context.Context, subscriptionOption *EventStoreDBSubscriptionToAllOptions) error {
@@ -102,8 +105,6 @@ func (s *esdbSubscriptionAllWorker) SubscribeAll(ctx context.Context, subscripti
 				s.log.Info(fmt.Sprintf("event appeared in subscription to all '%s'. streamId: %s, revision: %d", s.subscriptionId, streamId, revision))
 
 				options.From = event.EventAppeared.OriginalEvent().Position
-				f := event.EventAppeared.Event.Position.Commit
-				fmt.Println(f)
 
 				// handles the event...
 				err := s.handleEvent(ctx, event.EventAppeared)
@@ -125,12 +126,18 @@ func (s *esdbSubscriptionAllWorker) handleEvent(ctx context.Context, resolvedEve
 		return errors.WrapIf(err, "failed to convert resolved event to stream event")
 	}
 
-	fmt.Print(streamEvent)
-	// publish to internal event bus
+	// publish to internal event bus - for handling event and project it manually tp corresponding read model
+	err = mediatr.Publish(ctx, streamEvent)
+	if err != nil {
+		return errors.WrapIf(err, "failed to publish stream event for the mediatr (internal event bus for handling event)")
+	}
 
 	// publish to projection publisher
+	err = s.projectionPublisher.Publish(ctx, streamEvent)
+	if err != nil {
+		return errors.WrapIf(err, "failed to publish stream event in the handle event")
+	}
 
-	// resolvedEvent.OriginalEvent().Position
 	err = s.subscriptionCheckpointRepository.Store(s.subscriptionId, resolvedEvent.Event.Position.Commit, ctx)
 	if err != nil {
 		return errors.WrapIf(err, "failed to store subscription checkpoint")

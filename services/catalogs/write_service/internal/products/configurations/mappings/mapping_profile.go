@@ -21,6 +21,23 @@ func ConfigureMappings() error {
 		return err
 	}
 
+	err = mapper.CreateCustomMap[*dto.ProductDto, *productsService.Product](func(product *dto.ProductDto) *productsService.Product {
+		if product == nil {
+			return nil
+		}
+		return &productsService.Product{
+			ProductID:   product.ProductID.String(),
+			Name:        product.Name,
+			Description: product.Description,
+			Price:       product.Price,
+			CreatedAt:   timestamppb.New(product.CreatedAt),
+			UpdatedAt:   timestamppb.New(product.UpdatedAt),
+		}
+	})
+	if err != nil {
+		return err
+	}
+
 	err = mapper.CreateCustomMap(func(product *models.Product) *kafka_messages.Product {
 		return &kafka_messages.Product{
 			ProductID:   product.ProductID.String(),

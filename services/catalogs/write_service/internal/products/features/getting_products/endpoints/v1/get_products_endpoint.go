@@ -27,7 +27,7 @@ func (ep *getProductsEndpoint) MapRoute() {
 }
 
 // GetAllProducts
-// @Tags Products
+// @Tags Orders
 // @Summary Get all product
 // @Description Get all products
 // @Accept json

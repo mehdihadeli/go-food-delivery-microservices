@@ -1,6 +1,6 @@
 package readPosition
 
-import expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
+import expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
 
 // https://github.com/EventStore/EventStore-Client-Dotnet/blob/b8beee7b97ef359316822cb2d00f120bf67bd14d/src/EventStore.Client/StreamPosition.cs
 // https://github.com/EventStore/EventStore-Client-Go/blob/1591d047c0c448cacc0468f9af3605572aba7970/esdb/position.go

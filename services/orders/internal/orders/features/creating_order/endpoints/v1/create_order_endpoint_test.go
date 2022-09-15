@@ -11,26 +11,29 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/test_fixtures/e2e"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 )
 
+type My struct {
+	Data string
+	Num  int
+}
+
 // we could also run the server on docker and then send rest call to the api
 func Test_Create_Order_E2E(t *testing.T) {
 	test.SkipCI(t)
-	fixture := e2e.NewE2ETestFixture()
 
+	fixture := e2e.NewE2ETestFixture()
 	e := NewCreteOrderEndpoint(delivery.NewOrderEndpointBase(fixture.InfrastructureConfiguration, fixture.V1.OrdersGroup))
 	e.MapRoute()
 
 	defer fixture.Cleanup()
 
-	s := httptest.NewServer(fixture.Echo)
-	defer s.Close()
+	fixture.Run()
 
 	// create httpexpect instance
-	expect := httpexpect.New(t, s.URL)
+	expect := httpexpect.New(t, fixture.HttpServer.URL)
 
 	request := dtos.CreateOrderRequestDto{
 		AccountEmail:    gofakeit.Email(),
@@ -51,4 +54,6 @@ func Test_Create_Order_E2E(t *testing.T) {
 		WithJSON(request).
 		Expect().
 		Status(http.StatusCreated)
+
+	time.Sleep(time.Second * 5)
 }

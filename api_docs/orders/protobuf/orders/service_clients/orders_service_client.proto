@@ -6,11 +6,6 @@ option go_package = "./;orders_service";
 
 import "google/protobuf/timestamp.proto";
 
-message Payment {
-  string PaymentId = 1;
-  string OrderId = 2;
-  google.protobuf.Timestamp  Timestamp = 3;
-}
 
 message ShopItem {
   string Title = 1;
@@ -33,7 +28,32 @@ message Order {
   google.protobuf.Timestamp  DeliveredTime = 11;
   google.protobuf.Timestamp  CreatedAt = 12;
   google.protobuf.Timestamp  UpdatedAt = 13;
-  Payment Payment = 14;
+  string PaymentId = 14;
+}
+
+message OrderReadModel {
+  string Id = 1;
+  string OrderId = 2;
+  repeated ShopItemReadModel ShopItems = 3;
+  bool Paid = 4;
+  bool Submitted = 5;
+  bool Completed = 6;
+  bool Canceled = 7;
+  double TotalPrice = 8;
+  string AccountEmail = 9;
+  string CancelReason = 10;
+  string DeliveryAddress = 11;
+  google.protobuf.Timestamp  DeliveredTime = 12;
+  google.protobuf.Timestamp  CreatedAt = 13;
+  google.protobuf.Timestamp  UpdatedAt = 14;
+  string PaymentId = 15;
+}
+
+message ShopItemReadModel {
+  string Title = 1;
+  string Description = 2;
+  uint64 Quantity = 3;
+  double Price = 4;
 }
 
 message CreateOrderReq {
@@ -56,11 +76,11 @@ message SubmitOrderRes {
 }
 
 message GetOrderByIDReq {
-  string OrderId = 1;
+  string Id = 1;
 }
 
 message GetOrderByIDRes {
-  Order Order = 1;
+  OrderReadModel Order = 1;
 }
 
 message UpdateShoppingCartReq {
@@ -72,20 +92,20 @@ message UpdateShoppingCartRes {}
 
 message GetOrdersReq {
   string SearchText = 1;
-  int64 Page = 2;
-  int64 Size = 3;
+  int32 Page = 2;
+  int32 Size = 3;
 }
 
 message GetOrdersRes {
   Pagination Pagination = 1;
-  repeated Order Orders = 2;
+  repeated OrderReadModel Orders = 2;
 }
 
 message Pagination {
-  int64 TotalCount = 1;
-  int64 TotalPages = 2;
-  int64 Page = 3;
-  int64 Size = 4;
+  int64 TotalItems = 1;
+  int32 TotalPages = 2;
+  int32 Page = 3;
+  int32 Size = 4;
   bool HasMore = 5;
 }
 

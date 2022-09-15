@@ -1,4 +1,4 @@
-package es
+package models
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"

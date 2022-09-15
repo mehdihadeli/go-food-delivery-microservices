@@ -143,6 +143,10 @@ func CreateCustomMap[TSrc any, TDst any](fn MapFunc[TSrc, TDst]) error {
 }
 
 func Map[TDes any, TSrc any](src TSrc) (TDes, error) {
+	if reflect.ValueOf(src).IsZero() {
+		return *new(TDes), nil
+	}
+
 	var des TDes
 	srcType := reflect.TypeOf(src)
 	desType := reflect.TypeOf(des)

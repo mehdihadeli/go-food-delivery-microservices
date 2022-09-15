@@ -3,15 +3,15 @@ package store
 import (
 	"context"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
-	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/append_result"
-	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/read_position"
-	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
+	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/append_result"
+	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/read_position"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
 	uuid "github.com/satori/go.uuid"
 )
 
 // AggregateStore is responsible for loading and saving Aggregate.
-type AggregateStore[T es.IHaveEventSourcedAggregate] interface {
+type AggregateStore[T models.IHaveEventSourcedAggregate] interface {
 
 	// StoreWithVersion store the new or update aggregate state with expected version
 	StoreWithVersion(

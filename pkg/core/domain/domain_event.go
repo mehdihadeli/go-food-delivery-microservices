@@ -2,7 +2,7 @@ package domain
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
-	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
 	uuid "github.com/satori/go.uuid"
 )
 
