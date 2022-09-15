@@ -14,32 +14,32 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-type GetOrdersQueryHandler struct {
+type GetOrdersHandler struct {
 	log                      logger.Logger
 	cfg                      *config.Config
 	mongoOrderReadRepository repositories.OrderReadRepository
 }
 
-func NewGetOrdersQueryHandler(log logger.Logger, cfg *config.Config, mongoOrderReadRepository repositories.OrderReadRepository) *GetOrdersQueryHandler {
-	return &GetOrdersQueryHandler{log: log, cfg: cfg, mongoOrderReadRepository: mongoOrderReadRepository}
+func NewGetOrdersHandler(log logger.Logger, cfg *config.Config, mongoOrderReadRepository repositories.OrderReadRepository) *GetOrdersHandler {
+	return &GetOrdersHandler{log: log, cfg: cfg, mongoOrderReadRepository: mongoOrderReadRepository}
 }
 
-func (c *GetOrdersQueryHandler) Handle(ctx context.Context, query *GetOrdersQuery) (*dtos.GetOrdersResponseDto, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "GetOrdersQueryHandler.Handle")
+func (c *GetOrdersHandler) Handle(ctx context.Context, query *GetOrders) (*dtos.GetOrdersResponseDto, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetOrdersHandler.Handle")
 	span.LogFields(log.Object("Query", query))
 	defer span.Finish()
 
 	products, err := c.mongoOrderReadRepository.GetAllOrders(ctx, query.ListQuery)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetOrdersQueryHandler_Handle.GetAllOrders] error in getting orders in the repository"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetOrdersHandler_Handle.GetAllOrders] error in getting orders in the repository"))
 	}
 
 	listResultDto, err := utils.ListResultToListResultDto[*ordersDto.OrderReadDto](products)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetOrdersQueryHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetOrdersHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
 	}
 
-	c.log.Info("[GetOrdersQueryHandler.Handle] orders fetched")
+	c.log.Info("[GetOrdersHandler.Handle] orders fetched")
 
 	return &dtos.GetOrdersResponseDto{Orders: listResultDto}, nil
 }

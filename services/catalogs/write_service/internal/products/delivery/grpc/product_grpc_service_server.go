@@ -38,7 +38,7 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 	s.Metrics.CreateProductGrpcRequests.Inc()
 	defer span.Finish()
 
-	command := creatingProductV1.NewCreateProductCommand(req.GetName(), req.GetDescription(), req.GetPrice())
+	command := creatingProductV1.NewCreateProduct(req.GetName(), req.GetDescription(), req.GetPrice())
 
 	if err := s.Validator.StructCtx(ctx, command); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[ProductGrpcServiceServer_CreateProduct.StructCtx] command validation failed")
@@ -46,9 +46,9 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 		return nil, grpcErrors.ErrGrpcResponse(validationErr)
 	}
 
-	result, err := mediatr.Send[*creatingProductV1.CreateProductCommand, *creatingProductDtos.CreateProductResponseDto](ctx, command)
+	result, err := mediatr.Send[*creatingProductV1.CreateProduct, *creatingProductDtos.CreateProductResponseDto](ctx, command)
 	if err != nil {
-		err = errors.WithMessage(err, "[ProductGrpcServiceServer_CreateProduct.Send] error in sending CreateProductCommand")
+		err = errors.WithMessage(err, "[ProductGrpcServiceServer_CreateProduct.Send] error in sending CreateProduct")
 		s.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_CreateProduct.Send] id: {%s}, err: %v", command.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductID})
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}
@@ -71,7 +71,7 @@ func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *produ
 		return nil, grpcErrors.ErrGrpcResponse(badRequestErr)
 	}
 
-	command := updatingProductV1.NewUpdateProductCommand(productUUID, req.GetName(), req.GetDescription(), req.GetPrice())
+	command := updatingProductV1.NewUpdateProduct(productUUID, req.GetName(), req.GetDescription(), req.GetPrice())
 
 	if err := s.Validator.StructCtx(ctx, command); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[ProductGrpcServiceServer_UpdateProduct.StructCtx] command validation failed")
@@ -79,8 +79,8 @@ func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *produ
 		return nil, grpcErrors.ErrGrpcResponse(validationErr)
 	}
 
-	if _, err = mediatr.Send[*updatingProductV1.UpdateProductCommand, *mediatr.Unit](ctx, command); err != nil {
-		err = errors.WithMessage(err, "[ProductGrpcServiceServer_UpdateProduct.Send] error in sending CreateProductCommand")
+	if _, err = mediatr.Send[*updatingProductV1.UpdateProduct, *mediatr.Unit](ctx, command); err != nil {
+		err = errors.WithMessage(err, "[ProductGrpcServiceServer_UpdateProduct.Send] error in sending CreateProduct")
 		s.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_UpdateProduct.Send] id: {%s}, err: %v", command.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductID})
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}
@@ -103,16 +103,16 @@ func (s *ProductGrpcServiceServer) GetProductById(ctx context.Context, req *prod
 		return nil, grpcErrors.ErrGrpcResponse(badRequestErr)
 	}
 
-	query := gettingProductByIdV1.NewGetProductByIdQuery(productUUID)
+	query := gettingProductByIdV1.NewGetProductById(productUUID)
 	if err := s.Validator.StructCtx(ctx, query); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[ProductGrpcServiceServer_GetProductById.StructCtx] query validation failed")
 		s.Log.Errorf(fmt.Sprintf("[ProductGrpcServiceServer_GetProductById.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr)))
 		return nil, grpcErrors.ErrGrpcResponse(validationErr)
 	}
 
-	queryResult, err := mediatr.Send[*gettingProductByIdV1.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdResponseDto](ctx, query)
+	queryResult, err := mediatr.Send[*gettingProductByIdV1.GetProductById, *gettingProductByIdDtos.GetProductByIdResponseDto](ctx, query)
 	if err != nil {
-		err = errors.WithMessage(err, "[ProductGrpcServiceServer_GetProductById.Send] error in sending GetProductByIdQuery")
+		err = errors.WithMessage(err, "[ProductGrpcServiceServer_GetProductById.Send] error in sending GetProductById")
 		s.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_GetProductById.Send] id: {%s}, err: %v", query.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": query.ProductID})
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}

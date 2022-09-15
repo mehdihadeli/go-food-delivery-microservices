@@ -15,15 +15,15 @@ func Test_Get_Orders_Query_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*GetOrdersQuery, *dtos.GetOrdersResponseDto](NewGetOrdersQueryHandler(fixture.Log, fixture.Cfg, fixture.MongoOrderReadRepository))
+	err := mediatr.RegisterRequestHandler[*GetOrders, *dtos.GetOrdersResponseDto](NewGetOrdersHandler(fixture.Log, fixture.Cfg, fixture.MongoOrderReadRepository))
 	if err != nil {
 		return
 	}
 
 	defer fixture.Cleanup()
 
-	query := NewGetOrdersQuery(utils.NewListQuery(10, 1))
-	queryResult, err := mediatr.Send[*GetOrdersQuery, *dtos.GetOrdersResponseDto](context.Background(), query)
+	query := NewGetOrders(utils.NewListQuery(10, 1))
+	queryResult, err := mediatr.Send[*GetOrders, *dtos.GetOrdersResponseDto](context.Background(), query)
 
 	assert.NotNil(t, queryResult)
 	assert.NotNil(t, queryResult.Orders)

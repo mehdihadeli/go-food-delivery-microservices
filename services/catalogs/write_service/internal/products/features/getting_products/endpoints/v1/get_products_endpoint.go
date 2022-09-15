@@ -55,12 +55,12 @@ func (ep *getProductsEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		query := v1.NewGetProductsQuery(request.ListQuery)
+		query := v1.NewGetProducts(request.ListQuery)
 
-		queryResult, err := mediatr.Send[*v1.GetProductsQuery, *dtos.GetProductsResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*v1.GetProducts, *dtos.GetProductsResponseDto](ctx, query)
 
 		if err != nil {
-			err = errors.WithMessage(err, "[getProductsEndpoint_handler.Send] error in sending GetProductsQuery")
+			err = errors.WithMessage(err, "[getProductsEndpoint_handler.Send] error in sending GetProducts")
 			ep.Log.Error(fmt.Sprintf("[getProductsEndpoint_handler.Send] err: {%v}", tracing.TraceWithErr(span, err)))
 			return err
 		}

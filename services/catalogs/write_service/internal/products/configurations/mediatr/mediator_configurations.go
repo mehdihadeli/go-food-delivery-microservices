@@ -18,32 +18,32 @@ import (
 
 func ConfigProductsMediator(pgRepo contracts.ProductRepository, infra *infrastructure.InfrastructureConfiguration) error {
 	//https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
-	err := mediatr.RegisterRequestHandler[*creatingProductV1.CreateProductCommand, *creatingProductsDtos.CreateProductResponseDto](creatingProductV1.NewCreateProductCommandHandler(infra.Log, infra.Cfg, pgRepo, infra.KafkaProducer))
+	err := mediatr.RegisterRequestHandler[*creatingProductV1.CreateProduct, *creatingProductsDtos.CreateProductResponseDto](creatingProductV1.NewCreateProductHandler(infra.Log, infra.Cfg, pgRepo, infra.KafkaProducer))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*gettingProductsV1.GetProductsQuery, *gettingProductsDtos.GetProductsResponseDto](gettingProductsV1.NewGetProductsQueryHandler(infra.Log, infra.Cfg, pgRepo))
+	err = mediatr.RegisterRequestHandler[*gettingProductsV1.GetProducts, *gettingProductsDtos.GetProductsResponseDto](gettingProductsV1.NewGetProductsHandler(infra.Log, infra.Cfg, pgRepo))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*searchingProductsV1.SearchProductsQuery, *searchingProductsDtos.SearchProductsResponseDto](searchingProductsV1.NewSearchProductsQueryHandler(infra.Log, infra.Cfg, pgRepo))
+	err = mediatr.RegisterRequestHandler[*searchingProductsV1.SearchProducts, *searchingProductsDtos.SearchProductsResponseDto](searchingProductsV1.NewSearchProductsHandler(infra.Log, infra.Cfg, pgRepo))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*updatingProductV1.UpdateProductCommand, *mediatr.Unit](updatingProductV1.NewUpdateProductCommandHandler(infra.Log, infra.Cfg, pgRepo, infra.KafkaProducer))
+	err = mediatr.RegisterRequestHandler[*updatingProductV1.UpdateProduct, *mediatr.Unit](updatingProductV1.NewUpdateProductHandler(infra.Log, infra.Cfg, pgRepo, infra.KafkaProducer))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*deletingProductV1.DeleteProductCommand, *mediatr.Unit](deletingProductV1.NewDeleteProductCommandHandler(infra.Log, infra.Cfg, pgRepo, infra.KafkaProducer))
+	err = mediatr.RegisterRequestHandler[*deletingProductV1.DeleteProduct, *mediatr.Unit](deletingProductV1.NewDeleteProductHandler(infra.Log, infra.Cfg, pgRepo, infra.KafkaProducer))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*geettingProductByIdV1.GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdResponseDto](geettingProductByIdV1.NewGetProductByIdQueryHandler(infra.Log, infra.Cfg, pgRepo))
+	err = mediatr.RegisterRequestHandler[*geettingProductByIdV1.GetProductById, *gettingProductByIdDtos.GetProductByIdResponseDto](geettingProductByIdV1.NewGetProductByIdHandler(infra.Log, infra.Cfg, pgRepo))
 	if err != nil {
 		return err
 	}

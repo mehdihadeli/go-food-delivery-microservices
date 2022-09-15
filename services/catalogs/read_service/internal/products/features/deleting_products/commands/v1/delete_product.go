@@ -2,10 +2,10 @@ package v1
 
 import uuid "github.com/satori/go.uuid"
 
-type DeleteProductCommand struct {
+type DeleteProduct struct {
 	ProductID uuid.UUID `validate:"required"`
 }
 
-func NewDeleteProductCommand(productID uuid.UUID) *DeleteProductCommand {
-	return &DeleteProductCommand{ProductID: productID}
+func NewDeleteProduct(productID uuid.UUID) *DeleteProduct {
+	return &DeleteProduct{ProductID: productID}
 }

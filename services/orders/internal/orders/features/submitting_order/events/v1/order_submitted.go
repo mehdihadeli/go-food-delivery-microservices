@@ -10,7 +10,7 @@ type OrderSubmittedV1 struct {
 	OrderID uuid.UUID `json:"orderID" bson:"orderID,omitempty"`
 }
 
-func NewSubmitOrderEventV1(orderID uuid.UUID) (*OrderSubmittedV1, error) {
+func NewSubmitOrderV1(orderID uuid.UUID) (*OrderSubmittedV1, error) {
 	if orderID == uuid.Nil {
 		return nil, customErrors.NewDomainError(fmt.Sprintf("orderId {%s} is invalid", orderID))
 	}

@@ -14,31 +14,31 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-type SearchProductsQueryHandler struct {
+type SearchProductsHandler struct {
 	log             logger.Logger
 	cfg             *config.Config
 	mongoRepository contracts.ProductRepository
 }
 
-func NewSearchProductsQueryHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository) *SearchProductsQueryHandler {
-	return &SearchProductsQueryHandler{log: log, cfg: cfg, mongoRepository: repository}
+func NewSearchProductsHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository) *SearchProductsHandler {
+	return &SearchProductsHandler{log: log, cfg: cfg, mongoRepository: repository}
 }
 
-func (c *SearchProductsQueryHandler) Handle(ctx context.Context, query *SearchProductsQuery) (*searchingProductsDtos.SearchProductsResponseDto, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "SearchProductsQueryHandler.Handle")
+func (c *SearchProductsHandler) Handle(ctx context.Context, query *SearchProducts) (*searchingProductsDtos.SearchProductsResponseDto, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "SearchProductsHandler.Handle")
 	span.LogFields(log.Object("Query", query))
 	defer span.Finish()
 
 	products, err := c.mongoRepository.SearchProducts(ctx, query.SearchText, query.ListQuery)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[SearchProductsQueryHandler_Handle.SearchProducts] error in searching products in the repository"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[SearchProductsHandler_Handle.SearchProducts] error in searching products in the repository"))
 	}
 
 	listResultDto, err := utils.ListResultToListResultDto[*dto.ProductDto](products)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsQueryHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[SearchProductsHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
 	}
-	c.log.Info("[SearchProductsQueryHandler.Handle] products fetched")
+	c.log.Info("[SearchProductsHandler.Handle] products fetched")
 
 	return &searchingProductsDtos.SearchProductsResponseDto{Products: listResultDto}, nil
 }

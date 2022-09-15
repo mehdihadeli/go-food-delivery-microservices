@@ -21,13 +21,11 @@ type GetOrderByIdHandler struct {
 	orderMongoRepository repositories.OrderReadRepository
 }
 
-// TODO: Should read from read side model (mongo)
-
 func NewGetOrderByIdHandler(log logger.Logger, cfg *config.Config, orderMongoRepository repositories.OrderReadRepository) *GetOrderByIdHandler {
 	return &GetOrderByIdHandler{log: log, cfg: cfg, orderMongoRepository: orderMongoRepository}
 }
 
-func (q *GetOrderByIdHandler) Handle(ctx context.Context, query *GetOrderByIdQuery) (*dtos.GetOrderByIdResponseDto, error) {
+func (q *GetOrderByIdHandler) Handle(ctx context.Context, query *GetOrderById) (*dtos.GetOrderByIdResponseDto, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "GetOrderByIdHandler.Handle")
 	span.LogFields(log.String("ProductId", query.OrderId.String()))
 	span.LogFields(log.Object("Query", query))

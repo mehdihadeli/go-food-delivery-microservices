@@ -7,10 +7,10 @@ import (
 //https://echo.labstack.com/guide/request/
 //https://github.com/go-playground/validator
 
-type GetProductByIdQuery struct {
+type GetProductById struct {
 	ProductID uuid.UUID `validate:"required"`
 }
 
-func NewGetProductByIdQuery(productId uuid.UUID) *GetProductByIdQuery {
-	return &GetProductByIdQuery{ProductID: productId}
+func NewGetProductById(productId uuid.UUID) *GetProductById {
+	return &GetProductById{ProductID: productId}
 }

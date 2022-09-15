@@ -14,32 +14,32 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-type GetProductsQueryHandler struct {
+type GetProductsHandler struct {
 	log    logger.Logger
 	cfg    *config.Config
 	pgRepo contracts.ProductRepository
 }
 
-func NewGetProductsQueryHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository) *GetProductsQueryHandler {
-	return &GetProductsQueryHandler{log: log, cfg: cfg, pgRepo: pgRepo}
+func NewGetProductsHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository) *GetProductsHandler {
+	return &GetProductsHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 
-func (c *GetProductsQueryHandler) Handle(ctx context.Context, query *GetProductsQuery) (*dtos.GetProductsResponseDto, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "GetProductsQueryHandler.Handle")
+func (c *GetProductsHandler) Handle(ctx context.Context, query *GetProducts) (*dtos.GetProductsResponseDto, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetProductsHandler.Handle")
 	span.LogFields(log.Object("Query", query))
 	defer span.Finish()
 
 	products, err := c.pgRepo.GetAllProducts(ctx, query.ListQuery)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsQueryHandler_Handle.GetAllProducts] error in getting products in the repository"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsHandler_Handle.GetAllProducts] error in getting products in the repository"))
 	}
 
 	listResultDto, err := utils.ListResultToListResultDto[*dto.ProductDto](products)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsQueryHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
 	}
 
-	c.log.Info("[GetProductsQueryHandler.Handle] products fetched")
+	c.log.Info("[GetProductsHandler.Handle] products fetched")
 
 	return &dtos.GetProductsResponseDto{Products: listResultDto}, nil
 }

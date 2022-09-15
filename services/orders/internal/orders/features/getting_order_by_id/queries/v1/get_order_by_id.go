@@ -2,10 +2,10 @@ package v1
 
 import uuid "github.com/satori/go.uuid"
 
-type GetOrderByIdQuery struct {
+type GetOrderById struct {
 	OrderId uuid.UUID `validate:"required"`
 }
 
-func NewGetOrderByIdQuery(id uuid.UUID) *GetOrderByIdQuery {
-	return &GetOrderByIdQuery{OrderId: id}
+func NewGetOrderById(id uuid.UUID) *GetOrderById {
+	return &GetOrderById{OrderId: id}
 }

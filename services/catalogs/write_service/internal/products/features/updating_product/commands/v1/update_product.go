@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type UpdateProductCommand struct {
+type UpdateProduct struct {
 	ProductID   uuid.UUID `validate:"required"`
 	Name        string    `validate:"required,gte=0,lte=255"`
 	Description string    `validate:"required,gte=0,lte=5000"`
@@ -13,6 +13,6 @@ type UpdateProductCommand struct {
 	UpdatedAt   time.Time `validate:"required"`
 }
 
-func NewUpdateProductCommand(productID uuid.UUID, name string, description string, price float64) *UpdateProductCommand {
-	return &UpdateProductCommand{ProductID: productID, Name: name, Description: description, Price: price, UpdatedAt: time.Now()}
+func NewUpdateProduct(productID uuid.UUID, name string, description string, price float64) *UpdateProduct {
+	return &UpdateProduct{ProductID: productID, Name: name, Description: description, Price: price, UpdatedAt: time.Now()}
 }

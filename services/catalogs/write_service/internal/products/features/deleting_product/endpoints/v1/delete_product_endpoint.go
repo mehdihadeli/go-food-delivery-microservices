@@ -27,7 +27,7 @@ func (ep *deleteProductEndpoint) MapRoute() {
 	ep.ProductsGroup.DELETE("/:id", ep.handler())
 }
 
-// DeleteProductCommand
+// DeleteProduct
 // @Tags Orders
 // @Summary Delete product
 // @Description Delete existing product
@@ -49,17 +49,17 @@ func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		command := v1.NewDeleteProductCommand(request.ProductID)
+		command := v1.NewDeleteProduct(request.ProductID)
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[deleteProductEndpoint_handler.StructCtx] command validation failed")
 			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr)))
 			return validationErr
 		}
 
-		_, err := mediatr.Send[*v1.DeleteProductCommand, *mediatr.Unit](ctx, command)
+		_, err := mediatr.Send[*v1.DeleteProduct, *mediatr.Unit](ctx, command)
 
 		if err != nil {
-			err = errors.WithMessage(err, "[deleteProductEndpoint_handler.Send] error in sending DeleteProductCommand")
+			err = errors.WithMessage(err, "[deleteProductEndpoint_handler.Send] error in sending DeleteProduct")
 			ep.Log.Errorw(fmt.Sprintf("[deleteProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductID})
 			return err
 		}

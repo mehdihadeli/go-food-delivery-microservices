@@ -27,7 +27,7 @@ func (ep *searchProductsEndpoint) MapRoute() {
 	ep.ProductsGroup.GET("/search", ep.handler())
 }
 
-// SearchProductsQuery
+// SearchProducts
 // @Tags Orders
 // @Summary Search products
 // @Description Search products
@@ -59,7 +59,7 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		query := &v1.SearchProductsQuery{SearchText: request.SearchText, ListQuery: request.ListQuery}
+		query := &v1.SearchProducts{SearchText: request.SearchText, ListQuery: request.ListQuery}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[searchProductsEndpoint_handler.StructCtx]  query validation failed")
@@ -67,10 +67,10 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 			return validationErr
 		}
 
-		queryResult, err := mediatr.Send[*v1.SearchProductsQuery, *dtos.SearchProductsResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*v1.SearchProducts, *dtos.SearchProductsResponseDto](ctx, query)
 
 		if err != nil {
-			err = errors.WithMessage(err, "[searchProductsEndpoint_handler.Send] error in sending SearchProductsQuery")
+			err = errors.WithMessage(err, "[searchProductsEndpoint_handler.Send] error in sending SearchProducts")
 			ep.Log.Error(fmt.Sprintf("[searchProductsEndpoint_handler.Send] err: {%v}", tracing.TraceWithErr(span, err)))
 			return err
 		}

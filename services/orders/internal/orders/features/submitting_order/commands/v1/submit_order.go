@@ -4,10 +4,10 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type SubmitOrderCommand struct {
+type SubmitOrder struct {
 	OrderId uuid.UUID `validate:"required"`
 }
 
-func NewSubmitOrderCommand(orderId uuid.UUID) *SubmitOrderCommand {
-	return &SubmitOrderCommand{OrderId: orderId}
+func NewSubmitOrder(orderId uuid.UUID) *SubmitOrder {
+	return &SubmitOrder{OrderId: orderId}
 }

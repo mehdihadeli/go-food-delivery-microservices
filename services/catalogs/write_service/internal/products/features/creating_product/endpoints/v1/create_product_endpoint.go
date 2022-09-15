@@ -27,7 +27,7 @@ func (ep *createProductEndpoint) MapRoute() {
 	ep.ProductsGroup.POST("", ep.handler())
 }
 
-// CreateProductCommand
+// CreateProduct
 // @Tags Orders
 // @Summary Create product
 // @Description Create new product item
@@ -49,17 +49,17 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		command := v1.NewCreateProductCommand(request.Name, request.Description, request.Price)
+		command := v1.NewCreateProduct(request.Name, request.Description, request.Price)
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[createProductEndpoint_handler.StructCtx] command validation failed")
 			ep.Log.Errorf(fmt.Sprintf("[createProductEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr)))
 			return validationErr
 		}
 
-		result, err := mediatr.Send[*v1.CreateProductCommand, *dtos.CreateProductResponseDto](ctx, command)
+		result, err := mediatr.Send[*v1.CreateProduct, *dtos.CreateProductResponseDto](ctx, command)
 
 		if err != nil {
-			err = errors.WithMessage(err, "[createProductEndpoint_handler.Send] error in sending CreateProductCommand")
+			err = errors.WithMessage(err, "[createProductEndpoint_handler.Send] error in sending CreateProduct")
 			ep.Log.Errorw(fmt.Sprintf("[createProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductID})
 			return err
 		}

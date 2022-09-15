@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-type OrderCreatedEventV1 struct {
+type OrderCreatedV1 struct {
 	*domain.DomainEvent
 	OrderId         uuid.UUID           `json:"order_id"`
 	ShopItems       []*dtos.ShopItemDto `json:"shopItems" bson:"shopItems,omitempty"`
@@ -20,7 +20,7 @@ type OrderCreatedEventV1 struct {
 	DeliveredTime   time.Time           `json:"deliveredTime" bson:"deliveredTime,omitempty"`
 }
 
-func NewOrderCreatedEventV1(aggregateId uuid.UUID, shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedEventV1, error) {
+func NewOrderCreatedEventV1(aggregateId uuid.UUID, shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*OrderCreatedV1, error) {
 	if shopItems == nil || len(shopItems) == 0 {
 		return nil, domainExceptions.NewOrderShopItemsRequiredError("shopItems is required")
 	}
@@ -41,7 +41,7 @@ func NewOrderCreatedEventV1(aggregateId uuid.UUID, shopItems []*dtos.ShopItemDto
 		return nil, customErrors.NewDomainError("deliveredTime can't be zero")
 	}
 
-	eventData := &OrderCreatedEventV1{
+	eventData := &OrderCreatedV1{
 		ShopItems:       shopItems,
 		OrderId:         aggregateId,
 		AccountEmail:    accountEmail,

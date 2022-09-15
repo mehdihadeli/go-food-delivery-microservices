@@ -53,7 +53,7 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 
 	p := msg.GetProduct()
 
-	command := v1.NewCreateProductCommand(p.GetProductID(), p.GetName(), p.GetDescription(), p.GetPrice(), p.GetCreatedAt().AsTime())
+	command := v1.NewCreateProduct(p.GetProductID(), p.GetName(), p.GetDescription(), p.GetPrice(), p.GetCreatedAt().AsTime())
 	if err := c.Validator.StructCtx(ctx, command); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[createProductConsumer_Consume.StructCtx] command validation failed")
 		c.Log.Errorf(fmt.Sprintf("[createProductConsumer_Consume.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr)))
@@ -63,10 +63,10 @@ func (c *createProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	if err := retry.Do(func() error {
-		_, err := mediatr.Send[*v1.CreateProductCommand, *creatingProduct.CreateProductResponseDto](ctx, command)
+		_, err := mediatr.Send[*v1.CreateProduct, *creatingProduct.CreateProductResponseDto](ctx, command)
 		return err
 	}, append(retryOptions, retry.Context(ctx))...); err != nil {
-		err = errors.WithMessage(err, "[createProductConsumer_Consume.Send] error in sending CreateProductCommand")
+		err = errors.WithMessage(err, "[createProductConsumer_Consume.Send] error in sending CreateProduct")
 		c.Log.Errorw(fmt.Sprintf("[createProductConsumer_Consume.Send] id: {%s}, err: {%v}", command.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductID})
 		c.CommitErrMessage(ctx, r, m)
 

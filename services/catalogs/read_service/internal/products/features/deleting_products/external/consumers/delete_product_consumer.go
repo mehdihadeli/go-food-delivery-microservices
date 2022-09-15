@@ -60,7 +60,7 @@ func (c *deleteProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 		return
 	}
 
-	command := deletingProductV1.NewDeleteProductCommand(productUUID)
+	command := deletingProductV1.NewDeleteProduct(productUUID)
 	if err := c.Validator.StructCtx(ctx, command); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[deleteProductConsumer_Consume.StructCtx] command validation failed")
 		c.Log.Errorf(fmt.Sprintf("[deleteProductConsumer_Consume.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr)))
@@ -70,10 +70,10 @@ func (c *deleteProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	if err := retry.Do(func() error {
-		_, err := mediatr.Send[*deletingProductV1.DeleteProductCommand, *mediatr.Unit](ctx, command)
+		_, err := mediatr.Send[*deletingProductV1.DeleteProduct, *mediatr.Unit](ctx, command)
 		return err
 	}, append(retryOptions, retry.Context(ctx))...); err != nil {
-		err = errors.WithMessage(err, "[deleteProductConsumer_Consume.Send] error in sending DeleteProductCommand")
+		err = errors.WithMessage(err, "[deleteProductConsumer_Consume.Send] error in sending DeleteProduct")
 		c.Log.Errorw(fmt.Sprintf("[deleteProductConsumer_Consume.Send] id: {%s}, err: {%v}", command.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductID})
 
 		c.CommitErrMessage(ctx, r, m)

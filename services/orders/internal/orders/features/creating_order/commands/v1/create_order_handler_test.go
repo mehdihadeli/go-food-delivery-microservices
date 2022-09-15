@@ -19,7 +19,7 @@ func Test_Create_Order_Command_Handler(t *testing.T) {
 	fixture := integration.NewIntegrationTestFixture()
 	defer fixture.Cleanup()
 
-	err := mediatr.RegisterRequestHandler[*CreateOrderCommand, *dtos.CreateOrderResponseDto](NewCreateOrderCommandHandler(fixture.Log, fixture.Cfg, fixture.OrderAggregateStore))
+	err := mediatr.RegisterRequestHandler[*CreateOrder, *dtos.CreateOrderResponseDto](NewCreateOrderHandler(fixture.Log, fixture.Cfg, fixture.OrderAggregateStore))
 	if err != nil {
 		return
 	}
@@ -40,8 +40,8 @@ func Test_Create_Order_Command_Handler(t *testing.T) {
 		},
 	}
 
-	command := NewCreateOrderCommand(orderDto.ShopItems, orderDto.AccountEmail, orderDto.DeliveryAddress, time.Time(orderDto.DeliveryTime))
-	result, err := mediatr.Send[*CreateOrderCommand, *dtos.CreateOrderResponseDto](context.Background(), command)
+	command := NewCreateOrder(orderDto.ShopItems, orderDto.AccountEmail, orderDto.DeliveryAddress, time.Time(orderDto.DeliveryTime))
+	result, err := mediatr.Send[*CreateOrder, *dtos.CreateOrderResponseDto](context.Background(), command)
 
 	assert.NotNil(t, result)
 	assert.Equal(t, command.OrderID, result.OrderID)
