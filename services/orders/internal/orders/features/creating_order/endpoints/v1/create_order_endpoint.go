@@ -49,17 +49,17 @@ func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		command := creatingOrderv1.NewCreateOrderCommand(request.ShopItems, request.AccountEmail, request.DeliveryAddress, time.Time(request.DeliveryTime))
+		command := creatingOrderv1.NewCreateOrder(request.ShopItems, request.AccountEmail, request.DeliveryAddress, time.Time(request.DeliveryTime))
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[createOrderEndpoint_handler.StructCtx] command validation failed")
 			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr)))
 			return validationErr
 		}
 
-		result, err := mediatr.Send[*creatingOrderv1.CreateOrderCommand, *dtos.CreateOrderResponseDto](ctx, command)
+		result, err := mediatr.Send[*creatingOrderv1.CreateOrder, *dtos.CreateOrderResponseDto](ctx, command)
 
 		if err != nil {
-			err = errors.WithMessage(err, "[createOrderEndpoint_handler.Send] error in sending CreateOrderCommand")
+			err = errors.WithMessage(err, "[createOrderEndpoint_handler.Send] error in sending CreateOrder")
 			ep.Log.Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: %v", command.OrderID, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": command.OrderID})
 			return err
 		}

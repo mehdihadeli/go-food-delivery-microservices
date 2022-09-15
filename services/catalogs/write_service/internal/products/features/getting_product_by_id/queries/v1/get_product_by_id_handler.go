@@ -15,33 +15,33 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-type GetProductByIdQueryHandler struct {
+type GetProductByIdHandler struct {
 	log    logger.Logger
 	cfg    *config.Config
 	pgRepo contracts.ProductRepository
 }
 
-func NewGetProductByIdQueryHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository) *GetProductByIdQueryHandler {
-	return &GetProductByIdQueryHandler{log: log, cfg: cfg, pgRepo: pgRepo}
+func NewGetProductByIdHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository) *GetProductByIdHandler {
+	return &GetProductByIdHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 
-func (q *GetProductByIdQueryHandler) Handle(ctx context.Context, query *GetProductByIdQuery) (*dtos.GetProductByIdResponseDto, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "GetProductByIdQueryHandler.Handle")
+func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductById) (*dtos.GetProductByIdResponseDto, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetProductByIdHandler.Handle")
 	span.LogFields(log.String("ProductId", query.ProductID.String()))
 	span.LogFields(log.Object("Query", query))
 	defer span.Finish()
 
 	product, err := q.pgRepo.GetProductById(ctx, query.ProductID)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdQueryHandler_Handle.GetProductById] error in getting product with id %d in the repository", query.ProductID)))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %d in the repository", query.ProductID)))
 	}
 
 	productDto, err := mapper.Map[*dto.ProductDto](product)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetProductByIdQueryHandler_Handle.Map] error in the mapping product"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetProductByIdHandler_Handle.Map] error in the mapping product"))
 	}
 
-	q.log.Infow(fmt.Sprintf("[GetProductByIdQueryHandler.Handle] product with id: {%d} fetched", query.ProductID), logger.Fields{"ProductId": query.ProductID})
+	q.log.Infow(fmt.Sprintf("[GetProductByIdHandler.Handle] product with id: {%d} fetched", query.ProductID), logger.Fields{"ProductId": query.ProductID})
 
 	return &dtos.GetProductByIdResponseDto{Product: productDto}, nil
 }

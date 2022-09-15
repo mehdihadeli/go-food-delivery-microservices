@@ -43,17 +43,17 @@ func (o OrderGrpcServiceServer) CreateOrder(ctx context.Context, req *grpcOrderS
 		return nil, err
 	}
 
-	command := creatingOrderCommandV1.NewCreateOrderCommand(shopItemsDtos, req.AccountEmail, req.DeliveryAddress, req.DeliveryTime.AsTime())
+	command := creatingOrderCommandV1.NewCreateOrder(shopItemsDtos, req.AccountEmail, req.DeliveryAddress, req.DeliveryTime.AsTime())
 	if err := o.Validator.StructCtx(ctx, command); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[OrderGrpcServiceServer_CreateOrder.StructCtx] command validation failed")
 		o.Log.Errorf(fmt.Sprintf("[OrderGrpcServiceServer_CreateOrder.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr)))
 		return nil, grpcErrors.ErrGrpcResponse(validationErr)
 	}
 
-	result, err := mediatr.Send[*creatingOrderCommandV1.CreateOrderCommand, *orderDtos.CreateOrderResponseDto](ctx, command)
+	result, err := mediatr.Send[*creatingOrderCommandV1.CreateOrder, *orderDtos.CreateOrderResponseDto](ctx, command)
 
 	if err != nil {
-		err = errors.WithMessage(err, "[ProductGrpcServiceServer_CreateOrder.Send] error in sending CreateOrderCommand")
+		err = errors.WithMessage(err, "[ProductGrpcServiceServer_CreateOrder.Send] error in sending CreateOrder")
 		o.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_CreateOrder.Send] id: {%s}, err: %v", command.OrderID, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": command.OrderID})
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}
@@ -75,16 +75,16 @@ func (o OrderGrpcServiceServer) GetOrderByID(ctx context.Context, req *grpcOrder
 		return nil, grpcErrors.ErrGrpcResponse(badRequestErr)
 	}
 
-	query := gettingOrderByIdQueryV1.NewGetOrderByIdQuery(orderIdUUID)
+	query := gettingOrderByIdQueryV1.NewGetOrderById(orderIdUUID)
 	if err := o.Validator.StructCtx(ctx, query); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[OrderGrpcServiceServer_GetOrderByID.StructCtx] query validation failed")
 		o.Log.Errorf(fmt.Sprintf("[OrderGrpcServiceServer_GetOrderByID.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr)))
 		return nil, grpcErrors.ErrGrpcResponse(validationErr)
 	}
 
-	queryResult, err := mediatr.Send[*gettingOrderByIdQueryV1.GetOrderByIdQuery, *gettingOrderByIdDtos.GetOrderByIdResponseDto](ctx, query)
+	queryResult, err := mediatr.Send[*gettingOrderByIdQueryV1.GetOrderById, *gettingOrderByIdDtos.GetOrderByIdResponseDto](ctx, query)
 	if err != nil {
-		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrderByID.Send] error in sending GetOrderByIdQuery")
+		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrderByID.Send] error in sending GetOrderById")
 		o.Log.Errorw(fmt.Sprintf("[OrderGrpcServiceServer_GetOrderByID.Send] id: {%s}, err: %v", query.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": query.OrderId})
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}
@@ -117,12 +117,12 @@ func (o OrderGrpcServiceServer) GetOrders(ctx context.Context, req *grpcOrderSer
 	o.Metrics.GetOrdersGrpcRequests.Inc()
 	defer span.Finish()
 
-	query := gettingOrdersQueryV1.NewGetOrdersQuery(&utils.ListQuery{Page: int(req.Page), Size: int(req.Size)})
+	query := gettingOrdersQueryV1.NewGetOrders(&utils.ListQuery{Page: int(req.Page), Size: int(req.Size)})
 
-	queryResult, err := mediatr.Send[*gettingOrdersQueryV1.GetOrdersQuery, *gettingOrdersDtos.GetOrdersResponseDto](ctx, query)
+	queryResult, err := mediatr.Send[*gettingOrdersQueryV1.GetOrders, *gettingOrdersDtos.GetOrdersResponseDto](ctx, query)
 
 	if err != nil {
-		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrders.Send] error in sending GetOrdersQuery")
+		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrders.Send] error in sending GetOrders")
 		o.Log.Error(fmt.Sprintf("[OrderGrpcServiceServer_GetOrders.Send] err: {%v}", tracing.TraceWithErr(span, err)))
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}

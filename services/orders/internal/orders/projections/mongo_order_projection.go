@@ -26,14 +26,14 @@ func (m mongoOrderProjection) ProcessEvent(ctx context.Context, streamEvent *mod
 	// Handling and projecting event to elastic read model
 	switch evt := streamEvent.Event.(type) {
 
-	case *creatingOrderEvents.OrderCreatedEventV1:
+	case *creatingOrderEvents.OrderCreatedV1:
 		return m.onOrderCreated(ctx, evt)
 	}
 
 	return nil
 }
 
-func (m *mongoOrderProjection) onOrderCreated(ctx context.Context, evt *creatingOrderEvents.OrderCreatedEventV1) error {
+func (m *mongoOrderProjection) onOrderCreated(ctx context.Context, evt *creatingOrderEvents.OrderCreatedV1) error {
 	items, err := mapper.Map[[]*read_models.ShopItemReadModel](evt.ShopItems)
 	if err != nil {
 		return errors.WrapIf(err, "[mongoOrderProjection_onOrderCreated.Map] error in mapping shopItems")
@@ -46,6 +46,27 @@ func (m *mongoOrderProjection) onOrderCreated(ctx context.Context, evt *creating
 	}
 
 	// TODO: publish integration event
+	//
+	//evt := &kafka_messages.ProductCreated{Product: kafkaProduct}
+	//msgBytes, err := proto.Marshal(evt)
+	//if err != nil {
+	//	return nil, tracing.TraceWithErr(span, customErrors.NewMarshalingErrorWrap(err, "[CreateProductCommandHandler_Handle.Marshal] error marshalling"))
+	//}
+	//
+	//name := reflect.TypeOf(creatingOrderEvents.OrderCreatedEventV1{}).Name()
+	//message := kafka.Message{
+	//	Topic:   strcase.ToSnake(name),
+	//	Value:   msgBytes,
+	//	Time:    time.Now(),
+	//	Headers: tracing.GetKafkaTracingHeadersFromSpanCtx(span.Context()),
+	//}
+	//
+	//err = c.kafkaProducer.PublishMessage(ctx, message)
+	//if err != nil {
+	//	return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductCommandHandler_Handle.PublishMessage] error in publishing kafka message"))
+	//}
+	//
+	//c.log.Infow(fmt.Sprintf("[CreateProductCommandHandler.Handle] product with id: {%s} published to the kafka", command.ProductID), logger.Fields{"productId": command.ProductID})
 
 	return nil
 }

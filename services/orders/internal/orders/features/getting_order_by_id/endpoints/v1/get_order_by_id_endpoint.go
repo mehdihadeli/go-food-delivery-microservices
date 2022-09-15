@@ -48,17 +48,17 @@ func (ep *getOrderByIdEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		query := v1.NewGetOrderByIdQuery(request.OrderId)
+		query := v1.NewGetOrderById(request.OrderId)
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[getProductByIdEndpoint_handler.StructCtx]  query validation failed")
 			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr))
 			return validationErr
 		}
 
-		queryResult, err := mediatr.Send[*v1.GetOrderByIdQuery, *dtos.GetOrderByIdResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*v1.GetOrderById, *dtos.GetOrderByIdResponseDto](ctx, query)
 
 		if err != nil {
-			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetOrderByIdQuery")
+			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetOrderById")
 			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: %v", query.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": query.OrderId})
 			return err
 		}

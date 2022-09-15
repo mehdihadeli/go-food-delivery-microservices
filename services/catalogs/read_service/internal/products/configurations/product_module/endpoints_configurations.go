@@ -23,15 +23,15 @@ func configV1Endpoints(echoServer customEcho.EchoHttpServer, infra *infrastructu
 			InfrastructureConfigurations: infra,
 		}
 
-		// GetProductsQuery
+		// GetProducts
 		getProductsEndpoint := gettingProductsV1.NewGetProductsEndpoint(productEndpointBase)
 		getProductsEndpoint.MapRoute()
 
-		// SearchProductsQuery
+		// SearchProducts
 		searchProductsEndpoint := searchingProductsV1.NewSearchProductsEndpoint(productEndpointBase)
 		searchProductsEndpoint.MapRoute()
 
-		// GetProductByIdQuery
+		// GetProductById
 		getProductByIdEndpoint := gettingProductByIdV1.NewGetProductByIdEndpoint(productEndpointBase)
 		getProductByIdEndpoint.MapRoute()
 	})

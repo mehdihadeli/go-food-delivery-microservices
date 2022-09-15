@@ -71,7 +71,7 @@ func NewOrder(id uuid.UUID, shopItems []*value_objects.ShopItem, accountEmail, d
 
 func (o *Order) UpdateShoppingCard(shopItems []*value_objects.ShopItem) error {
 
-	event, err := updatingShoppingCardEvents.NewShoppingCartUpdatedEventV1(shopItems)
+	event, err := updatingShoppingCardEvents.NewShoppingCartUpdatedV1(shopItems)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (o *Order) UpdateShoppingCard(shopItems []*value_objects.ShopItem) error {
 func (o *Order) When(event domain.IDomainEvent) error {
 	switch evt := event.(type) {
 
-	case *creatingOrderEvents.OrderCreatedEventV1:
+	case *creatingOrderEvents.OrderCreatedV1:
 		return o.onOrderCreated(evt)
 
 	default:
@@ -95,7 +95,7 @@ func (o *Order) When(event domain.IDomainEvent) error {
 	}
 }
 
-func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedEventV1) error {
+func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedV1) error {
 	items, err := mapper.Map[[]*value_objects.ShopItem](evt.ShopItems)
 	if err != nil {
 		return err

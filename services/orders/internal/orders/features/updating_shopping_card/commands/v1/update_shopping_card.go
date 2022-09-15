@@ -5,11 +5,11 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type UpdateShoppingCartCommand struct {
+type UpdateShoppingCart struct {
 	OrderId   uuid.UUID           `validate:"required"`
 	ShopItems []*dtos.ShopItemDto `validate:"required"`
 }
 
-func NewUpdateShoppingCartCommand(orderId uuid.UUID, shopItems []*dtos.ShopItemDto) *UpdateShoppingCartCommand {
-	return &UpdateShoppingCartCommand{OrderId: orderId, ShopItems: shopItems}
+func NewUpdateShoppingCart(orderId uuid.UUID, shopItems []*dtos.ShopItemDto) *UpdateShoppingCart {
+	return &UpdateShoppingCart{OrderId: orderId, ShopItems: shopItems}
 }

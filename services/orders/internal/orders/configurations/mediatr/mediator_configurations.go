@@ -21,17 +21,17 @@ func ConfigOrdersMediator(infra *infrastructure.InfrastructureConfiguration) err
 	mongoOrderReadRepository := repositories.NewMongoOrderReadRepository(infra.Log, infra.Cfg, infra.MongoClient)
 
 	//https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
-	err := mediatr.RegisterRequestHandler[*creatingOrderV1.CreateOrderCommand, *creatingOrderDtos.CreateOrderResponseDto](creatingOrderV1.NewCreateOrderCommandHandler(infra.Log, infra.Cfg, orderAggregateStore))
+	err := mediatr.RegisterRequestHandler[*creatingOrderV1.CreateOrder, *creatingOrderDtos.CreateOrderResponseDto](creatingOrderV1.NewCreateOrderHandler(infra.Log, infra.Cfg, orderAggregateStore))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*gettingOrderByIdV1.GetOrderByIdQuery, *gettingOrderByIdDtos.GetOrderByIdResponseDto](gettingOrderByIdV1.NewGetOrderByIdHandler(infra.Log, infra.Cfg, mongoOrderReadRepository))
+	err = mediatr.RegisterRequestHandler[*gettingOrderByIdV1.GetOrderById, *gettingOrderByIdDtos.GetOrderByIdResponseDto](gettingOrderByIdV1.NewGetOrderByIdHandler(infra.Log, infra.Cfg, mongoOrderReadRepository))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*gettingOrdersV1.GetOrdersQuery, *gettingOrdersDtos.GetOrdersResponseDto](gettingOrdersV1.NewGetOrdersQueryHandler(infra.Log, infra.Cfg, mongoOrderReadRepository))
+	err = mediatr.RegisterRequestHandler[*gettingOrdersV1.GetOrders, *gettingOrdersDtos.GetOrdersResponseDto](gettingOrdersV1.NewGetOrdersHandler(infra.Log, infra.Cfg, mongoOrderReadRepository))
 	if err != nil {
 		return err
 	}

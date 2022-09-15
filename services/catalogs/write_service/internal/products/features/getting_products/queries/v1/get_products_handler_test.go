@@ -15,15 +15,15 @@ func Test_Get_All_Product_Query_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*GetProductsQuery, *dtos.GetProductsResponseDto](NewGetProductsQueryHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository))
+	err := mediatr.RegisterRequestHandler[*GetProducts, *dtos.GetProductsResponseDto](NewGetProductsHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository))
 	if err != nil {
 		return
 	}
 
 	defer fixture.Cleanup()
 
-	query := NewGetProductsQuery(utils.NewListQuery(10, 1))
-	queryResult, err := mediatr.Send[*GetProductsQuery, *dtos.GetProductsResponseDto](context.Background(), query)
+	query := NewGetProducts(utils.NewListQuery(10, 1))
+	queryResult, err := mediatr.Send[*GetProducts, *dtos.GetProductsResponseDto](context.Background(), query)
 
 	assert.NotNil(t, queryResult)
 	assert.NotNil(t, queryResult.Products)

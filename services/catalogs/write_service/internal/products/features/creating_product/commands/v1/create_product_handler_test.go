@@ -15,15 +15,15 @@ func Test_Create_Product_Command_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*CreateProductCommand, *dtos.CreateProductResponseDto](NewCreateProductCommandHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository, fixture.KafkaProducer))
+	err := mediatr.RegisterRequestHandler[*CreateProduct, *dtos.CreateProductResponseDto](NewCreateProductHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository, fixture.KafkaProducer))
 	if err != nil {
 		return
 	}
 
 	defer fixture.Cleanup()
 
-	command := NewCreateProductCommand(gofakeit.Name(), gofakeit.AdjectiveDescriptive(), gofakeit.Price(150, 6000))
-	result, err := mediatr.Send[*CreateProductCommand, *dtos.CreateProductResponseDto](context.Background(), command)
+	command := NewCreateProduct(gofakeit.Name(), gofakeit.AdjectiveDescriptive(), gofakeit.Price(150, 6000))
+	result, err := mediatr.Send[*CreateProduct, *dtos.CreateProductResponseDto](context.Background(), command)
 
 	assert.NotNil(t, result)
 	assert.Equal(t, command.ProductID, result.ProductID)

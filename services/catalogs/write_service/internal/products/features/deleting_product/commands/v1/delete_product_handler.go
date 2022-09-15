@@ -18,31 +18,31 @@ import (
 	"time"
 )
 
-type DeleteProductCommandHandler struct {
+type DeleteProductHandler struct {
 	log           logger.Logger
 	cfg           *config.Config
 	pgRepo        contracts.ProductRepository
 	kafkaProducer kafkaClient.Producer
 }
 
-func NewDeleteProductCommandHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *DeleteProductCommandHandler {
-	return &DeleteProductCommandHandler{log: log, cfg: cfg, pgRepo: pgRepo, kafkaProducer: kafkaProducer}
+func NewDeleteProductHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *DeleteProductHandler {
+	return &DeleteProductHandler{log: log, cfg: cfg, pgRepo: pgRepo, kafkaProducer: kafkaProducer}
 }
 
-func (c *DeleteProductCommandHandler) Handle(ctx context.Context, command *DeleteProductCommand) (*mediatr.Unit, error) {
+func (c *DeleteProductHandler) Handle(ctx context.Context, command *DeleteProduct) (*mediatr.Unit, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "deleteProductHandler.Handle")
 	span.LogFields(log.String("ProductId", command.ProductID.String()))
 	span.LogFields(log.Object("Command", command))
 	defer span.Finish()
 
 	if err := c.pgRepo.DeleteProductByID(ctx, command.ProductID); err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductCommandHandler_Handle.DeleteProductByID] error in deleting product in the repository"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.DeleteProductByID] error in deleting product in the repository"))
 	}
 
 	evt := &kafka_messages.ProductDeleted{ProductID: command.ProductID.String()}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductCommandHandler_Handle.Marshal] error in marshaling proto event ProductDeleted"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.Marshal] error in marshaling proto event ProductDeleted"))
 	}
 
 	message := kafka.Message{
@@ -54,10 +54,10 @@ func (c *DeleteProductCommandHandler) Handle(ctx context.Context, command *Delet
 
 	err = c.kafkaProducer.PublishMessage(ctx, message)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductCommandHandler_Handle.PublishMessage] error in publishing kafka message"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.PublishMessage] error in publishing kafka message"))
 	}
 
-	c.log.Infow(fmt.Sprintf("[DeleteProductCommandHandler.Handle] product with id: {%s} deleted", command.ProductID), logger.Fields{"productId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[DeleteProductHandler.Handle] product with id: {%s} deleted", command.ProductID), logger.Fields{"productId": command.ProductID})
 
 	return &mediatr.Unit{}, nil
 }

@@ -21,19 +21,19 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type CreateProductCommandHandler struct {
+type CreateProductHandler struct {
 	log           logger.Logger
 	cfg           *config.Config
 	repository    contracts.ProductRepository
 	kafkaProducer kafkaClient.Producer
 }
 
-func NewCreateProductCommandHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *CreateProductCommandHandler {
-	return &CreateProductCommandHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
+func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *CreateProductHandler {
+	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
 }
 
-func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *CreateProductCommand) (*dtos.CreateProductResponseDto, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductCommandHandler.Handle")
+func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduct) (*dtos.CreateProductResponseDto, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductHandler.Handle")
 	span.LogFields(log.String("ProductId", command.ProductID.String()))
 	span.LogFields(log.Object("Command", command))
 	defer span.Finish()
@@ -48,18 +48,18 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 
 	createdProduct, err := c.repository.CreateProduct(ctx, product)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductCommandHandler_Handle.CreateProduct] error in creating product in the repository"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.CreateProduct] error in creating product in the repository"))
 	}
 
 	kafkaProduct, err := mapper.Map[*kafka_messages.Product](createdProduct)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductCommandHandler_Handle.Map] error in the mapping product"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.Map] error in the mapping product"))
 	}
 
 	evt := &kafka_messages.ProductCreated{Product: kafkaProduct}
 	msgBytes, err := proto.Marshal(evt)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewMarshalingErrorWrap(err, "[CreateProductCommandHandler_Handle.Marshal] error marshalling"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewMarshalingErrorWrap(err, "[CreateProductHandler.Marshal] error marshalling"))
 	}
 
 	message := kafka.Message{
@@ -71,16 +71,16 @@ func (c *CreateProductCommandHandler) Handle(ctx context.Context, command *Creat
 
 	err = c.kafkaProducer.PublishMessage(ctx, message)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductCommandHandler_Handle.PublishMessage] error in publishing kafka message"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.PublishMessage] error in publishing kafka message"))
 	}
 
-	c.log.Infow(fmt.Sprintf("[CreateProductCommandHandler.Handle] product with id: {%s} published to the kafka", command.ProductID), logger.Fields{"productId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id: {%s} published to the kafka", command.ProductID), logger.Fields{"productId": command.ProductID})
 
 	response := &dtos.CreateProductResponseDto{ProductID: product.ProductID}
 
 	span.LogFields(log.Object("CreateProductResponseDto", response))
 
-	c.log.Infow(fmt.Sprintf("[CreateProductCommandHandler.Handle] product with id: {%s} created", command.ProductID), logger.Fields{"ProductId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id: {%s} created", command.ProductID), logger.Fields{"ProductId": command.ProductID})
 
 	return response, nil
 }

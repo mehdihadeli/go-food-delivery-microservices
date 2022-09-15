@@ -4,10 +4,10 @@ import "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 
 // Ref: https://golangbot.com/inheritance/
 
-type GetOrdersQuery struct {
+type GetOrders struct {
 	*utils.ListQuery
 }
 
-func NewGetOrdersQuery(query *utils.ListQuery) *GetOrdersQuery {
-	return &GetOrdersQuery{ListQuery: query}
+func NewGetOrders(query *utils.ListQuery) *GetOrders {
+	return &GetOrders{ListQuery: query}
 }

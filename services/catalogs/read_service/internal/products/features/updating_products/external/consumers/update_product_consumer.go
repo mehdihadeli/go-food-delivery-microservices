@@ -73,10 +73,10 @@ func (c *updateProductConsumer) Consume(ctx context.Context, r *kafka.Reader, m 
 	}
 
 	if err := retry.Do(func() error {
-		_, err := mediatr.Send[*updatingProductV1.UpdateProductCommand, *mediatr.Unit](ctx, command)
+		_, err := mediatr.Send[*updatingProductV1.UpdateProduct, *mediatr.Unit](ctx, command)
 		return err
 	}, append(retryOptions, retry.Context(ctx))...); err != nil {
-		err = errors.WithMessage(err, "[updateProductConsumer_Consume.Send] error in sending UpdateProductCommand")
+		err = errors.WithMessage(err, "[updateProductConsumer_Consume.Send] error in sending UpdateProduct")
 		c.Log.Errorw(fmt.Sprintf("[updateProductConsumer_Consume.Send] id: {%s}, err: {%v}", command.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductID})
 
 		c.CommitErrMessage(ctx, r, m)

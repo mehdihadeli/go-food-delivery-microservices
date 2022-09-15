@@ -9,7 +9,7 @@ import (
 //https://echo.labstack.com/guide/request/
 //https://github.com/go-playground/validator
 
-type CreateOrderCommand struct {
+type CreateOrder struct {
 	OrderID         uuid.UUID           `validate:"required"`
 	ShopItems       []*dtos.ShopItemDto `validate:"required"`
 	AccountEmail    string              `validate:"required,email"`
@@ -18,6 +18,6 @@ type CreateOrderCommand struct {
 	CreatedAt       time.Time           `validate:"required"`
 }
 
-func NewCreateOrderCommand(shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveryTime time.Time) *CreateOrderCommand {
-	return &CreateOrderCommand{OrderID: uuid.NewV4(), ShopItems: shopItems, AccountEmail: accountEmail, DeliveryAddress: deliveryAddress, DeliveryTime: deliveryTime, CreatedAt: time.Now()}
+func NewCreateOrder(shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveryTime time.Time) *CreateOrder {
+	return &CreateOrder{OrderID: uuid.NewV4(), ShopItems: shopItems, AccountEmail: accountEmail, DeliveryAddress: deliveryAddress, DeliveryTime: deliveryTime, CreatedAt: time.Now()}
 }

@@ -15,7 +15,7 @@ func Test_Get_Order_By_Id_Query_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*GetOrderByIdQuery, *dtos.GetOrderByIdResponseDto](NewGetOrderByIdHandler(fixture.Log, fixture.Cfg, fixture.MongoOrderReadRepository))
+	err := mediatr.RegisterRequestHandler[*GetOrderById, *dtos.GetOrderByIdResponseDto](NewGetOrderByIdHandler(fixture.Log, fixture.Cfg, fixture.MongoOrderReadRepository))
 	if err != nil {
 		return
 	}
@@ -24,7 +24,7 @@ func Test_Get_Order_By_Id_Query_Handler(t *testing.T) {
 
 	id, _ := uuid.FromString("1b4b0599-bc3c-4c1d-94af-fd1895713620")
 	query := NewGetOrderByIdQuery(id)
-	queryResult, err := mediatr.Send[*GetOrderByIdQuery, *dtos.GetOrderByIdResponseDto](context.Background(), query)
+	queryResult, err := mediatr.Send[*GetOrderById, *dtos.GetOrderByIdResponseDto](context.Background(), query)
 
 	assert.NotNil(t, queryResult)
 	assert.NotNil(t, queryResult.Order)

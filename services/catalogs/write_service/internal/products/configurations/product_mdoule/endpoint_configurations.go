@@ -27,23 +27,23 @@ func configV1Endpoints(echoServer customEcho.EchoHttpServer, infra *infrastructu
 		createProductEndpoint := creatingProductV1.NewCreteProductEndpoint(productEndpointBase)
 		createProductEndpoint.MapRoute()
 
-		// UpdateProductCommand
+		// UpdateProduct
 		updateProductEndpoint := updatingProductV1.NewUpdateProductEndpoint(productEndpointBase)
 		updateProductEndpoint.MapRoute()
 
-		// GetProductsQuery
+		// GetProducts
 		getProductsEndpoint := gettingProductsV1.NewGetProductsEndpoint(productEndpointBase)
 		getProductsEndpoint.MapRoute()
 
-		// SearchProductsQuery
+		// SearchProducts
 		searchProducts := searchingProductsV1.NewSearchProductsEndpoint(productEndpointBase)
 		searchProducts.MapRoute()
 
-		// GetProductByIdQuery
+		// GetProductById
 		getProductByIdEndpoint := gettingProductByIdV1.NewGetProductByIdEndpoint(productEndpointBase)
 		getProductByIdEndpoint.MapRoute()
 
-		// DeleteProductCommand
+		// DeleteProduct
 		deleteProductEndpoint := deletingProductV1.NewDeleteProductEndpoint(productEndpointBase)
 		deleteProductEndpoint.MapRoute()
 	},

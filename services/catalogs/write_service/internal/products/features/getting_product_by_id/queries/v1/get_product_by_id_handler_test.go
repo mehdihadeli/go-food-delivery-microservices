@@ -15,7 +15,7 @@ func Test_Get_Product_By_Id_Query_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdResponseDto](NewGetProductByIdQueryHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository))
+	err := mediatr.RegisterRequestHandler[*GetProductById, *gettingProductByIdDtos.GetProductByIdResponseDto](NewGetProductByIdHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository))
 	if err != nil {
 		return
 	}
@@ -23,8 +23,8 @@ func Test_Get_Product_By_Id_Query_Handler(t *testing.T) {
 	defer fixture.Cleanup()
 
 	id, _ := uuid.FromString("1b088075-53f0-4376-a491-ca6fe3a7f8fa")
-	query := NewGetProductByIdQuery(id)
-	queryResult, err := mediatr.Send[*GetProductByIdQuery, *gettingProductByIdDtos.GetProductByIdResponseDto](context.Background(), query)
+	query := NewGetProductById(id)
+	queryResult, err := mediatr.Send[*GetProductById, *gettingProductByIdDtos.GetProductByIdResponseDto](context.Background(), query)
 
 	assert.NotNil(t, queryResult)
 	assert.NotNil(t, queryResult.Product)
