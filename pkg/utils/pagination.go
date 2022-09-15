@@ -177,7 +177,6 @@ func (q *ListQuery) GetQueryString() string {
 }
 
 func ListResultToListResultDto[TDto any, TModel any](listResult *ListResult[TModel]) (*ListResult[TDto], error) {
-
 	items, err := mapper.Map[[]TDto](listResult.Items)
 	if err != nil {
 		return nil, err

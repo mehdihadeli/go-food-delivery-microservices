@@ -3,7 +3,7 @@ package streamName
 import (
 	"fmt"
 	"github.com/goccy/go-reflect"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
 	uuid "github.com/satori/go.uuid"
 	"strings"
 )
@@ -23,7 +23,7 @@ func (n StreamName) String() string {
 }
 
 // For gets stream name for Aggregate
-func For[T es.IHaveEventSourcedAggregate](aggregate T) StreamName {
+func For[T models.IHaveEventSourcedAggregate](aggregate T) StreamName {
 	var aggregateName string
 	if t := reflect.TypeOf(aggregate); t.Kind() == reflect.Ptr {
 		aggregateName = reflect.TypeOf(aggregate).Elem().Name()
@@ -35,7 +35,7 @@ func For[T es.IHaveEventSourcedAggregate](aggregate T) StreamName {
 }
 
 // ForID gets stream name for AggregateID
-func ForID[T es.IHaveEventSourcedAggregate](aggregateID uuid.UUID) StreamName {
+func ForID[T models.IHaveEventSourcedAggregate](aggregateID uuid.UUID) StreamName {
 	var aggregate T
 	var aggregateName string
 	if t := reflect.TypeOf(aggregate); t.Kind() == reflect.Ptr {

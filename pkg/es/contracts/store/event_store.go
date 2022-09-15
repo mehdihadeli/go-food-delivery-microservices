@@ -2,12 +2,12 @@ package store
 
 import (
 	"context"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
-	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/append_result"
-	streamName "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_name"
-	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/read_position"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/truncatePosition"
-	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
+	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/append_result"
+	streamName "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_name"
+	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/read_position"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/truncatePosition"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
 )
 
 type EventStore interface {
@@ -19,7 +19,7 @@ type EventStore interface {
 		streamName streamName.StreamName,
 		count uint64,
 		ctx context.Context,
-	) ([]*es.StreamEvent, error)
+	) ([]*models.StreamEvent, error)
 
 	//ReadEvents Read events for a specific stream and position in forward mode with specified events count.
 	ReadEvents(
@@ -27,14 +27,14 @@ type EventStore interface {
 		readPosition readPosition.StreamReadPosition,
 		count uint64,
 		ctx context.Context,
-	) ([]*es.StreamEvent, error)
+	) ([]*models.StreamEvent, error)
 
 	//ReadEventsWithMaxCount Read events for a specific stream and position in forward mode with max count.
 	ReadEventsWithMaxCount(
 		streamName streamName.StreamName,
 		readPosition readPosition.StreamReadPosition,
 		ctx context.Context,
-	) ([]*es.StreamEvent, error)
+	) ([]*models.StreamEvent, error)
 
 	// ReadEventsBackwards Read events for a specific stream and position in backwards mode with specified events count.
 	ReadEventsBackwards(
@@ -42,34 +42,34 @@ type EventStore interface {
 		readPosition readPosition.StreamReadPosition,
 		count uint64,
 		ctx context.Context,
-	) ([]*es.StreamEvent, error)
+	) ([]*models.StreamEvent, error)
 
 	// ReadEventsBackwardsFromEnd Read events for a specific stream and end position in backwards mode with specified events count.
 	ReadEventsBackwardsFromEnd(
 		streamName streamName.StreamName,
 		count uint64,
 		ctx context.Context,
-	) ([]*es.StreamEvent, error)
+	) ([]*models.StreamEvent, error)
 
 	// ReadEventsBackwardsWithMaxCount Read events for a specific stream and position in backwards mode with max events count.
 	ReadEventsBackwardsWithMaxCount(
 		stream streamName.StreamName,
 		readPosition readPosition.StreamReadPosition,
 		ctx context.Context,
-	) ([]*es.StreamEvent, error)
+	) ([]*models.StreamEvent, error)
 
 	// AppendEvents Append events to aggregate with an existing or none existing stream.
 	AppendEvents(
 		streamName streamName.StreamName,
 		expectedVersion expectedStreamVersion.ExpectedStreamVersion,
-		events []*es.StreamEvent,
+		events []*models.StreamEvent,
 		ctx context.Context,
 	) (*appendResult.AppendEventsResult, error)
 
 	// AppendNewEvents Append events to aggregate with none existing stream.
 	AppendNewEvents(
 		streamName streamName.StreamName,
-		events []*es.StreamEvent,
+		events []*models.StreamEvent,
 		ctx context.Context,
 	) (*appendResult.AppendEventsResult, error)
 

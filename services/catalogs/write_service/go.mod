@@ -6,22 +6,22 @@ go 1.18
 replace github.com/mehdihadeli/store-golang-microservice-sample => ../../../
 
 require (
+	emperror.dev/errors v0.8.1
 	github.com/EventStore/EventStore-Client-Go v1.0.2
 	github.com/brianvoe/gofakeit/v6 v6.18.0
 	github.com/caarlos0/env/v6 v6.9.3
 	github.com/gavv/httpexpect/v2 v2.3.1
 	github.com/go-playground/validator v9.31.0+incompatible
-	github.com/goccy/go-reflect v1.2.0
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/labstack/echo/v4 v4.7.2
-	github.com/mehdihadeli/go-mediatr v1.1.6
+	github.com/mehdihadeli/go-mediatr v1.1.8
 	github.com/mehdihadeli/store-golang-microservice-sample v0.0.0-00010101000000-000000000000
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.4.32
 	github.com/spf13/viper v1.12.0
+	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/echo-swagger v1.3.3
 	github.com/swaggo/swag v1.8.3
 	go.uber.org/zap v1.21.0
@@ -30,7 +30,6 @@ require (
 )
 
 require (
-	emperror.dev/errors v0.8.1 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Masterminds/squirrel v1.5.3 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -53,6 +52,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/goccy/go-json v0.9.10 // indirect
+	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-migrate/migrate/v4 v4.15.2 // indirect
@@ -83,15 +83,15 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-colorable v0.1.12 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/nolleh/caption_json_formatter v0.0.0-20220315135329-e0b5bf6eda5a // indirect
 	github.com/pierrec/lz4/v4 v4.1.14 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/common v0.34.0 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/stretchr/testify v1.8.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
@@ -112,11 +112,11 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
-	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
+	golang.org/x/sys v0.0.0-20220913175220-63ea55921009 // indirect
 	golang.org/x/time v0.0.0-20220224211638-0e9765cccd65 // indirect
-	golang.org/x/tools v0.1.10 // indirect
+	golang.org/x/tools v0.1.12 // indirect
 	gorm.io/driver/postgres v1.3.7 // indirect
 	moul.io/http2curl v1.0.1-0.20190925090545-5cd742060b0e // indirect
 )

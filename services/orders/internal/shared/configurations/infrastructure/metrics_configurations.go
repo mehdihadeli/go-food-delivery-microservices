@@ -10,34 +10,31 @@ type OrdersServiceMetrics struct {
 	SuccessGrpcRequests prometheus.Counter
 	ErrorGrpcRequests   prometheus.Counter
 
-	CreateOrderGrpcRequests        prometheus.Counter
-	UpdateOrderGrpcRequests        prometheus.Counter
-	PayOrderGrpcRequests           prometheus.Counter
-	SubmitOrderGrpcRequests        prometheus.Counter
-	GetOrderByIdGrpcRequests       prometheus.Counter
-	SearchOrderGrpcRequests        prometheus.Counter
-	CancelOrderGrpcRequests        prometheus.Counter
-	CompleteOrderGrpcRequests      prometheus.Counter
-	ChangeAddressOrderGrpcRequests prometheus.Counter
+	CreateOrderGrpcRequests  prometheus.Counter
+	UpdateOrderGrpcRequests  prometheus.Counter
+	PayOrderGrpcRequests     prometheus.Counter
+	SubmitOrderGrpcRequests  prometheus.Counter
+	GetOrderByIdGrpcRequests prometheus.Counter
+	GetOrdersGrpcRequests    prometheus.Counter
+	SearchOrderGrpcRequests  prometheus.Counter
 
 	SuccessHttpRequests prometheus.Counter
 	ErrorHttpRequests   prometheus.Counter
 
-	CreateOrderHttpRequests        prometheus.Counter
-	UpdateOrderHttpRequests        prometheus.Counter
-	PayOrderHttpRequests           prometheus.Counter
-	SubmitOrderHttpRequests        prometheus.Counter
-	GetOrderByIdHttpRequests       prometheus.Counter
-	SearchOrderHttpRequests        prometheus.Counter
-	CompleteOrderHttpRequests      prometheus.Counter
-	ChangeAddressOrderHttpRequests prometheus.Counter
+	CreateOrderHttpRequests  prometheus.Counter
+	UpdateOrderHttpRequests  prometheus.Counter
+	PayOrderHttpRequests     prometheus.Counter
+	SubmitOrderHttpRequests  prometheus.Counter
+	GetOrderByIdHttpRequests prometheus.Counter
+	SearchOrderHttpRequests  prometheus.Counter
+	GetOrdersHttpRequests    prometheus.Counter
 
 	SuccessKafkaMessages prometheus.Counter
 	ErrorKafkaMessages   prometheus.Counter
 
-	CreateProductKafkaMessages prometheus.Counter
-	UpdateProductKafkaMessages prometheus.Counter
-	DeleteProductKafkaMessages prometheus.Counter
+	CreateOrderKafkaMessages prometheus.Counter
+	UpdateOrderKafkaMessages prometheus.Counter
+	DeleteOrderKafkaMessages prometheus.Counter
 }
 
 func (ic *infrastructureConfigurator) configCatalogsMetrics() *OrdersServiceMetrics {
@@ -71,11 +68,18 @@ func (ic *infrastructureConfigurator) configCatalogsMetrics() *OrdersServiceMetr
 			Name: fmt.Sprintf("%s_get_order_by_id_grpc_requests_total", cfg.ServiceName),
 			Help: "The total number of get order by id grpc requests",
 		}),
+		GetOrdersGrpcRequests: promauto.NewCounter(prometheus.CounterOpts{
+			Name: fmt.Sprintf("%s_get_orders_grpc_requests_total", cfg.ServiceName),
+			Help: "The total number of get orders grpc requests",
+		}),
 		SearchOrderGrpcRequests: promauto.NewCounter(prometheus.CounterOpts{
 			Name: fmt.Sprintf("%s_search_order_grpc_requests_total", cfg.ServiceName),
 			Help: "The total number of search order grpc requests",
 		}),
-
+		GetOrdersHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
+			Name: fmt.Sprintf("%s_get_orders_http_requests_total", cfg.ServiceName),
+			Help: "The total number of get orders http requests",
+		}),
 		SuccessHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
 			Name: fmt.Sprintf("%s_success_http_requests_total", cfg.ServiceName),
 			Help: "The total number of success http requests",
@@ -107,22 +111,6 @@ func (ic *infrastructureConfigurator) configCatalogsMetrics() *OrdersServiceMetr
 		SearchOrderHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
 			Name: fmt.Sprintf("%s_search_order_http_requests_total", cfg.ServiceName),
 			Help: "The total number of search order http requests",
-		}),
-		CancelOrderGrpcRequests: promauto.NewCounter(prometheus.CounterOpts{
-			Name: fmt.Sprintf("%s_cancel_order_http_requests_total", cfg.ServiceName),
-			Help: "The total number of cancel order http requests",
-		}),
-		CompleteOrderGrpcRequests: promauto.NewCounter(prometheus.CounterOpts{
-			Name: fmt.Sprintf("%s_complete_order_http_requests_total", cfg.ServiceName),
-			Help: "The total number of complete order http requests",
-		}),
-		ChangeAddressOrderGrpcRequests: promauto.NewCounter(prometheus.CounterOpts{
-			Name: fmt.Sprintf("%s_change_address_order_gRPC_requests_total", cfg.ServiceName),
-			Help: "The total number of change address order gRPC requests",
-		}),
-		ChangeAddressOrderHttpRequests: promauto.NewCounter(prometheus.CounterOpts{
-			Name: fmt.Sprintf("%s_change_address_order_http_requests_total", cfg.ServiceName),
-			Help: "The total number of change address order http requests",
 		}),
 	}
 }

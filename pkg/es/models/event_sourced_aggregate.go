@@ -1,4 +1,4 @@
-package es
+package models
 
 //https://www.eventstore.com/blog/what-is-event-sourcing
 //https://www.eventstore.com/blog/event-sourcing-and-cqrs
@@ -9,7 +9,8 @@ import (
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
-	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
+	errors2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/errors"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	uuid "github.com/satori/go.uuid"
 )
@@ -140,7 +141,7 @@ func (a *EventSourcedAggregateRoot) AddDomainEvents(event domain.IDomainEvent) e
 	})
 
 	if exists {
-		return EventAlreadyExistsError
+		return errors2.EventAlreadyExistsError
 	}
 	event.WithAggregate(a.Id(), a.CurrentVersion()+1)
 	a.uncommittedEvents = append(a.uncommittedEvents, event)

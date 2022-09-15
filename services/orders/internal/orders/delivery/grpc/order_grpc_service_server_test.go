@@ -28,12 +28,6 @@ func TestRunner(t *testing.T) {
 		orderGrpcService := NewOrderGrpcService(fixture.InfrastructureConfiguration)
 		ordersService.RegisterOrdersServiceServer(fixture.GrpcServer.GetCurrentGrpcServer(), orderGrpcService)
 
-		go func() {
-			if err := fixture.GrpcServer.RunGrpcServer(nil); err != nil {
-				fixture.Log.Errorf("(s.RunGrpcServer) err: %v", err)
-			}
-		}()
-
 		orderGrpcServiceTests := OrderGrpcServiceTests{
 			T:                      t,
 			E2ETestFixture:         fixture,
@@ -43,6 +37,7 @@ func TestRunner(t *testing.T) {
 		// Run Tests
 		orderGrpcServiceTests.Test_GetOrder_By_Id()
 		orderGrpcServiceTests.Test_Create_Order()
+		orderGrpcServiceTests.Test_GetOrders()
 
 		// After running the tests
 		fixture.GrpcServer.GracefulShutdown()
@@ -71,8 +66,15 @@ func (p *OrderGrpcServiceTests) Test_Create_Order() {
 }
 
 func (p *OrderGrpcServiceTests) Test_GetOrder_By_Id() {
-	res, err := p.GetOrderByID(context.Background(), &ordersService.GetOrderByIDReq{OrderId: "97e2d953-ed25-4afb-8578-782cc5d365ba"})
+	res, err := p.GetOrderByID(context.Background(), &ordersService.GetOrderByIDReq{Id: "1b4b0599-bc3c-4c1d-94af-fd1895713620"})
 	assert.NoError(p.T, err)
 	assert.NotNil(p.T, res.Order)
-	assert.Equal(p.T, res.Order.OrderId, "97e2d953-ed25-4afb-8578-782cc5d365ba")
+	assert.Equal(p.T, res.Order.Id, "1b4b0599-bc3c-4c1d-94af-fd1895713620")
+}
+
+func (p *OrderGrpcServiceTests) Test_GetOrders() {
+	res, err := p.GetOrders(context.Background(), &ordersService.GetOrdersReq{Size: 10, Page: 1})
+	assert.NoError(p.T, err)
+	assert.NotNil(p.T, res.Orders)
+	assert.NotEmpty(p.T, res.Orders)
 }

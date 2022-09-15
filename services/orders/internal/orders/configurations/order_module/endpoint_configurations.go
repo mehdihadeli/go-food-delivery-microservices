@@ -7,6 +7,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	creatingOrderV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/endpoints/v1"
 	gettingOrderByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/endpoints/v1"
+	gettingOrdersV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/endpoints/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
 )
 
@@ -27,5 +28,9 @@ func configV1Endpoints(echoServer customEcho.EchoHttpServer, infra *infrastructu
 		// GetOrderByID
 		getOrderByIdEndpoint := gettingOrderByIdV1.NewGetOrderByIdEndpoint(orderEndpointBase)
 		getOrderByIdEndpoint.MapRoute()
+
+		// GetOrders
+		getOrders := gettingOrdersV1.NewGetOrdersEndpoint(orderEndpointBase)
+		getOrders.MapRoute()
 	})
 }

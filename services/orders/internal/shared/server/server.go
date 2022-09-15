@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
@@ -48,9 +49,8 @@ func (s *Server) Run() error {
 		infrastructureConfigurations.Esdb,
 		s.cfg.EventStoreConfig,
 		infrastructureConfigurations.EsdbSerializer,
-		infrastructureConfigurations.CheckpointRepository)
-
-	fmt.Print(esdbSubscribeAllWorker)
+		infrastructureConfigurations.CheckpointRepository,
+		es.NewProjectionPublisher(infrastructureConfigurations.Projections))
 
 	ordersConfigurator := orders.NewOrdersServiceConfigurator(infrastructureConfigurations, echoServer, grpcServer)
 	err = ordersConfigurator.ConfigureOrdersService(ctx)

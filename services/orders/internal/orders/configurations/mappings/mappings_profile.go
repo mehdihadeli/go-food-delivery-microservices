@@ -2,10 +2,11 @@ package mappings
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	grpcOrderService "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/proto/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/aggregate"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/entities"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/read_models"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/value_objects"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -41,6 +42,51 @@ func ConfigureMappings() error {
 		return err
 	}
 
+	// read_models.OrderReadModel -> dtos.OrderReadDto
+	err = mapper.CreateMap[*read_models.OrderReadModel, *dtos.OrderReadDto]()
+	if err != nil {
+		return err
+	}
+
+	// dtos.OrderReadDto -> grpcOrderService.OrderReadModel
+	// custom filed map not support yet like ForMember so we have to create a custom map because of some timestamp fields map to time.Time
+	err = mapper.CreateCustomMap[*dtos.OrderReadDto, *grpcOrderService.OrderReadModel](func(orderReadDto *dtos.OrderReadDto) *grpcOrderService.OrderReadModel {
+		if orderReadDto == nil {
+			return nil
+		}
+		items, err := mapper.Map[[]*grpcOrderService.ShopItemReadModel](orderReadDto.ShopItems)
+		if err != nil {
+			return nil
+		}
+
+		return &grpcOrderService.OrderReadModel{
+			Id:              orderReadDto.Id,
+			OrderId:         orderReadDto.OrderId,
+			PaymentId:       orderReadDto.PaymentId,
+			DeliveredTime:   timestamppb.New(orderReadDto.DeliveredTime),
+			TotalPrice:      orderReadDto.TotalPrice,
+			DeliveryAddress: orderReadDto.DeliveryAddress,
+			AccountEmail:    orderReadDto.AccountEmail,
+			Canceled:        orderReadDto.Canceled,
+			Completed:       orderReadDto.Completed,
+			Paid:            orderReadDto.Paid,
+			Submitted:       orderReadDto.Submitted,
+			CancelReason:    orderReadDto.CancelReason,
+			ShopItems:       items,
+			CreatedAt:       timestamppb.New(orderReadDto.CreatedAt),
+			UpdatedAt:       timestamppb.New(orderReadDto.UpdatedAt),
+		}
+	})
+	if err != nil {
+		return err
+	}
+
+	// dtos.ShopItemReadDto -> grpcOrderService.ShopItemReadModel
+	err = mapper.CreateMap[*dtos.ShopItemReadDto, *grpcOrderService.ShopItemReadModel]()
+	if err != nil {
+		return err
+	}
+
 	// ShopItem -> ShopItemDto
 	err = mapper.CreateMap[*value_objects.ShopItem, *dtos.ShopItemDto]()
 	if err != nil {
@@ -55,14 +101,14 @@ func ConfigureMappings() error {
 		return err
 	}
 
-	// Payment -> PaymentDto
-	err = mapper.CreateMap[*entities.Payment, *dtos.PaymentDto]()
+	// dtos.ShopItemDto -> read_models.ShopItemReadModel
+	err = mapper.CreateMap[*dtos.ShopItemDto, *read_models.ShopItemReadModel]()
 	if err != nil {
 		return err
 	}
 
-	// PaymentDto -> Payment
-	err = mapper.CreateMap[*dtos.PaymentDto, *entities.Payment]()
+	// read_models.ShopItemReadModel -> dtos.ShopItemReadDto
+	err = mapper.CreateMap[*read_models.ShopItemReadModel, *dtos.ShopItemReadDto]()
 	if err != nil {
 		return err
 	}
@@ -94,26 +140,9 @@ func ConfigureMappings() error {
 		return err
 	}
 
-	// grpcOrderService.Payment -> dtos.PaymentDto
-	err = mapper.CreateMap[*grpcOrderService.Payment, *dtos.PaymentDto]()
-	if err != nil {
-		return err
-	}
-
-	//  entities.Payment -> grpcOrderService.Payment
-	err = mapper.CreateMap[*entities.Payment, *grpcOrderService.Payment]()
-	if err != nil {
-		return err
-	}
-
 	// aggregate.Order -> grpcOrderService.Order
 	err = mapper.CreateCustomMap[*aggregate.Order, *grpcOrderService.Order](func(order *aggregate.Order) *grpcOrderService.Order {
 		items, err := mapper.Map[[]*grpcOrderService.ShopItem](order.ShopItems())
-		if err != nil {
-			return nil
-		}
-
-		payment, err := mapper.Map[*grpcOrderService.Payment](order.Payment())
 		if err != nil {
 			return nil
 		}
@@ -132,7 +161,26 @@ func ConfigureMappings() error {
 			CreatedAt:       timestamppb.New(order.CreatedAt()),
 			UpdatedAt:       timestamppb.New(order.UpdatedAt()),
 			ShopItems:       items,
-			Payment:         payment,
+			PaymentId:       order.PaymentId().String(),
+		}
+	})
+	if err != nil {
+		return err
+	}
+
+	err = mapper.CreateCustomMap[*utils.ListResult[*dtos.OrderReadDto], *grpcOrderService.GetOrdersRes](func(orders *utils.ListResult[*dtos.OrderReadDto]) *grpcOrderService.GetOrdersRes {
+		o, err := mapper.Map[[]*grpcOrderService.OrderReadModel](orders.Items)
+		if err != nil {
+			return nil
+		}
+		return &grpcOrderService.GetOrdersRes{
+			Pagination: &grpcOrderService.Pagination{
+				Size:       int32(orders.Size),
+				Page:       int32(orders.Page),
+				TotalItems: orders.TotalItems,
+				TotalPages: int32(orders.TotalPage),
+			},
+			Orders: o,
 		}
 	})
 	if err != nil {

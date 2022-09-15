@@ -28,7 +28,7 @@ func (ep *createProductEndpoint) MapRoute() {
 }
 
 // CreateProductCommand
-// @Tags Products
+// @Tags Orders
 // @Summary Create product
 // @Description Create new product item
 // @Accept json

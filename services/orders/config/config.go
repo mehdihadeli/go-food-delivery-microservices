@@ -10,6 +10,7 @@ import (
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/spf13/viper"
@@ -37,10 +38,16 @@ type Config struct {
 	Jaeger           *tracing.Config                 `mapstructure:"jaeger"`
 	EventStoreConfig *eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
 	Subscriptions    *Subscriptions                  `mapstructure:"subscriptions"`
+	Mongo            *mongodb.MongoDbConfig          `mapstructure:"mongo" envPrefix:"Mongo_"`
+	MongoCollections MongoCollections                `mapstructure:"mongoCollections" envPrefix:"MongoCollections_"`
 }
 
 type Context struct {
 	Timeout int `mapstructure:"timeout"`
+}
+
+type MongoCollections struct {
+	Orders string `mapstructure:"orders" validate:"required" env:"Orders"`
 }
 
 type Subscriptions struct {

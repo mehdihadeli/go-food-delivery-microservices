@@ -28,7 +28,7 @@ func (ep *deleteProductEndpoint) MapRoute() {
 }
 
 // DeleteProductCommand
-// @Tags Products
+// @Tags Orders
 // @Summary Delete product
 // @Description Delete existing product
 // @Accept json

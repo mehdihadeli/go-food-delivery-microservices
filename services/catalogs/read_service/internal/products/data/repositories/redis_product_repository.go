@@ -9,6 +9,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
@@ -24,14 +25,14 @@ type redisProductRepository struct {
 	redisClient redis.UniversalClient
 }
 
-func NewRedisRepository(log logger.Logger, cfg *config.Config, redisClient redis.UniversalClient) *redisProductRepository {
+func NewRedisRepository(log logger.Logger, cfg *config.Config, redisClient redis.UniversalClient) contracts.ProductCacheRepository {
 	return &redisProductRepository{log: log, cfg: cfg, redisClient: redisClient}
 }
 
 func (r *redisProductRepository) PutProduct(ctx context.Context, key string, product *models.Product) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "redisRepository.PutProduct")
-	span.LogFields(log.Object("Model", product))
 	span.LogFields(log.String("PrefixKey", r.getRedisProductPrefixKey()))
+	span.LogFields(log.String("Key", key))
 	defer span.Finish()
 
 	productBytes, err := json.Marshal(product)
@@ -43,7 +44,11 @@ func (r *redisProductRepository) PutProduct(ctx context.Context, key string, pro
 		return tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[redisProductRepository_PutProduct.HSetNX] error in updating product with key %s", key)))
 	}
 
-	r.log.Infow(fmt.Sprintf("[redisProductRepository.UpdateProduct] result key: %s, prefix: %s", key, r.getRedisProductPrefixKey()), logger.Fields{"Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
+	span.LogFields(log.Object("Product", product))
+	r.log.Infow(fmt.Sprintf("[redisProductRepository.PutProduct] product with key '%s', prefix '%s'  updated successfully",
+		key,
+		r.getRedisProductPrefixKey()),
+		logger.Fields{"Product": product, "ProductId": product.ProductID, "Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
 
 	return nil
 }
@@ -68,7 +73,10 @@ func (r *redisProductRepository) GetProduct(ctx context.Context, key string) (*m
 		return nil, tracing.TraceWithErr(span, err)
 	}
 
-	r.log.Infow(fmt.Sprintf("[mongoProductRepository.GetProduct] result: %+v", product), logger.Fields{"Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
+	span.LogFields(log.Object("Product", product))
+	r.log.Infow(fmt.Sprintf("[redisProductRepository.GetProduct] product with with key '%s', prefix '%s' laoded", key, r.getRedisProductPrefixKey()),
+		logger.Fields{"Product": product, "ProductId": product.ProductID, "Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
+
 	return &product, nil
 }
 
@@ -82,7 +90,8 @@ func (r *redisProductRepository) DeleteProduct(ctx context.Context, key string) 
 		return tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[redisProductRepository_DeleteProduct.HDel] error in deleting product with key %s", key)))
 	}
 
-	r.log.Infow(fmt.Sprintf("[redisProductRepository.DeleteProduct] result key: %s, prefix: %s", key, r.getRedisProductPrefixKey()), logger.Fields{"Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
+	r.log.Infow(fmt.Sprintf("[redisProductRepository.DeleteProduct] product with key %s, prefix: %s deleted successfully", key, r.getRedisProductPrefixKey()), logger.Fields{"Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
+
 	return nil
 }
 
@@ -95,7 +104,7 @@ func (r *redisProductRepository) DeleteAllProducts(ctx context.Context) error {
 		return tracing.TraceWithErr(span, errors.WrapIf(err, "[redisProductRepository_DeleteAllProducts.Del] error in deleting all products"))
 	}
 
-	r.log.Infow(fmt.Sprintf("[redisProductRepository.DeleteAllProducts] result prefix: %s", r.getRedisProductPrefixKey()), logger.Fields{"PrefixKey": r.getRedisProductPrefixKey()})
+	r.log.Infow("[redisProductRepository.DeleteAllProducts] all products deleted", logger.Fields{"PrefixKey": r.getRedisProductPrefixKey()})
 
 	return nil
 }

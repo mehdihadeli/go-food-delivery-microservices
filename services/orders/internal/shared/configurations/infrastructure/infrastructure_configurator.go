@@ -5,6 +5,7 @@ import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -13,7 +14,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/custom_middlewares"
 	v7 "github.com/olivere/elastic/v7"
 	"github.com/segmentio/kafka-go"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type InfrastructureConfiguration struct {
@@ -23,13 +24,14 @@ type InfrastructureConfiguration struct {
 	KafkaConn            *kafka.Conn
 	KafkaProducer        kafkaClient.Producer
 	Pgx                  *postgres.Pgx
-	Gorm                 *gorm.DB
 	Metrics              *OrdersServiceMetrics
 	Esdb                 *esdb.Client
 	EsdbSerializer       *eventstroredb.EsdbSerializer
 	CheckpointRepository contracts.SubscriptionCheckpointRepository
 	ElasticClient        *v7.Client
+	MongoClient          *mongo.Client
 	CustomMiddlewares    cutomMiddlewares.CustomMiddlewares
+	Projections          []projection.IProjection
 }
 
 type InfrastructureConfigurator interface {
@@ -64,6 +66,13 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	//	return nil, err, nil
 	//}
 	//infrastructure.ElasticClient = el
+
+	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
+	if err != nil {
+		return nil, err, nil
+	}
+	cleanup = append(cleanup, mongoCleanup)
+	infrastructure.MongoClient = mongoClient
 
 	es, checkpointRepository, esdbSerializer, err, eventStoreCleanup := ic.configEventStore()
 	if err != nil {

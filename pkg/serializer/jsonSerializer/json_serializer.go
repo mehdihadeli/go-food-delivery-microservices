@@ -24,7 +24,7 @@ func Unmarshal(data []byte, v interface{}) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("deserialize structure object:\n %v", ColoredPrettyPrint(v))
+	log.Printf("deserialize structure object")
 
 	return nil
 }

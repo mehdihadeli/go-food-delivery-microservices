@@ -8,12 +8,12 @@ import (
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
-	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/append_result"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/store"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_name"
-	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_position/read_position"
-	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/stream_version"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
+	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/append_result"
+	streamName "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_name"
+	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/read_position"
+	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
 	esErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
@@ -25,20 +25,19 @@ import (
 	"reflect"
 )
 
-type esdbAggregateStore[T es.IHaveEventSourcedAggregate] struct {
+type esdbAggregateStore[T models.IHaveEventSourcedAggregate] struct {
 	log        logger.Logger
 	eventStore store.EventStore
 	serializer *EsdbSerializer
 }
 
-func NewEventStoreAggregateStore[T es.IHaveEventSourcedAggregate](log logger.Logger, eventStore store.EventStore, serializer *EsdbSerializer) *esdbAggregateStore[T] {
+func NewEventStoreAggregateStore[T models.IHaveEventSourcedAggregate](log logger.Logger, eventStore store.EventStore, serializer *EsdbSerializer) *esdbAggregateStore[T] {
 	return &esdbAggregateStore[T]{log: log, eventStore: eventStore, serializer: serializer}
 }
 
 func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata *core.Metadata, expectedVersion expectedStreamVersion.ExpectedStreamVersion, ctx context.Context) (*appendResult.AppendEventsResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.StoreWithVersion")
 	defer span.Finish()
-	span.LogFields(log.Object("Aggregate", aggregate))
 	span.LogFields(log.String("AggregateID", aggregate.Id().String()))
 
 	if len(aggregate.UncommittedEvents()) == 0 {
@@ -49,9 +48,9 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata *core.Met
 	streamId := streamName.For[T](aggregate)
 	span.LogFields(log.String("StreamId", streamId.String()))
 
-	var streamEvents []*es.StreamEvent
+	var streamEvents []*models.StreamEvent
 
-	linq.From(aggregate.UncommittedEvents()).SelectIndexedT(func(i int, domainEvent domain.IDomainEvent) *es.StreamEvent {
+	linq.From(aggregate.UncommittedEvents()).SelectIndexedT(func(i int, domainEvent domain.IDomainEvent) *models.StreamEvent {
 		var inInterface map[string]interface{}
 		err := jsonSerializer.DecodeWithMapStructure(domainEvent, &inInterface)
 		if err != nil {
@@ -67,9 +66,9 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata *core.Met
 
 	aggregate.MarkUncommittedEventAsCommitted()
 
-	span.LogFields(log.Object("StreamAppendResult", streamAppendResult))
+	span.LogFields(log.Object("Aggregate", aggregate))
 
-	a.log.Infow(fmt.Sprintf("[esdbAggregateStore.StoreWithVersion] aggregate with id %d stored successfully", aggregate.Id()), logger.Fields{"AggregateID": aggregate.Id()})
+	a.log.Infow(fmt.Sprintf("[esdbAggregateStore.StoreWithVersion] aggregate with id %d stored successfully", aggregate.Id()), logger.Fields{"Aggregate": aggregate, "StreamId": streamId})
 
 	return streamAppendResult, nil
 }
@@ -77,9 +76,6 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata *core.Met
 func (a *esdbAggregateStore[T]) Store(aggregate T, metadata *core.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Store")
 	defer span.Finish()
-	span.LogFields(log.Object("Aggregate", aggregate))
-	span.LogFields(log.String("AggregateID", aggregate.Id().String()))
-
 	expectedVersion := expectedStreamVersion.FromInt64(aggregate.OriginalVersion())
 
 	streamAppendResult, err := a.StoreWithVersion(aggregate, metadata, expectedVersion, ctx)
@@ -87,17 +83,12 @@ func (a *esdbAggregateStore[T]) Store(aggregate T, metadata *core.Metadata, ctx 
 		return nil, tracing.TraceWithErr(span, errors.WrapIff(err, "[esdbAggregateStore_Store:StoreWithVersion] failed to store aggregate with id{%v}", aggregate.Id()))
 	}
 
-	span.LogFields(log.Object("StreamAppendResult", streamAppendResult))
-
-	a.log.Infow(fmt.Sprintf("[esdbAggregateStore.Store] aggregate with id %d stored successfully", aggregate.Id()), logger.Fields{"AggregateID": aggregate.Id()})
-
 	return streamAppendResult, nil
 }
 
 func (a *esdbAggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID) (T, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Load")
 	defer span.Finish()
-	span.LogFields(log.String("AggregateID", aggregateId.String()))
 
 	position := readPosition.Start
 
@@ -137,7 +128,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 	var metadata *core.Metadata
 	var domainEvents []domain.IDomainEvent
 
-	linq.From(streamEvents).Distinct().SelectT(func(streamEvent *es.StreamEvent) domain.IDomainEvent {
+	linq.From(streamEvents).Distinct().SelectT(func(streamEvent *models.StreamEvent) domain.IDomainEvent {
 		metadata = streamEvent.Metadata
 		return streamEvent.Event
 	}).ToSlice(&domainEvents)
@@ -150,7 +141,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 	a.log.Infow(fmt.Sprintf("Loaded aggregate with streamId {%s} and aggregateId {%s}",
 		streamId.String(),
 		aggregateId.String()),
-		logger.Fields{"AggregateID": aggregateId.String(), "StreamId": streamId.String()})
+		logger.Fields{"Aggregate": aggregate, "StreamId": streamId.String()})
 
 	span.LogFields(log.Object("Aggregate", aggregate))
 
@@ -168,9 +159,9 @@ func (a *esdbAggregateStore[T]) Exists(ctx context.Context, aggregateId uuid.UUI
 	return a.eventStore.StreamExists(streamId, ctx)
 }
 
-func (a *esdbAggregateStore[T]) getStreamEvents(streamId streamName.StreamName, position readPosition.StreamReadPosition, ctx context.Context) ([]*es.StreamEvent, error) {
+func (a *esdbAggregateStore[T]) getStreamEvents(streamId streamName.StreamName, position readPosition.StreamReadPosition, ctx context.Context) ([]*models.StreamEvent, error) {
 	pageSize := 500
-	var streamEvents []*es.StreamEvent
+	var streamEvents []*models.StreamEvent
 
 	for true {
 		events, err := a.eventStore.ReadEvents(streamId, position, uint64(pageSize), ctx)

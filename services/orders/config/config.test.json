@@ -55,6 +55,16 @@
     "dbName": "orders_service",
     "sslMode": false
   },
+  "mongo": {
+    "uri": "mongodb://localhost:27017",
+    "user": "admin",
+    "password": "admin",
+    "db": "orders_service",
+    "useAuth": true
+  },
+  "mongoCollections": {
+    "orders": "orders"
+  },
   "kafka": {
     "brokers": [
       "localhost:9092"

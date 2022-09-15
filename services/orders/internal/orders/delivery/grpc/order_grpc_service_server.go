@@ -10,13 +10,15 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	grpcOrderService "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/proto/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	creatingOrderCommandV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/commands/v1"
 	orderDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/dtos"
 	gettingOrderByIdDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/dtos"
 	gettingOrderByIdQueryV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/queries/v1"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/aggregate"
+	gettingOrdersDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/dtos"
+	gettingOrdersQueryV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/queryies/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
 	"github.com/opentracing/opentracing-go/log"
 	uuid "github.com/satori/go.uuid"
@@ -66,7 +68,7 @@ func (o OrderGrpcServiceServer) GetOrderByID(ctx context.Context, req *grpcOrder
 	o.Metrics.GetOrderByIdGrpcRequests.Inc()
 	defer span.Finish()
 
-	orderIdUUID, err := uuid.FromString(req.OrderId)
+	orderIdUUID, err := uuid.FromString(req.Id)
 	if err != nil {
 		badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[OrderGrpcServiceServer_GetOrderByID.uuid.FromString] error in converting uuid")
 		o.Log.Errorf(fmt.Sprintf("[OrderGrpcServiceServer_GetOrderByID.uuid.FromString] err: %v", tracing.TraceWithErr(span, badRequestErr)))
@@ -87,21 +89,16 @@ func (o OrderGrpcServiceServer) GetOrderByID(ctx context.Context, req *grpcOrder
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}
 
-	order, err := mapper.Map[*aggregate.Order](queryResult.Order)
+	q := queryResult.Order
+	order, err := mapper.Map[*grpcOrderService.OrderReadModel](q)
 	if err != nil {
 		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrderByID.Map] error in mapping order")
 		return nil, grpcErrors.ErrGrpcResponse(tracing.TraceWithErr(span, err))
 	}
 
-	ord, err := mapper.Map[*grpcOrderService.Order](order)
-	if err != nil {
-		err = errors.WithMessage(err, "[ProductGrpcServiceServer_GetOrderByID.Map] error in mapping order")
-		return nil, grpcErrors.ErrGrpcResponse(tracing.TraceWithErr(span, err))
-	}
-
 	o.Metrics.SuccessGrpcRequests.Inc()
 
-	return &grpcOrderService.GetOrderByIDRes{Order: ord}, nil
+	return &grpcOrderService.GetOrderByIDRes{Order: order}, nil
 }
 
 func (o OrderGrpcServiceServer) SubmitOrder(ctx context.Context, req *grpcOrderService.SubmitOrderReq) (*grpcOrderService.SubmitOrderRes, error) {
@@ -115,6 +112,28 @@ func (o OrderGrpcServiceServer) UpdateShoppingCart(ctx context.Context, req *grp
 }
 
 func (o OrderGrpcServiceServer) GetOrders(ctx context.Context, req *grpcOrderService.GetOrdersReq) (*grpcOrderService.GetOrdersRes, error) {
-	//TODO implement me
-	panic("implement me")
+	ctx, span := tracing.StartGrpcServerTracerSpan(ctx, "OrderGrpcServiceServer.GetOrders")
+	span.LogFields(log.Object("Request", req))
+	o.Metrics.GetOrdersGrpcRequests.Inc()
+	defer span.Finish()
+
+	query := gettingOrdersQueryV1.NewGetOrdersQuery(&utils.ListQuery{Page: int(req.Page), Size: int(req.Size)})
+
+	queryResult, err := mediatr.Send[*gettingOrdersQueryV1.GetOrdersQuery, *gettingOrdersDtos.GetOrdersResponseDto](ctx, query)
+
+	if err != nil {
+		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrders.Send] error in sending GetOrdersQuery")
+		o.Log.Error(fmt.Sprintf("[OrderGrpcServiceServer_GetOrders.Send] err: {%v}", tracing.TraceWithErr(span, err)))
+		return nil, grpcErrors.ErrGrpcResponse(err)
+	}
+
+	ordersResponse, err := mapper.Map[*grpcOrderService.GetOrdersRes](queryResult.Orders)
+	if err != nil {
+		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrders.Map] error in mapping orders")
+		return nil, grpcErrors.ErrGrpcResponse(tracing.TraceWithErr(span, err))
+	}
+
+	o.Metrics.SuccessGrpcRequests.Inc()
+
+	return ordersResponse, nil
 }
