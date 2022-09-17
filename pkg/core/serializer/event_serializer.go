@@ -1,11 +1,9 @@
-package esSerializer
-
-import "github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
+package serializer
 
 type EventSerializer interface {
-	Serialize(event domain.IDomainEvent) (*EventSerializationResult, error)
+	Serialize(event interface{}) (*EventSerializationResult, error)
 	SerializeObject(data interface{}) (*EventSerializationResult, error)
-	Deserialize(data []byte, eventType string, contentType string) (domain.IDomainEvent, error)
+	Deserialize(data []byte, eventType string, contentType string) (interface{}, error)
 	DeserializeObject(data []byte, eventType string, contentType string) (interface{}, error)
 	ContentType() string
 }

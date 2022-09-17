@@ -1,6 +1,18 @@
 version: "3.8"
 
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: on-failure
+    ports:
+      - 5672:5672
+      - 15672:15672
+      # volumes:
+      #   - rabbitmq:/var/lib/rabbitmq
+    networks:
+      - store
+      
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus

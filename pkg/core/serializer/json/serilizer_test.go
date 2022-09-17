@@ -1,4 +1,4 @@
-package esSerializer
+package json
 
 import "testing"
 

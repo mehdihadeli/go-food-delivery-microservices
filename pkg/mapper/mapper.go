@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/iancoleman/strcase"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/logrous"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
 	"reflect"
 )
@@ -198,11 +198,11 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 	// check for provided types kind.
 	// if not struct - skip.
 	if srcType.Kind() != reflect.Struct {
-		logrous.DefaultLogger.Errorf("expected reflect.Struct kind for type %s, but got %s", srcType.String(), srcType.Kind().String())
+		defaultLogger.Logger.Errorf("expected reflect.Struct kind for type %s, but got %s", srcType.String(), srcType.Kind().String())
 	}
 
 	if destType.Kind() != reflect.Struct {
-		logrous.DefaultLogger.Errorf("expected reflect.Struct kind for type %s, but got %s", destType.String(), destType.Kind().String())
+		defaultLogger.Logger.Errorf("expected reflect.Struct kind for type %s, but got %s", destType.String(), destType.Kind().String())
 	}
 
 	// profile is slice of src and dest structs fields names
@@ -300,7 +300,7 @@ func mapStructs[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 	// if types or their slices were not registered - abort
 	profile, ok := profiles[getProfileKey(src.Type(), dest.Type())]
 	if !ok {
-		logrous.DefaultLogger.Errorf("no conversion specified for types %s and %s", src.Type().String(), dest.Type().String())
+		defaultLogger.Logger.Errorf("no conversion specified for types %s and %s", src.Type().String(), dest.Type().String())
 		return
 	}
 

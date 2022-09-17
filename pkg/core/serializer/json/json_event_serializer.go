@@ -1,9 +1,8 @@
-package esSerializer
+package json
 
 import (
 	"emperror.dev/errors"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
-	esSerializer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/serializer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 )
@@ -15,9 +14,9 @@ func NewJsonEventSerializer() *JsonEventSerializer {
 	return &JsonEventSerializer{}
 }
 
-func (s *JsonEventSerializer) Serialize(event domain.IDomainEvent) (*esSerializer.EventSerializationResult, error) {
+func (s *JsonEventSerializer) Serialize(event interface{}) (*serializer.EventSerializationResult, error) {
 	if event == nil {
-		return &esSerializer.EventSerializationResult{Data: nil, ContentType: s.ContentType(), EventType: ""}, nil
+		return &serializer.EventSerializationResult{Data: nil, ContentType: s.ContentType(), EventType: ""}, nil
 	}
 
 	eventType := typeMapper.GetTypeName(event)
@@ -27,12 +26,12 @@ func (s *JsonEventSerializer) Serialize(event domain.IDomainEvent) (*esSerialize
 		return nil, errors.WrapIff(err, "event.GetJsonData type: %s", eventType)
 	}
 
-	result := &esSerializer.EventSerializationResult{Data: data, ContentType: s.ContentType(), EventType: eventType}
+	result := &serializer.EventSerializationResult{Data: data, ContentType: s.ContentType(), EventType: eventType}
 
 	return result, nil
 }
 
-func (s *JsonEventSerializer) Deserialize(data []byte, eventType string, contentType string) (domain.IDomainEvent, error) {
+func (s *JsonEventSerializer) Deserialize(data []byte, eventType string, contentType string) (interface{}, error) {
 	if data == nil {
 		return nil, nil
 	}
@@ -47,12 +46,12 @@ func (s *JsonEventSerializer) Deserialize(data []byte, eventType string, content
 		return nil, errors.WrapIff(err, "event.GetJsonData type: %s", eventType)
 	}
 
-	return targetEventPointer.(domain.IDomainEvent), nil
+	return targetEventPointer, nil
 }
 
-func (s *JsonEventSerializer) SerializeObject(event interface{}) (*esSerializer.EventSerializationResult, error) {
+func (s *JsonEventSerializer) SerializeObject(event interface{}) (*serializer.EventSerializationResult, error) {
 	if event == nil {
-		return &esSerializer.EventSerializationResult{Data: nil, ContentType: s.ContentType(), EventType: ""}, nil
+		return &serializer.EventSerializationResult{Data: nil, ContentType: s.ContentType(), EventType: ""}, nil
 	}
 
 	eventType := typeMapper.GetTypeName(event)
@@ -62,7 +61,7 @@ func (s *JsonEventSerializer) SerializeObject(event interface{}) (*esSerializer.
 		return nil, errors.WrapIff(err, "event.GetJsonData type: %s", eventType)
 	}
 
-	result := &esSerializer.EventSerializationResult{Data: data, ContentType: s.ContentType(), EventType: eventType}
+	result := &serializer.EventSerializationResult{Data: data, ContentType: s.ContentType(), EventType: eventType}
 
 	return result, nil
 }

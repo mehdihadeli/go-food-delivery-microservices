@@ -11,5 +11,5 @@ type StreamEvent struct {
 	Version  int64
 	Position int64
 	Event    domain.IDomainEvent
-	Metadata *core.Metadata
+	Metadata core.Metadata
 }

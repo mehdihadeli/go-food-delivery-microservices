@@ -9,11 +9,11 @@ require (
 	github.com/TylerBrock/colorjson v0.0.0-20200706003622-8a50f05110d2
 	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/brpaz/echozap v1.1.3
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/go-resty/resty/v2 v2.7.0
 	github.com/goccy/go-json v0.9.10
 	github.com/goccy/go-reflect v1.2.0
 	github.com/gofrs/uuid v4.2.0+incompatible
@@ -31,6 +31,7 @@ require (
 	github.com/nolleh/caption_json_formatter v0.0.0-20220315135329-e0b5bf6eda5a
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/rabbitmq/amqp091-go v1.5.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.4.32
 	github.com/sirupsen/logrus v1.8.1

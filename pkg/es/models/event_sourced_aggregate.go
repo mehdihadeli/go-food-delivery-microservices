@@ -24,7 +24,7 @@ type When interface {
 
 type fold interface {
 	// Restore the aggregate state with events that are loaded form the event store and increase the current version and last commit version.
-	fold(event domain.IDomainEvent, metadata *core.Metadata) error
+	fold(event domain.IDomainEvent, metadata core.Metadata) error
 }
 
 type Apply interface {
@@ -72,7 +72,7 @@ type IEventSourcedAggregateRoot interface {
 	UncommittedEvents() []domain.IDomainEvent
 
 	// LoadFromHistory Loads the current state of the aggregate from a list of events.
-	LoadFromHistory(events []domain.IDomainEvent, metadata *core.Metadata) error
+	LoadFromHistory(events []domain.IDomainEvent, metadata core.Metadata) error
 
 	AggregateStateProjection
 }
@@ -161,7 +161,7 @@ func (a *EventSourcedAggregateRoot) UncommittedEvents() []domain.IDomainEvent {
 	return a.uncommittedEvents
 }
 
-func (a *EventSourcedAggregateRoot) LoadFromHistory(events []domain.IDomainEvent, metadata *core.Metadata) error {
+func (a *EventSourcedAggregateRoot) LoadFromHistory(events []domain.IDomainEvent, metadata core.Metadata) error {
 	for _, event := range events {
 		err := a.fold(event, metadata)
 		if err != nil {
@@ -188,7 +188,7 @@ func (a *EventSourcedAggregateRoot) Apply(event domain.IDomainEvent, isNew bool)
 	return nil
 }
 
-func (a *EventSourcedAggregateRoot) fold(event domain.IDomainEvent, metadata *core.Metadata) error {
+func (a *EventSourcedAggregateRoot) fold(event domain.IDomainEvent, metadata core.Metadata) error {
 	err := a.when(event)
 	if err != nil {
 		return errors.WrapIf(err, "[EventSourcedAggregateRoot_fold:when] error in the applying whenFunc")

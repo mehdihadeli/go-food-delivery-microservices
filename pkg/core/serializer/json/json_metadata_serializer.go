@@ -1,4 +1,4 @@
-package esSerializer
+package json
 
 import (
 	"emperror.dev/errors"
@@ -13,7 +13,7 @@ func NewJsonMetadataSerializer() *JsonMetadataSerializer {
 	return &JsonMetadataSerializer{}
 }
 
-func (s *JsonMetadataSerializer) Serialize(meta *core.Metadata) ([]byte, error) {
+func (s *JsonMetadataSerializer) Serialize(meta core.Metadata) ([]byte, error) {
 	if meta == nil {
 		return nil, nil
 	}
@@ -26,7 +26,7 @@ func (s *JsonMetadataSerializer) Serialize(meta *core.Metadata) ([]byte, error) 
 	return marshal, nil
 }
 
-func (s *JsonMetadataSerializer) Deserialize(bytes []byte) (*core.Metadata, error) {
+func (s *JsonMetadataSerializer) Deserialize(bytes []byte) (core.Metadata, error) {
 	if bytes == nil {
 		return nil, nil
 	}
@@ -38,5 +38,5 @@ func (s *JsonMetadataSerializer) Deserialize(bytes []byte) (*core.Metadata, erro
 		return nil, errors.WrapIf(err, "failed to unmarshal metadata")
 	}
 
-	return &meta, nil
+	return meta, nil
 }

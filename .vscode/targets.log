@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Fri Sep 16 00:19:38 2022
+# Make data base, printed on Sun Sep 18 02:30:10 2022
 
 # Variables
 
@@ -39,7 +39,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_5988_SBXQIUPPXTSDPQUS
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_9092_MCRCMVXRPDKTUZZN
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -91,7 +91,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 5988
+VSCODE_PID = 9092
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -141,7 +141,7 @@ LOGONSERVER = \\MEHDI
 # environment
 USERNAME = MehdiHadeli
 # makefile (from 'Makefile', line 21)
-FILES := 0292918746d5 9ee0c86435cd 69568a60aaff b3989ed89a93 7ff81942da8f fcead7436e0c a7c3e849b03f b4b7b76bc5da a24c28d188f0 60eaf0934a47 72f3a4fdbdda b3ba04eff945 d3703fa862b0 90441c657854
+FILES := 4d77685f755e 14efc6395424 9ee0c86435cd 69568a60aaff b3989ed89a93 7ff81942da8f fcead7436e0c a7c3e849b03f b4b7b76bc5da a24c28d188f0 60eaf0934a47 72f3a4fdbdda b3ba04eff945 d3703fa862b0 90441c657854
 # environment
 COMMONPROGRAMFILES = C:\Program Files (x86)\Common Files
 # automatic
@@ -206,14 +206,17 @@ GOPROXY = https://proxy.golang.org,direct
 SUFFIXES := 
 # environment
 ALLUSERSPROFILE = C:\ProgramData
+# environment
+SESSIONNAME = Console
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync load
 # environment
 PROCESSOR_REVISION = a503
 # environment
-PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
+PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 
+ 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=100/1024=10%, Rehash=0, Collisions=10/131=8%
+# Load=101/1024=10%, Rehash=0, Collisions=10/132=8%
 
 # Pattern-specific Variable Values
 
@@ -386,7 +389,8 @@ proto_catalogs_read_product_kafka_messages:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 125):
 	@echo Generating products kafka messages proto
-	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/*.proto
+	pro 
+toc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/*.proto
 
 # Not a target:
 .DEFAULT:
@@ -496,6 +500,6 @@ proto_orders_order_service:
 # strcache performance: lookups = 83 / hit rate = 37%
 # hash-table stats:
 # Load=52/8192=1%, Rehash=0, Collisions=0/83=0%
-# Finished Make data base on Fri Sep 16 00:19:38 2022
+# Finished Make data base on Sun Sep 18 02:30:10 2022
 
  
