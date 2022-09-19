@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Tue Sep 20 00:00:57 2022
+# Make data base, printed on Tue Sep 20 01:49:22 2022
 
 # Variables
 
@@ -41,7 +41,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_24156_NZLBXYSQFFNFCMGD
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_8468_NLTQBGWDAIYOFGFG
 # environment
 FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
@@ -95,7 +95,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 24156
+VSCODE_PID = 8468
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -191,7 +191,8 @@ GOMODCACHE = C:\Users\MehdiHadeli\go\pkg\mod
 # environment
 DATAGRIP = C:\Program Files\JetBrains\DataGrip 2021.3\bin;
 # environment
-VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
+V 
+SCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
 COMMONPROGRAMFILES(X86) = C:\Program Files (x86)\Common Files
 # environment
@@ -358,7 +359,8 @@ execute_k6_catalogs_write_service:
 #  recipe to execute (from 'Makefile', line 171):
 	@echo Executing k6 for catalogs write service
 	cd services/catalogs/write_service/ && 	go run ./cmd/main.go
-	k6 run ./performance_tests/catalogs/write_service/script.js --insecure-skip-tls-verify
+	k6 run ./performance_tests/catalogs/write_service/script.js --inse 
+cure-skip-tls-verify
 
 swagger_catalogs_read:
 #  Implicit rule search has not been done.
@@ -450,7 +452,8 @@ docker-compose_infra_down:
 #  Modification time never checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 16):
-	@echo Stoping infrastructure docker-compose
+	@echo Stoping infrastru 
+cture docker-compose
 	docker-compose -f deployments/docker-compose/docker-compose.infrastructure.yaml down
 
 generate_load_test_client_catalogs_write_service:
@@ -502,6 +505,6 @@ proto_orders_order_service:
 # strcache performance: lookups = 83 / hit rate = 37%
 # hash-table stats:
 # Load=52/8192=1%, Rehash=0, Collisions=0/83=0%
-# Finished Make data base on Tue Sep 20 00:00:57 2022
+# Finished Make data base on Tue Sep 20 01:49:22 2022
 
  

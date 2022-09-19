@@ -64,6 +64,12 @@ func Test_Consume_Message(t *testing.T) {
 		err = rabbitmqProducer.Publish(context.Background(), "", NewProducerConsumerMessage("test"), nil)
 	}
 
+	err = rabbitmqProducer.Publish(context.Background(), "", NewProducerConsumerMessage("test"), nil)
+	for err != nil {
+		err = rabbitmqProducer.Publish(context.Background(), "", NewProducerConsumerMessage("test"), nil)
+	}
+
+	time.Sleep(time.Second * 5)
 	fmt.Println(conn.IsClosed())
 	fmt.Println(conn.IsConnected())
 }

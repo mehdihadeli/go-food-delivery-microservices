@@ -12,8 +12,9 @@ import (
 type internalConnection struct {
 	cfg *config.RabbitMQConfig
 	*amqp091.Connection
-	isConnected bool
-	err         chan error
+	isConnected     bool
+	errChan         chan error
+	reconnectedChan chan struct{}
 }
 
 type IConnection interface {
@@ -26,6 +27,7 @@ type IConnection interface {
 	NotifyClose(receiver chan *amqp091.Error) chan *amqp091.Error
 	Raw() *amqp091.Connection
 	ErrorChannel() chan error
+	ReconnectedChannel() chan struct{}
 }
 
 func NewConnection(ctx context.Context, cfg *config.RabbitMQConfig) (IConnection, error) {
@@ -35,8 +37,9 @@ func NewConnection(ctx context.Context, cfg *config.RabbitMQConfig) (IConnection
 	}
 
 	c := &internalConnection{
-		cfg: cfg,
-		err: make(chan error),
+		cfg:             cfg,
+		errChan:         make(chan error),
+		reconnectedChan: make(chan struct{}),
 	}
 
 	err := c.connect()
@@ -58,7 +61,11 @@ func (c *internalConnection) IsConnected() bool {
 }
 
 func (c *internalConnection) ErrorChannel() chan error {
-	return c.err
+	return c.errChan
+}
+
+func (c *internalConnection) ReconnectedChannel() chan struct{} {
+	return c.reconnectedChan
 }
 
 func (c *internalConnection) ReConnect() error {
@@ -92,7 +99,7 @@ func (c *internalConnection) connect() error {
 	go func() {
 		<-notifyClose //Listen to NotifyClose
 		c.isConnected = false
-		c.err <- errors.New("Connection Closed")
+		c.errChan <- errors.New("Connection Closed")
 	}()
 
 	return nil
@@ -101,7 +108,7 @@ func (c *internalConnection) connect() error {
 func (c *internalConnection) handleReconnecting(ctx context.Context) {
 	for {
 		select {
-		case err := <-c.err:
+		case err := <-c.errChan:
 			if err != nil {
 				defaultLogger.Logger.Info("Rabbitmq Connection Reconnecting started")
 				err := c.connect()
@@ -110,6 +117,7 @@ func (c *internalConnection) handleReconnecting(ctx context.Context) {
 				}
 				defaultLogger.Logger.Info("Rabbitmq Connection Reconnected")
 				c.isConnected = true
+				c.reconnectedChan <- struct{}{}
 				continue
 			}
 		case <-ctx.Done():

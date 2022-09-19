@@ -10,8 +10,10 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/options"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/rabbitmqErrors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/rabbitmq/amqp091-go"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -46,7 +48,9 @@ func NewRabbitMQConsumer[T types2.IMessage](connection types.IConnection, builde
 	deliveryRoutines := make(chan struct{}, consumerConfig.ConcurrencyLimit)
 	wg := &sync.WaitGroup{}
 
-	return &RabbitMQConsumer[T]{rabbitmqConsumerOptions: consumerConfig, deliveryRoutines: deliveryRoutines, wg: wg, connection: connection, handler: handler, eventSerializer: eventSerializer, logger: logger}, nil
+	cons := &RabbitMQConsumer[T]{rabbitmqConsumerOptions: consumerConfig, deliveryRoutines: deliveryRoutines, wg: wg, connection: connection, handler: handler, eventSerializer: eventSerializer, logger: logger}
+
+	return cons, nil
 }
 
 func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
@@ -55,10 +59,12 @@ func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
 		return errors.New("connection is nil")
 	}
 
+	r.reConsumeOnDropConnection(ctx)
+
 	// get a new channel on the connection - channel is unique for each consumer
 	ch, err := r.connection.Channel()
 	if err != nil {
-		return err
+		return rabbitmqErrors.ErrDisconnected
 	}
 	r.channel = ch
 
@@ -118,22 +124,24 @@ func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
 	//https://www.ribice.ba/golang-rabbitmq-client/
 	//https://medium.com/@dhanushgopinath/automatically-recovering-rabbitmq-connections-in-go-applications-7795a605ca59
 	for i := 0; i < r.rabbitmqConsumerOptions.ConcurrencyLimit; i++ {
-		r.logger.Infof("Processing messages on thread %.", i)
+		r.logger.Infof("Processing messages on thread %d", i)
 		go func() {
 			for {
 				select {
 				case msg, ok := <-msgs:
 					if !ok {
-						continue
+						r.logger.Error("consumer connection dropped")
+						return
 					}
 					//https://github.com/streadway/amqp/blob/2aa28536587a0090d8280eed56c75867ce7e93ec/delivery.go#L62
 					r.handleReceived(ctx, msg, r.handler)
 				case <-ctx.Done(): // context canceled, it can stop getting new messages
 					err := r.UnConsume(ctx)
 					if err != nil {
-						r.logger.Error("Rabbit consumer closed - critical Error")
+						r.logger.Error("error in canceling consumer")
 						return
 					}
+					r.logger.Error("consumer canceled")
 				}
 			}
 		}()
@@ -172,6 +180,26 @@ func (r *RabbitMQConsumer[T]) UnConsume(ctx context.Context) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	}
+}
+
+func (r *RabbitMQConsumer[T]) reConsumeOnDropConnection(ctx context.Context) {
+	go func() {
+		for {
+			select {
+			case reconnect := <-r.connection.ReconnectedChannel():
+				if reflect.ValueOf(reconnect).IsValid() {
+					r.logger.Info("reconsume_on_drop_connection started")
+					err := r.Consume(ctx)
+					if err != nil {
+						r.logger.Error("reconsume_on_drop_connection finished with error: %v", err)
+						continue
+					}
+					r.logger.Info("reconsume_on_drop_connection finished successfully")
+					return
+				}
+			}
+		}
+	}()
 }
 
 func (r *RabbitMQConsumer[T]) handleReceived(ctx context.Context, delivery amqp091.Delivery, handler consumer.ConsumerHandler[T]) {
