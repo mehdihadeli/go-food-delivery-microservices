@@ -49,26 +49,26 @@ func (r *rabbitMQProducer) Publish(ctx context.Context, topicOrExchangeName stri
 	}
 	defer channel.Close()
 
-	meta := core.FromMetadata(metadata)
+	metadata = core.FromMetadata(metadata)
 
-	if meta.ExistsKey(messageHeader.MessageId) == false {
-		meta.SetValue(messageHeader.MessageId, message.GeMessageId())
+	if metadata.ExistsKey(messageHeader.MessageId) == false {
+		metadata.SetValue(messageHeader.MessageId, message.GeMessageId())
 	}
 
-	if meta.ExistsKey(messageHeader.CorrelationId) == false {
+	if metadata.ExistsKey(messageHeader.CorrelationId) == false {
 		cid := uuid.NewV4().String()
-		meta.SetValue(messageHeader.CorrelationId, cid)
+		metadata.SetValue(messageHeader.CorrelationId, cid)
 		message.SetCorrelationId(cid)
 	}
 
-	meta.SetValue(messageHeader.Name, utils.GetMessageName(message))
+	metadata.SetValue(messageHeader.Name, utils.GetMessageName(message))
 
 	serializedObj, err := r.eventSerializer.Serialize(message)
 	if err != nil {
 		return err
 	}
 
-	meta.SetValue(messageHeader.Type, serializedObj.EventType)
+	metadata.SetValue(messageHeader.Type, serializedObj.EventType)
 
 	var exchange string
 
