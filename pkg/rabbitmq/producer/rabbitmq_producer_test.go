@@ -13,7 +13,7 @@ import (
 )
 
 func Test_Publish_Message(t *testing.T) {
-	conn, err := types.NewConnection(&config.RabbitMQConfig{
+	conn, err := types.NewConnection(context.Background(), &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",
 			Password: "guest",
@@ -33,19 +33,19 @@ func Test_Publish_Message(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = rabbitmqProducer.Publish(context.Background(), "", NewTestMessage("test"), nil)
+	err = rabbitmqProducer.Publish(context.Background(), "", NewProducerMessage("test"), nil)
 	if err != nil {
 		return
 	}
 }
 
-type testMessage struct {
+type ProducerMessage struct {
 	*types2.Message
 	Data string
 }
 
-func NewTestMessage(data string) *testMessage {
-	return &testMessage{
+func NewProducerMessage(data string) *ProducerMessage {
+	return &ProducerMessage{
 		Data:    data,
 		Message: types2.NewMessage(uuid.NewV4().String()),
 	}

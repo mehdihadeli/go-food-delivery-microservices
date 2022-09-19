@@ -8,10 +8,12 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Sep 18 02:30:10 2022
+# Make data base, printed on Tue Sep 20 00:00:57 2022
 
 # Variables
 
+# environment
+FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
 SYSTEMDRIVE = C:
 # environment
@@ -31,7 +33,7 @@ SYSTEMROOT = C:\Windows
 # environment
 PROCESSOR_LEVEL = 6
 # environment
-PSMODULEPATH = %ProgramFiles%\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+PSMODULEPATH = C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
 # default
 MAKE_COMMAND := C:/ProgramData/chocolatey/lib/make/tools/install/bin/make.exe
 # environment
@@ -39,7 +41,9 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_9092_MCRCMVXRPDKTUZZN
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_24156_NZLBXYSQFFNFCMGD
+# environment
+FPS_BROWSER_USER_PROFILE_STRING = Default
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -91,7 +95,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 9092
+VSCODE_PID = 24156
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -123,7 +127,7 @@ MAKELEVEL := 0
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
-PATH = C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\telepresence;C:\Program Files\SSHFS-Win\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\Azure Data Studio\bin;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Users\MehdiHadeli\go\bin;C:\Program Files\Go\bin;C:\bins;C:\Users\MehdiHadeli\scoop\shims;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\;C:\Users\MehdiHadeli\AppData\Local\Microsoft\WindowsApps;C:\Users\MehdiHadeli\.dotnet\tools;C:\Users\MehdiHadeli\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\JetBrains\JetBrains Rider 2021.3\bin;C:\Users\MehdiHadeli\AppData\Roaming\npm;C:\Program Files\JetBrains\DataGrip 2021.3\bin;C:\Program Files\JetBrains\GoLand 2021.3\bin;C:\Program Files\JetBrains\GoLand 2022.1.2\bin;C:\Program Files\JetBrains\JetBrains Rider 2022.1.2\bin;C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin
+PATH = C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\telepresence;C:\Program Files\SSHFS-Win\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\Azure Data Studio\bin;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Users\MehdiHadeli\go\bin;C:\Program Files\Go\bin;C:\bins;C:\Users\MehdiHadeli\scoop\shims;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\;C:\Users\MehdiHadeli\AppData\Local\Microsoft\WindowsApps;C:\Users\MehdiHadeli\.dotnet\tools;C:\Users\MehdiHadeli\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\JetBrains\JetBrains Rider 2021.3\bin;C:\Users\MehdiHadeli\AppData\Roaming\npm;C:\Program Files\JetBrains\DataGrip 2021.3\bin;C:\Program Files\JetBrains\GoLand 2021.3\bin;C:\Program Files\JetBrains\GoLand 2022.1.2\bin;C:\Program Files\JetBrains\JetBrains Rider 2022.1.2\bin;C:\Users\MehdiHadeli\scoop\shims;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\;C:\Users\MehdiHadeli\AppData\Local\Microsoft\WindowsApps;C:\Users\MehdiHadeli\.dotnet\tools;C:\Users\MehdiHadeli\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Azure Data Studio\bin;C:\Program Files\JetBrains\JetBrains Rider 2021.3\bin;C:\Users\MehdiHadeli\AppData\Roaming\npm;C:\Program Files\JetBrains\DataGrip 2021.3\bin;C:\Program Files\JetBrains\GoLand 2021.3\bin;C:\Users\MehdiHadeli\go\bin;C:\Program Files\Go\bin;;C:\Program Files\JetBrains\GoLand 2022.1.2\bin;;C:\Program Files\JetBrains\JetBrains Rider 2022.1.2\bin;;C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin;
 # environment
 ZES_ENABLE_SYSMAN = 1
 # environment
@@ -213,10 +217,9 @@ SESSIONNAME = Console
 # environment
 PROCESSOR_REVISION = a503
 # environment
-PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 
- 165 Stepping 3, GenuineIntel
+PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=101/1024=10%, Rehash=0, Collisions=10/132=8%
+# Load=103/1024=10%, Rehash=0, Collisions=11/134=8%
 
 # Pattern-specific Variable Values
 
@@ -389,8 +392,7 @@ proto_catalogs_read_product_kafka_messages:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 125):
 	@echo Generating products kafka messages proto
-	pro 
-toc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/*.proto
+	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/*.proto
 
 # Not a target:
 .DEFAULT:
@@ -500,6 +502,6 @@ proto_orders_order_service:
 # strcache performance: lookups = 83 / hit rate = 37%
 # hash-table stats:
 # Load=52/8192=1%, Rehash=0, Collisions=0/83=0%
-# Finished Make data base on Sun Sep 18 02:30:10 2022
+# Finished Make data base on Tue Sep 20 00:00:57 2022
 
  

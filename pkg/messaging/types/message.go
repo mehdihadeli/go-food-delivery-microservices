@@ -1,28 +1,28 @@
 package types
 
 type IMessage interface {
-	MessageId() string
-	CorrelationId() string
+	GeMessageId() string
+	GetCorrelationId() string
 	SetCorrelationId(string)
 }
 
 type Message struct {
-	correlationId string
-	messageId     string
+	CorrelationId string
+	MessageId     string
 }
 
 func NewMessage(messageId string) *Message {
-	return &Message{messageId: messageId}
+	return &Message{MessageId: messageId}
 }
 
-func (m *Message) MessageId() string {
-	return m.messageId
+func (m *Message) GeMessageId() string {
+	return m.MessageId
 }
 
-func (m *Message) CorrelationId() string {
-	return m.correlationId
+func (m *Message) GetCorrelationId() string {
+	return m.CorrelationId
 }
 
 func (m *Message) SetCorrelationId(correlationId string) {
-	m.correlationId = correlationId
+	m.CorrelationId = correlationId
 }

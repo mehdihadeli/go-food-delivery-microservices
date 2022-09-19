@@ -28,7 +28,16 @@ type messageConsumeContext[T IMessage] struct {
 }
 
 func NewMessageConsumeContext[T IMessage](message T, meta core.Metadata, contentType string, messageType string, created time.Time, deliveryTag uint64, messageId string, correlationId string) IMessageConsumeContext[T] {
-	return &messageConsumeContext[T]{}
+	return &messageConsumeContext[T]{
+		message:       message,
+		metadata:      meta,
+		contentType:   contentType,
+		messageId:     messageId,
+		tag:           deliveryTag,
+		created:       created,
+		messageType:   messageType,
+		correlationId: correlationId,
+	}
 }
 
 func (m messageConsumeContext[T]) Message() T {

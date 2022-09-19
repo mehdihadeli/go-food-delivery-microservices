@@ -18,14 +18,20 @@ func NewRabbitMQBus(log logger.Logger, consumers []consumer.Consumer) bus.Bus {
 }
 
 func (r *rabbitMQBus) Start(ctx context.Context) error {
-	for _, c := range r.consumers {
-		err := c.Consume(ctx)
-		if err != nil {
-			return r.Stop(ctx)
-		}
+	for _, rabbitConsumer := range r.consumers {
+		//go func() {
+		//	c := rabbitConsumer
+		//	for {
+		_ = rabbitConsumer.Consume(ctx)
+		//if errors.Is(err, rabbitmqErrors.ErrDisconnected) {
+		//	continue
+		//}
+		//		break
+		//	}
+		//}()
 	}
 
-	return r.Stop(ctx)
+	return nil
 }
 
 func (r *rabbitMQBus) Stop(ctx context.Context) error {

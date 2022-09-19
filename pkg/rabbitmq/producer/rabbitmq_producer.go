@@ -39,7 +39,7 @@ func (r *rabbitMQProducer) Publish(ctx context.Context, topicOrExchangeName stri
 	}
 
 	if r.connection.IsClosed() {
-		return errors.New("connection is closed")
+		return errors.New("connection is closed, wait for connection alive")
 	}
 
 	// create a unique channel on the connection and in the end close the channel
@@ -49,15 +49,10 @@ func (r *rabbitMQProducer) Publish(ctx context.Context, topicOrExchangeName stri
 	}
 	defer channel.Close()
 
-	serializedObj, err := r.eventSerializer.Serialize(message)
-	if err != nil {
-		return err
-	}
-
 	meta := core.FromMetadata(metadata)
 
 	if meta.ExistsKey(messageHeader.MessageId) == false {
-		meta.SetValue(messageHeader.MessageId, message.MessageId())
+		meta.SetValue(messageHeader.MessageId, message.GeMessageId())
 	}
 
 	if meta.ExistsKey(messageHeader.CorrelationId) == false {
@@ -65,7 +60,14 @@ func (r *rabbitMQProducer) Publish(ctx context.Context, topicOrExchangeName stri
 		meta.SetValue(messageHeader.CorrelationId, cid)
 		message.SetCorrelationId(cid)
 	}
+
 	meta.SetValue(messageHeader.Name, utils.GetMessageName(message))
+
+	serializedObj, err := r.eventSerializer.Serialize(message)
+	if err != nil {
+		return err
+	}
+
 	meta.SetValue(messageHeader.Type, serializedObj.EventType)
 
 	var exchange string
@@ -73,7 +75,7 @@ func (r *rabbitMQProducer) Publish(ctx context.Context, topicOrExchangeName stri
 	if topicOrExchangeName != "" {
 		exchange = topicOrExchangeName
 	} else {
-		exchange = utils.GetExchangeName(message)
+		exchange = utils.GetTopicOrExchangeName(message)
 	}
 
 	err = r.ensureExchange(channel, exchange)
@@ -89,8 +91,8 @@ func (r *rabbitMQProducer) Publish(ctx context.Context, topicOrExchangeName stri
 	channel.NotifyPublish(confirms)
 
 	props := amqp091.Publishing{
-		CorrelationId: message.CorrelationId(),
-		MessageId:     message.MessageId(),
+		CorrelationId: message.GetCorrelationId(),
+		MessageId:     message.GeMessageId(),
 		Timestamp:     time.Now(),
 		Headers:       core.MetadataToMap(metadata),
 		Type:          serializedObj.EventType,

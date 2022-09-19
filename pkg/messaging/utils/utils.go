@@ -13,7 +13,7 @@ func GetMessageName(message any) string {
 	return strcase.ToSnake(reflect.TypeOf(message).Name())
 }
 
-func GetExchangeName(message types.IMessage) string {
+func GetTopicOrExchangeName(message types.IMessage) string {
 	if reflect.TypeOf(message).Kind() == reflect.Pointer {
 		return strcase.ToSnake(reflect.TypeOf(message).Elem().Name())
 	}

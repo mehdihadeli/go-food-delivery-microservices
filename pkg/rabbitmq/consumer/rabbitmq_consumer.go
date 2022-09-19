@@ -12,6 +12,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/options"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/rabbitmq/amqp091-go"
+	"sync"
 	"time"
 )
 
@@ -29,9 +30,10 @@ type RabbitMQConsumer[T types2.IMessage] struct {
 	connection              types.IConnection
 	handler                 consumer.ConsumerHandler[T]
 	channel                 *amqp091.Channel
-	deliveryRoutines        chan struct{}
+	deliveryRoutines        chan struct{} // chan should init before using channel
 	eventSerializer         serializer.EventSerializer
 	logger                  logger.Logger
+	wg                      *sync.WaitGroup
 }
 
 func NewRabbitMQConsumer[T types2.IMessage](connection types.IConnection, builderFunc func(builder *options.RabbitMQConsumerOptionsBuilder[T]), handler consumer.ConsumerHandler[T], eventSerializer serializer.EventSerializer, logger logger.Logger) (consumer.Consumer, error) {
@@ -40,13 +42,11 @@ func NewRabbitMQConsumer[T types2.IMessage](connection types.IConnection, builde
 		builderFunc(builder)
 	}
 
-	// get a new channel on the connection - channel is unique for each consumer
-	ch, err := connection.Channel()
-	if err != nil {
-		return nil, err
-	}
+	consumerConfig := builder.Build()
+	deliveryRoutines := make(chan struct{}, consumerConfig.ConcurrencyLimit)
+	wg := &sync.WaitGroup{}
 
-	return &RabbitMQConsumer[T]{rabbitmqConsumerOptions: builder.Build(), connection: connection, handler: handler, channel: ch, eventSerializer: eventSerializer, logger: logger}, nil
+	return &RabbitMQConsumer[T]{rabbitmqConsumerOptions: consumerConfig, deliveryRoutines: deliveryRoutines, wg: wg, connection: connection, handler: handler, eventSerializer: eventSerializer, logger: logger}, nil
 }
 
 func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
@@ -55,15 +55,20 @@ func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
 		return errors.New("connection is nil")
 	}
 
-	if r.connection.IsClosed() {
-		return errors.New("connection closed or timeout")
+	// get a new channel on the connection - channel is unique for each consumer
+	ch, err := r.connection.Channel()
+	if err != nil {
+		return err
 	}
+	r.channel = ch
 
-	if err := r.channel.Qos(r.rabbitmqConsumerOptions.PrefetchCount, 0, false); err != nil {
+	// The prefetch count tells the Rabbit connection how many messages to retrieve from the server per request.
+	prefetchCount := r.rabbitmqConsumerOptions.ConcurrencyLimit * r.rabbitmqConsumerOptions.PrefetchCount
+	if err := r.channel.Qos(prefetchCount, 0, false); err != nil {
 		return err
 	}
 
-	err := r.channel.ExchangeDeclare(
+	err = r.channel.ExchangeDeclare(
 		r.rabbitmqConsumerOptions.ExchangeOptions.Name,
 		string(r.rabbitmqConsumerOptions.ExchangeOptions.Type),
 		r.rabbitmqConsumerOptions.ExchangeOptions.Durable,
@@ -96,7 +101,7 @@ func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
 		return err
 	}
 
-	deliveryChan, err := r.channel.Consume(
+	msgs, err := r.channel.Consume(
 		r.rabbitmqConsumerOptions.QueueOptions.Name,
 		r.rabbitmqConsumerOptions.ConsumerId,
 		r.rabbitmqConsumerOptions.AutoAck,
@@ -107,23 +112,49 @@ func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	go func() {
-		for delivery := range deliveryChan {
-			//https://github.com/streadway/amqp/blob/2aa28536587a0090d8280eed56c75867ce7e93ec/delivery.go#L62
-			r.handleReceived(ctx, delivery, r.handler)
-		}
-	}()
+
+	//https://blog.boot.dev/golang/connecting-to-rabbitmq-in-golang/
+	//https://levelup.gitconnected.com/connecting-a-service-in-golang-to-a-rabbitmq-server-835294d8c914
+	//https://www.ribice.ba/golang-rabbitmq-client/
+	//https://medium.com/@dhanushgopinath/automatically-recovering-rabbitmq-connections-in-go-applications-7795a605ca59
+	for i := 0; i < r.rabbitmqConsumerOptions.ConcurrencyLimit; i++ {
+		r.logger.Infof("Processing messages on thread %.", i)
+		go func() {
+			for {
+				select {
+				case msg, ok := <-msgs:
+					if !ok {
+						continue
+					}
+					//https://github.com/streadway/amqp/blob/2aa28536587a0090d8280eed56c75867ce7e93ec/delivery.go#L62
+					r.handleReceived(ctx, msg, r.handler)
+				case <-ctx.Done(): // context canceled, it can stop getting new messages
+					err := r.UnConsume(ctx)
+					if err != nil {
+						r.logger.Error("Rabbit consumer closed - critical Error")
+						return
+					}
+				}
+			}
+		}()
+	}
 
 	return nil
 }
 
 func (r *RabbitMQConsumer[T]) UnConsume(ctx context.Context) error {
-	err := r.channel.Cancel(r.rabbitmqConsumerOptions.ConsumerId, false)
-	if err != nil {
-		return err
+	if r.channel != nil || r.channel.IsClosed() == false {
+		err := r.channel.Cancel(r.rabbitmqConsumerOptions.ConsumerId, false)
+		if err != nil {
+			return err
+		}
 	}
 
-	defer r.channel.Close() // TODO: this error must be logged
+	defer func() {
+		if r.channel != nil || r.channel.IsClosed() == false {
+			r.channel.Close() // TODO: this error must be logged
+		}
+	}()
 
 	done := make(chan struct{}, 1)
 
@@ -144,27 +175,26 @@ func (r *RabbitMQConsumer[T]) UnConsume(ctx context.Context) error {
 }
 
 func (r *RabbitMQConsumer[T]) handleReceived(ctx context.Context, delivery amqp091.Delivery, handler consumer.ConsumerHandler[T]) {
+	// for ensuring our handler execute completely after shutdown
 	r.deliveryRoutines <- struct{}{}
 
-	go func() {
-		defer func() { <-r.deliveryRoutines }()
+	defer func() { <-r.deliveryRoutines }()
 
-		consumeContext := r.createConsumeContext(delivery)
+	consumeContext := r.createConsumeContext(delivery)
 
-		ack := func() {
-			if err := delivery.Ack(false); err != nil {
-				// TODO: this error must be logged
-				return
-			}
+	ack := func() {
+		if err := delivery.Ack(false); err != nil {
+			// TODO: this error must be logged
+			return
 		}
-		nack := func() {
-			if err := delivery.Nack(false, true); err != nil {
-				// TODO: this error must be logged
-				return
-			}
+	}
+	nack := func() {
+		if err := delivery.Nack(false, true); err != nil {
+			// TODO: this error must be logged
+			return
 		}
-		r.handle(ctx, ack, nack, consumeContext, handler)
-	}()
+	}
+	r.handle(ctx, ack, nack, consumeContext, handler)
 }
 
 func (r *RabbitMQConsumer[T]) handle(ctx context.Context, ack func(), nack func(), messageConsumeContext types2.IMessageConsumeContext[T], handler consumer.ConsumerHandler[T]) {
@@ -200,10 +230,14 @@ func (r *RabbitMQConsumer[T]) deserializeData(contentType string, eventType stri
 		return *new(T)
 	}
 
-	deserialize, err := r.eventSerializer.Deserialize(body, eventType, contentType)
-	if err != nil {
-		return *new(T)
+	if contentType == "application/json" {
+		deserialize, err := r.eventSerializer.Deserialize(body, eventType, contentType)
+		if err != nil {
+			return *new(T)
+		}
+
+		return deserialize.(T)
 	}
 
-	return deserialize.(T)
+	return *new(T)
 }

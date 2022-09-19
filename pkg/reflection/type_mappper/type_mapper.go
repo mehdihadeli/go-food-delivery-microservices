@@ -31,8 +31,7 @@ func discoverTypes() {
 			emptyInterface := (*emptyInterface)(unsafe.Pointer(&typ))
 			emptyInterface.data = resolveTypeOff(rodata, off)
 			if typ.Kind() == reflect.Ptr && typ.Elem().Kind() == reflect.Struct {
-
-				// by defaultLogger just discover pointer types, but we also register this pointer type actual struct type to the registry
+				// just discover pointer types, but we also register this pointer type actual struct type to the registry
 				loadedTypePtr := typ
 				loadedType := typ.Elem()
 
