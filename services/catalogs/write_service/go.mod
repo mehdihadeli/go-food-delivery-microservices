@@ -1,6 +1,6 @@
 module github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service
 
-go 1.18
+go 1.19
 
 // https://go.dev/doc/tutorial/call-module-code
 replace github.com/mehdihadeli/store-golang-microservice-sample => ../../../
@@ -19,7 +19,6 @@ require (
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/satori/go.uuid v1.2.0
-	github.com/segmentio/kafka-go v0.4.32
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/echo-swagger v1.3.3
@@ -90,6 +89,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/common v0.34.0 // indirect
+	github.com/rabbitmq/amqp091-go v1.5.0 // indirect
+	github.com/segmentio/kafka-go v0.4.32 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect

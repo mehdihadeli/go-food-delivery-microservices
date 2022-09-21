@@ -19,6 +19,7 @@ func (s *JsonEventSerializer) Serialize(event interface{}) (*serializer.EventSer
 		return &serializer.EventSerializationResult{Data: nil, ContentType: s.ContentType(), EventType: ""}, nil
 	}
 
+	// here we just get type name instead of full type name
 	eventType := typeMapper.GetTypeName(event)
 
 	data, err := jsonSerializer.Marshal(event)
@@ -36,7 +37,7 @@ func (s *JsonEventSerializer) Deserialize(data []byte, eventType string, content
 		return nil, nil
 	}
 
-	targetEventPointer := typeMapper.InstancePointerByTypeName(eventType)
+	targetEventPointer := typeMapper.InstanceByTypeName(eventType)
 
 	if contentType != s.ContentType() {
 		return nil, errors.Errorf("contentType: %s is not supported", contentType)

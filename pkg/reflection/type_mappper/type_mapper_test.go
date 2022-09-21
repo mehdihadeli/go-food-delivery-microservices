@@ -18,13 +18,28 @@ func TestTypes(t *testing.T) {
 	q1 := InstanceByTypeName("typeMapper.Test").(Test)
 	q11 := InstancePointerByTypeName("typeMapper.Test").(*Test)
 
+	y := TypeByName("*Test")
+	y1 := InstanceByTypeName("*Test").(*Test)
+	y2 := InstancePointerByTypeName("*Test").(*Test)
+
+	z := TypeByName("Test")
+	z1 := InstanceByTypeName("Test").(Test)
+	z2 := InstancePointerByTypeName("Test").(*Test)
+
 	r := GenericInstanceByTypeName[*Test]("*typeMapper.Test")
 	r2 := GenericInstanceByTypeName[Test]("typeMapper.Test")
+	r3 := GenericInstanceByTypeName[Test]("Test")
+	r4 := GenericInstanceByTypeName[*Test]("*Test")
 
-	typeName := GetTypeName(s)
-	typeName2 := GetTypeName(s2)
+	typeName := GetFullTypeName(s)
+	typeName2 := GetFullTypeName(s2)
+	typeName3 := GetTypeName(s2)
+	typeName4 := GetTypeName(s)
+
 	assert.Equal(t, "typeMapper.Test", typeName)
 	assert.Equal(t, "*typeMapper.Test", typeName2)
+	assert.Equal(t, "*Test", typeName3)
+	assert.Equal(t, "Test", typeName4)
 
 	q1.A = 100
 	q22.A = 100
@@ -39,7 +54,8 @@ func TestTypes(t *testing.T) {
 	fmt.Println(q1.A)
 	fmt.Println(r)
 	fmt.Println(r2)
-
+	fmt.Println(r3)
+	fmt.Println(r4)
 	assert.NotNil(t, q)
 	assert.NotNil(t, q1)
 	assert.NotNil(t, q11)
@@ -48,6 +64,12 @@ func TestTypes(t *testing.T) {
 	assert.NotNil(t, q222)
 	assert.NotNil(t, r)
 	assert.NotNil(t, r2)
+	assert.NotNil(t, y)
+	assert.NotNil(t, y1)
+	assert.NotNil(t, y2)
+	assert.NotNil(t, z)
+	assert.NotNil(t, z1)
+	assert.NotNil(t, z2)
 	assert.NotZero(t, q1.A)
 	assert.NotZero(t, q22.A)
 }

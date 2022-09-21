@@ -48,7 +48,7 @@ func (r *redisProductRepository) PutProduct(ctx context.Context, key string, pro
 	r.log.Infow(fmt.Sprintf("[redisProductRepository.PutProduct] product with key '%s', prefix '%s'  updated successfully",
 		key,
 		r.getRedisProductPrefixKey()),
-		logger.Fields{"Product": product, "ProductId": product.ProductID, "Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
+		logger.Fields{"Product": product, "ProductId": product.ProductId, "Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
 
 	return nil
 }
@@ -75,7 +75,7 @@ func (r *redisProductRepository) GetProduct(ctx context.Context, key string) (*m
 
 	span.LogFields(log.Object("Product", product))
 	r.log.Infow(fmt.Sprintf("[redisProductRepository.GetProduct] product with with key '%s', prefix '%s' laoded", key, r.getRedisProductPrefixKey()),
-		logger.Fields{"Product": product, "ProductId": product.ProductID, "Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
+		logger.Fields{"Product": product, "ProductId": product.ProductId, "Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
 
 	return &product, nil
 }

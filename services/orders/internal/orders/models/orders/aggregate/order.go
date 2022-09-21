@@ -38,7 +38,7 @@ type Order struct {
 
 func (o *Order) NewEmptyAggregate() {
 	//http://arch-stable.blogspot.com/2012/05/golang-call-inherited-constructor.html
-	base := models.NewEventSourcedAggregateRoot(typeMapper.GetTypeName(o), o.When)
+	base := models.NewEventSourcedAggregateRoot(typeMapper.GetFullTypeName(o), o.When)
 	o.EventSourcedAggregateRoot = base
 }
 

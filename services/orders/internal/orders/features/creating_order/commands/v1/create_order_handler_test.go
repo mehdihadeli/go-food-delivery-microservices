@@ -44,6 +44,6 @@ func Test_Create_Order_Command_Handler(t *testing.T) {
 	result, err := mediatr.Send[*CreateOrder, *dtos.CreateOrderResponseDto](context.Background(), command)
 
 	assert.NotNil(t, result)
-	assert.Equal(t, command.OrderID, result.OrderID)
+	assert.Equal(t, command.OrderId, result.OrderId)
 	time.Sleep(time.Second * 2)
 }

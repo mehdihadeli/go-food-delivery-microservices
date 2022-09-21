@@ -22,7 +22,7 @@ func NewGenericGormRepository[D data.DataModel[E], E any](db *gorm.DB) *gormGene
 
 func (r *gormGenericRepository[D, E]) Add(ctx context.Context, entity E) error {
 	var dataModel D
-	typeName := typeMapper.GetTypeName(dataModel)
+	typeName := typeMapper.GetFullTypeName(dataModel)
 	dataModel = typeMapper.GenericInstanceByTypeName[D](typeName)
 	dataModel.FromEntity(entity)
 
@@ -89,7 +89,7 @@ func (r *gormGenericRepository[D, E]) Where(ctx context.Context, params E) ([]E,
 
 func (r *gormGenericRepository[D, E]) Update(ctx context.Context, entity E) error {
 	var dataModel D
-	typeName := typeMapper.GetTypeName(dataModel)
+	typeName := typeMapper.GetFullTypeName(dataModel)
 	dataModel = typeMapper.GenericInstanceByTypeName[D](typeName)
 	dataModel.FromEntity(entity)
 

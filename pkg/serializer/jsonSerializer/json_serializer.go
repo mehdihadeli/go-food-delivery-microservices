@@ -3,7 +3,7 @@ package jsonSerializer
 import (
 	"github.com/TylerBrock/colorjson"
 	"github.com/goccy/go-json"
-	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
+	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mitchellh/mapstructure"
 	"log"
 )
@@ -31,7 +31,7 @@ func Unmarshal(data []byte, v interface{}) error {
 }
 
 func UnmarshalT[T any](data []byte) error {
-	v := reflectionHelper.CreateInstance[T]()
+	v := typeMapper.InstanceByT[T]()
 	//https://pkg.go.dev/encoding/json#Unmarshal
 	err := json.Unmarshal(data, v)
 	if err != nil {

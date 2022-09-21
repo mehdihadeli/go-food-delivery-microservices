@@ -2,9 +2,11 @@ package mappings
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/kafka_messages"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	productsService "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/events/integration"
+	UpdatingProductIntegration "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/events/integration"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	uuid "github.com/satori/go.uuid"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -26,7 +28,7 @@ func ConfigureMappings() error {
 			return nil
 		}
 		return &productsService.Product{
-			ProductID:   product.ProductID.String(),
+			ProductId:   product.ProductId.String(),
 			Name:        product.Name,
 			Description: product.Description,
 			Price:       product.Price,
@@ -38,33 +40,46 @@ func ConfigureMappings() error {
 		return err
 	}
 
-	err = mapper.CreateCustomMap(func(product *models.Product) *kafka_messages.Product {
-		return &kafka_messages.Product{
-			ProductID:   product.ProductID.String(),
+	err = mapper.CreateCustomMap(func(product *models.Product) *integration.ProductCreated {
+		return &integration.ProductCreated{
+			ProductId:   product.ProductId.String(),
 			Name:        product.Name,
 			Description: product.Description,
 			Price:       product.Price,
-			CreatedAt:   timestamppb.New(product.CreatedAt),
-			UpdatedAt:   timestamppb.New(product.UpdatedAt),
+			CreatedAt:   product.CreatedAt,
+			Message:     types.NewMessage(uuid.NewV4().String()),
 		}
 	})
 	if err != nil {
 		return err
 	}
 
-	err = mapper.CreateCustomMap(func(product *kafka_messages.Product) *models.Product {
-		proUUID, err := uuid.FromString(product.GetProductID())
+	err = mapper.CreateCustomMap(func(product *models.Product) *UpdatingProductIntegration.ProductUpdated {
+		return &UpdatingProductIntegration.ProductUpdated{
+			ProductId:   product.ProductId.String(),
+			UpdatedAt:   product.UpdatedAt,
+			Name:        product.Name,
+			Description: product.Description,
+			Price:       product.Price,
+			Message:     types.NewMessage(uuid.NewV4().String()),
+		}
+	})
+	if err != nil {
+		return err
+	}
+
+	err = mapper.CreateCustomMap(func(productUpdated *UpdatingProductIntegration.ProductUpdated) *models.Product {
+		proUUID, err := uuid.FromString(productUpdated.ProductId)
 		if err != nil {
 			return nil
 		}
 
 		return &models.Product{
-			ProductID:   proUUID,
-			Name:        product.GetName(),
-			Description: product.GetDescription(),
-			Price:       product.GetPrice(),
-			CreatedAt:   product.GetCreatedAt().AsTime(),
-			UpdatedAt:   product.GetUpdatedAt().AsTime(),
+			ProductId:   proUUID,
+			Name:        productUpdated.Name,
+			Description: productUpdated.Description,
+			Price:       productUpdated.Price,
+			UpdatedAt:   productUpdated.UpdatedAt,
 		}
 	})
 	if err != nil {
@@ -73,7 +88,7 @@ func ConfigureMappings() error {
 
 	err = mapper.CreateCustomMap(func(product *models.Product) *productsService.Product {
 		return &productsService.Product{
-			ProductID:   product.ProductID.String(),
+			ProductId:   product.ProductId.String(),
 			Name:        product.Name,
 			Description: product.Description,
 			Price:       product.Price,

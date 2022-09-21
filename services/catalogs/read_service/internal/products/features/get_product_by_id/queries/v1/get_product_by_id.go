@@ -5,5 +5,5 @@ import (
 )
 
 type GetProductById struct {
-	ProductID uuid.UUID `validate:"required"`
+	ProductId uuid.UUID `validate:"required"`
 }

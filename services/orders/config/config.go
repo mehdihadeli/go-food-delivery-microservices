@@ -8,10 +8,10 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
-	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/spf13/viper"
 	"os"
@@ -29,13 +29,12 @@ type Config struct {
 	DeliveryType     string                          `mapstructure:"deliveryType"`
 	ServiceName      string                          `mapstructure:"serviceName"`
 	Logger           *logger.LogConfig               `mapstructure:"logger"`
-	KafkaTopics      KafkaTopics                     `mapstructure:"kafkaTopics"`
 	GRPC             *grpc.GrpcConfig                `mapstructure:"grpc"`
 	Http             *customEcho.EchoHttpConfig      `mapstructure:"http"`
 	Context          Context                         `mapstructure:"context"`
-	Kafka            *kafkaClient.Config             `mapstructure:"kafka"`
 	Probes           probes.Config                   `mapstructure:"probes"`
 	Jaeger           *tracing.Config                 `mapstructure:"jaeger"`
+	RabbitMQ         *config.RabbitMQConfig          `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	EventStoreConfig *eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
 	Subscriptions    *Subscriptions                  `mapstructure:"subscriptions"`
 	Mongo            *mongodb.MongoDbConfig          `mapstructure:"mongo" envPrefix:"Mongo_"`
@@ -57,11 +56,6 @@ type Subscriptions struct {
 type Subscription struct {
 	Prefix         []string `mapstructure:"prefix" validate:"required"`
 	SubscriptionId string   `mapstructure:"subscriptionId" validate:"required"`
-}
-
-type KafkaTopics struct {
-	OrderCreate  kafkaClient.TopicConfig `mapstructure:"orderCreate"`
-	OrderCreated kafkaClient.TopicConfig `mapstructure:"orderCreated"`
 }
 
 func InitConfig(env string) (*Config, error) {
@@ -103,10 +97,6 @@ func InitConfig(env string) (*Config, error) {
 	jaegerAddr := os.Getenv(constants.JaegerHostPort)
 	if jaegerAddr != "" {
 		cfg.Jaeger.HostPort = jaegerAddr
-	}
-	kafkaBrokers := os.Getenv(constants.KafkaBrokers)
-	if kafkaBrokers != "" {
-		cfg.Kafka.Brokers = []string{kafkaBrokers}
 	}
 
 	return cfg, nil

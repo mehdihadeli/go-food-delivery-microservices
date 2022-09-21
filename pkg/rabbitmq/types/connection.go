@@ -12,9 +12,10 @@ import (
 type internalConnection struct {
 	cfg *config.RabbitMQConfig
 	*amqp091.Connection
-	isConnected     bool
-	errChan         chan error
-	reconnectedChan chan struct{}
+	isConnected       bool
+	errConnectionChan chan error
+	errChannelChan    chan error
+	reconnectedChan   chan struct{}
 }
 
 type IConnection interface {
@@ -26,19 +27,20 @@ type IConnection interface {
 	ReConnect() error
 	NotifyClose(receiver chan *amqp091.Error) chan *amqp091.Error
 	Raw() *amqp091.Connection
-	ErrorChannel() chan error
+	ErrorConnectionChannel() chan error
 	ReconnectedChannel() chan struct{}
 }
 
-func NewConnection(ctx context.Context, cfg *config.RabbitMQConfig) (IConnection, error) {
+func NewRabbitMQConnection(ctx context.Context, cfg *config.RabbitMQConfig) (IConnection, error) {
 	//https://levelup.gitconnected.com/connecting-a-service-in-golang-to-a-rabbitmq-server-835294d8c914
 	if cfg.RabbitMqHostOptions == nil {
 		return nil, errors.New("rabbitmq host options is nil")
 	}
 
 	c := &internalConnection{
-		cfg:             cfg,
-		errChan:         make(chan error),
+		cfg:               cfg,
+		errConnectionChan: make(chan error),
+		//errChannelChan:    make(chan error),
 		reconnectedChan: make(chan struct{}),
 	}
 
@@ -60,8 +62,8 @@ func (c *internalConnection) IsConnected() bool {
 	return c.isConnected
 }
 
-func (c *internalConnection) ErrorChannel() chan error {
-	return c.errChan
+func (c *internalConnection) ErrorConnectionChannel() chan error {
+	return c.errConnectionChan
 }
 
 func (c *internalConnection) ReconnectedChannel() chan struct{} {
@@ -81,7 +83,14 @@ func (c *internalConnection) Raw() *amqp091.Connection {
 }
 
 func (c *internalConnection) Channel() (*amqp091.Channel, error) {
-	return c.Connection.Channel()
+	ch, err := c.Connection.Channel()
+	//notifyChannelClose := ch.NotifyClose(make(chan *amqp091.Error))
+	//go func() {
+	//	<-notifyChannelClose //Listen to notifyChannelClose
+	//	c.errChannelChan <- errors.New("Channel Closed")
+	//}()
+
+	return ch, err
 }
 
 func (c *internalConnection) connect() error {
@@ -99,7 +108,7 @@ func (c *internalConnection) connect() error {
 	go func() {
 		<-notifyClose //Listen to NotifyClose
 		c.isConnected = false
-		c.errChan <- errors.New("Connection Closed")
+		c.errConnectionChan <- errors.New("Connection Closed")
 	}()
 
 	return nil
@@ -108,7 +117,7 @@ func (c *internalConnection) connect() error {
 func (c *internalConnection) handleReconnecting(ctx context.Context) {
 	for {
 		select {
-		case err := <-c.errChan:
+		case err := <-c.errConnectionChan:
 			if err != nil {
 				defaultLogger.Logger.Info("Rabbitmq Connection Reconnecting started")
 				err := c.connect()

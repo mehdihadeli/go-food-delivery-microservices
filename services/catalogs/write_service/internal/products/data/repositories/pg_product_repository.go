@@ -90,7 +90,7 @@ func (p *postgresProductRepository) CreateProduct(ctx context.Context, product *
 		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, "[postgresProductRepository_CreateProduct.Create] error in the inserting product into the database."))
 	}
 	span.LogFields(log.Object("Product", product))
-	p.log.Infow(fmt.Sprintf("[postgresProductRepository.CreateProduct] product with id '%s' created", product.ProductID), logger.Fields{"Product": product, "ProductId": product.ProductID})
+	p.log.Infow(fmt.Sprintf("[postgresProductRepository.CreateProduct] product with id '%s' created", product.ProductId), logger.Fields{"Product": product, "ProductId": product.ProductId})
 
 	return product, nil
 }
@@ -100,10 +100,10 @@ func (p *postgresProductRepository) UpdateProduct(ctx context.Context, updatePro
 	defer span.Finish()
 
 	if err := p.gorm.Save(updateProduct).Error; err != nil {
-		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_UpdateProduct.Save] error in updating product with id %s into the database.", updateProduct.ProductID)))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_UpdateProduct.Save] error in updating product with id %s into the database.", updateProduct.ProductId)))
 	}
 	span.LogFields(log.Object("Product", updateProduct))
-	p.log.Infow(fmt.Sprintf("[postgresProductRepository.UpdateProduct] product with id '%s' updated", updateProduct.ProductID), logger.Fields{"Product": updateProduct, "ProductId": updateProduct.ProductID})
+	p.log.Infow(fmt.Sprintf("[postgresProductRepository.UpdateProduct] product with id '%s' updated", updateProduct.ProductId), logger.Fields{"Product": updateProduct, "ProductId": updateProduct.ProductId})
 
 	return updateProduct, nil
 }

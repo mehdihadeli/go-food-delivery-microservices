@@ -164,7 +164,7 @@ func (e *EsdbSerializer) EsdbWriteResultToAppendEventResult(writeResult *esdb.Wr
 }
 
 func (e *EsdbSerializer) Serialize(data interface{}, metadata core.Metadata) (*esdb.EventData, error) {
-	serializedData, err := e.eventSerializer.SerializeObject(data)
+	serializedData, err := e.eventSerializer.Serialize(data)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interfac
 	data := resolveEvent.Event.Data
 	meta := resolveEvent.Event.UserMetadata
 
-	payload, err := e.eventSerializer.DeserializeObject(data, eventType, resolveEvent.Event.ContentType)
+	payload, err := e.eventSerializer.Deserialize(data, eventType, resolveEvent.Event.ContentType)
 	if err != nil {
 		return nil, nil, err
 	}

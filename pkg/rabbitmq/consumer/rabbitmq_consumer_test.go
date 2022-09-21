@@ -19,7 +19,7 @@ import (
 )
 
 func Test_Consume_Message(t *testing.T) {
-	conn, err := types.NewConnection(context.Background(), &config.RabbitMQConfig{
+	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",
 			Password: "guest",
@@ -32,20 +32,31 @@ func Test_Consume_Message(t *testing.T) {
 		return
 	}
 
-	rabbitmqConsumer, err := NewRabbitMQConsumer[*ProducerConsumerMessage](conn, func(builder *options.RabbitMQConsumerOptionsBuilder[*ProducerConsumerMessage]) {
-	}, NewTestMessageHandler(), json.NewJsonEventSerializer(), defaultLogger.Logger)
+	rabbitmqConsumer, err := NewRabbitMQConsumer[*ProducerConsumerMessage](
+		conn,
+		func(builder *options.RabbitMQConsumerOptionsBuilder[*ProducerConsumerMessage]) {
+			//builder.WithAutoAck(true)
+		},
+		json.NewJsonEventSerializer(),
+		defaultLogger.Logger,
+		NewTestMessageHandler())
 
 	var consumers []consumer.Consumer
 	consumers = append(consumers, rabbitmqConsumer)
+
 	b := bus.NewRabbitMQBus(defaultLogger.Logger, consumers)
 	err = b.Start(context.Background())
 	if err != nil {
 		return
 	}
 
-	rabbitmqProducer, err := producer.NewRabbitMQProducer(conn, func(builder *options2.RabbitMQProducerOptionsBuilder) {
-		builder.WithExchangeType(types.ExchangeTopic)
-	}, defaultLogger.Logger, json.NewJsonEventSerializer())
+	rabbitmqProducer, err := producer.NewRabbitMQProducer(
+		conn,
+		func(builder *options2.RabbitMQProducerOptionsBuilder) {
+			builder.WithExchangeType(types.ExchangeTopic)
+		},
+		defaultLogger.Logger,
+		json.NewJsonEventSerializer())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,14 +70,14 @@ func Test_Consume_Message(t *testing.T) {
 	fmt.Println("after 10 second of closing connection")
 	fmt.Println(conn.IsClosed())
 
-	err = rabbitmqProducer.Publish(context.Background(), "", NewProducerConsumerMessage("test"), nil)
+	err = rabbitmqProducer.Publish(context.Background(), NewProducerConsumerMessage("test"), nil)
 	for err != nil {
-		err = rabbitmqProducer.Publish(context.Background(), "", NewProducerConsumerMessage("test"), nil)
+		err = rabbitmqProducer.Publish(context.Background(), NewProducerConsumerMessage("test"), nil)
 	}
 
-	err = rabbitmqProducer.Publish(context.Background(), "", NewProducerConsumerMessage("test"), nil)
+	err = rabbitmqProducer.Publish(context.Background(), NewProducerConsumerMessage("test"), nil)
 	for err != nil {
-		err = rabbitmqProducer.Publish(context.Background(), "", NewProducerConsumerMessage("test"), nil)
+		err = rabbitmqProducer.Publish(context.Background(), NewProducerConsumerMessage("test"), nil)
 	}
 
 	time.Sleep(time.Second * 5)
@@ -89,7 +100,7 @@ func NewProducerConsumerMessage(data string) *ProducerConsumerMessage {
 type TestMessageHandler struct {
 }
 
-func (t TestMessageHandler) Handle(ctx context.Context, consumeContext types2.IMessageConsumeContext[*ProducerConsumerMessage]) error {
+func (t *TestMessageHandler) Handle(ctx context.Context, consumeContext types2.IMessageConsumeContext[*ProducerConsumerMessage]) error {
 	message := consumeContext.Message()
 	fmt.Println(message)
 

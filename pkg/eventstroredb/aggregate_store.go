@@ -101,10 +101,10 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 	span.LogFields(log.String("AggregateID", aggregateId.String()))
 
 	var typeNameType T
-	aggregateInstance := typeMapper.InstancePointerByTypeName(typeMapper.GetTypeName(typeNameType))
+	aggregateInstance := typeMapper.InstancePointerByTypeName(typeMapper.GetFullTypeName(typeNameType))
 	aggregate, ok := aggregateInstance.(T)
 	if !ok {
-		return *new(T), errors.New(fmt.Sprintf("[esdbAggregateStore_LoadWithReadPosition] aggregate is not a %s", typeMapper.GetTypeName(typeNameType)))
+		return *new(T), errors.New(fmt.Sprintf("[esdbAggregateStore_LoadWithReadPosition] aggregate is not a %s", typeMapper.GetFullTypeName(typeNameType)))
 	}
 
 	method := reflect.ValueOf(aggregate).MethodByName("NewEmptyAggregate")

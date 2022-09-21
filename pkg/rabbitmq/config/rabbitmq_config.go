@@ -13,12 +13,12 @@ type RabbitMQConfig struct {
 }
 
 type RabbitMqHostOptions struct {
-	HostName    string
-	VirtualHost string
-	Port        int
-	UserName    string
-	Password    string
-	RetryDelay  time.Time
+	HostName    string    `mapstructure:"hostName"`
+	VirtualHost string    `mapstructure:"virtualHost"`
+	Port        int       `mapstructure:"port"`
+	UserName    string    `mapstructure:"userName"`
+	Password    string    `mapstructure:"password"`
+	RetryDelay  time.Time `mapstructure:"retryDelay"`
 }
 
 func (h *RabbitMqHostOptions) EndPoint() string {

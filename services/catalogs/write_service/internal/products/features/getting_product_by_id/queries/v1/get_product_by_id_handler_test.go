@@ -28,5 +28,5 @@ func Test_Get_Product_By_Id_Query_Handler(t *testing.T) {
 
 	assert.NotNil(t, queryResult)
 	assert.NotNil(t, queryResult.Product)
-	assert.Equal(t, id, queryResult.Product.ProductID)
+	assert.Equal(t, id, queryResult.Product.ProductId)
 }

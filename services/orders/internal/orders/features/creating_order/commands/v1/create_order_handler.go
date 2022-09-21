@@ -28,7 +28,7 @@ func NewCreateOrderHandler(log logger.Logger, cfg *config.Config, aggregateStore
 
 func (c *CreateOrderHandler) Handle(ctx context.Context, command *CreateOrder) (*dtos.CreateOrderResponseDto, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateOrderHandler.Handle")
-	span.LogFields(log.String("ProductId", command.OrderID.String()))
+	span.LogFields(log.String("ProductId", command.OrderId.String()))
 	span.LogFields(log.Object("Command", command))
 	defer span.Finish()
 
@@ -37,7 +37,7 @@ func (c *CreateOrderHandler) Handle(ctx context.Context, command *CreateOrder) (
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateOrderHandler_Handle.Map] error in the mapping shopItems"))
 	}
 
-	order, err := aggregate.NewOrder(command.OrderID, shopItems, command.AccountEmail, command.DeliveryAddress, command.DeliveryTime, command.CreatedAt)
+	order, err := aggregate.NewOrder(command.OrderId, shopItems, command.AccountEmail, command.DeliveryAddress, command.DeliveryTime, command.CreatedAt)
 
 	if err != nil {
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateOrderHandler_Handle.NewOrder] error in creating new order"))
@@ -48,10 +48,10 @@ func (c *CreateOrderHandler) Handle(ctx context.Context, command *CreateOrder) (
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateOrderHandler_Handle.Store] error in storing order aggregate"))
 	}
 
-	response := &dtos.CreateOrderResponseDto{OrderID: order.Id()}
+	response := &dtos.CreateOrderResponseDto{OrderId: order.Id()}
 	span.LogFields(log.Object("CreateOrderResponseDto", response))
 
-	c.log.Infow(fmt.Sprintf("[CreateOrderHandler.Handle] order with id: {%s} created", command.OrderID), logger.Fields{"ProductId": command.OrderID})
+	c.log.Infow(fmt.Sprintf("[CreateOrderHandler.Handle] order with id: {%s} created", command.OrderId), logger.Fields{"ProductId": command.OrderId})
 
 	return response, nil
 }

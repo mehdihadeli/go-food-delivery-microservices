@@ -13,7 +13,7 @@ import (
 )
 
 func Test_Publish_Message(t *testing.T) {
-	conn, err := types.NewConnection(context.Background(), &config.RabbitMQConfig{
+	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",
 			Password: "guest",

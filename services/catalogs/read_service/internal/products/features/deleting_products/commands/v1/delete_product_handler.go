@@ -26,22 +26,22 @@ func NewDeleteProductCommand(log logger.Logger, cfg *config.Config, repository c
 
 func (c *DeleteProductCommand) Handle(ctx context.Context, command *DeleteProduct) (*mediatr.Unit, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "DeleteProductCommand.Handle")
-	span.LogFields(log.String("ProductId", command.ProductID.String()))
+	span.LogFields(log.String("ProductId", command.ProductId.String()))
 	span.LogFields(log.Object("Command", command))
 	defer span.Finish()
 
-	if err := c.mongoRepository.DeleteProductByID(ctx, command.ProductID); err != nil {
+	if err := c.mongoRepository.DeleteProductByID(ctx, command.ProductId); err != nil {
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.DeleteProductByID] error in deleting product in the mongo repository"))
 	}
 
-	c.log.Infof("(product deleted) id: {%s}", command.ProductID)
+	c.log.Infof("(product deleted) id: {%s}", command.ProductId)
 
-	err := c.redisRepository.DeleteProduct(ctx, command.ProductID.String())
+	err := c.redisRepository.DeleteProduct(ctx, command.ProductId.String())
 	if err != nil {
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.DeleteProduct] error in deleting product in the redis repository"))
 	}
 
-	c.log.Infow(fmt.Sprintf("[DeleteProductCommand.Handle] product with id: {%s} deleted", command.ProductID), logger.Fields{"productId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[DeleteProductCommand.Handle] product with id: {%s} deleted", command.ProductId), logger.Fields{"productId": command.ProductId})
 
 	return &mediatr.Unit{}, nil
 }

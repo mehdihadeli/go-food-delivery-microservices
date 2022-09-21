@@ -1,4 +1,7 @@
 make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --question
+Makefile:10: warning: overriding recipe for target 'run_catalogs_read_service'
+Makefile:7: warning: ignoring old recipe for target 'run_catalogs_read_service'
+
 make: *** No rule to make target 'all'.  Stop.
 
 # GNU Make 4.3
@@ -8,7 +11,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Tue Sep 20 01:55:52 2022
+# Make data base, printed on Thu Sep 22 00:40:53 2022
 
 # Variables
 
@@ -31,7 +34,7 @@ SYSTEMROOT = C:\Windows
 # environment
 PROCESSOR_LEVEL = 6
 # environment
-PSMODULEPATH = %ProgramFiles%\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
+PSMODULEPATH = C:\Program Files\WindowsPowerShell\Modules;C:\Windows\system32\WindowsPowerShell\v1.0\Modules
 # default
 MAKE_COMMAND := C:/ProgramData/chocolatey/lib/make/tools/install/bin/make.exe
 # environment
@@ -39,7 +42,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_2152_NWKEWMMFLEDZMHUE
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_20024_AQVAGMQMHCIGMDDY
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -91,7 +94,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 2152
+VSCODE_PID = 20024
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -123,7 +126,7 @@ MAKELEVEL := 0
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
-PATH = C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\telepresence;C:\Program Files\SSHFS-Win\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\Azure Data Studio\bin;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Users\MehdiHadeli\go\bin;C:\Program Files\Go\bin;C:\bins;C:\Users\MehdiHadeli\scoop\shims;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\;C:\Users\MehdiHadeli\AppData\Local\Microsoft\WindowsApps;C:\Users\MehdiHadeli\.dotnet\tools;C:\Users\MehdiHadeli\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\JetBrains\JetBrains Rider 2021.3\bin;C:\Users\MehdiHadeli\AppData\Roaming\npm;C:\Program Files\JetBrains\DataGrip 2021.3\bin;C:\Program Files\JetBrains\GoLand 2021.3\bin;C:\Program Files\JetBrains\GoLand 2022.1.2\bin;C:\Program Files\JetBrains\JetBrains Rider 2022.1.2\bin;C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin
+PATH = C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\telepresence;C:\Program Files\SSHFS-Win\bin;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\Azure Data Studio\bin;C:\Program Files\Docker\Docker\resources\bin;C:\ProgramData\DockerDesktop\version-bin;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Users\MehdiHadeli\go\bin;C:\Program Files\Go\bin;C:\bins;C:\Users\MehdiHadeli\scoop\shims;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\;C:\Users\MehdiHadeli\AppData\Local\Microsoft\WindowsApps;C:\Users\MehdiHadeli\.dotnet\tools;C:\Users\MehdiHadeli\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\JetBrains\JetBrains Rider 2021.3\bin;C:\Users\MehdiHadeli\AppData\Roaming\npm;C:\Program Files\JetBrains\DataGrip 2021.3\bin;C:\Program Files\JetBrains\GoLand 2021.3\bin;C:\Program Files\JetBrains\GoLand 2022.1.2\bin;C:\Program Files\JetBrains\JetBrains Rider 2022.1.2\bin;C:\Users\MehdiHadeli\scoop\shims;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\Scripts\;C:\Users\MehdiHadeli\AppData\Local\Programs\Python\Python310\;C:\Users\MehdiHadeli\AppData\Local\Microsoft\WindowsApps;C:\Users\MehdiHadeli\.dotnet\tools;C:\Users\MehdiHadeli\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\Azure Data Studio\bin;C:\Program Files\JetBrains\JetBrains Rider 2021.3\bin;C:\Users\MehdiHadeli\AppData\Roaming\npm;C:\Program Files\JetBrains\DataGrip 2021.3\bin;C:\Program Files\JetBrains\GoLand 2021.3\bin;C:\Users\MehdiHadeli\go\bin;C:\Program Files\Go\bin;;C:\Program Files\JetBrains\GoLand 2022.1.2\bin;;C:\Program Files\JetBrains\JetBrains Rider 2022.1.2\bin;;C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin;
 # environment
 ZES_ENABLE_SYSMAN = 1
 # environment
@@ -140,7 +143,7 @@ CHOCOLATEYLASTPATHUPDATE = 133055507092480505
 LOGONSERVER = \\MEHDI
 # environment
 USERNAME = MehdiHadeli
-# makefile (from 'Makefile', line 21)
+# makefile (from 'Makefile', line 23)
 FILES := 4d77685f755e 14efc6395424 9ee0c86435cd 69568a60aaff b3989ed89a93 7ff81942da8f fcead7436e0c a7c3e849b03f b4b7b76bc5da a24c28d188f0 60eaf0934a47 72f3a4fdbdda b3ba04eff945 d3703fa862b0 90441c657854
 # environment
 COMMONPROGRAMFILES = C:\Program Files (x86)\Common Files
@@ -206,6 +209,8 @@ GOPROXY = https://proxy.golang.org,direct
 SUFFIXES := 
 # environment
 ALLUSERSPROFILE = C:\ProgramData
+# environment
+SESSIONNAME = Console
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell nocomment grouped-target extra-prereqs archives jobserver output-sync load
 # environment
@@ -213,7 +218,7 @@ PROCESSOR_REVISION = a503
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=100/1024=10%, Rehash=0, Collisions=10/131=8%
+# Load=101/1024=10%, Rehash=0, Collisions=10/132=8%
 
 # Pattern-specific Variable Values
 
@@ -221,7 +226,8 @@ PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 
 # Directories
 
-# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1663252091): 22 files, no impossibilities.
+# . (key d:/Github/GOLANG/store-golang-microservice-sample, mtime 1663697194): 22 files, no impossibiliti 
+es.
 
 # 22 files, no impossibilities in 1 directories.
 
@@ -235,7 +241,7 @@ generate_load_test_client_catalogs_read_service:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 166):
+#  recipe to execute (from 'Makefile', line 159):
 	@echo Generating load test client for catalogs write service
 	docker run --rm -v ${PWD}:/local  openapitools/openapi-generator-cli generate --skip-validate-spec -i  local/api_docs/catalogs/read_service/openapi/swagger.json -g k6 -o local/performance_tests/catalogs/read_service/k6-test/
 
@@ -243,7 +249,7 @@ docker-compose_infra_up:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 12):
+#  recipe to execute (from 'Makefile', line 14):
 	@echo Starting infrastructure docker-compose
 	docker-compose -f deployments/docker-compose/docker-compose.infrastructure.yaml up --build
 
@@ -251,13 +257,13 @@ cert:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 98):
+#  recipe to execute (from 'Makefile', line 100):
 	openssl req -new -x509 -sha256 -key server.key -out server.pem -days 3650
 
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-09-09 22:10:24
+#  Last modified 2022-09-20 22:36:34
 #  File has been updated.
 #  Successfully updated.
 
@@ -265,7 +271,7 @@ execute_k6_catalogs_read_service:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 177):
+#  recipe to execute (from 'Makefile', line 170):
 	@echo Executing k6 for catalogs read service
 	cd services/catalogs/read_service/ && 	go run ./cmd/main.go
 	k6 run ./performance_tests/catalogs/read_service/script.js --insecure-skip-tls-verify
@@ -274,14 +280,14 @@ run_catalogs_read_service:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 7):
-	cd services/catalogs/read_service/ && go run ./cmd/main.go
+#  recipe to execute (from 'Makefile', line 10):
+	cd services/orders/ && go run ./cmd/main.go
 
 proto_catalogs_write_product_service:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 118):
+#  recipe to execute (from 'Makefile', line 116):
 	@echo Generating product_service client proto
 	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/service_clients api_docs/catalogs/write_service/protobuf/products/service_clients/*.proto
 
@@ -289,14 +295,14 @@ pprof_cpu:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 106):
+#  recipe to execute (from 'Makefile', line 108):
 	go tool pprof -http :8006 http://localhost:6060/debug/pprof/profile?seconds=10
 
 docker_logs:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 34):
+#  recipe to execute (from 'Makefile', line 36):
 	docker logs -f $(FILES)
 	# docker build -f cmd/$(BIN)/Dockerfile --no-cache --build-arg BIN=$(BIN) --build-arg VERSION=$(VERSION) --build-arg GIT_COMMIT=$(GIT_COMMIT) -t go-api-boilerplate-$(BIN) .
 	# docker run -i -t --rm -p=$(PORT):$(PORT) --name="go-api-boilerplate-$(BIN)" go-api-boilerplate-$(BIN)
@@ -325,14 +331,14 @@ pprof_heap:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 103):
+#  recipe to execute (from 'Makefile', line 105):
 	go tool pprof -http :8006 http://localhost:6060/debug/pprof/heap?seconds=10
 
 swagger_catalogs_write:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 140):
+#  recipe to execute (from 'Makefile', line 133):
 	@echo Starting swagger generating
 	swag init --parseDependency --parseInternal --parseDepth 1 -g ./cmd/main.go -d ./services/catalogs/write_service/ -o ./services/catalogs/write_service/docs
 	swag init --parseDependency --parseInternal --parseDepth 1 -g ./cmd/main.go -d ./services/catalogs/write_service/ -o ./api_docs/catalogs/write_service/openapi/
@@ -341,7 +347,7 @@ key:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 94):
+#  recipe to execute (from 'Makefile', line 96):
 	openssl genrsa -out server.key 2048
 	openssl ecparam -genkey -name secp384r1 -out server.key
 
@@ -349,7 +355,7 @@ execute_k6_catalogs_write_service:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 171):
+#  recipe to execute (from 'Makefile', line 164):
 	@echo Executing k6 for catalogs write service
 	cd services/catalogs/write_service/ && 	go run ./cmd/main.go
 	k6 run ./performance_tests/catalogs/write_service/script.js --insecure-skip-tls-verify
@@ -358,36 +364,19 @@ swagger_catalogs_read:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 147):
+#  recipe to execute (from 'Makefile', line 140):
 	@echo Starting swagger generating
-	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/catalogs/read_service/  
--o ./services/catalogs/read_service/docs
+	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/catalogs/read_service/ -o ./services/catalogs/read_service/docs
 	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/catalogs/read_service/ -o ./api_docs/catalogs/read_service/openapi/
 
 swagger_orders:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 153):
+#  recipe to execute (from 'Makefile', line 146):
 	@echo Starting swagger generating
 	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/orders/ -o ./services/orders/docs
 	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/orders/ -o ./api_docs/orders/openapi/
-
-proto_catalogs_write_product_kafka_messages:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 114):
-	@echo Generating products kafka messages proto
-	protoc --go_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/write_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/write_service/protobuf/products/kafka_messages/*.proto
-
-proto_catalogs_read_product_kafka_messages:
-#  Implicit rule search has not been done.
-#  Modification time never checked.
-#  File has not been updated.
-#  recipe to execute (from 'Makefile', line 125):
-	@echo Generating products kafka messages proto
-	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/kafka_messages api_docs/catalogs/read_service/protobuf/products/kafka_messages/*.proto
 
 # Not a target:
 .DEFAULT:
@@ -406,14 +395,15 @@ docker_clean:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 31):
+#  recipe to execute (from 'Makefile', line 33):
 	docker system prune -f
 
 docker_down:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 27):
+#  recipe to execute (from 'Makefile', line 29) 
+:
 	docker stop $(FILES)
 	docker rm $(FILES)
 
@@ -421,7 +411,7 @@ run-linter:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 88):
+#  recipe to execute (from 'Makefile', line 90):
 	@echo Starting linters
 	golangci-lint run ./...
 
@@ -436,7 +426,7 @@ proto_catalogs_read_product_service:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 129):
+#  recipe to execute (from 'Makefile', line 122):
 	@echo Generating product_service client proto
 	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients api_docs/catalogs/read_service/protobuf/products/service_clients/*.proto
 
@@ -444,7 +434,7 @@ docker-compose_infra_down:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 16):
+#  recipe to execute (from 'Makefile', line 18):
 	@echo Stoping infrastructure docker-compose
 	docker-compose -f deployments/docker-compose/docker-compose.infrastructure.yaml down
 
@@ -452,7 +442,7 @@ generate_load_test_client_catalogs_write_service:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 160):
+#  recipe to execute (from 'Makefile', line 153):
 	@echo Generating load test client for catalogs write service
 	docker run --rm -v ${PWD}:/local  openapitools/openapi-generator-cli generate --skip-validate-spec -i  local/api_docs/catalogs/write_service/openapi/swagger.json -g k6 -o local/performance_tests/catalogs/write_service/k6-test/
 
@@ -460,21 +450,21 @@ docker_path:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 24):
+#  recipe to execute (from 'Makefile', line 26):
 	@echo $(FILES)
 
 pprof_allocs:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 109):
+#  recipe to execute (from 'Makefile', line 111):
 	go tool pprof -http :8006 http://localhost:6060/debug/pprof/allocs?seconds=10
 
 proto_orders_order_service:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 134):
+#  recipe to execute (from 'Makefile', line 127):
 	@echo Generating order_service client proto
 	protoc --go_out=./services/orders/internal/orders/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/orders/internal/orders/contracts/proto/service_clients/ api_docs/orders/protobuf/orders/service_clients/*.proto
 
@@ -484,19 +474,19 @@ proto_orders_order_service:
 #  File has not been updated.
 
 # files hash-table stats:
-# Load=31/1024=3%, Rehash=0, Collisions=0/41=0%
+# Load=29/1024=3%, Rehash=0, Collisions=0/40=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 52 / storage = 845 B / avg = 16 B
-# current buf: size = 8174 B / used = 845 B / count = 52 / avg = 16 B
+# strcache buffers: 1 (0) / strings = 50 / storage = 758 B / avg = 15 B
+# current buf: size = 8174 B / used = 758 B / count = 50 / avg = 15 B
 
-# strcache performance: lookups = 83 / hit rate = 37%
+# strcache performance: lookups = 81 / hit rate = 38%
 # hash-table stats:
-# Load=52/8192=1%, Rehash=0, Collisions=0/83=0%
-# Finished Make data base on Tue Sep 20 01:55:52 2022
+# Load=50/8192=1%, Rehash=0, Collisions=0/81=0%
+# Finished Make data base on Thu Sep 22 00:40:53 2022
 
  

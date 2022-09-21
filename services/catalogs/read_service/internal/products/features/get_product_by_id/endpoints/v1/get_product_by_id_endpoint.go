@@ -49,7 +49,7 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		query := &gettingProductByIdV1.GetProductById{ProductID: request.ProductId}
+		query := &gettingProductByIdV1.GetProductById{ProductId: request.ProductId}
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[getProductByIdEndpoint_handler.StructCtx]  query validation failed")
@@ -61,7 +61,7 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetProductById")
-			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"productId": query.ProductID})
+			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.ProductId, tracing.TraceWithErr(span, err)), logger.Fields{"productId": query.ProductId})
 			return err
 		}
 

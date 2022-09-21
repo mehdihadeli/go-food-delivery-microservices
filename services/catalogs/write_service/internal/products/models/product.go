@@ -9,7 +9,7 @@ import (
 
 // Product model
 type Product struct {
-	ProductID   uuid.UUID `json:"productId" gorm:"primaryKey"`
+	ProductId   uuid.UUID `json:"productId" gorm:"primaryKey"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Price       float64   `json:"price"`

@@ -1,6 +1,9 @@
 make.exe --dry-run --always-make --keep-going --print-directory
 make: Entering directory 'd:/Github/GOLANG/store-golang-microservice-sample'
  
+Makefile:10: warning: overriding recipe for target 'run_catalogs_read_service'
+Makefile:7: warning: ignoring old recipe for target 'run_catalogs_read_service'
+
 cd services/catalogs/write_service/ && 	go run ./cmd/main.go
 make: Leaving directory 'd:/Github/GOLANG/store-golang-microservice-sample'
  

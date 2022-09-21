@@ -54,12 +54,12 @@ func (o OrderGrpcServiceServer) CreateOrder(ctx context.Context, req *grpcOrderS
 
 	if err != nil {
 		err = errors.WithMessage(err, "[ProductGrpcServiceServer_CreateOrder.Send] error in sending CreateOrder")
-		o.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_CreateOrder.Send] id: {%s}, err: %v", command.OrderID, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": command.OrderID})
+		o.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_CreateOrder.Send] id: {%s}, err: %v", command.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": command.OrderId})
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}
 
 	o.Metrics.SuccessGrpcRequests.Inc()
-	return &grpcOrderService.CreateOrderRes{OrderId: result.OrderID.String()}, nil
+	return &grpcOrderService.CreateOrderRes{OrderId: result.OrderId.String()}, nil
 }
 
 func (o OrderGrpcServiceServer) GetOrderByID(ctx context.Context, req *grpcOrderService.GetOrderByIDReq) (*grpcOrderService.GetOrderByIDRes, error) {

@@ -3,9 +3,9 @@ package v1
 import uuid "github.com/satori/go.uuid"
 
 type DeleteProduct struct {
-	ProductID uuid.UUID `validate:"required"`
+	ProductId uuid.UUID `validate:"required"`
 }
 
-func NewDeleteProduct(productID uuid.UUID) *DeleteProduct {
-	return &DeleteProduct{ProductID: productID}
+func NewDeleteProduct(productId uuid.UUID) *DeleteProduct {
+	return &DeleteProduct{ProductId: productId}
 }

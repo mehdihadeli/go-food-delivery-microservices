@@ -11,7 +11,7 @@ func ConfigOrderProjections(infra *infrastructure.InfrastructureConfiguration) {
 	mongoOrderReadRepository := orderRepositories.NewMongoOrderReadRepository(infra.Log, infra.Cfg, infra.MongoClient)
 	elasticOrderReadRepository := orderRepositories.NewElasticOrderReadRepository(infra.Log, infra.Cfg, infra.ElasticClient)
 
-	mongoOrderProjection := projections.NewMongoOrderProjection(mongoOrderReadRepository, infra.KafkaProducer)
+	mongoOrderProjection := projections.NewMongoOrderProjection(mongoOrderReadRepository, infra.Producer)
 	infra.Projections = append(infra.Projections, mongoOrderProjection)
 
 	elasticOrderProjection := projections.NewElasticOrderProjection(elasticOrderReadRepository)

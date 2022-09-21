@@ -46,18 +46,27 @@ func discoverTypes() {
 					pkgTypesPtr = map[string]reflect.Type{}
 					packages[loadedTypePtr.PkgPath()] = pkgTypesPtr
 				}
-				f := strings.Contains(loadedType.String(), "Test")
-				if f {
-					fmt.Println(loadedType.String())
+
+				if strings.Contains(loadedType.String(), "Test") {
+					n := GetFullTypeNameByType(loadedType)
+					n2 := GetTypeNameByType(loadedType)
+					fmt.Println(n)
+					fmt.Println(n2)
 				}
 
-				types[loadedType.String()] = loadedType
-				types[loadedTypePtr.String()] = loadedTypePtr
-				pkgTypes[loadedType.Name()] = loadedType
-				pkgTypesPtr[loadedTypePtr.Name()] = loadedTypePtr
+				types[GetFullTypeNameByType(loadedType)] = loadedType
+				types[GetFullTypeNameByType(loadedTypePtr)] = loadedTypePtr
+				types[GetTypeNameByType(loadedType)] = loadedType
+				types[GetTypeNameByType(loadedTypePtr)] = loadedTypePtr
 			}
 		}
 	}
+}
+
+func RegisterType(typ interface{}) {
+	t := reflect.TypeOf(typ).Elem()
+	types[GetFullTypeName(typ)] = t
+	types[GetTypeName(typ)] = t
 }
 
 // TypeByName return the type by its name
@@ -68,9 +77,32 @@ func TypeByName(typeName string) reflect.Type {
 	return nil
 }
 
-func GetTypeName(input interface{}) string {
+// GetFullTypeName returns the full name of the type by its package name
+func GetFullTypeName(input interface{}) string {
 	t := reflect.TypeOf(input)
 	return t.String()
+}
+
+func GetFullTypeNameByType(typ reflect.Type) string {
+	return typ.String()
+}
+
+// GetTypeName returns the name of the type without its package name
+func GetTypeName(input interface{}) string {
+	t := reflect.TypeOf(input)
+	if t.Kind() != reflect.Ptr {
+		return t.Name()
+	}
+
+	return fmt.Sprintf("*%s", t.Elem().Name())
+}
+
+func GetTypeNameByType(typ reflect.Type) string {
+	if typ.Kind() != reflect.Ptr {
+		return typ.Name()
+	}
+
+	return fmt.Sprintf("*%s", typ.Elem().Name())
 }
 
 // TypeByPackageName return the type by its package and name
@@ -79,6 +111,12 @@ func TypeByPackageName(pkgPath string, name string) reflect.Type {
 		return pkgTypes[name]
 	}
 	return nil
+}
+
+func InstanceByT[T any]() T {
+	var msg T
+	typ := reflect.TypeOf(msg).Elem()
+	return getInstanceFromType(typ).(T)
 }
 
 // InstanceByTypeName return an empty instance of the type by its name
@@ -112,6 +150,13 @@ func InstanceByPackageName(pkgPath string, name string) interface{} {
 	return getInstanceFromType(typ)
 }
 
+// GenericInstanceByTypeName return an empty instance of the generic type by its name
+func GenericInstanceByTypeName[T any](typeName string) T {
+	var res = InstanceByTypeName(typeName).(T)
+
+	return res
+}
+
 func getInstanceFromType(typ reflect.Type) interface{} {
 	if typ.Kind() == reflect.Ptr {
 		var res = reflect.New(typ.Elem()).Interface()
@@ -120,11 +165,4 @@ func getInstanceFromType(typ reflect.Type) interface{} {
 
 	return reflect.Zero(typ).Interface()
 	// return reflect.New(typ).Elem().Interface()
-}
-
-// GenericInstanceByTypeName return an empty instance of the generic type by its name
-func GenericInstanceByTypeName[T any](typeName string) T {
-	var res = InstanceByTypeName(typeName).(T)
-
-	return res
 }

@@ -20,7 +20,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "Orders"
                 ],
                 "summary": "Get all product",
                 "parameters": [
@@ -58,7 +58,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "Orders"
                 ],
                 "summary": "Create product",
                 "parameters": [
@@ -92,7 +92,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "Orders"
                 ],
                 "summary": "Search products",
                 "parameters": [
@@ -137,9 +137,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "Orders"
                 ],
-                "summary": "Get product",
+                "summary": "Get product by id",
                 "parameters": [
                     {
                         "type": "string",
@@ -167,7 +167,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "Orders"
                 ],
                 "summary": "Update product",
                 "parameters": [
@@ -203,7 +203,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "Orders"
                 ],
                 "summary": "Delete product",
                 "parameters": [

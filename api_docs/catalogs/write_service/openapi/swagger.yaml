@@ -93,7 +93,7 @@ paths:
             $ref: '#/definitions/dtos.GetProductsResponseDto'
       summary: Get all product
       tags:
-      - Products
+      - Orders
     post:
       consumes:
       - application/json
@@ -114,7 +114,7 @@ paths:
             $ref: '#/definitions/dtos.CreateProductResponseDto'
       summary: Create product
       tags:
-      - Products
+      - Orders
   /api/v1/products/{id}:
     delete:
       consumes:
@@ -133,7 +133,7 @@ paths:
           description: ""
       summary: Delete product
       tags:
-      - Products
+      - Orders
     get:
       consumes:
       - application/json
@@ -151,9 +151,9 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/dtos.GetProductByIdResponseDto'
-      summary: Get product
+      summary: Get product by id
       tags:
-      - Products
+      - Orders
     put:
       consumes:
       - application/json
@@ -177,7 +177,7 @@ paths:
           description: ""
       summary: Update product
       tags:
-      - Products
+      - Orders
   /api/v1/products/search:
     get:
       consumes:
@@ -205,5 +205,5 @@ paths:
             $ref: '#/definitions/dtos.SearchProductsResponseDto'
       summary: Search products
       tags:
-      - Products
+      - Orders
 swagger: "2.0"

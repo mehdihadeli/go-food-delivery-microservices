@@ -3,6 +3,7 @@ package consumer
 import (
 	"context"
 	"emperror.dev/errors"
+	"fmt"
 	"github.com/avast/retry-go"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
@@ -38,7 +39,7 @@ type RabbitMQConsumer[T types2.IMessage] struct {
 	wg                      *sync.WaitGroup
 }
 
-func NewRabbitMQConsumer[T types2.IMessage](connection types.IConnection, builderFunc func(builder *options.RabbitMQConsumerOptionsBuilder[T]), handler consumer.ConsumerHandler[T], eventSerializer serializer.EventSerializer, logger logger.Logger) (consumer.Consumer, error) {
+func NewRabbitMQConsumer[T types2.IMessage](connection types.IConnection, builderFunc func(builder *options.RabbitMQConsumerOptionsBuilder[T]), eventSerializer serializer.EventSerializer, logger logger.Logger, handler consumer.ConsumerHandler[T]) (consumer.Consumer, error) {
 	builder := options.NewRabbitMQConsumerOptionsBuilder[T]()
 	if builderFunc != nil {
 		builderFunc(builder)
@@ -110,7 +111,7 @@ func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
 	msgs, err := r.channel.Consume(
 		r.rabbitmqConsumerOptions.QueueOptions.Name,
 		r.rabbitmqConsumerOptions.ConsumerId,
-		r.rabbitmqConsumerOptions.AutoAck,
+		r.rabbitmqConsumerOptions.AutoAck, //When autoAck (also known as noAck) is true, the server will acknowledge deliveries to this consumer prior to writing the delivery to the network. When autoAck is true, the consumer should not call Delivery.Ack.
 		r.rabbitmqConsumerOptions.QueueOptions.Exclusive,
 		r.rabbitmqConsumerOptions.NoLocal,
 		r.rabbitmqConsumerOptions.NoWait,
@@ -130,6 +131,9 @@ func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
 				select {
 				case msg, ok := <-msgs:
 					if !ok {
+						fmt.Println(r.connection.IsClosed())
+						fmt.Println(r.connection.IsConnected())
+
 						r.logger.Error("consumer connection dropped")
 						return
 					}
@@ -210,18 +214,26 @@ func (r *RabbitMQConsumer[T]) handleReceived(ctx context.Context, delivery amqp0
 
 	consumeContext := r.createConsumeContext(delivery)
 
-	ack := func() {
-		if err := delivery.Ack(false); err != nil {
-			// TODO: this error must be logged
-			return
+	var ack func()
+	var nack func()
+
+	// if auto-ack is enabled we should not call Ack method manually it could create some unexpected errors
+	if r.rabbitmqConsumerOptions.AutoAck == false {
+		ack = func() {
+			if err := delivery.Ack(false); err != nil {
+				r.logger.Error("error sending ACK to RabbitMQ consumer: %v", err)
+				return
+			}
+		}
+
+		nack = func() {
+			if err := delivery.Nack(false, true); err != nil {
+				r.logger.Error("error in sending Nack to RabbitMQ consumer: %v", err)
+				return
+			}
 		}
 	}
-	nack := func() {
-		if err := delivery.Nack(false, true); err != nil {
-			// TODO: this error must be logged
-			return
-		}
-	}
+
 	r.handle(ctx, ack, nack, consumeContext, handler)
 }
 
@@ -233,10 +245,12 @@ func (r *RabbitMQConsumer[T]) handle(ctx context.Context, ack func(), nack func(
 
 	if err != nil {
 		r.logger.Error("[RabbitMQConsumer.Handle] error in handling consume message of RabbitmqMQ")
-		nack()
+		if nack != nil && r.rabbitmqConsumerOptions.AutoAck == false {
+			nack()
+		}
+	} else if err == nil && ack != nil && r.rabbitmqConsumerOptions.AutoAck == false {
+		ack()
 	}
-
-	ack()
 }
 
 func (r *RabbitMQConsumer[T]) createConsumeContext(delivery amqp091.Delivery) types2.IMessageConsumeContext[T] {

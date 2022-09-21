@@ -1,6 +1,6 @@
 module github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service
 
-go 1.18
+go 1.19
 
 // https://go.dev/doc/tutorial/call-module-code
 replace github.com/mehdihadeli/store-golang-microservice-sample => ../../../
@@ -8,7 +8,6 @@ replace github.com/mehdihadeli/store-golang-microservice-sample => ../../../
 require (
 	emperror.dev/errors v0.8.1
 	github.com/EventStore/EventStore-Client-Go v1.0.2
-	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/caarlos0/env/v6 v6.9.3
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
@@ -20,7 +19,6 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/client_golang v1.12.1
 	github.com/satori/go.uuid v1.2.0
-	github.com/segmentio/kafka-go v0.4.32
 	github.com/spf13/viper v1.12.0
 	github.com/swaggo/echo-swagger v1.3.3
 	github.com/swaggo/swag v1.8.3
@@ -36,6 +34,7 @@ require (
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/TylerBrock/colorjson v0.0.0-20200706003622-8a50f05110d2 // indirect
 	github.com/ahmetb/go-linq/v3 v3.2.0 // indirect
+	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/brpaz/echozap v1.1.3 // indirect
 	github.com/cenkalti/backoff/v4 v4.1.2 // indirect
@@ -94,6 +93,8 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/rabbitmq/amqp091-go v1.5.0 // indirect
+	github.com/segmentio/kafka-go v0.4.32 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect

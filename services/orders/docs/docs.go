@@ -148,7 +148,7 @@ const docTemplate = `{
         "dtos.CreateOrderResponseDto": {
             "type": "object",
             "properties": {
-                "orderID": {
+                "orderId": {
                     "type": "string"
                 }
             }

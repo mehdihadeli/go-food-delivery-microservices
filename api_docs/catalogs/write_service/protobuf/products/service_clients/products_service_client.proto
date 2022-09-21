@@ -13,7 +13,7 @@ service ProductsService {
 }
 
 message Product {
-  string ProductID = 1;
+  string ProductId = 1;
   string Name = 2;
   string Description = 3;
   double Price = 4;
@@ -28,11 +28,11 @@ message CreateProductReq {
 }
 
 message CreateProductRes {
-  string ProductID = 1;
+  string ProductId = 1;
 }
 
 message UpdateProductReq {
-  string ProductID = 1;
+  string ProductId = 1;
   string Name = 2;
   string Description = 3;
   double Price = 4;
@@ -41,7 +41,7 @@ message UpdateProductReq {
 message UpdateProductRes {}
 
 message GetProductByIdReq {
-  string ProductID = 1;
+  string ProductId = 1;
 }
 
 message GetProductByIdRes {

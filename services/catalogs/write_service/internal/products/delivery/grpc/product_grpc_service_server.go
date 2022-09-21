@@ -55,7 +55,7 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 
 	s.Metrics.SuccessGrpcRequests.Inc()
 
-	return &productsService.CreateProductRes{ProductID: result.ProductID.String()}, nil
+	return &productsService.CreateProductRes{ProductId: result.ProductID.String()}, nil
 }
 
 func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *productsService.UpdateProductReq) (*productsService.UpdateProductRes, error) {
@@ -64,7 +64,7 @@ func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *produ
 	span.LogFields(log.Object("Request", req))
 	defer span.Finish()
 
-	productUUID, err := uuid.FromString(req.GetProductID())
+	productUUID, err := uuid.FromString(req.GetProductId())
 	if err != nil {
 		badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[ProductGrpcServiceServer_UpdateProduct.uuid.FromString] error in converting uuid")
 		s.Log.Errorf(fmt.Sprintf("[ProductGrpcServiceServer_UpdateProduct.uuid.FromString] err: %v", tracing.TraceWithErr(span, badRequestErr)))
@@ -96,7 +96,7 @@ func (s *ProductGrpcServiceServer) GetProductById(ctx context.Context, req *prod
 	span.LogFields(log.Object("Request", req))
 	defer span.Finish()
 
-	productUUID, err := uuid.FromString(req.GetProductID())
+	productUUID, err := uuid.FromString(req.GetProductId())
 	if err != nil {
 		badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[ProductGrpcServiceServer_GetProductById.uuid.FromString] error in converting uuid")
 		s.Log.Errorf(fmt.Sprintf("[ProductGrpcServiceServer_GetProductById.uuid.FromString] err: %v", tracing.TraceWithErr(span, badRequestErr)))

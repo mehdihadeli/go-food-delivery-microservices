@@ -7,5 +7,6 @@ import (
 )
 
 type Producer interface {
-	Publish(ctx context.Context, topicOrExchangeName string, message types.IMessage, metadata core.Metadata) error
+	Publish(ctx context.Context, message types.IMessage, metadata core.Metadata) error
+	PublishWithTopicName(ctx context.Context, message types.IMessage, metadata core.Metadata, topicOrExchangeName string) error
 }
