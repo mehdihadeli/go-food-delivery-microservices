@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/store"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
@@ -31,9 +32,10 @@ type IntegrationTestFixture struct {
 }
 
 func NewIntegrationTestFixture() *IntegrationTestFixture {
+	cfg, _ := config.InitConfig(constants.Test)
+
 	deadline := time.Now().Add(time.Duration(math.MaxInt64))
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
-	cfg, _ := config.InitConfig("test")
 	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
 	infrastructures, _, cleanup := c.ConfigInfrastructures(ctx)
 

@@ -8,11 +8,13 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	uuid "github.com/satori/go.uuid"
 	"testing"
 )
 
 func Test_Publish_Message(t *testing.T) {
+	test.SkipCI(t)
 	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",
@@ -33,7 +35,7 @@ func Test_Publish_Message(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = rabbitmqProducer.Publish(context.Background(), "", NewProducerMessage("test"), nil)
+	err = rabbitmqProducer.Publish(context.Background(), NewProducerMessage("test"), nil)
 	if err != nil {
 		return
 	}

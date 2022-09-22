@@ -3,6 +3,7 @@ package e2e
 import (
 	"context"
 	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
@@ -29,8 +30,9 @@ type V1Groups struct {
 }
 
 func NewE2ETestFixture() *E2ETestFixture {
+	cfg, _ := config.InitConfig(constants.Test)
+
 	ctx, cancel := context.WithCancel(context.Background())
-	cfg, _ := config.InitConfig("test")
 	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
 	infrastructures, _, cleanup := c.ConfigInfrastructures(context.Background())
 	echo := echo.New()

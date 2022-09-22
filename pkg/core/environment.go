@@ -17,16 +17,24 @@ func IsProduction() bool {
 	return env == constants.Production
 }
 
-func ConfigAppEnv() string {
+func ConfigAppEnv(env string) string {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	env := os.Getenv("APP_ENV")
+	manualEnv := os.Getenv("APP_ENV")
+
+	var envResult string
 	if env == "" {
-		env = constants.Dev
+		envResult = constants.Dev
+	} else {
+		envResult = env
 	}
 
-	return env
+	if manualEnv != "" {
+		envResult = manualEnv
+	}
+
+	return envResult
 }

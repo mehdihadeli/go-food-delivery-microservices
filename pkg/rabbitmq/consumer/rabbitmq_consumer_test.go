@@ -13,12 +13,14 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer"
 	options2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	uuid "github.com/satori/go.uuid"
 	"testing"
 	"time"
 )
 
 func Test_Consume_Message(t *testing.T) {
+	test.SkipCI(t)
 	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",

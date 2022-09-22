@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
@@ -38,9 +39,10 @@ type V1Groups struct {
 }
 
 func NewE2ETestFixture() *E2ETestFixture {
+	cfg, _ := config.InitConfig(constants.Test)
+
 	deadline := time.Now().Add(time.Duration(math.MaxInt64))
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
-	cfg, _ := config.InitConfig("test")
 	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
 	infrastructures, _, cleanup := c.ConfigInfrastructures(ctx)
 	echo := echo.New()

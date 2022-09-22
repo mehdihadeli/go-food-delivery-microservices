@@ -2,6 +2,7 @@ package integration
 
 import (
 	"context"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	bus2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
@@ -23,8 +24,9 @@ type IntegrationTestFixture struct {
 }
 
 func NewIntegrationTestFixture() *IntegrationTestFixture {
+	cfg, _ := config.InitConfig(constants.Test)
+
 	ctx, cancel := context.WithCancel(context.Background())
-	cfg, _ := config.InitConfig("test")
 	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
 	infrastructures, _, cleanup := c.ConfigInfrastructures(context.Background())
 
