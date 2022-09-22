@@ -88,5 +88,6 @@ const (
 	GzipLevel            = 5
 	WaitShotDownDuration = 3 * time.Second
 	Dev                  = "development"
+	Test                 = "test"
 	Production           = "production"
 )

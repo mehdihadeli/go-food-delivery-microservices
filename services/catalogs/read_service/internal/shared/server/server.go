@@ -6,6 +6,7 @@ import (
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	rabbitmqBus "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/catalogs"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
@@ -51,8 +52,10 @@ func (s *Server) Run() error {
 	deliveryType := s.cfg.DeliveryType
 
 	s.RunMetrics(cancel)
-
 	var serverError error
+
+	rabbitMQBus := rabbitmqBus.NewRabbitMQBus(s.log, infrastructureConfigurations.Consumers)
+	defer rabbitMQBus.Stop(ctx)
 
 	switch deliveryType {
 	case "http":
@@ -77,6 +80,14 @@ func (s *Server) Run() error {
 	default:
 		panic(fmt.Sprintf("server type %s is not supported", deliveryType))
 	}
+
+	go func() {
+		err := rabbitMQBus.Start(ctx)
+		if err != nil {
+			serverError = err
+			cancel()
+		}
+	}()
 
 	<-ctx.Done()
 	s.waitForShootDown(constants.WaitShotDownDuration)

@@ -28,9 +28,8 @@ func Test_Create_Order_E2E(t *testing.T) {
 	e := NewCreteOrderEndpoint(delivery.NewOrderEndpointBase(fixture.InfrastructureConfiguration, fixture.V1.OrdersGroup))
 	e.MapRoute()
 
-	defer fixture.Cleanup()
-
 	fixture.Run()
+	defer fixture.Cleanup()
 
 	// create httpexpect instance
 	expect := httpexpect.New(t, fixture.HttpServer.URL)
@@ -55,5 +54,5 @@ func Test_Create_Order_E2E(t *testing.T) {
 		Expect().
 		Status(http.StatusCreated)
 
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 2)
 }

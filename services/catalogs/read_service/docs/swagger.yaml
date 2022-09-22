@@ -5,6 +5,8 @@ definitions:
         type: string
       description:
         type: string
+      id:
+        type: string
       name:
         type: string
       price:
@@ -91,7 +93,7 @@ paths:
             $ref: '#/definitions/dtos.GetProductByIdResponseDto'
       summary: Get product
       tags:
-      - Products
+      - Orders
   /api/v1/products/search:
     get:
       consumes:
@@ -119,5 +121,5 @@ paths:
             $ref: '#/definitions/dtos.SearchProductsResponseDto'
       summary: Search products
       tags:
-      - Products
+      - Orders
 swagger: "2.0"

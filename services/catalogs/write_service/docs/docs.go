@@ -148,7 +148,7 @@ const docTemplate = `{
                 "tags": [
                     "Orders"
                 ],
-                "summary": "Get product",
+                "summary": "Get product by id",
                 "parameters": [
                     {
                         "type": "string",

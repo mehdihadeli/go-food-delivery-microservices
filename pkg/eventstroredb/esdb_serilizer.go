@@ -7,7 +7,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
-	esSerializer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/serializer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
 	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/append_result"
 	readPosition "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/read_position"
@@ -20,11 +20,11 @@ import (
 )
 
 type EsdbSerializer struct {
-	metadataSerializer esSerializer.MetadataSerializer
-	eventSerializer    esSerializer.EventSerializer
+	metadataSerializer serializer.MetadataSerializer
+	eventSerializer    serializer.EventSerializer
 }
 
-func NewEsdbSerializer(metadataSerializer esSerializer.MetadataSerializer, eventSerializer esSerializer.EventSerializer) *EsdbSerializer {
+func NewEsdbSerializer(metadataSerializer serializer.MetadataSerializer, eventSerializer serializer.EventSerializer) *EsdbSerializer {
 	return &EsdbSerializer{
 		metadataSerializer: metadataSerializer,
 		eventSerializer:    eventSerializer,
@@ -136,7 +136,7 @@ func (e *EsdbSerializer) ResolvedEventToStreamEvent(resolveEvent *esdb.ResolvedE
 
 	return &models.StreamEvent{
 		EventID:  id,
-		Event:    deserializedEvent,
+		Event:    deserializedEvent.(domain.IDomainEvent),
 		Metadata: deserializedMeta,
 		Version:  int64(resolveEvent.Event.EventNumber),
 		Position: e.EsdbPositionToStreamReadPosition(resolveEvent.OriginalEvent().Position).Value(),
@@ -163,8 +163,8 @@ func (e *EsdbSerializer) EsdbWriteResultToAppendEventResult(writeResult *esdb.Wr
 	return appendResult.From(writeResult.CommitPosition, writeResult.NextExpectedVersion)
 }
 
-func (e *EsdbSerializer) Serialize(data interface{}, metadata *core.Metadata) (*esdb.EventData, error) {
-	serializedData, err := e.eventSerializer.SerializeObject(data)
+func (e *EsdbSerializer) Serialize(data interface{}, metadata core.Metadata) (*esdb.EventData, error) {
+	serializedData, err := e.eventSerializer.Serialize(data)
 	if err != nil {
 		return nil, err
 	}
@@ -184,12 +184,12 @@ func (e *EsdbSerializer) Serialize(data interface{}, metadata *core.Metadata) (*
 	}, nil
 }
 
-func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interface{}, *core.Metadata, error) {
+func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interface{}, core.Metadata, error) {
 	eventType := resolveEvent.Event.EventType
 	data := resolveEvent.Event.Data
 	meta := resolveEvent.Event.UserMetadata
 
-	payload, err := e.eventSerializer.DeserializeObject(data, eventType, resolveEvent.Event.ContentType)
+	payload, err := e.eventSerializer.Deserialize(data, eventType, resolveEvent.Event.ContentType)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -202,7 +202,7 @@ func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interfac
 	return payload, metadata, nil
 }
 
-func (e *EsdbSerializer) DomainEventToStreamEvent(domainEvent domain.IDomainEvent, meta *core.Metadata, position int64) *models.StreamEvent {
+func (e *EsdbSerializer) DomainEventToStreamEvent(domainEvent domain.IDomainEvent, meta core.Metadata, position int64) *models.StreamEvent {
 	return &models.StreamEvent{
 		EventID:  uuid2.NewV4(),
 		Event:    domainEvent,

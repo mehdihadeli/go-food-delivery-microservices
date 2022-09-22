@@ -238,13 +238,6 @@ func TypePath[T any]() string {
 	return ObjectTypePath(msg)
 }
 
-func CreateInstance[T any]() T {
-	var msg T
-	typ := reflect.TypeOf(msg).Elem()
-	instance := reflect.New(typ).Interface()
-	return instance.(T)
-}
-
 func MethodPath(f interface{}) string {
 	pointerName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 	lastSlashIdx := strings.LastIndex(pointerName, "/")

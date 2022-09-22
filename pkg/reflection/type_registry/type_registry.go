@@ -11,11 +11,9 @@ func registerType(typedNil interface{}) {
 }
 
 type MyString string
-type myString string
 
 func init() {
 	registerType((*MyString)(nil))
-	registerType((*myString)(nil))
 }
 
 func makeInstance(name string) interface{} {

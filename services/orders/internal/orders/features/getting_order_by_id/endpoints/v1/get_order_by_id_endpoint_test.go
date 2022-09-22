@@ -7,7 +7,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/test_fixtures/e2e"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
@@ -19,16 +18,14 @@ func Test_Order_By_Id_E2E(t *testing.T) {
 	e := NewGetOrderByIdEndpoint(delivery.NewOrderEndpointBase(fixture.InfrastructureConfiguration, fixture.V1.OrdersGroup))
 	e.MapRoute()
 
+	fixture.Run()
 	defer fixture.Cleanup()
 
-	s := httptest.NewServer(fixture.Echo)
-	defer s.Close()
-
 	// create httpexpect instance
-	expect := httpexpect.New(t, s.URL)
+	expect := httpexpect.New(t, fixture.HttpServer.URL)
 
 	expect.GET("/api/v1/orders/{id}").
-		WithPath("id", "1b4b0599-bc3c-4c1d-94af-fd1895713620").
+		WithPath("id", "c8018f1e-787b-4d5e-98fd-4b4e072d56b2").
 		WithContext(context.Background()).
 		Expect().
 		Status(http.StatusOK)

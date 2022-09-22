@@ -5,28 +5,25 @@ import (
 	"fmt"
 	"github.com/mehdihadeli/go-mediatr"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/kafka_messages"
+	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/events/integration/v1"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
-	"github.com/segmentio/kafka-go"
-	"google.golang.org/protobuf/proto"
-	"time"
 )
 
 type DeleteProductHandler struct {
-	log           logger.Logger
-	cfg           *config.Config
-	pgRepo        contracts.ProductRepository
-	kafkaProducer kafkaClient.Producer
+	log              logger.Logger
+	cfg              *config.Config
+	pgRepo           contracts.ProductRepository
+	rabbitmqProducer producer.Producer
 }
 
-func NewDeleteProductHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *DeleteProductHandler {
-	return &DeleteProductHandler{log: log, cfg: cfg, pgRepo: pgRepo, kafkaProducer: kafkaProducer}
+func NewDeleteProductHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, rabbitmqProducer producer.Producer) *DeleteProductHandler {
+	return &DeleteProductHandler{log: log, cfg: cfg, pgRepo: pgRepo, rabbitmqProducer: rabbitmqProducer}
 }
 
 func (c *DeleteProductHandler) Handle(ctx context.Context, command *DeleteProduct) (*mediatr.Unit, error) {
@@ -39,25 +36,15 @@ func (c *DeleteProductHandler) Handle(ctx context.Context, command *DeleteProduc
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.DeleteProductByID] error in deleting product in the repository"))
 	}
 
-	evt := &kafka_messages.ProductDeleted{ProductID: command.ProductID.String()}
-	msgBytes, err := proto.Marshal(evt)
+	productDeleted := v1.NewProductDeletedV1(command.ProductID.String())
+	err := c.rabbitmqProducer.Publish(ctx, productDeleted, nil)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.Marshal] error in marshaling proto event ProductDeleted"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.PublishMessage] error in publishing 'ProductDeleted' message"))
 	}
 
-	message := kafka.Message{
-		Topic:   c.cfg.KafkaTopics.ProductDeleted.TopicName,
-		Value:   msgBytes,
-		Time:    time.Now(),
-		Headers: tracing.GetKafkaTracingHeadersFromSpanCtx(span.Context()),
-	}
+	c.log.Infow(fmt.Sprintf("[DeleteProductHandler.Handle] ProductDeleted message with messageId '%s' published to the rabbitmq broker", productDeleted.MessageId), logger.Fields{"MessageId": productDeleted.MessageId})
 
-	err = c.kafkaProducer.PublishMessage(ctx, message)
-	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.PublishMessage] error in publishing kafka message"))
-	}
-
-	c.log.Infow(fmt.Sprintf("[DeleteProductHandler.Handle] product with id: {%s} deleted", command.ProductID), logger.Fields{"productId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[DeleteProductHandler.Handle] product with id '%s' deleted", command.ProductID), logger.Fields{"ProductId": command.ProductID})
 
 	return &mediatr.Unit{}, nil
 }

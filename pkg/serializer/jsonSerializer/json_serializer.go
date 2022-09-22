@@ -3,6 +3,7 @@ package jsonSerializer
 import (
 	"github.com/TylerBrock/colorjson"
 	"github.com/goccy/go-json"
+	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mitchellh/mapstructure"
 	"log"
 )
@@ -19,6 +20,18 @@ func Marshal(v interface{}) ([]byte, error) {
 // To unmarshal JSON into an interface value, Unmarshal stores in a map[string]interface{}
 func Unmarshal(data []byte, v interface{}) error {
 
+	//https://pkg.go.dev/encoding/json#Unmarshal
+	err := json.Unmarshal(data, v)
+	if err != nil {
+		return err
+	}
+	log.Printf("deserialize structure object")
+
+	return nil
+}
+
+func UnmarshalT[T any](data []byte) error {
+	v := typeMapper.InstanceByT[T]()
 	//https://pkg.go.dev/encoding/json#Unmarshal
 	err := json.Unmarshal(data, v)
 	if err != nil {

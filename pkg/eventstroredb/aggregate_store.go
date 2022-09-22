@@ -35,7 +35,7 @@ func NewEventStoreAggregateStore[T models.IHaveEventSourcedAggregate](log logger
 	return &esdbAggregateStore[T]{log: log, eventStore: eventStore, serializer: serializer}
 }
 
-func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata *core.Metadata, expectedVersion expectedStreamVersion.ExpectedStreamVersion, ctx context.Context) (*appendResult.AppendEventsResult, error) {
+func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata core.Metadata, expectedVersion expectedStreamVersion.ExpectedStreamVersion, ctx context.Context) (*appendResult.AppendEventsResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.StoreWithVersion")
 	defer span.Finish()
 	span.LogFields(log.String("AggregateID", aggregate.Id().String()))
@@ -73,7 +73,7 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata *core.Met
 	return streamAppendResult, nil
 }
 
-func (a *esdbAggregateStore[T]) Store(aggregate T, metadata *core.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error) {
+func (a *esdbAggregateStore[T]) Store(aggregate T, metadata core.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Store")
 	defer span.Finish()
 	expectedVersion := expectedStreamVersion.FromInt64(aggregate.OriginalVersion())
@@ -101,10 +101,10 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 	span.LogFields(log.String("AggregateID", aggregateId.String()))
 
 	var typeNameType T
-	aggregateInstance := typeMapper.InstancePointerByTypeName(typeMapper.GetTypeName(typeNameType))
+	aggregateInstance := typeMapper.InstancePointerByTypeName(typeMapper.GetFullTypeName(typeNameType))
 	aggregate, ok := aggregateInstance.(T)
 	if !ok {
-		return *new(T), errors.New(fmt.Sprintf("[esdbAggregateStore_LoadWithReadPosition] aggregate is not a %s", typeMapper.GetTypeName(typeNameType)))
+		return *new(T), errors.New(fmt.Sprintf("[esdbAggregateStore_LoadWithReadPosition] aggregate is not a %s", typeMapper.GetFullTypeName(typeNameType)))
 	}
 
 	method := reflect.ValueOf(aggregate).MethodByName("NewEmptyAggregate")
@@ -125,7 +125,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 		return *new(T), tracing.TraceWithErr(span, errors.WrapIff(err, "[esdbAggregateStore.LoadWithReadPosition:MethodByName] error in loading aggregate {%s}", aggregateId.String()))
 	}
 
-	var metadata *core.Metadata
+	var metadata core.Metadata
 	var domainEvents []domain.IDomainEvent
 
 	linq.From(streamEvents).Distinct().SelectT(func(streamEvent *models.StreamEvent) domain.IDomainEvent {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/zap"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
@@ -20,8 +21,8 @@ import (
 func main() {
 	flag.Parse()
 
-	env := core.ConfigAppEnv()
-	
+	env := core.ConfigAppEnv(constants.Dev)
+
 	cfg, err := config.InitConfig(env)
 	if err != nil {
 		log.Fatal(err)

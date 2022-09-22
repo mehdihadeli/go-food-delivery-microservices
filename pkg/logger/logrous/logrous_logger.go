@@ -26,10 +26,6 @@ var loggerLevelMap = map[string]logrus.Level{
 	"fatal": logrus.FatalLevel,
 }
 
-var (
-	DefaultLogger logger.Logger
-)
-
 func (l *logrusLogger) GetLoggerLevel() logrus.Level {
 	level, exist := loggerLevelMap[l.level]
 	if !exist {

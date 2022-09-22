@@ -9,12 +9,12 @@ import (
 
 // Product model
 type Product struct {
-	ProductID   uuid.UUID `json:"productId" gorm:"primaryKey"`
+	ProductId   uuid.UUID `json:"productId" gorm:"primaryKey"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Price       float64   `json:"price"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	CreatedAt   time.Time `json:"createdAt"` //https://gorm.io/docs/models.html#gorm-Model
+	UpdatedAt   time.Time `json:"updatedAt"` //https://gorm.io/docs/models.html#gorm-Model
 }
 
 func (p *Product) String() string {

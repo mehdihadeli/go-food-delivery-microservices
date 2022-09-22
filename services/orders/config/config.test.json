@@ -65,23 +65,12 @@
   "mongoCollections": {
     "orders": "orders"
   },
-  "kafka": {
-    "brokers": [
-      "localhost:9092"
-    ],
-    "groupID": "orders_service_consumer",
-    "initTopics": true
-  },
-  "kafkaTopics": {
-    "orderCreate": {
-      "topicName": "order_create",
-      "partitions": 10,
-      "replicationFactor": 1
-    },
-    "orderCreated": {
-      "topicName": "order_created",
-      "partitions": 10,
-      "replicationFactor": 1
+  "rabbitmq": {
+    "rabbitMqHostOptions": {
+      "userName": "guest",
+      "password": "guest",
+      "hostName": "localhost",
+      "port": 5672
     }
   },
   "jaeger": {

@@ -4,32 +4,29 @@ import (
 	"context"
 	"fmt"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/kafka_messages"
-	"time"
-
-	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
+	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/events/integration/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
-	"github.com/segmentio/kafka-go"
-	"google.golang.org/protobuf/proto"
 )
 
 type CreateProductHandler struct {
-	log           logger.Logger
-	cfg           *config.Config
-	repository    contracts.ProductRepository
-	kafkaProducer kafkaClient.Producer
+	log              logger.Logger
+	cfg              *config.Config
+	repository       contracts.ProductRepository
+	rabbitmqProducer producer.Producer
 }
 
-func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository, kafkaProducer kafkaClient.Producer) *CreateProductHandler {
-	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, kafkaProducer: kafkaProducer}
+func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository, rabbitmqProducer producer.Producer) *CreateProductHandler {
+	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, rabbitmqProducer: rabbitmqProducer}
 }
 
 func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduct) (*dtos.CreateProductResponseDto, error) {
@@ -39,7 +36,7 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 	defer span.Finish()
 
 	product := &models.Product{
-		ProductID:   command.ProductID,
+		ProductId:   command.ProductID,
 		Name:        command.Name,
 		Description: command.Description,
 		Price:       command.Price,
@@ -51,36 +48,25 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.CreateProduct] error in creating product in the repository"))
 	}
 
-	kafkaProduct, err := mapper.Map[*kafka_messages.Product](createdProduct)
+	productDto, err := mapper.Map[*dto.ProductDto](createdProduct)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.Map] error in the mapping product"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.Map] error in the mapping ProductDto"))
 	}
 
-	evt := &kafka_messages.ProductCreated{Product: kafkaProduct}
-	msgBytes, err := proto.Marshal(evt)
+	productCreated := v1.NewProductCreatedV1(productDto)
+
+	err = c.rabbitmqProducer.Publish(ctx, productCreated, nil)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewMarshalingErrorWrap(err, "[CreateProductHandler.Marshal] error marshalling"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.PublishMessage] error in publishing ProductCreated integration event"))
 	}
 
-	message := kafka.Message{
-		Topic:   c.cfg.KafkaTopics.ProductCreated.TopicName,
-		Value:   msgBytes,
-		Time:    time.Now(),
-		Headers: tracing.GetKafkaTracingHeadersFromSpanCtx(span.Context()),
-	}
+	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] ProductCreated message with messageId `%s` published to the rabbitmq broker", productCreated.MessageId), logger.Fields{"MessageId": productCreated.MessageId})
 
-	err = c.kafkaProducer.PublishMessage(ctx, message)
-	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.PublishMessage] error in publishing kafka message"))
-	}
-
-	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id: {%s} published to the kafka", command.ProductID), logger.Fields{"productId": command.ProductID})
-
-	response := &dtos.CreateProductResponseDto{ProductID: product.ProductID}
+	response := &dtos.CreateProductResponseDto{ProductID: product.ProductId}
 
 	span.LogFields(log.Object("CreateProductResponseDto", response))
 
-	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id: {%s} created", command.ProductID), logger.Fields{"ProductId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id '%s' created", command.ProductID), logger.Fields{"ProductId": command.ProductID, "MessageId": productCreated.MessageId})
 
 	return response, nil
 }

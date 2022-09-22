@@ -6,30 +6,37 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4/pgxpool"
-	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
+	rabbitmqProducer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/middlewares"
 	v7 "github.com/olivere/elastic/v7"
-	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
 )
 
 type InfrastructureConfigurations struct {
-	Log               logger.Logger
-	Cfg               *config.Config
-	Validator         *validator.Validate
-	KafkaConn         *kafka.Conn
-	KafkaProducer     kafkaClient.Producer
-	PgConn            *pgxpool.Pool
-	Gorm              *gorm.DB
-	Metrics           *CatalogsServiceMetrics
-	Esdb              *esdb.Client
-	MongoClient       *mongo.Client
-	ElasticClient     *v7.Client
-	Redis             redis.UniversalClient
-	MiddlewareManager cutomMiddlewares.CustomMiddlewares
+	Log                logger.Logger
+	Cfg                *config.Config
+	Validator          *validator.Validate
+	RabbitMQConnection types.IConnection
+	Producer           producer.Producer
+	Consumers          []consumer.Consumer
+	PgConn             *pgxpool.Pool
+	Gorm               *gorm.DB
+	Metrics            *CatalogsServiceMetrics
+	Esdb               *esdb.Client
+	MongoClient        *mongo.Client
+	ElasticClient      *v7.Client
+	Redis              redis.UniversalClient
+	MiddlewareManager  cutomMiddlewares.CustomMiddlewares
+	EventSerializer    serializer.EventSerializer
 }
 
 type InfrastructureConfigurator interface {
@@ -46,8 +53,7 @@ func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config) Infras
 }
 
 func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*InfrastructureConfigurations, error, func()) {
-
-	infrastructure := &InfrastructureConfigurations{Cfg: ic.cfg, Log: ic.log, Validator: validator.New()}
+	infrastructure := &InfrastructureConfigurations{Cfg: ic.cfg, Log: ic.log, Validator: validator.New(), Consumers: make([]consumer.Consumer, 0)}
 
 	metrics := ic.configCatalogsMetrics()
 	infrastructure.Metrics = metrics
@@ -74,19 +80,22 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	cleanup = append(cleanup, redisCleanup)
 	infrastructure.Redis = redis
 
-	//el, err, _ := ic.configElasticSearch(ctx)
-	//if err != nil {
-	//	return nil, err, nil
-	//}
-	//infrastructure.ElasticClient = el
+	infrastructure.EventSerializer = json.NewJsonEventSerializer()
 
-	kafkaConn, kafkaProducer, err, kafkaCleanup := ic.configKafka(ctx)
+	connection, err := types.NewRabbitMQConnection(ctx, ic.cfg.RabbitMQ)
 	if err != nil {
 		return nil, err, nil
 	}
-	cleanup = append(cleanup, kafkaCleanup)
-	infrastructure.KafkaConn = kafkaConn
-	infrastructure.KafkaProducer = kafkaProducer
+	infrastructure.RabbitMQConnection = connection
+	cleanup = append(cleanup, func() {
+		_ = connection.Close()
+	})
+
+	mqProducer, err := rabbitmqProducer.NewRabbitMQProducer(connection, func(builder *options.RabbitMQProducerOptionsBuilder) {}, ic.log, infrastructure.EventSerializer)
+	if err != nil {
+		return nil, err, nil
+	}
+	infrastructure.Producer = mqProducer
 
 	if err != nil {
 		return nil, err, nil

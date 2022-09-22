@@ -57,12 +57,12 @@ func (p *ProductGrpcServiceTests) Test_Create_Product() {
 
 	res, err := p.CreateProduct(context.Background(), request)
 	assert.NoError(p.T, err)
-	assert.NotZero(p.T, res.ProductID)
+	assert.NotZero(p.T, res.ProductId)
 }
 
 func (p *ProductGrpcServiceTests) Test_GetProduct_By_Id() {
-	res, err := p.GetProductById(context.Background(), &productService.GetProductByIdReq{ProductID: "1b088075-53f0-4376-a491-ca6fe3a7f8fa"})
+	res, err := p.GetProductById(context.Background(), &productService.GetProductByIdReq{ProductId: "1b088075-53f0-4376-a491-ca6fe3a7f8fa"})
 	assert.NoError(p.T, err)
 	assert.NotNil(p.T, res.Product)
-	assert.Equal(p.T, res.Product.ProductID, "1b088075-53f0-4376-a491-ca6fe3a7f8fa")
+	assert.Equal(p.T, res.Product.ProductId, "1b088075-53f0-4376-a491-ca6fe3a7f8fa")
 }

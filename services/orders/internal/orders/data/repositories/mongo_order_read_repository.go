@@ -72,24 +72,46 @@ func (m mongoOrderReadRepository) SearchOrders(ctx context.Context, searchText s
 	return result, nil
 }
 
-func (m mongoOrderReadRepository) GetOrderById(ctx context.Context, uuid uuid.UUID) (*read_models.OrderReadModel, error) {
+func (m mongoOrderReadRepository) GetOrderById(ctx context.Context, id uuid.UUID) (*read_models.OrderReadModel, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoOrderReadRepository.GetOrderById")
-	span.LogFields(log.String("OrderId", uuid.String()))
+	span.LogFields(log.String("Id", id.String()))
 	defer span.Finish()
 
 	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
 
 	var order read_models.OrderReadModel
-	if err := collection.FindOne(ctx, bson.M{"_id": uuid.String()}).Decode(&order); err != nil {
+	if err := collection.FindOne(ctx, bson.M{"_id": id.String()}).Decode(&order); err != nil {
 		// ErrNoDocuments means that the filter did not match any documents in the collection
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
 		}
-		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[mongoOrderReadRepository_GetOrderById.FindOne] can't find the order with id %s into the database.", uuid)))
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[mongoOrderReadRepository_GetOrderById.FindOne] can't find the order with id %s into the database.", id)))
 	}
 
 	span.LogFields(log.Object("Order", order))
-	m.log.Infow(fmt.Sprintf("[mongoOrderReadRepository.GetOrderById] order with id %s laoded", uuid.String()), logger.Fields{"Order": order, "OrderId": uuid})
+	m.log.Infow(fmt.Sprintf("[mongoOrderReadRepository.GetOrderById] order with id %s laoded", id.String()), logger.Fields{"Order": order, "Id": id})
+
+	return &order, nil
+}
+
+func (m mongoOrderReadRepository) GetOrderByOrderId(ctx context.Context, orderId uuid.UUID) (*read_models.OrderReadModel, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoOrderReadRepository.GetOrderById")
+	span.LogFields(log.String("OrderId", orderId.String()))
+	defer span.Finish()
+
+	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
+
+	var order read_models.OrderReadModel
+	if err := collection.FindOne(ctx, bson.M{"orderId": orderId.String()}).Decode(&order); err != nil {
+		// ErrNoDocuments means that the filter did not match any documents in the collection
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+		return nil, tracing.TraceWithErr(span, errors.WrapIf(err, fmt.Sprintf("[mongoOrderReadRepository_GetOrderById.FindOne] can't find the order with orderId %s into the database.", orderId.String())))
+	}
+
+	span.LogFields(log.Object("Order", order))
+	m.log.Infow(fmt.Sprintf("[mongoOrderReadRepository.GetOrderById] order with orderId %s laoded", orderId.String()), logger.Fields{"Order": order, "orderId": orderId})
 
 	return &order, nil
 }
@@ -105,7 +127,7 @@ func (m mongoOrderReadRepository) CreateOrder(ctx context.Context, order *read_m
 	}
 
 	span.LogFields(log.Object("Order", order))
-	m.log.Infow(fmt.Sprintf("[mongoOrderReadRepository.CreateOrder] order with id '%s' created", order.OrderId), logger.Fields{"Order": order, "OrderId": order.OrderId})
+	m.log.Infow(fmt.Sprintf("[mongoOrderReadRepository.CreateOrder] order with id '%s' created", order.OrderId), logger.Fields{"Order": order, "Id": order.OrderId})
 
 	return order, nil
 }
@@ -126,14 +148,14 @@ func (m mongoOrderReadRepository) UpdateOrder(ctx context.Context, order *read_m
 	}
 
 	span.LogFields(log.Object("Order", order))
-	m.log.Infow(fmt.Sprintf("[mongoOrderReadRepository.UpdateOrder] order with id '%s' updated", order.OrderId), logger.Fields{"Order": order, "OrderId": order.OrderId})
+	m.log.Infow(fmt.Sprintf("[mongoOrderReadRepository.UpdateOrder] order with id '%s' updated", order.OrderId), logger.Fields{"Order": order, "Id": order.OrderId})
 
 	return &updated, nil
 }
 
 func (m mongoOrderReadRepository) DeleteOrderByID(ctx context.Context, uuid uuid.UUID) error {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "mongoOrderReadRepository.DeleteOrderByID")
-	span.LogFields(log.String("OrderId", uuid.String()))
+	span.LogFields(log.String("Id", uuid.String()))
 	defer span.Finish()
 
 	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
@@ -143,7 +165,7 @@ func (m mongoOrderReadRepository) DeleteOrderByID(ctx context.Context, uuid uuid
 			"[mongoOrderReadRepository_DeleteOrderByID.FindOneAndDelete] error in deleting order with id %d from the database.", uuid)))
 	}
 
-	m.log.Infow(fmt.Sprintf("[mongoOrderReadRepository.DeleteOrderByID] order with id %s deleted", uuid), logger.Fields{"OrderId": uuid})
+	m.log.Infow(fmt.Sprintf("[mongoOrderReadRepository.DeleteOrderByID] order with id %s deleted", uuid), logger.Fields{"Id": uuid})
 
 	return nil
 }

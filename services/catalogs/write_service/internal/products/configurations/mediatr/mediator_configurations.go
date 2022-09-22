@@ -18,7 +18,7 @@ import (
 
 func ConfigProductsMediator(pgRepo contracts.ProductRepository, infra *infrastructure.InfrastructureConfiguration) error {
 	//https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
-	err := mediatr.RegisterRequestHandler[*creatingProductV1.CreateProduct, *creatingProductsDtos.CreateProductResponseDto](creatingProductV1.NewCreateProductHandler(infra.Log, infra.Cfg, pgRepo, infra.KafkaProducer))
+	err := mediatr.RegisterRequestHandler[*creatingProductV1.CreateProduct, *creatingProductsDtos.CreateProductResponseDto](creatingProductV1.NewCreateProductHandler(infra.Log, infra.Cfg, pgRepo, infra.Producer))
 	if err != nil {
 		return err
 	}
@@ -33,12 +33,12 @@ func ConfigProductsMediator(pgRepo contracts.ProductRepository, infra *infrastru
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*updatingProductV1.UpdateProduct, *mediatr.Unit](updatingProductV1.NewUpdateProductHandler(infra.Log, infra.Cfg, pgRepo, infra.KafkaProducer))
+	err = mediatr.RegisterRequestHandler[*updatingProductV1.UpdateProduct, *mediatr.Unit](updatingProductV1.NewUpdateProductHandler(infra.Log, infra.Cfg, pgRepo, infra.Producer))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*deletingProductV1.DeleteProduct, *mediatr.Unit](deletingProductV1.NewDeleteProductHandler(infra.Log, infra.Cfg, pgRepo, infra.KafkaProducer))
+	err = mediatr.RegisterRequestHandler[*deletingProductV1.DeleteProduct, *mediatr.Unit](deletingProductV1.NewDeleteProductHandler(infra.Log, infra.Cfg, pgRepo, infra.Producer))
 	if err != nil {
 		return err
 	}

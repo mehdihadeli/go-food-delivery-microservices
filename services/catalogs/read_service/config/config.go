@@ -7,6 +7,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -15,7 +16,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
-	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/redis"
@@ -33,12 +33,11 @@ type Config struct {
 	DeliveryType     string                         `mapstructure:"deliveryType" env:"DeliveryType"`
 	ServiceName      string                         `mapstructure:"serviceName" env:"ServiceName"`
 	Logger           *logger.LogConfig              `mapstructure:"logger" envPrefix:"Logger_"`
-	KafkaTopics      KafkaTopics                    `mapstructure:"kafkaTopics" envPrefix:"KafkaTopics_"`
 	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
 	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
 	Context          Context                        `mapstructure:"context" envPrefix:"Context_"`
 	Redis            *redis.Config                  `mapstructure:"redis" envPrefix:"Redis_"`
-	Kafka            *kafkaClient.Config            `mapstructure:"kafka" envPrefix:"Kafka_"`
+	RabbitMQ         *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
 	Jaeger           *tracing.Config                `mapstructure:"jaeger" envPrefix:"Jaeger_"`
 	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
@@ -58,15 +57,6 @@ type MongoCollections struct {
 
 type ElasticIndexes struct {
 	Products string `mapstructure:"products" validate:"required" env:"Products"`
-}
-
-type KafkaTopics struct {
-	ProductCreate  kafkaClient.TopicConfig `mapstructure:"productCreate" envPrefix:"ProductCreate_"`
-	ProductCreated kafkaClient.TopicConfig `mapstructure:"productCreated" envPrefix:"ProductCreated_"`
-	ProductUpdate  kafkaClient.TopicConfig `mapstructure:"productUpdate" envPrefix:"ProductUpdate_"`
-	ProductUpdated kafkaClient.TopicConfig `mapstructure:"productUpdated" envPrefix:"ProductUpdated_"`
-	ProductDelete  kafkaClient.TopicConfig `mapstructure:"productDelete" envPrefix:"ProductDelete_"`
-	ProductDeleted kafkaClient.TopicConfig `mapstructure:"productDeleted" envPrefix:"ProductDeleted_"`
 }
 
 func InitConfig(environment string) (*Config, error) {
@@ -124,11 +114,6 @@ func InitConfig(environment string) (*Config, error) {
 	jaegerAddr := os.Getenv(constants.JaegerHostPort)
 	if jaegerAddr != "" {
 		cfg.Jaeger.HostPort = jaegerAddr
-	}
-
-	kafkaBrokers := os.Getenv(constants.KafkaBrokers)
-	if kafkaBrokers != "" {
-		cfg.Kafka.Brokers = []string{kafkaBrokers}
 	}
 
 	return cfg, nil

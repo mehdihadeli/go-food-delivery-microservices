@@ -12,6 +12,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
+	uuid "github.com/satori/go.uuid"
 )
 
 type CreateProductHandler struct {
@@ -27,12 +28,13 @@ func NewCreateProductHandler(log logger.Logger, cfg *config.Config, mongoReposit
 
 func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduct) (*creatingProduct.CreateProductResponseDto, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "CreateProductHandler.Handle")
-	span.LogFields(log.String("ProductId", command.ProductID))
+	span.LogFields(log.String("ProductId", command.ProductId))
 	span.LogFields(log.Object("Command", command))
 	defer span.Finish()
 
 	product := &models.Product{
-		ProductID:   command.ProductID,
+		Id:          uuid.NewV4().String(), // we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
+		ProductId:   command.ProductId,
 		Name:        command.Name,
 		Description: command.Description,
 		Price:       command.Price,
@@ -44,15 +46,15 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler_Handle.CreateProduct] error in creating product in the mongo repository"))
 	}
 
-	err = c.redisRepository.PutProduct(ctx, createdProduct.ProductID, createdProduct)
+	err = c.redisRepository.PutProduct(ctx, createdProduct.Id, createdProduct)
 	if err != nil {
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler_Handle.PutProduct] error in creating product in the redis repository"))
 	}
 
-	response := &creatingProduct.CreateProductResponseDto{ProductID: createdProduct.ProductID}
+	response := &creatingProduct.CreateProductResponseDto{Id: createdProduct.Id}
 	span.LogFields(log.Object("CreateProductResponseDto", response))
 
-	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id: {%s} created", command.ProductID), logger.Fields{"productId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id: {%s} created", product.Id), logger.Fields{"ProductId": command.ProductId, "Id": product.Id})
 
 	return response, nil
 }

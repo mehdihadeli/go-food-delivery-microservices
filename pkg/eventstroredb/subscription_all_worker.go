@@ -156,7 +156,7 @@ func (s *esdbSubscriptionAllWorker) isEventWithEmptyData(resolvedEvent *esdb.Res
 }
 
 func (s *esdbSubscriptionAllWorker) isCheckpointEvent(resolvedEvent *esdb.ResolvedEvent) bool {
-	name := typeMapper.GetTypeName(CheckpointStored{})
+	name := typeMapper.GetFullTypeName(CheckpointStored{})
 	if resolvedEvent.Event.EventType != name {
 		return false
 	}

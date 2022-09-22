@@ -36,6 +36,11 @@ func (e elasticOrderReadRepository) GetOrderById(ctx context.Context, uuid uuid.
 	panic("implement me")
 }
 
+func (e elasticOrderReadRepository) GetOrderByOrderId(ctx context.Context, uuid uuid.UUID) (*read_models.OrderReadModel, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (e elasticOrderReadRepository) CreateOrder(ctx context.Context, order *read_models.OrderReadModel) (*read_models.OrderReadModel, error) {
 	//TODO implement me
 	panic("implement me")

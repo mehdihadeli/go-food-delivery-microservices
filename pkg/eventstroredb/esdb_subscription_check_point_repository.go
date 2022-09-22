@@ -7,7 +7,6 @@ import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"io"
-	"math"
 	"time"
 )
 
@@ -38,42 +37,34 @@ func (e *esdbSubscriptionCheckpointRepository) Load(subscriptionId string, ctx c
 			From:      esdb.End{},
 		}, 1)
 
-	defer stream.Close()
-	deadline := time.Now().Add(time.Duration(math.MaxInt64))
-	ctx, cancel := context.WithDeadline(ctx, deadline)
-
 	if errors.Is(err, esdb.ErrStreamNotFound) {
 		return 0, nil
 	} else if err != nil {
-		cancel()
 		return 0, errors.WrapIf(err, "db.ReadStream")
 	}
 
 	event, err := stream.Recv()
 	if errors.Is(err, esdb.ErrStreamNotFound) {
-		cancel()
 		return 0, errors.WrapIf(err, "stream.Recv")
 	}
 	if errors.Is(err, io.EOF) {
-		cancel()
 		return 0, nil
 	}
 	if err != nil {
-		cancel()
 		return 0, errors.WrapIf(err, "stream.Recv")
 	}
 
 	deserialized, _, err := e.esdbSerilizer.Deserialize(event)
 	if err != nil {
-		cancel()
 		return 0, err
 	}
 
 	v, ok := deserialized.(*CheckpointStored)
 	if !ok {
-		cancel()
 		return 0, nil
 	}
+
+	stream.Close()
 
 	return v.Position, nil
 }

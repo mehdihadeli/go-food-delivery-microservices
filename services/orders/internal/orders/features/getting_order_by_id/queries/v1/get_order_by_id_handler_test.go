@@ -20,13 +20,15 @@ func Test_Get_Order_By_Id_Query_Handler(t *testing.T) {
 		return
 	}
 
+	fixture.Run()
 	defer fixture.Cleanup()
 
-	id, _ := uuid.FromString("1b4b0599-bc3c-4c1d-94af-fd1895713620")
-	query := NewGetOrderByIdQuery(id)
+	id, _ := uuid.FromString("c8018f1e-787b-4d5e-98fd-4b4e072d56b2")
+	query := NewGetOrderById(id)
 	queryResult, err := mediatr.Send[*GetOrderById, *dtos.GetOrderByIdResponseDto](context.Background(), query)
 
 	assert.NotNil(t, queryResult)
 	assert.NotNil(t, queryResult.Order)
 	assert.Equal(t, id.String(), queryResult.Order.Id)
+	assert.NotNil(t, queryResult.Order.OrderId)
 }

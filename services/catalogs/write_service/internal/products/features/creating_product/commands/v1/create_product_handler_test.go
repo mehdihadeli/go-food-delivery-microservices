@@ -15,11 +15,12 @@ func Test_Create_Product_Command_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*CreateProduct, *dtos.CreateProductResponseDto](NewCreateProductHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository, fixture.KafkaProducer))
+	err := mediatr.RegisterRequestHandler[*CreateProduct, *dtos.CreateProductResponseDto](NewCreateProductHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository, fixture.Producer))
 	if err != nil {
 		return
 	}
 
+	fixture.Run()
 	defer fixture.Cleanup()
 
 	command := NewCreateProduct(gofakeit.Name(), gofakeit.AdjectiveDescriptive(), gofakeit.Price(150, 6000))

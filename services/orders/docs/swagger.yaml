@@ -14,7 +14,7 @@ definitions:
     type: object
   dtos.CreateOrderResponseDto:
     properties:
-      orderID:
+      orderId:
         type: string
     type: object
   dtos.GetOrderByIdResponseDto:

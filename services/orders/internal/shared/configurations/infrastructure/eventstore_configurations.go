@@ -2,8 +2,8 @@ package infrastructure
 
 import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
-	esSerializer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 )
 
@@ -13,7 +13,7 @@ func (ic *infrastructureConfigurator) configEventStore() (*esdb.Client, contract
 		return nil, nil, nil, err, nil
 	}
 
-	esdbSerializer := eventstroredb.NewEsdbSerializer(esSerializer.NewJsonMetadataSerializer(), esSerializer.NewJsonEventSerializer())
+	esdbSerializer := eventstroredb.NewEsdbSerializer(json.NewJsonMetadataSerializer(), json.NewJsonEventSerializer())
 	subscriptionRepository := eventstroredb.NewEsdbSubscriptionCheckpointRepository(db, ic.log, esdbSerializer)
 
 	return db, subscriptionRepository, esdbSerializer, nil, func() {

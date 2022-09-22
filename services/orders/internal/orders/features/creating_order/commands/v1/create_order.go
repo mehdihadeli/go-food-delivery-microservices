@@ -10,7 +10,7 @@ import (
 //https://github.com/go-playground/validator
 
 type CreateOrder struct {
-	OrderID         uuid.UUID           `validate:"required"`
+	OrderId         uuid.UUID           `validate:"required"`
 	ShopItems       []*dtos.ShopItemDto `validate:"required"`
 	AccountEmail    string              `validate:"required,email"`
 	DeliveryAddress string              `validate:"required"`
@@ -19,5 +19,5 @@ type CreateOrder struct {
 }
 
 func NewCreateOrder(shopItems []*dtos.ShopItemDto, accountEmail, deliveryAddress string, deliveryTime time.Time) *CreateOrder {
-	return &CreateOrder{OrderID: uuid.NewV4(), ShopItems: shopItems, AccountEmail: accountEmail, DeliveryAddress: deliveryAddress, DeliveryTime: deliveryTime, CreatedAt: time.Now()}
+	return &CreateOrder{OrderId: uuid.NewV4(), ShopItems: shopItems, AccountEmail: accountEmail, DeliveryAddress: deliveryAddress, DeliveryTime: deliveryTime, CreatedAt: time.Now()}
 }

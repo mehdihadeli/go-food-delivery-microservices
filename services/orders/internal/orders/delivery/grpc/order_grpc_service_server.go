@@ -54,12 +54,12 @@ func (o OrderGrpcServiceServer) CreateOrder(ctx context.Context, req *grpcOrderS
 
 	if err != nil {
 		err = errors.WithMessage(err, "[ProductGrpcServiceServer_CreateOrder.Send] error in sending CreateOrder")
-		o.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_CreateOrder.Send] id: {%s}, err: %v", command.OrderID, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": command.OrderID})
+		o.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_CreateOrder.Send] id: {%s}, err: %v", command.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"Id": command.OrderId})
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}
 
 	o.Metrics.SuccessGrpcRequests.Inc()
-	return &grpcOrderService.CreateOrderRes{OrderId: result.OrderID.String()}, nil
+	return &grpcOrderService.CreateOrderRes{OrderId: result.OrderId.String()}, nil
 }
 
 func (o OrderGrpcServiceServer) GetOrderByID(ctx context.Context, req *grpcOrderService.GetOrderByIDReq) (*grpcOrderService.GetOrderByIDRes, error) {
@@ -85,7 +85,7 @@ func (o OrderGrpcServiceServer) GetOrderByID(ctx context.Context, req *grpcOrder
 	queryResult, err := mediatr.Send[*gettingOrderByIdQueryV1.GetOrderById, *gettingOrderByIdDtos.GetOrderByIdResponseDto](ctx, query)
 	if err != nil {
 		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrderByID.Send] error in sending GetOrderById")
-		o.Log.Errorw(fmt.Sprintf("[OrderGrpcServiceServer_GetOrderByID.Send] id: {%s}, err: %v", query.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": query.OrderId})
+		o.Log.Errorw(fmt.Sprintf("[OrderGrpcServiceServer_GetOrderByID.Send] id: {%s}, err: %v", query.Id, tracing.TraceWithErr(span, err)), logger.Fields{"Id": query.Id})
 		return nil, grpcErrors.ErrGrpcResponse(err)
 	}
 

@@ -9,3 +9,7 @@ type ProductEndpointBase struct {
 	*infrastructure.InfrastructureConfigurations
 	ProductsGroup *echo.Group
 }
+
+func NewProductEndpointBase(infra *infrastructure.InfrastructureConfigurations, productsGroup *echo.Group) *ProductEndpointBase {
+	return &ProductEndpointBase{InfrastructureConfigurations: infra, ProductsGroup: productsGroup}
+}

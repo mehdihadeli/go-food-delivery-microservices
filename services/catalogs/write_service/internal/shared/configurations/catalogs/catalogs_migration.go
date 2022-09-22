@@ -6,7 +6,6 @@ import (
 )
 
 func (c *catalogsServiceConfigurator) migrateCatalogs(gorm *gormPostgres.Gorm) error {
-
 	// or we could use `gorm.Migrate()`
 	err := gorm.DB.AutoMigrate(&models.Product{})
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	rabbitmqBus "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/orders"
@@ -44,14 +45,6 @@ func (s *Server) Run() error {
 	}
 	defer infraCleanup()
 
-	esdbSubscribeAllWorker := eventstroredb.NewEsdbSubscriptionAllWorker(
-		s.log,
-		infrastructureConfigurations.Esdb,
-		s.cfg.EventStoreConfig,
-		infrastructureConfigurations.EsdbSerializer,
-		infrastructureConfigurations.CheckpointRepository,
-		es.NewProjectionPublisher(infrastructureConfigurations.Projections))
-
 	ordersConfigurator := orders.NewOrdersServiceConfigurator(infrastructureConfigurations, echoServer, grpcServer)
 	err = ordersConfigurator.ConfigureOrdersService(ctx)
 	if err != nil {
@@ -63,6 +56,17 @@ func (s *Server) Run() error {
 	s.RunMetrics(cancel)
 
 	var serverError error
+
+	esdbWorker := eventstroredb.NewEsdbSubscriptionAllWorker(
+		s.log,
+		infrastructureConfigurations.Esdb,
+		s.cfg.EventStoreConfig,
+		infrastructureConfigurations.EsdbSerializer,
+		infrastructureConfigurations.CheckpointRepository,
+		es.NewProjectionPublisher(infrastructureConfigurations.Projections))
+
+	rabbitMQBus := rabbitmqBus.NewRabbitMQBus(s.log, infrastructureConfigurations.Consumers)
+	defer rabbitMQBus.Stop(ctx)
 
 	switch deliveryType {
 	case "http":
@@ -89,6 +93,14 @@ func (s *Server) Run() error {
 	}
 
 	go func() {
+		err := rabbitMQBus.Start(ctx)
+		if err != nil {
+			serverError = err
+			cancel()
+		}
+	}()
+
+	go func() {
 		//https://developers.eventstore.com/clients/grpc/subscriptions.html#filtering-by-prefix-1
 		option := &eventstroredb.EventStoreDBSubscriptionToAllOptions{
 			FilterOptions: &esdb.SubscriptionFilter{
@@ -97,7 +109,7 @@ func (s *Server) Run() error {
 			},
 			SubscriptionId: s.cfg.Subscriptions.OrderSubscription.SubscriptionId,
 		}
-		err := esdbSubscribeAllWorker.SubscribeAll(ctx, option)
+		err := esdbWorker.SubscribeAll(ctx, option)
 		if err != nil {
 			s.log.Errorf("(esdbSubscribeAllWorker.SubscribeAll) err: {%v}", err)
 			serverError = err

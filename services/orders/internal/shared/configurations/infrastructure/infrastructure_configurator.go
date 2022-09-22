@@ -4,16 +4,21 @@ import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/go-playground/validator"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
-	kafkaClient "github.com/mehdihadeli/store-golang-microservice-sample/pkg/kafka"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
+	rabbitmqProducer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/custom_middlewares"
 	v7 "github.com/olivere/elastic/v7"
-	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -21,8 +26,6 @@ type InfrastructureConfiguration struct {
 	Log                  logger.Logger
 	Cfg                  *config.Config
 	Validator            *validator.Validate
-	KafkaConn            *kafka.Conn
-	KafkaProducer        kafkaClient.Producer
 	Pgx                  *postgres.Pgx
 	Metrics              *OrdersServiceMetrics
 	Esdb                 *esdb.Client
@@ -32,6 +35,10 @@ type InfrastructureConfiguration struct {
 	MongoClient          *mongo.Client
 	CustomMiddlewares    cutomMiddlewares.CustomMiddlewares
 	Projections          []projection.IProjection
+	RabbitMQConnection   types.IConnection
+	EventSerializer      serializer.EventSerializer
+	Producer             producer.Producer
+	Consumers            []consumer.Consumer
 }
 
 type InfrastructureConfigurator interface {
@@ -61,12 +68,6 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	}
 	cleanup = append(cleanup, jaegerCleanup)
 
-	//el, err, _ := ic.configElasticSearch(ctx)
-	//if err != nil {
-	//	return nil, err, nil
-	//}
-	//infrastructure.ElasticClient = el
-
 	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
 	if err != nil {
 		return nil, err, nil
@@ -74,22 +75,31 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	cleanup = append(cleanup, mongoCleanup)
 	infrastructure.MongoClient = mongoClient
 
-	es, checkpointRepository, esdbSerializer, err, eventStoreCleanup := ic.configEventStore()
+	esdb, checkpointRepository, esdbSerializer, err, eventStoreCleanup := ic.configEventStore()
 	if err != nil {
 		return nil, err, nil
 	}
 	cleanup = append(cleanup, eventStoreCleanup)
-	infrastructure.Esdb = es
+	infrastructure.Esdb = esdb
 	infrastructure.CheckpointRepository = checkpointRepository
 	infrastructure.EsdbSerializer = esdbSerializer
 
-	kafkaConn, kafkaProducer, err, kafkaCleanup := ic.configKafka(ctx)
+	infrastructure.EventSerializer = json.NewJsonEventSerializer()
+
+	connection, err := types.NewRabbitMQConnection(ctx, ic.cfg.RabbitMQ)
 	if err != nil {
 		return nil, err, nil
 	}
-	cleanup = append(cleanup, kafkaCleanup)
-	infrastructure.KafkaConn = kafkaConn
-	infrastructure.KafkaProducer = kafkaProducer
+	infrastructure.RabbitMQConnection = connection
+	cleanup = append(cleanup, func() {
+		_ = connection.Close()
+	})
+
+	mqProducer, err := rabbitmqProducer.NewRabbitMQProducer(connection, func(builder *options.RabbitMQProducerOptionsBuilder) {}, ic.log, infrastructure.EventSerializer)
+	if err != nil {
+		return nil, err, nil
+	}
+	infrastructure.Producer = mqProducer
 
 	if err != nil {
 		return nil, err, nil
