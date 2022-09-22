@@ -97,7 +97,7 @@ type Order struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	OrderId         string                 `protobuf:"bytes,1,opt,name=OrderId,proto3" json:"OrderId,omitempty"`
+	OrderId         string                 `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 	ShopItems       []*ShopItem            `protobuf:"bytes,2,rep,name=ShopItems,proto3" json:"ShopItems,omitempty"`
 	Paid            bool                   `protobuf:"varint,3,opt,name=Paid,proto3" json:"Paid,omitempty"`
 	Submitted       bool                   `protobuf:"varint,4,opt,name=Submitted,proto3" json:"Submitted,omitempty"`
@@ -249,7 +249,7 @@ type OrderReadModel struct {
 	unknownFields protoimpl.UnknownFields
 
 	Id              string                 `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
-	OrderId         string                 `protobuf:"bytes,2,opt,name=OrderId,proto3" json:"OrderId,omitempty"`
+	OrderId         string                 `protobuf:"bytes,2,opt,name=Id,proto3" json:"Id,omitempty"`
 	ShopItems       []*ShopItemReadModel   `protobuf:"bytes,3,rep,name=ShopItems,proto3" json:"ShopItems,omitempty"`
 	Paid            bool                   `protobuf:"varint,4,opt,name=Paid,proto3" json:"Paid,omitempty"`
 	Submitted       bool                   `protobuf:"varint,5,opt,name=Submitted,proto3" json:"Submitted,omitempty"`
@@ -549,7 +549,7 @@ type CreateOrderRes struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	OrderId string `protobuf:"bytes,1,opt,name=OrderId,proto3" json:"OrderId,omitempty"`
+	OrderId string `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 }
 
 func (x *CreateOrderRes) Reset() {
@@ -596,7 +596,7 @@ type SubmitOrderReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	OrderId string `protobuf:"bytes,1,opt,name=OrderId,proto3" json:"OrderId,omitempty"`
+	OrderId string `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 }
 
 func (x *SubmitOrderReq) Reset() {
@@ -643,7 +643,7 @@ type SubmitOrderRes struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	OrderId string `protobuf:"bytes,1,opt,name=OrderId,proto3" json:"OrderId,omitempty"`
+	OrderId string `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 }
 
 func (x *SubmitOrderRes) Reset() {
@@ -784,7 +784,7 @@ type UpdateShoppingCartReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	OrderId   string      `protobuf:"bytes,1,opt,name=OrderId,proto3" json:"OrderId,omitempty"`
+	OrderId   string      `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 	ShopItems []*ShopItem `protobuf:"bytes,2,rep,name=ShopItems,proto3" json:"ShopItems,omitempty"`
 }
 

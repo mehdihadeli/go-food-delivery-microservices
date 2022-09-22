@@ -5,18 +5,18 @@ import "time"
 type IMessage interface {
 	GeMessageId() string
 	GetCorrelationId() string
-	GetCreatedAt() time.Time
+	GetCreated() time.Time
 	SetCorrelationId(string)
 }
 
 type Message struct {
 	MessageId     string    `json:"messageId,omitempty"`
 	CorrelationId string    `json:"correlationId"`
-	CreatedAt     time.Time `json:"createdAt,omitempty"`
+	Created       time.Time `json:"created"`
 }
 
 func NewMessage(messageId string) *Message {
-	return &Message{MessageId: messageId, CreatedAt: time.Now()}
+	return &Message{MessageId: messageId, Created: time.Now()}
 }
 
 func (m *Message) GeMessageId() string {
@@ -27,8 +27,8 @@ func (m *Message) GetCorrelationId() string {
 	return m.CorrelationId
 }
 
-func (m *Message) GetCreatedAt() time.Time {
-	return m.CreatedAt
+func (m *Message) GetCreated() time.Time {
+	return m.Created
 }
 
 func (m *Message) SetCorrelationId(correlationId string) {

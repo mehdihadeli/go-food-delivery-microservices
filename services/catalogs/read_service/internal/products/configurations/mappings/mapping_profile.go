@@ -12,6 +12,10 @@ func ConfigureMappings() error {
 		return err
 	}
 
+	err = mapper.CreateMap[*models.Product, *models.Product]()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
-

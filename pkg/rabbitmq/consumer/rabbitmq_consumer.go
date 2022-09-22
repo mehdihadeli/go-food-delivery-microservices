@@ -244,7 +244,7 @@ func (r *RabbitMQConsumer[T]) handle(ctx context.Context, ack func(), nack func(
 	}, append(retryOptions, retry.Context(ctx))...)
 
 	if err != nil {
-		r.logger.Error("[RabbitMQConsumer.Handle] error in handling consume message of RabbitmqMQ")
+		r.logger.Error("[RabbitMQConsumer.Handle] error in handling consume message of RabbitmqMQ, prepare for nacking message")
 		if nack != nil && r.rabbitmqConsumerOptions.AutoAck == false {
 			nack()
 		}

@@ -26,7 +26,7 @@ type Product struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ProductId   string                 `protobuf:"bytes,1,opt,name=ProductId,proto3" json:"ProductId,omitempty"`
+	ProductId   string                 `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 	Name        string                 `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
 	Description string                 `protobuf:"bytes,3,opt,name=Description,proto3" json:"Description,omitempty"`
 	Price       float64                `protobuf:"fixed64,4,opt,name=Price,proto3" json:"Price,omitempty"`
@@ -176,7 +176,7 @@ type CreateProductRes struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ProductId string `protobuf:"bytes,1,opt,name=ProductId,proto3" json:"ProductId,omitempty"`
+	ProductId string `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 }
 
 func (x *CreateProductRes) Reset() {
@@ -223,7 +223,7 @@ type UpdateProductReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ProductId   string  `protobuf:"bytes,1,opt,name=ProductId,proto3" json:"ProductId,omitempty"`
+	ProductId   string  `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 	Name        string  `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
 	Description string  `protobuf:"bytes,3,opt,name=Description,proto3" json:"Description,omitempty"`
 	Price       float64 `protobuf:"fixed64,4,opt,name=Price,proto3" json:"Price,omitempty"`
@@ -332,7 +332,7 @@ type GetProductByIdReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ProductId string `protobuf:"bytes,1,opt,name=ProductId,proto3" json:"ProductId,omitempty"`
+	ProductId string `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
 }
 
 func (x *GetProductByIdReq) Reset() {

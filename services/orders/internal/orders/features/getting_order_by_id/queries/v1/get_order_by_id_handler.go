@@ -27,13 +27,13 @@ func NewGetOrderByIdHandler(log logger.Logger, cfg *config.Config, orderMongoRep
 
 func (q *GetOrderByIdHandler) Handle(ctx context.Context, query *GetOrderById) (*dtos.GetOrderByIdResponseDto, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "GetOrderByIdHandler.Handle")
-	span.LogFields(log.String("ProductId", query.OrderId.String()))
+	span.LogFields(log.String("ProductId", query.Id.String()))
 	span.LogFields(log.Object("Query", query))
 	defer span.Finish()
 
-	order, err := q.orderMongoRepository.GetOrderById(ctx, query.OrderId)
+	order, err := q.orderMongoRepository.GetOrderById(ctx, query.Id)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetOrderByIdHandler_Handle.GetProductById] error in getting order with id %s in the mongo repository", query.OrderId.String())))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetOrderByIdHandler_Handle.GetProductById] error in getting order with id %s in the mongo repository", query.Id.String())))
 	}
 
 	orderDto, err := mapper.Map[*ordersDto.OrderReadDto](order)
@@ -41,7 +41,7 @@ func (q *GetOrderByIdHandler) Handle(ctx context.Context, query *GetOrderById) (
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetOrderByIdHandler_Handle.Map] error in the mapping order"))
 	}
 
-	q.log.Infow(fmt.Sprintf("[GetOrderByIdHandler.Handle] order with id: {%s} fetched", query.OrderId.String()), logger.Fields{"OrderId": query.OrderId})
+	q.log.Infow(fmt.Sprintf("[GetOrderByIdHandler.Handle] order with id: {%s} fetched", query.Id.String()), logger.Fields{"Id": query.Id})
 
 	return &dtos.GetOrderByIdResponseDto{Order: orderDto}, nil
 }

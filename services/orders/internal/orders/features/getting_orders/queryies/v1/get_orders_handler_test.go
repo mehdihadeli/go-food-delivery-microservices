@@ -20,6 +20,7 @@ func Test_Get_Orders_Query_Handler(t *testing.T) {
 		return
 	}
 
+	fixture.Run()
 	defer fixture.Cleanup()
 
 	query := NewGetOrders(utils.NewListQuery(10, 1))

@@ -1,4 +1,4 @@
-package consumers
+package v1
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	updatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/updating_products/commands/v1"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/updating_products/events/integration/external"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 	uuid "github.com/satori/go.uuid"
@@ -25,7 +24,7 @@ func NewProductUpdatedConsumer(productConsumerBase *delivery.ProductConsumersBas
 	return &productUpdatedConsumer{productConsumerBase}
 }
 
-func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext types2.IMessageConsumeContext[*external.ProductUpdated]) error {
+func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext types2.IMessageConsumeContext[*ProductUpdatedV1]) error {
 	if consumeContext.Message() == nil {
 		return nil
 	}
@@ -57,7 +56,7 @@ func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext type
 	_, err = mediatr.Send[*updatingProductV1.UpdateProduct, *mediatr.Unit](ctx, command)
 	if err != nil {
 		err = errors.WithMessage(err, "[updateProductConsumer_Consume.Send] error in sending UpdateProduct")
-		c.Log.Errorw(fmt.Sprintf("[updateProductConsumer_Consume.Send] id: {%s}, err: {%v}", command.ProductId, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductId})
+		c.Log.Errorw(fmt.Sprintf("[updateProductConsumer_Consume.Send] id: {%s}, err: {%v}", command.ProductId, tracing.TraceWithErr(span, err)), logger.Fields{"Id": command.ProductId})
 		c.CommitErrMessage()
 		return err
 	}

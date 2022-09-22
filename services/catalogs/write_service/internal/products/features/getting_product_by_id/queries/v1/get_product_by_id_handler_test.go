@@ -20,6 +20,7 @@ func Test_Get_Product_By_Id_Query_Handler(t *testing.T) {
 		return
 	}
 
+	fixture.Run()
 	defer fixture.Cleanup()
 
 	id, _ := uuid.FromString("1b088075-53f0-4376-a491-ca6fe3a7f8fa")

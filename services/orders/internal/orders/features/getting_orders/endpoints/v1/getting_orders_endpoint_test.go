@@ -18,6 +18,7 @@ func Test_Orders_E2E(t *testing.T) {
 	e := NewGetOrdersEndpoint(delivery.NewOrderEndpointBase(fixture.InfrastructureConfiguration, fixture.V1.OrdersGroup))
 	e.MapRoute()
 
+	fixture.Run()
 	defer fixture.Cleanup()
 
 	s := httptest.NewServer(fixture.Echo)

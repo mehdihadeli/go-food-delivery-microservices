@@ -60,7 +60,7 @@ func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[createOrderEndpoint_handler.Send] error in sending CreateOrder")
-			ep.Log.Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: %v", command.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"OrderId": command.OrderId})
+			ep.Log.Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: %v", command.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"Id": command.OrderId})
 			return err
 		}
 

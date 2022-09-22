@@ -1,11 +1,11 @@
-package external
+package v1
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"time"
 )
 
-type ProductUpdated struct {
+type ProductUpdatedV1 struct {
 	*types.Message
 	ProductId   string    `json:"productId,omitempty"`
 	Name        string    `json:"name,omitempty"`

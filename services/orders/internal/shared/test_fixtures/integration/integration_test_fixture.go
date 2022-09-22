@@ -7,6 +7,8 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/store"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
+	bus2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/repositories"
@@ -22,9 +24,10 @@ type IntegrationTestFixture struct {
 	OrderAggregateStore      store.AggregateStore[*aggregate.Order]
 	MongoOrderReadRepository repositories.OrderReadRepository
 	EsdbWorker               eventstroredb.EsdbSubscriptionAllWorker
-	Cleanup                  func()
+	RabbitMQBus              bus.Bus
 	ctx                      context.Context
 	cancel                   context.CancelFunc
+	Cleanup                  func()
 }
 
 func NewIntegrationTestFixture() *IntegrationTestFixture {
@@ -47,6 +50,8 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 		infrastructures.CheckpointRepository,
 		es.NewProjectionPublisher(infrastructures.Projections))
 
+	rabbitmqBus := bus2.NewRabbitMQBus(infrastructures.Log, infrastructures.Consumers)
+
 	err := mappings.ConfigureMappings()
 	if err != nil {
 		cancel()
@@ -54,11 +59,16 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 	}
 
 	return &IntegrationTestFixture{
-		Cleanup:                     cleanup,
+		Cleanup: func() {
+			cancel()
+			cleanup()
+			rabbitmqBus.Stop(ctx)
+		},
 		InfrastructureConfiguration: infrastructures,
 		OrderAggregateStore:         orderAggregateStore,
 		MongoOrderReadRepository:    mongoOrderReadRepository,
 		EsdbWorker:                  esdbSubscribeAllWorker,
+		RabbitMQBus:                 rabbitmqBus,
 		ctx:                         ctx,
 		cancel:                      cancel,
 	}
@@ -79,6 +89,13 @@ func (e *IntegrationTestFixture) Run() {
 		if err != nil {
 			e.cancel()
 			e.Log.Errorf("(esdbSubscribeAllWorker.SubscribeAll) err: {%v}", err)
+		}
+	}()
+	go func() {
+		err := e.RabbitMQBus.Start(e.ctx)
+		if err != nil {
+			e.cancel()
+			e.Log.Errorf("(RabbitMQBus.Start) err: {%v}", err)
 		}
 	}()
 }

@@ -106,7 +106,7 @@ func (o *Order) onOrderCreated(evt *creatingOrderEvents.OrderCreatedV1) error {
 	o.deliveryAddress = evt.DeliveryAddress
 	o.deliveredTime = evt.DeliveredTime
 	o.createdAt = evt.CreatedAt
-	o.SetId(evt.GetAggregateId()) // o.SetId(evt.OrderId)
+	o.SetId(evt.GetAggregateId()) // o.SetId(evt.Id)
 
 	return nil
 }

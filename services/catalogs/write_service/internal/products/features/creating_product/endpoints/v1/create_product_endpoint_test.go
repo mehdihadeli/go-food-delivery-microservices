@@ -9,7 +9,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/e2e"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
@@ -21,10 +20,8 @@ func Test_Create_Product_E2E(t *testing.T) {
 	e := NewCreteProductEndpoint(delivery.NewProductEndpointBase(fixture.InfrastructureConfiguration, fixture.V1.ProductsGroup))
 	e.MapRoute()
 
+	fixture.Run()
 	defer fixture.Cleanup()
-
-	s := httptest.NewServer(fixture.Echo)
-	defer s.Close()
 
 	request := dtos.CreateProductRequestDto{
 		Description: gofakeit.AdjectiveDescriptive(),
@@ -33,7 +30,7 @@ func Test_Create_Product_E2E(t *testing.T) {
 	}
 
 	// create httpexpect instance
-	expect := httpexpect.New(t, s.URL)
+	expect := httpexpect.New(t, fixture.HttpServer.URL)
 
 	expect.POST("/api/v1/products").
 		WithContext(context.Background()).

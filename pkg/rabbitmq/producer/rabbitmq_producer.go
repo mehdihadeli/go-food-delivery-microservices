@@ -3,6 +3,7 @@ package producer
 import (
 	"context"
 	"emperror.dev/errors"
+	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -60,6 +61,8 @@ func (r *rabbitMQProducer) PublishWithTopicName(ctx context.Context, message typ
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(string(serializedObj.Data))
 
 	var exchange string
 
@@ -119,7 +122,7 @@ func getMetadata(message types2.IMessage, metadata core.Metadata) core.Metadata 
 	}
 
 	if metadata.ExistsKey(messageHeader.Created) == false {
-		metadata.SetValue(messageHeader.Created, message.GetCreatedAt())
+		metadata.SetValue(messageHeader.Created, message.GetCreated())
 	}
 
 	if metadata.ExistsKey(messageHeader.CorrelationId) == false {

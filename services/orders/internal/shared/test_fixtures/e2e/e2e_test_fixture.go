@@ -8,6 +8,8 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	bus2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/mediatr"
@@ -21,13 +23,14 @@ import (
 type E2ETestFixture struct {
 	Echo *echo.Echo
 	*infrastructure.InfrastructureConfiguration
-	V1         *V1Groups
-	GrpcServer grpcServer.GrpcServer
-	HttpServer *httptest.Server
-	EsdbWorker eventstroredb.EsdbSubscriptionAllWorker
-	Cleanup    func()
-	ctx        context.Context
-	cancel     context.CancelFunc
+	V1          *V1Groups
+	GrpcServer  grpcServer.GrpcServer
+	HttpServer  *httptest.Server
+	EsdbWorker  eventstroredb.EsdbSubscriptionAllWorker
+	RabbitMQBus bus2.Bus
+	ctx         context.Context
+	cancel      context.CancelFunc
+	Cleanup     func()
 }
 
 type V1Groups struct {
@@ -53,16 +56,18 @@ func NewE2ETestFixture() *E2ETestFixture {
 		return nil
 	}
 
-	projections.ConfigOrderProjections(infrastructures)
-
 	err = mappings.ConfigureMappings()
 	if err != nil {
 		cancel()
 		return nil
 	}
 
+	projections.ConfigOrderProjections(infrastructures)
+
 	httpServer := httptest.NewServer(echo)
 	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger)
+
+	rabbitmqBus := bus.NewRabbitMQBus(infrastructures.Log, infrastructures.Consumers)
 
 	esdbSubscribeAllWorker := eventstroredb.NewEsdbSubscriptionAllWorker(
 		infrastructures.Log,
@@ -74,10 +79,12 @@ func NewE2ETestFixture() *E2ETestFixture {
 
 	return &E2ETestFixture{
 		Cleanup: func() {
+			cancel()
 			cleanup()
 			grpcServer.GracefulShutdown()
 			echo.Shutdown(ctx)
 			httpServer.Close()
+			rabbitmqBus.Stop(ctx)
 		},
 		InfrastructureConfiguration: infrastructures,
 		Echo:                        echo,
@@ -85,6 +92,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 		GrpcServer:                  grpcServer,
 		HttpServer:                  httpServer,
 		EsdbWorker:                  esdbSubscribeAllWorker,
+		RabbitMQBus:                 rabbitmqBus,
 		ctx:                         ctx,
 		cancel:                      cancel,
 	}
@@ -112,6 +120,13 @@ func (e *E2ETestFixture) Run() {
 		if err != nil {
 			e.cancel()
 			e.Log.Errorf("(esdbSubscribeAllWorker.SubscribeAll) err: {%v}", err)
+		}
+	}()
+	go func() {
+		err := e.RabbitMQBus.Start(e.ctx)
+		if err != nil {
+			e.cancel()
+			e.Log.Errorf("(RabbitMQBus.Start) err: {%v}", err)
 		}
 	}()
 }

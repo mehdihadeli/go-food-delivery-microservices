@@ -46,15 +46,15 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler_Handle.CreateProduct] error in creating product in the mongo repository"))
 	}
 
-	err = c.redisRepository.PutProduct(ctx, createdProduct.ProductId, createdProduct)
+	err = c.redisRepository.PutProduct(ctx, createdProduct.Id, createdProduct)
 	if err != nil {
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler_Handle.PutProduct] error in creating product in the redis repository"))
 	}
 
-	response := &creatingProduct.CreateProductResponseDto{ProductId: createdProduct.ProductId}
+	response := &creatingProduct.CreateProductResponseDto{Id: createdProduct.Id}
 	span.LogFields(log.Object("CreateProductResponseDto", response))
 
-	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id: {%s} created", command.ProductId), logger.Fields{"productId": command.ProductId})
+	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id: {%s} created", product.Id), logger.Fields{"ProductId": command.ProductId, "Id": product.Id})
 
 	return response, nil
 }

@@ -1,4 +1,4 @@
-package consumers
+package v1
 
 import (
 	"context"
@@ -12,7 +12,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	creatingProduct "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product/commands/v1"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product/events/integration/external"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 )
@@ -25,7 +24,7 @@ func NewProductCreatedConsumer(productConsumerBase *delivery.ProductConsumersBas
 	return &productCreatedConsumer{productConsumerBase}
 }
 
-func (c *productCreatedConsumer) Handle(ctx context.Context, consumeContext types2.IMessageConsumeContext[*external.ProductCreated]) error {
+func (c *productCreatedConsumer) Handle(ctx context.Context, consumeContext types2.IMessageConsumeContext[*ProductCreatedV1]) error {
 	if consumeContext.Message() == nil {
 		return nil
 	}
@@ -47,7 +46,7 @@ func (c *productCreatedConsumer) Handle(ctx context.Context, consumeContext type
 
 	if err != nil {
 		err = errors.WithMessage(err, "[productCreatedConsumer_Handle.Send] error in sending CreateProduct")
-		c.Log.Errorw(fmt.Sprintf("[productCreatedConsumer_Handle.Send] id: {%s}, err: {%v}", command.ProductId, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductId})
+		c.Log.Errorw(fmt.Sprintf("[productCreatedConsumer_Handle.Send] id: {%s}, err: {%v}", command.ProductId, tracing.TraceWithErr(span, err)), logger.Fields{"Id": command.ProductId})
 		c.CommitErrMessage()
 	}
 	c.CommitMessage()

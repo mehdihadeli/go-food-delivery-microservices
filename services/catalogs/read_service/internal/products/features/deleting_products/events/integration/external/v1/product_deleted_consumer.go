@@ -1,4 +1,4 @@
-package consumers
+package v1
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	deletingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/deleting_products/commands/v1"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/deleting_products/events/integration/external"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 	uuid "github.com/satori/go.uuid"
@@ -25,7 +24,7 @@ func NewProductDeletedConsumer(productConsumerBase *delivery.ProductConsumersBas
 	return &productDeletedConsumer{productConsumerBase}
 }
 
-func (c *productDeletedConsumer) Handle(ctx context.Context, consumeContext types2.IMessageConsumeContext[*external.ProductDeleted]) error {
+func (c *productDeletedConsumer) Handle(ctx context.Context, consumeContext types2.IMessageConsumeContext[*ProductDeletedV1]) error {
 	if consumeContext.Message() == nil {
 		return nil
 	}
@@ -55,7 +54,7 @@ func (c *productDeletedConsumer) Handle(ctx context.Context, consumeContext type
 
 	if err != nil {
 		err = errors.WithMessage(err, "[productDeletedConsumer_Handle.Send] error in sending DeleteProduct")
-		c.Log.Errorw(fmt.Sprintf("[productDeletedConsumer_Handle.Send] id: {%s}, err: {%v}", command.ProductId, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductId})
+		c.Log.Errorw(fmt.Sprintf("[productDeletedConsumer_Handle.Send] id: {%s}, err: {%v}", command.ProductId, tracing.TraceWithErr(span, err)), logger.Fields{"Id": command.ProductId})
 
 		c.CommitErrMessage()
 	}

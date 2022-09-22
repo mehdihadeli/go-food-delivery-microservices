@@ -10,8 +10,9 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/events/integration"
+	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/events/integration/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
@@ -47,10 +48,12 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.CreateProduct] error in creating product in the repository"))
 	}
 
-	productCreated, err := mapper.Map[*integration.ProductCreated](createdProduct)
+	productDto, err := mapper.Map[*dto.ProductDto](createdProduct)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.Map] error in the mapping ProductCreated"))
+		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.Map] error in the mapping ProductDto"))
 	}
+
+	productCreated := v1.NewProductCreatedV1(productDto)
 
 	err = c.rabbitmqProducer.Publish(ctx, productCreated, nil)
 	if err != nil {
@@ -63,7 +66,7 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 
 	span.LogFields(log.Object("CreateProductResponseDto", response))
 
-	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id '%s' created", command.ProductID), logger.Fields{"ProductId": command.ProductID})
+	c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id '%s' created", command.ProductID), logger.Fields{"ProductId": command.ProductID, "MessageId": productCreated.MessageId})
 
 	return response, nil
 }
