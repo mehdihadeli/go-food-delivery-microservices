@@ -55,6 +55,9 @@ func (r *rabbitMQProducer) PublishWithTopicName(ctx context.Context, message typ
 	}
 	defer channel.Close()
 
+	if message.GetEventTypeName() == "" {
+		message.SetEventTypeName(typeMapper.GetTypeName(message)) // just message type name not full type name because in other side package name for type could be different)
+	}
 	metadata = getMetadata(message, metadata)
 
 	serializedObj, err := r.eventSerializer.Serialize(message)
@@ -89,7 +92,7 @@ func (r *rabbitMQProducer) PublishWithTopicName(ctx context.Context, message typ
 		MessageId:     message.GeMessageId(),
 		Timestamp:     time.Now(),
 		Headers:       core.MetadataToMap(metadata),
-		Type:          serializedObj.EventType, //typeMapper.GetTypeName(message) - just message type name not full type name because in other side package name for type could be different
+		Type:          message.GetEventTypeName(), //typeMapper.GetTypeName(message) - just message type name not full type name because in other side package name for type could be different
 		ContentType:   serializedObj.ContentType,
 		Body:          serializedObj.Data,
 		DeliveryMode:  2,
@@ -132,7 +135,7 @@ func getMetadata(message types2.IMessage, metadata core.Metadata) core.Metadata 
 	}
 
 	metadata.SetValue(messageHeader.Name, utils.GetMessageName(message))
-	metadata.SetValue(messageHeader.Type, typeMapper.GetTypeName(message)) // just message type name not full type name because in other side package name for type could be different
+	metadata.SetValue(messageHeader.Type, message.GetEventTypeName())
 
 	return metadata
 }

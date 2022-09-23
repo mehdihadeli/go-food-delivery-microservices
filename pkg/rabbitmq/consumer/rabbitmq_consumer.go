@@ -3,7 +3,6 @@ package consumer
 import (
 	"context"
 	"emperror.dev/errors"
-	"fmt"
 	"github.com/avast/retry-go"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
@@ -15,7 +14,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/rabbitmq/amqp091-go"
 	"reflect"
-	"sync"
 	"time"
 )
 
@@ -36,7 +34,7 @@ type RabbitMQConsumer[T types2.IMessage] struct {
 	deliveryRoutines        chan struct{} // chan should init before using channel
 	eventSerializer         serializer.EventSerializer
 	logger                  logger.Logger
-	wg                      *sync.WaitGroup
+	ErrChan                 chan error
 }
 
 func NewRabbitMQConsumer[T types2.IMessage](connection types.IConnection, builderFunc func(builder *options.RabbitMQConsumerOptionsBuilder[T]), eventSerializer serializer.EventSerializer, logger logger.Logger, handler consumer.ConsumerHandler[T]) (consumer.Consumer, error) {
@@ -47,9 +45,8 @@ func NewRabbitMQConsumer[T types2.IMessage](connection types.IConnection, builde
 
 	consumerConfig := builder.Build()
 	deliveryRoutines := make(chan struct{}, consumerConfig.ConcurrencyLimit)
-	wg := &sync.WaitGroup{}
 
-	cons := &RabbitMQConsumer[T]{rabbitmqConsumerOptions: consumerConfig, deliveryRoutines: deliveryRoutines, wg: wg, connection: connection, handler: handler, eventSerializer: eventSerializer, logger: logger}
+	cons := &RabbitMQConsumer[T]{rabbitmqConsumerOptions: consumerConfig, deliveryRoutines: deliveryRoutines, ErrChan: make(chan error), connection: connection, handler: handler, eventSerializer: eventSerializer, logger: logger}
 
 	return cons, nil
 }
@@ -131,21 +128,11 @@ func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
 				select {
 				case msg, ok := <-msgs:
 					if !ok {
-						fmt.Println(r.connection.IsClosed())
-						fmt.Println(r.connection.IsConnected())
-
 						r.logger.Error("consumer connection dropped")
 						return
 					}
 					//https://github.com/streadway/amqp/blob/2aa28536587a0090d8280eed56c75867ce7e93ec/delivery.go#L62
 					r.handleReceived(ctx, msg, r.handler)
-				case <-ctx.Done(): // context canceled, it can stop getting new messages
-					err := r.UnConsume(ctx)
-					if err != nil {
-						r.logger.Error("error in canceling consumer")
-						return
-					}
-					r.logger.Error("consumer canceled")
 				}
 			}
 		}()
@@ -155,18 +142,13 @@ func (r *RabbitMQConsumer[T]) Consume(ctx context.Context) error {
 }
 
 func (r *RabbitMQConsumer[T]) UnConsume(ctx context.Context) error {
-	if r.channel != nil || r.channel.IsClosed() == false {
+	if r.channel != nil && r.channel.IsClosed() == false {
 		err := r.channel.Cancel(r.rabbitmqConsumerOptions.ConsumerId, false)
 		if err != nil {
 			return err
 		}
+		r.channel.Close()
 	}
-
-	defer func() {
-		if r.channel != nil || r.channel.IsClosed() == false {
-			r.channel.Close() // TODO: this error must be logged
-		}
-	}()
 
 	done := make(chan struct{}, 1)
 
@@ -273,7 +255,8 @@ func (r *RabbitMQConsumer[T]) deserializeData(contentType string, eventType stri
 	}
 
 	if contentType == "application/json" {
-		deserialize, err := r.eventSerializer.Deserialize(body, eventType, contentType)
+		//deserialize, err := r.eventSerializer.DeserializeType(body, typeMapper.GetTypeFromGeneric[T](), contentType)
+		deserialize, err := r.eventSerializer.DeserializeMessage(body, eventType, contentType) // or this to explicit type deserialization --> r.eventSerializer.DeserializeType(body, typeMapper.GetTypeFromGeneric[T](), contentType) / jsonSerializer.UnmarshalT[T](body)
 		if err != nil {
 			return *new(T)
 		}

@@ -13,6 +13,9 @@ import (
 func ConfigConsumers(infra *infrastructure.InfrastructureConfigurations) error {
 	consumerBase := delivery.NewProductConsumersBase(infra)
 
+	//add custom message type mappings
+	//utils.RegisterCustomMessageTypesToRegistrty(map[string]types.IMessage{"productCreatedV1": &creatingProductIntegration.ProductCreatedV1{}})
+
 	productCreatedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumer[*creatingProductIntegration.ProductCreatedV1](
 		infra.RabbitMQConnection,
 		func(builder *options.RabbitMQConsumerOptionsBuilder[*creatingProductIntegration.ProductCreatedV1]) {},

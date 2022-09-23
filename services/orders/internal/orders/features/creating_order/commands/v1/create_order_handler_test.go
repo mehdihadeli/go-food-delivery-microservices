@@ -45,5 +45,5 @@ func Test_Create_Order_Command_Handler(t *testing.T) {
 
 	assert.NotNil(t, result)
 	assert.Equal(t, command.OrderId, result.OrderId)
-	time.Sleep(time.Second * 2)
+	time.Sleep(time.Second * 10)
 }

@@ -77,7 +77,6 @@ func (s *esdbSubscriptionAllWorker) SubscribeAll(ctx context.Context, subscripti
 		From:               from,
 		CheckpointInterval: 1,
 	}
-
 	//https://developers.eventstore.com/clients/grpc/subscriptions.html#subscribing-to-all-1
 	//https://github.com/EventStore/EventStore-Client-Go/blob/master/samples/subscribingToStream.go#L113
 	//https://developers.eventstore.com/clients/grpc/subscriptions.html#handling-subscription-drops
@@ -112,6 +111,11 @@ func (s *esdbSubscriptionAllWorker) SubscribeAll(ctx context.Context, subscripti
 					return err
 				}
 			}
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil
 		}
 	}
 }

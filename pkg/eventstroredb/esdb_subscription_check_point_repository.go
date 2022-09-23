@@ -5,7 +5,9 @@ import (
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"io"
 	"time"
 )
@@ -20,6 +22,7 @@ type CheckpointStored struct {
 	Position       uint64
 	SubscriptionId string
 	CheckpointAt   time.Time
+	*core.Event
 }
 
 func NewEsdbSubscriptionCheckpointRepository(client *esdb.Client, logger logger.Logger, esdbSerializer *EsdbSerializer) *esdbSubscriptionCheckpointRepository {
@@ -70,7 +73,7 @@ func (e *esdbSubscriptionCheckpointRepository) Load(subscriptionId string, ctx c
 }
 
 func (e *esdbSubscriptionCheckpointRepository) Store(subscriptionId string, position uint64, ctx context.Context) error {
-	checkpoint := &CheckpointStored{SubscriptionId: subscriptionId, Position: position, CheckpointAt: time.Now()}
+	checkpoint := &CheckpointStored{SubscriptionId: subscriptionId, Position: position, CheckpointAt: time.Now(), Event: core.NewEvent(typeMapper.GetTypeName(&CheckpointStored{}))}
 	streamName := getCheckpointStreamName(subscriptionId)
 	eventData, err := e.esdbSerilizer.Serialize(checkpoint, nil)
 	if err != nil {

@@ -14,6 +14,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_position/truncatePosition"
 	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
 	esErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb/errors"
+	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	uuid2 "github.com/satori/go.uuid"
 	"io"
 	"strings"
@@ -57,7 +58,7 @@ func (e *EsdbSerializer) StreamEventToEventData(streamEvent *models.StreamEvent)
 	}
 	return esdb.EventData{
 		EventID:     id,
-		EventType:   eventSerializationResult.EventType,
+		EventType:   typeMapper.GetTypeName(streamEvent.Event),
 		Data:        eventSerializationResult.Data,
 		Metadata:    metadataSerializationResult,
 		ContentType: contentType,
@@ -119,7 +120,7 @@ func (e *EsdbSerializer) EsdbPositionToStreamReadPosition(position esdb.Position
 }
 
 func (e *EsdbSerializer) ResolvedEventToStreamEvent(resolveEvent *esdb.ResolvedEvent) (*models.StreamEvent, error) {
-	deserializedEvent, err := e.eventSerializer.Deserialize(resolveEvent.Event.Data, resolveEvent.Event.EventType, resolveEvent.Event.ContentType)
+	deserializedEvent, err := e.eventSerializer.DeserializeEvent(resolveEvent.Event.Data, resolveEvent.Event.EventType, resolveEvent.Event.ContentType)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +178,7 @@ func (e *EsdbSerializer) Serialize(data interface{}, metadata core.Metadata) (*e
 	id, err := uuid.NewV4()
 	return &esdb.EventData{
 		EventID:     id,
-		EventType:   serializedData.EventType,
+		EventType:   typeMapper.GetTypeName(data),
 		Data:        serializedData.Data,
 		ContentType: esdb.JsonContentType,
 		Metadata:    serializedMeta,
@@ -189,7 +190,7 @@ func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interfac
 	data := resolveEvent.Event.Data
 	meta := resolveEvent.Event.UserMetadata
 
-	payload, err := e.eventSerializer.Deserialize(data, eventType, resolveEvent.Event.ContentType)
+	payload, err := e.eventSerializer.DeserializeEvent(data, eventType, resolveEvent.Event.ContentType)
 	if err != nil {
 		return nil, nil, err
 	}
