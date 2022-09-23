@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
@@ -14,6 +15,7 @@ import (
 type IntegrationTestFixture struct {
 	*infrastructure.InfrastructureConfiguration
 	ProductRepository contracts.ProductRepository
+	workersRunner     *webWoker.WorkersRunner
 	ctx               context.Context
 	cancel            context.CancelFunc
 	Cleanup           func()
@@ -47,5 +49,4 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 }
 
 func (e *IntegrationTestFixture) Run() {
-
 }

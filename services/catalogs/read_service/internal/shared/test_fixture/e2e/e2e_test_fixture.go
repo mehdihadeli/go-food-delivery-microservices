@@ -6,25 +6,26 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
-	bus2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
+	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/consumers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/workers"
 	"net/http/httptest"
 )
 
 type E2ETestFixture struct {
 	Echo *echo.Echo
 	*infrastructure.InfrastructureConfigurations
-	V1          *V1Groups
-	GrpcServer  grpcServer.GrpcServer
-	HttpServer  *httptest.Server
-	RabbitMQBus bus2.Bus
-	ctx         context.Context
-	cancel      context.CancelFunc
-	Cleanup     func()
+	V1            *V1Groups
+	GrpcServer    grpcServer.GrpcServer
+	HttpServer    *httptest.Server
+	workersRunner *webWoker.WorkersRunner
+	ctx           context.Context
+	cancel        context.CancelFunc
+	Cleanup       func()
 }
 
 type V1Groups struct {
@@ -56,26 +57,34 @@ func NewE2ETestFixture() *E2ETestFixture {
 		return nil
 	}
 
+	err = consumers.ConfigConsumers(infrastructures)
+	if err != nil {
+		cancel()
+		return nil
+	}
+
 	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger)
 	httpServer := httptest.NewServer(echo)
 
-	rabbitmqBus := bus.NewRabbitMQBus(infrastructures.Log, infrastructures.Consumers)
+	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
+		workers.NewRabbitMQWorkerWorker(infrastructures),
+	})
 
 	return &E2ETestFixture{
 		Cleanup: func() {
+			workersRunner.Stop(ctx)
 			cancel()
 			cleanup()
 			grpcServer.GracefulShutdown()
 			echo.Shutdown(ctx)
 			httpServer.Close()
-			rabbitmqBus.Stop(ctx)
 		},
 		InfrastructureConfigurations: infrastructures,
 		Echo:                         echo,
 		V1:                           v1Groups,
 		GrpcServer:                   grpcServer,
 		HttpServer:                   httpServer,
-		RabbitMQBus:                  rabbitmqBus,
+		workersRunner:                workersRunner,
 		ctx:                          ctx,
 		cancel:                       cancel,
 	}
@@ -89,11 +98,14 @@ func (e *E2ETestFixture) Run() {
 		}
 	}()
 
+	workersErr := e.workersRunner.Start(e.ctx)
 	go func() {
-		err := e.RabbitMQBus.Start(e.ctx)
-		if err != nil {
-			e.cancel()
-			e.Log.Errorf("(RabbitMQBus.Start) err: {%v}", err)
+		for {
+			select {
+			case _ = <-workersErr:
+				e.cancel()
+				return
+			}
 		}
 	}()
 }

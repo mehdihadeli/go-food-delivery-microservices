@@ -11,13 +11,13 @@ import (
 	"unsafe"
 )
 
-var types map[string]reflect.Type
-var packages map[string]map[string]reflect.Type
+var types map[string][]reflect.Type
+var packages map[string]map[string][]reflect.Type
 
 // discoverTypes initializes types and packages
 func init() {
-	types = make(map[string]reflect.Type)
-	packages = make(map[string]map[string]reflect.Type)
+	types = make(map[string][]reflect.Type)
+	packages = make(map[string]map[string][]reflect.Type)
 
 	discoverTypes()
 }
@@ -39,11 +39,11 @@ func discoverTypes() {
 				pkgTypesPtr := packages[loadedTypePtr.PkgPath()]
 
 				if pkgTypes == nil {
-					pkgTypes = map[string]reflect.Type{}
+					pkgTypes = map[string][]reflect.Type{}
 					packages[loadedType.PkgPath()] = pkgTypes
 				}
 				if pkgTypesPtr == nil {
-					pkgTypesPtr = map[string]reflect.Type{}
+					pkgTypesPtr = map[string][]reflect.Type{}
 					packages[loadedTypePtr.PkgPath()] = pkgTypesPtr
 				}
 
@@ -54,27 +54,68 @@ func discoverTypes() {
 					fmt.Println(n2)
 				}
 
-				types[GetFullTypeNameByType(loadedType)] = loadedType
-				types[GetFullTypeNameByType(loadedTypePtr)] = loadedTypePtr
-				types[GetTypeNameByType(loadedType)] = loadedType
-				types[GetTypeNameByType(loadedTypePtr)] = loadedTypePtr
+				types[GetFullTypeNameByType(loadedType)] = append(types[GetFullTypeNameByType(loadedType)], loadedType)
+				types[GetFullTypeNameByType(loadedTypePtr)] = append(types[GetFullTypeNameByType(loadedTypePtr)], loadedTypePtr)
+				types[GetTypeNameByType(loadedType)] = append(types[GetTypeNameByType(loadedType)], loadedType)
+				types[GetTypeNameByType(loadedTypePtr)] = append(types[GetTypeNameByType(loadedTypePtr)], loadedTypePtr)
 			}
 		}
 	}
 }
 
-func RegisterType(typ interface{}) {
-	t := reflect.TypeOf(typ).Elem()
-	types[GetFullTypeName(typ)] = t
-	types[GetTypeName(typ)] = t
+func RegisterType(typ reflect.Type) {
+	types[GetFullTypeName(typ)] = append(types[GetFullTypeName(typ)], typ)
+	types[GetTypeName(typ)] = append(types[GetTypeName(typ)], typ)
+}
+
+func RegisterTypeWithKey(key string, typ reflect.Type) {
+	types[key] = append(types[key], typ)
+}
+
+func GetAllRegisteredTypes() map[string][]reflect.Type {
+	return types
 }
 
 // TypeByName return the type by its name
 func TypeByName(typeName string) reflect.Type {
 	if typ, ok := types[typeName]; ok {
-		return typ
+		return typ[0]
 	}
 	return nil
+}
+
+func TypesByName(typeName string) []reflect.Type {
+	if types, ok := types[typeName]; ok {
+		return types
+	}
+	return nil
+}
+
+func TypeByNameAndImplementedInterface[TInterface interface{}](typeName string) reflect.Type {
+	//https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
+	implementedInterface := GetTypeFromGeneric[TInterface]()
+	if types, ok := types[typeName]; ok {
+		for _, t := range types {
+			if t.Implements(implementedInterface) {
+				return t
+			}
+		}
+	}
+	return nil
+}
+
+func TypesImplementedInterface[TInterface interface{}](types []reflect.Type) []reflect.Type {
+	//https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
+	implementedInterface := GetTypeFromGeneric[TInterface]()
+
+	var res []reflect.Type
+	for _, t := range types {
+		if t.Implements(implementedInterface) {
+			res = append(res, t)
+		}
+	}
+
+	return res
 }
 
 // GetFullTypeName returns the full name of the type by its package name
@@ -108,15 +149,41 @@ func GetTypeNameByType(typ reflect.Type) string {
 // TypeByPackageName return the type by its package and name
 func TypeByPackageName(pkgPath string, name string) reflect.Type {
 	if pkgTypes, ok := packages[pkgPath]; ok {
+		return pkgTypes[name][0]
+	}
+	return nil
+}
+
+func TypesByPackageName(pkgPath string, name string) []reflect.Type {
+	if pkgTypes, ok := packages[pkgPath]; ok {
 		return pkgTypes[name]
 	}
 	return nil
 }
 
+func GetTypeFromGeneric[T interface{}]() reflect.Type {
+	res := reflect.TypeOf((*T)(nil)).Elem()
+	return res
+}
+
+func GetType(value interface{}) reflect.Type {
+	if reflect.TypeOf(value).Kind() == reflect.Pointer && reflect.TypeOf(value).Elem().Kind() == reflect.Interface {
+		return reflect.TypeOf(value).Elem()
+	}
+
+	res := reflect.TypeOf(value)
+	return res
+}
+
 func InstanceByT[T any]() T {
+	//https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
 	var msg T
 	typ := reflect.TypeOf(msg).Elem()
 	return getInstanceFromType(typ).(T)
+}
+
+func InstanceByType(typ reflect.Type) interface{} {
+	return getInstanceFromType(typ)
 }
 
 // InstanceByTypeName return an empty instance of the type by its name
@@ -124,6 +191,12 @@ func InstanceByT[T any]() T {
 // if the type is a struct type, it will return an empty struct
 func InstanceByTypeName(name string) interface{} {
 	typ := TypeByName(name)
+
+	return getInstanceFromType(typ)
+}
+
+func InstanceByTypeNameAndImplementedInterface[TInterface interface{}](name string) interface{} {
+	typ := TypeByNameAndImplementedInterface[TInterface](name)
 
 	return getInstanceFromType(typ)
 }

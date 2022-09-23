@@ -6,11 +6,13 @@ import (
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/workers"
 	"os"
 	"os/signal"
 	"syscall"
@@ -24,7 +26,7 @@ type Server struct {
 }
 
 func NewServer(log logger.Logger, cfg *config.Config) *Server {
-	return &Server{log: log, cfg: cfg}
+	return &Server{log: log, cfg: cfg, doneCh: make(chan struct{})}
 }
 
 func (s *Server) Run() error {
@@ -48,8 +50,6 @@ func (s *Server) Run() error {
 	}
 
 	deliveryType := s.cfg.DeliveryType
-
-	s.RunMetrics(cancel)
 
 	var serverError error
 
@@ -77,6 +77,22 @@ func (s *Server) Run() error {
 		panic(fmt.Sprintf("server type %s is not supported", deliveryType))
 	}
 
+	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
+		workers.NewMetricsWorker(infrastructureConfigurations),
+	})
+
+	workersErr := backgroundWorkers.Start(ctx)
+	go func() {
+		for {
+			select {
+			case e := <-workersErr:
+				serverError = e
+				cancel()
+				return
+			}
+		}
+	}()
+
 	<-ctx.Done()
 	s.waitForShootDown(constants.WaitShotDownDuration)
 
@@ -90,6 +106,8 @@ func (s *Server) Run() error {
 		s.log.Infof("%s is shutting down Grpc PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.GRPC.Port)
 		grpcServer.GracefulShutdown()
 	}
+
+	backgroundWorkers.Stop(ctx)
 
 	<-s.doneCh
 	s.log.Infof("%s server exited properly", web.GetMicroserviceName(s.cfg))

@@ -3,18 +3,16 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	rabbitmqBus "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
+	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/orders"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/workers"
 	"os"
 	"os/signal"
 	"syscall"
@@ -28,7 +26,7 @@ type Server struct {
 }
 
 func NewServer(log logger.Logger, cfg *config.Config) *Server {
-	return &Server{log: log, cfg: cfg}
+	return &Server{log: log, cfg: cfg, doneCh: make(chan struct{})}
 }
 
 func (s *Server) Run() error {
@@ -53,20 +51,7 @@ func (s *Server) Run() error {
 
 	deliveryType := s.cfg.DeliveryType
 
-	s.RunMetrics(cancel)
-
 	var serverError error
-
-	esdbWorker := eventstroredb.NewEsdbSubscriptionAllWorker(
-		s.log,
-		infrastructureConfigurations.Esdb,
-		s.cfg.EventStoreConfig,
-		infrastructureConfigurations.EsdbSerializer,
-		infrastructureConfigurations.CheckpointRepository,
-		es.NewProjectionPublisher(infrastructureConfigurations.Projections))
-
-	rabbitMQBus := rabbitmqBus.NewRabbitMQBus(s.log, infrastructureConfigurations.Consumers)
-	defer rabbitMQBus.Stop(ctx)
 
 	switch deliveryType {
 	case "http":
@@ -92,28 +77,19 @@ func (s *Server) Run() error {
 		panic(fmt.Sprintf("server type %s is not supported", deliveryType))
 	}
 
-	go func() {
-		err := rabbitMQBus.Start(ctx)
-		if err != nil {
-			serverError = err
-			cancel()
-		}
-	}()
+	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
+		workers.NewRabbitMQWorkerWorker(infrastructureConfigurations), workers.NewEventStoreDBWorker(infrastructureConfigurations), workers.NewMetricsWorker(infrastructureConfigurations),
+	})
 
+	workersErr := backgroundWorkers.Start(ctx)
 	go func() {
-		//https://developers.eventstore.com/clients/grpc/subscriptions.html#filtering-by-prefix-1
-		option := &eventstroredb.EventStoreDBSubscriptionToAllOptions{
-			FilterOptions: &esdb.SubscriptionFilter{
-				Type:     esdb.StreamFilterType,
-				Prefixes: s.cfg.Subscriptions.OrderSubscription.Prefix,
-			},
-			SubscriptionId: s.cfg.Subscriptions.OrderSubscription.SubscriptionId,
-		}
-		err := esdbWorker.SubscribeAll(ctx, option)
-		if err != nil {
-			s.log.Errorf("(esdbSubscribeAllWorker.SubscribeAll) err: {%v}", err)
-			serverError = err
-			cancel()
+		for {
+			select {
+			case e := <-workersErr:
+				serverError = e
+				cancel()
+				return
+			}
 		}
 	}()
 
@@ -130,6 +106,8 @@ func (s *Server) Run() error {
 		s.log.Infof("%s is shutting down Grpc PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.GRPC.Port)
 		grpcServer.GracefulShutdown()
 	}
+
+	backgroundWorkers.Stop(ctx)
 
 	<-s.doneCh
 	s.log.Infof("%s server exited properly", web.GetMicroserviceName(s.cfg))

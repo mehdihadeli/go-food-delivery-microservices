@@ -50,7 +50,7 @@ func NewOrderCreatedEventV1(aggregateId uuid.UUID, shopItems []*dtos.ShopItemDto
 		DeliveredTime:   deliveredTime,
 	}
 
-	eventData.DomainEvent = domain.NewDomainEvent(typeMapper.GetFullTypeName(eventData))
+	eventData.DomainEvent = domain.NewDomainEvent(typeMapper.GetTypeName(eventData))
 
 	return eventData, nil
 }
