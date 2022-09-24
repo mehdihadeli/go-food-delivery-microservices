@@ -6,6 +6,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/pipeline"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
@@ -35,13 +36,14 @@ func Test_Consume_Message(t *testing.T) {
 	}
 
 	rabbitmqConsumer, err := NewRabbitMQConsumer[*ProducerConsumerMessage](
+		json.NewJsonEventSerializer(),
+		defaultLogger.Logger,
 		conn,
 		func(builder *options.RabbitMQConsumerOptionsBuilder[*ProducerConsumerMessage]) {
 			//builder.WithAutoAck(true)
 		},
-		json.NewJsonEventSerializer(),
-		defaultLogger.Logger,
-		NewTestMessageHandler())
+		NewTestMessageHandler(),
+		NewPipeline1[*ProducerConsumerMessage]())
 
 	var consumers []consumer.Consumer
 	consumers = append(consumers, rabbitmqConsumer)
@@ -99,6 +101,7 @@ func NewProducerConsumerMessage(data string) *ProducerConsumerMessage {
 	}
 }
 
+// /////////// ConsumerHandler
 type TestMessageHandler struct {
 }
 
@@ -111,4 +114,23 @@ func (t *TestMessageHandler) Handle(ctx context.Context, consumeContext types2.I
 
 func NewTestMessageHandler() *TestMessageHandler {
 	return &TestMessageHandler{}
+}
+
+// /////////////// ConsumerPipeline
+type Pipeline1[T types2.IMessage] struct {
+}
+
+func NewPipeline1[T types2.IMessage]() pipeline.ConsumerPipeline[T] {
+	return &Pipeline1[T]{}
+}
+func (p Pipeline1[T]) Handle(ctx context.Context, consumerContext types2.IMessageConsumeContext[T], next pipeline.ConsumerHandlerFunc) error {
+	fmt.Println("PipelineBehaviourTest.Handled")
+
+	fmt.Println(fmt.Sprintf("pipeline got a message with id '%s'", consumerContext.Message().GeMessageId()))
+
+	err := next()
+	if err != nil {
+		return err
+	}
+	return nil
 }

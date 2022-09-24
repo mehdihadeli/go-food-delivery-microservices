@@ -3,11 +3,13 @@ package consumer
 import (
 	"context"
 	"emperror.dev/errors"
+	"github.com/ahmetb/go-linq/v3"
 	"github.com/avast/retry-go"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/pipeline"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/options"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/rabbitmqErrors"
@@ -30,6 +32,7 @@ type RabbitMQConsumer[T types2.IMessage] struct {
 	rabbitmqConsumerOptions *options.RabbitMQConsumerOptions
 	connection              types.IConnection
 	handler                 consumer.ConsumerHandler[T]
+	pipelines               []pipeline.ConsumerPipeline[T]
 	channel                 *amqp091.Channel
 	deliveryRoutines        chan struct{} // chan should init before using channel
 	eventSerializer         serializer.EventSerializer
@@ -37,7 +40,7 @@ type RabbitMQConsumer[T types2.IMessage] struct {
 	ErrChan                 chan error
 }
 
-func NewRabbitMQConsumer[T types2.IMessage](connection types.IConnection, builderFunc func(builder *options.RabbitMQConsumerOptionsBuilder[T]), eventSerializer serializer.EventSerializer, logger logger.Logger, handler consumer.ConsumerHandler[T]) (consumer.Consumer, error) {
+func NewRabbitMQConsumer[T types2.IMessage](eventSerializer serializer.EventSerializer, logger logger.Logger, connection types.IConnection, builderFunc func(builder *options.RabbitMQConsumerOptionsBuilder[T]), handler consumer.ConsumerHandler[T], pipelines ...pipeline.ConsumerPipeline[T]) (consumer.Consumer, error) {
 	builder := options.NewRabbitMQConsumerOptionsBuilder[T]()
 	if builderFunc != nil {
 		builderFunc(builder)
@@ -46,7 +49,16 @@ func NewRabbitMQConsumer[T types2.IMessage](connection types.IConnection, builde
 	consumerConfig := builder.Build()
 	deliveryRoutines := make(chan struct{}, consumerConfig.ConcurrencyLimit)
 
-	cons := &RabbitMQConsumer[T]{rabbitmqConsumerOptions: consumerConfig, deliveryRoutines: deliveryRoutines, ErrChan: make(chan error), connection: connection, handler: handler, eventSerializer: eventSerializer, logger: logger}
+	cons := &RabbitMQConsumer[T]{
+		rabbitmqConsumerOptions: consumerConfig,
+		deliveryRoutines:        deliveryRoutines,
+		ErrChan:                 make(chan error),
+		connection:              connection,
+		handler:                 handler,
+		pipelines:               pipelines,
+		eventSerializer:         eventSerializer,
+		logger:                  logger,
+	}
 
 	return cons, nil
 }
@@ -221,8 +233,34 @@ func (r *RabbitMQConsumer[T]) handleReceived(ctx context.Context, delivery amqp0
 
 func (r *RabbitMQConsumer[T]) handle(ctx context.Context, ack func(), nack func(), messageConsumeContext types2.IMessageConsumeContext[T], handler consumer.ConsumerHandler[T]) {
 	err := retry.Do(func() error {
-		err := handler.Handle(ctx, messageConsumeContext)
-		return err
+		if len(r.pipelines) > 0 {
+			var reversPipes = r.reversOrder(r.pipelines)
+
+			var lastHandler pipeline.ConsumerHandlerFunc = func() error {
+				return handler.Handle(ctx, messageConsumeContext)
+			}
+
+			aggregateResult := linq.From(reversPipes).AggregateWithSeedT(lastHandler, func(next pipeline.ConsumerHandlerFunc, pipe pipeline.ConsumerPipeline[T]) pipeline.ConsumerHandlerFunc {
+				pipeValue := pipe
+				nexValue := next
+
+				var handlerFunc pipeline.ConsumerHandlerFunc = func() error {
+					return pipeValue.Handle(ctx, messageConsumeContext, nexValue)
+				}
+				return handlerFunc
+			})
+
+			v := aggregateResult.(pipeline.ConsumerHandlerFunc)
+			err := v()
+
+			if err != nil {
+				return errors.Wrap(err, "error handling consumer handler pipeline")
+			}
+			return nil
+		} else {
+			err := handler.Handle(ctx, messageConsumeContext)
+			return err
+		}
 	}, append(retryOptions, retry.Context(ctx))...)
 
 	if err != nil {
@@ -265,4 +303,24 @@ func (r *RabbitMQConsumer[T]) deserializeData(contentType string, eventType stri
 	}
 
 	return *new(T)
+}
+
+func (r *RabbitMQConsumer[T]) reversOrder(values []pipeline.ConsumerPipeline[T]) []pipeline.ConsumerPipeline[T] {
+	var reverseValues []pipeline.ConsumerPipeline[T]
+
+	for i := len(values) - 1; i >= 0; i-- {
+		reverseValues = append(reverseValues, values[i])
+	}
+
+	return reverseValues
+}
+
+func (r *RabbitMQConsumer[T]) existsPipeType(p reflect.Type) bool {
+	for _, pipe := range r.pipelines {
+		if reflect.TypeOf(pipe) == p {
+			return true
+		}
+	}
+
+	return false
 }

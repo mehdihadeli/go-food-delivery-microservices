@@ -17,10 +17,10 @@ func ConfigConsumers(infra *infrastructure.InfrastructureConfigurations) error {
 	//utils.RegisterCustomMessageTypesToRegistrty(map[string]types.IMessage{"productCreatedV1": &creatingProductIntegration.ProductCreatedV1{}})
 
 	productCreatedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumer[*creatingProductIntegration.ProductCreatedV1](
-		infra.RabbitMQConnection,
-		func(builder *options.RabbitMQConsumerOptionsBuilder[*creatingProductIntegration.ProductCreatedV1]) {},
 		infra.EventSerializer,
 		infra.Log,
+		infra.RabbitMQConnection,
+		func(builder *options.RabbitMQConsumerOptionsBuilder[*creatingProductIntegration.ProductCreatedV1]) {},
 		creatingProductIntegration.NewProductCreatedConsumer(consumerBase))
 	if err != nil {
 		return err
@@ -28,10 +28,10 @@ func ConfigConsumers(infra *infrastructure.InfrastructureConfigurations) error {
 	infra.Consumers = append(infra.Consumers, productCreatedConsumer)
 
 	productDeletedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumer[*deletingProductIntegration.ProductDeletedV1](
-		infra.RabbitMQConnection,
-		func(builder *options.RabbitMQConsumerOptionsBuilder[*deletingProductIntegration.ProductDeletedV1]) {},
 		infra.EventSerializer,
 		infra.Log,
+		infra.RabbitMQConnection,
+		func(builder *options.RabbitMQConsumerOptionsBuilder[*deletingProductIntegration.ProductDeletedV1]) {},
 		deletingProductIntegration.NewProductDeletedConsumer(consumerBase))
 	if err != nil {
 		return err
@@ -39,10 +39,10 @@ func ConfigConsumers(infra *infrastructure.InfrastructureConfigurations) error {
 	infra.Consumers = append(infra.Consumers, productDeletedConsumer)
 
 	productUpdatedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumer[*updatingProductIntegration.ProductUpdatedV1](
-		infra.RabbitMQConnection,
-		func(builder *options.RabbitMQConsumerOptionsBuilder[*updatingProductIntegration.ProductUpdatedV1]) {},
 		infra.EventSerializer,
 		infra.Log,
+		infra.RabbitMQConnection,
+		func(builder *options.RabbitMQConsumerOptionsBuilder[*updatingProductIntegration.ProductUpdatedV1]) {},
 		updatingProductIntegration.NewProductUpdatedConsumer(consumerBase))
 	if err != nil {
 		return err

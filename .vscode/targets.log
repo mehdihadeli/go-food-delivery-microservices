@@ -11,12 +11,10 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Sep 24 01:14:01 2022
+# Make data base, printed on Sat Sep 24 18:45:47 2022
 
 # Variables
 
-# environment
-FPS_BROWSER_APP_PROFILE_STRING = Internet Explorer
 # environment
 SYSTEMDRIVE = C:
 # environment
@@ -44,9 +42,7 @@ GOPATH = C:\Users\MehdiHadeli\go
 # automatic
 @D = $(patsubst %/,%,$(patsubst %\,%,$(dir $@)))
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_21044_NUJDLIWVNIWHSGPB
-# environment
-FPS_BROWSER_USER_PROFILE_STRING = Default
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_24200_TPEATRNJNNVHFQDE
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # default
@@ -98,7 +94,7 @@ MAKEFILE_LIST := Makefile
 # automatic
 @F = $(notdir $@)
 # environment
-VSCODE_PID = 21044
+VSCODE_PID = 24200
 # automatic
 ?D = $(patsubst %/,%,$(patsubst %\,%,$(dir $?)))
 # automatic
@@ -222,7 +218,7 @@ PROCESSOR_REVISION = a503
 # environment
 PROCESSOR_IDENTIFIER = Intel64 Family 6 Model 165 Stepping 3, GenuineIntel
 # variable set hash-table stats:
-# Load=103/1024=10%, Rehash=0, Collisions=11/134=8%
+# Load=101/1024=10%, Rehash=0, Collisions=10/132=8%
 
 # Pattern-specific Variable Values
 
@@ -258,7 +254,8 @@ docker-compose_infra_up:
 
 cert:
 #  Implicit rule search has not been done.
-#  Modification time never checked.
+#  Modification time neve 
+r checked.
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 100):
 	openssl req -new -x509 -sha256 -key server.key -out server.pem -days 3650
@@ -430,7 +427,8 @@ proto_catalogs_read_product_service:
 #  File has not been updated.
 #  recipe to execute (from 'Makefile', line 122):
 	@echo Generating product_service client proto
-	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients api_docs/catalogs/read_service/protobuf/products/service_clients/*.proto
+	protoc --go_out=./services/catalogs/read_service/internal/products/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/catalogs/read_service/internal/products/contracts/proto/service_cl 
+ients api_docs/catalogs/read_service/protobuf/products/service_clients/*.proto
 
 docker-compose_infra_down:
 #  Implicit rule search has not been done.
@@ -489,6 +487,6 @@ proto_orders_order_service:
 # strcache performance: lookups = 81 / hit rate = 38%
 # hash-table stats:
 # Load=50/8192=1%, Rehash=0, Collisions=0/81=0%
-# Finished Make data base on Sat Sep 24 01:14:01 2022
+# Finished Make data base on Sat Sep 24 18:45:47 2022
 
  

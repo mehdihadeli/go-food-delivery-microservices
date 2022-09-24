@@ -6,7 +6,6 @@ import (
 )
 
 type IMessageConsumeContext[T IMessage] interface {
-	Message() T
 	MessageId() string
 	CorrelationId() string
 	MessageType() string
@@ -14,6 +13,7 @@ type IMessageConsumeContext[T IMessage] interface {
 	ContentType() string
 	Tag() uint64
 	Metadata() core.Metadata
+	Message() T
 }
 
 type messageConsumeContext[T IMessage] struct {
