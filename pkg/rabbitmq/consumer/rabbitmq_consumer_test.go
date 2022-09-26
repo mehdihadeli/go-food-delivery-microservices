@@ -48,7 +48,7 @@ func Test_Consume_Message(t *testing.T) {
 	var consumers []consumer.Consumer
 	consumers = append(consumers, rabbitmqConsumer)
 
-	b := bus.NewRabbitMQBus(defaultLogger.Logger, consumers)
+	b := bus.NewRabbitMQBus(defaultLogger.Logger, consumers...)
 	err = b.Start(context.Background())
 	if err != nil {
 		return
@@ -120,7 +120,7 @@ func Test_Consume_Default_Message(t *testing.T) {
 	var consumers []consumer.Consumer
 	consumers = append(consumers, rabbitmqConsumer)
 
-	b := bus.NewRabbitMQBus(defaultLogger.Logger, consumers)
+	b := bus.NewRabbitMQBus(defaultLogger.Logger, consumers...)
 	err = b.Start(context.Background())
 	if err != nil {
 		return
