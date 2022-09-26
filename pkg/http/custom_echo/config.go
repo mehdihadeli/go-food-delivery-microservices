@@ -8,4 +8,5 @@ type EchoHttpConfig struct {
 	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls"`
 	Timeout             int      `mapstructure:"timeout" env:"Timeout"`
 	Host                string   `mapstructure:"host" env:"Host"`
+	Name                string   `mapstructure:"name" env:"Name"`
 }

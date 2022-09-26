@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"emperror.dev/errors"
 	"fmt"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -26,10 +27,11 @@ const (
 type GrpcConfig struct {
 	Port        string `mapstructure:"port" env:"Port"`
 	Development bool   `mapstructure:"development" env:"Development"`
+	Name        string `mapstructure:"name" env:"Name"`
 }
 
 type GrpcServer interface {
-	RunGrpcServer(configGrpc func(grpcServer *grpc.Server)) error
+	RunGrpcServer(ctx context.Context, configGrpc func(grpcServer *grpc.Server)) error
 	GracefulShutdown()
 	GetCurrentGrpcServer() *grpc.Server
 }
@@ -59,7 +61,7 @@ func NewGrpcServer(config *GrpcConfig, logger logger.Logger) *grpcServer {
 	return &grpcServer{server: s, config: config, log: logger}
 }
 
-func (s *grpcServer) RunGrpcServer(configGrpc func(grpcServer *grpc.Server)) error {
+func (s *grpcServer) RunGrpcServer(ctx context.Context, configGrpc func(grpcServer *grpc.Server)) error {
 	l, err := net.Listen("tcp", s.config.Port)
 	if err != nil {
 		return errors.WrapIf(err, "net.Listen")
@@ -74,6 +76,17 @@ func (s *grpcServer) RunGrpcServer(configGrpc func(grpcServer *grpc.Server)) err
 	if s.config.Development {
 		reflection.Register(s.server)
 	}
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				s.log.Infof("%s is shutting down Grpc PORT: {%s}", s.config.Name, s.config.Port)
+				s.GracefulShutdown()
+				return
+			}
+		}
+	}()
 
 	s.log.Infof("[grpcServer.RunGrpcServer] Writer gRPC server is listening on port: %s", s.config.Port)
 

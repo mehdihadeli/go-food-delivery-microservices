@@ -5,8 +5,8 @@ import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/gofrs/uuid"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/metadata"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
 	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/append_result"
@@ -164,13 +164,13 @@ func (e *EsdbSerializer) EsdbWriteResultToAppendEventResult(writeResult *esdb.Wr
 	return appendResult.From(writeResult.CommitPosition, writeResult.NextExpectedVersion)
 }
 
-func (e *EsdbSerializer) Serialize(data interface{}, metadata core.Metadata) (*esdb.EventData, error) {
+func (e *EsdbSerializer) Serialize(data interface{}, meta metadata.Metadata) (*esdb.EventData, error) {
 	serializedData, err := e.eventSerializer.Serialize(data)
 	if err != nil {
 		return nil, err
 	}
 
-	serializedMeta, err := e.metadataSerializer.Serialize(metadata)
+	serializedMeta, err := e.metadataSerializer.Serialize(meta)
 	if err != nil {
 		return nil, err
 	}
@@ -185,25 +185,25 @@ func (e *EsdbSerializer) Serialize(data interface{}, metadata core.Metadata) (*e
 	}, nil
 }
 
-func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interface{}, core.Metadata, error) {
+func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interface{}, metadata.Metadata, error) {
 	eventType := resolveEvent.Event.EventType
 	data := resolveEvent.Event.Data
-	meta := resolveEvent.Event.UserMetadata
+	userMeta := resolveEvent.Event.UserMetadata
 
 	payload, err := e.eventSerializer.DeserializeEvent(data, eventType, resolveEvent.Event.ContentType)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	metadata, err := e.metadataSerializer.Deserialize(meta)
+	meta, err := e.metadataSerializer.Deserialize(userMeta)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return payload, metadata, nil
+	return payload, meta, nil
 }
 
-func (e *EsdbSerializer) DomainEventToStreamEvent(domainEvent domain.IDomainEvent, meta core.Metadata, position int64) *models.StreamEvent {
+func (e *EsdbSerializer) DomainEventToStreamEvent(domainEvent domain.IDomainEvent, meta metadata.Metadata, position int64) *models.StreamEvent {
 	return &models.StreamEvent{
 		EventID:  uuid2.NewV4(),
 		Event:    domainEvent,

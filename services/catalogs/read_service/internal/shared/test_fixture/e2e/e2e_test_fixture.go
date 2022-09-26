@@ -45,6 +45,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 
 	v1Groups := &V1Groups{ProductsGroup: productsV1}
 
+	// this should not be in integration test because of cyclic dependencies
 	err := mediatr.ConfigProductsMediator(infrastructures)
 	if err != nil {
 		cancel()
@@ -57,6 +58,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 		return nil
 	}
 
+	// this should not be in integration test because of cyclic dependencies
 	err = consumers.ConfigConsumers(infrastructures)
 	if err != nil {
 		cancel()

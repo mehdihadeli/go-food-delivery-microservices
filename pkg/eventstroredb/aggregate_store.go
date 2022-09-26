@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/ahmetb/go-linq/v3"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/domain"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/metadata"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/store"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models"
 	appendResult "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/append_result"
@@ -35,7 +35,7 @@ func NewEventStoreAggregateStore[T models.IHaveEventSourcedAggregate](log logger
 	return &esdbAggregateStore[T]{log: log, eventStore: eventStore, serializer: serializer}
 }
 
-func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata core.Metadata, expectedVersion expectedStreamVersion.ExpectedStreamVersion, ctx context.Context) (*appendResult.AppendEventsResult, error) {
+func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata metadata.Metadata, expectedVersion expectedStreamVersion.ExpectedStreamVersion, ctx context.Context) (*appendResult.AppendEventsResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.StoreWithVersion")
 	defer span.Finish()
 	span.LogFields(log.String("AggregateID", aggregate.Id().String()))
@@ -73,7 +73,7 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata core.Meta
 	return streamAppendResult, nil
 }
 
-func (a *esdbAggregateStore[T]) Store(aggregate T, metadata core.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error) {
+func (a *esdbAggregateStore[T]) Store(aggregate T, metadata metadata.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error) {
 	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Store")
 	defer span.Finish()
 	expectedVersion := expectedStreamVersion.FromInt64(aggregate.OriginalVersion())
@@ -125,15 +125,15 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 		return *new(T), tracing.TraceWithErr(span, errors.WrapIff(err, "[esdbAggregateStore.LoadWithReadPosition:MethodByName] error in loading aggregate {%s}", aggregateId.String()))
 	}
 
-	var metadata core.Metadata
+	var meta metadata.Metadata
 	var domainEvents []domain.IDomainEvent
 
 	linq.From(streamEvents).Distinct().SelectT(func(streamEvent *models.StreamEvent) domain.IDomainEvent {
-		metadata = streamEvent.Metadata
+		meta = streamEvent.Metadata
 		return streamEvent.Event
 	}).ToSlice(&domainEvents)
 
-	err = aggregate.LoadFromHistory(domainEvents, metadata)
+	err = aggregate.LoadFromHistory(domainEvents, meta)
 	if err != nil {
 		return *new(T), tracing.TraceWithErr(span, err)
 	}

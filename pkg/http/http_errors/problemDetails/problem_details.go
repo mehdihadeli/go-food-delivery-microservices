@@ -5,13 +5,19 @@ import (
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"net/http"
+	"reflect"
 	"time"
 )
 
 const (
 	ContentTypeJSON = "application/problem+json"
 )
+
+type ProblemDetailFunc[E error] func(err error) ProblemDetailErr
+
+var internalErrorMaps map[reflect.Type]func(err error) ProblemDetailErr
 
 // ProblemDetailErr ProblemDetail error interface
 type ProblemDetailErr interface {
@@ -162,6 +168,20 @@ func NewProblemDetailFromCodeAndDetail(status int, detail string, stackTrace str
 		Type:       getDefaultType(status),
 		StackTrace: stackTrace,
 	}
+}
+
+func Map[E error](problem ProblemDetailFunc[E]) {
+	errorType := reflect.TypeOf(typeMapper.GetTypeFromGeneric[E]())
+	internalErrorMaps[errorType] = problem
+}
+
+func ResolveProblemDetail(err error) ProblemDetailErr {
+	errorType := typeMapper.GetType(err)
+	problem := internalErrorMaps[errorType]
+	if problem != nil {
+		return problem(err)
+	}
+	return nil
 }
 
 func getDefaultType(statusCode int) string {

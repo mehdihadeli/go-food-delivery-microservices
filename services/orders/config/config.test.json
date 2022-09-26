@@ -5,10 +5,12 @@
     "timeout": 20
   },
   "grpc": {
+    "name":"order_service",
     "port": ":6005",
     "development": true
   },
   "http": {
+    "name":"order_service",
     "port": ":8000",
     "development": true,
     "timeout": 30,

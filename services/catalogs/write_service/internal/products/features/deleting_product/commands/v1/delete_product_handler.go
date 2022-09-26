@@ -37,7 +37,7 @@ func (c *DeleteProductHandler) Handle(ctx context.Context, command *DeleteProduc
 	}
 
 	productDeleted := v1.NewProductDeletedV1(command.ProductID.String())
-	err := c.rabbitmqProducer.Publish(ctx, productDeleted, nil)
+	err := c.rabbitmqProducer.PublishMessage(ctx, productDeleted, nil)
 	if err != nil {
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.PublishMessage] error in publishing 'ProductDeleted' message"))
 	}

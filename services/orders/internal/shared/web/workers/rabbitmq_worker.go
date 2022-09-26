@@ -8,16 +8,15 @@ import (
 )
 
 func NewRabbitMQWorkerWorker(infra *infrastructure.InfrastructureConfiguration) web.Worker {
-	rabbitMQBus := rabbitmqBus.NewRabbitMQBus(infra.Log, infra.Consumers)
-
+	bus := rabbitmqBus.NewRabbitMQBus(infra.Log, infra.Consumers)
 	return web.NewBackgroundWorker(func(ctx context.Context) error {
-		err := rabbitMQBus.Start(ctx)
+		err := bus.Start(ctx)
 		if err != nil {
 			infra.Log.Errorf("[RabbitMQWorkerWorker.Start] error in the starting rabbitmq worker: {%v}", err)
 			return err
 		}
 		return nil
 	}, func(ctx context.Context) error {
-		return rabbitMQBus.Stop(ctx)
+		return bus.Stop(ctx)
 	})
 }

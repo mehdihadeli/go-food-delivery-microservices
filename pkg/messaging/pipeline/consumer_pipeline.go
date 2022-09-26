@@ -9,6 +9,6 @@ import (
 type ConsumerHandlerFunc func() error
 
 // ConsumerPipeline is a Pipeline for wrapping the inner consumer handler.
-type ConsumerPipeline[T types.IMessage] interface {
-	Handle(ctx context.Context, consumerContext types.IMessageConsumeContext[T], next ConsumerHandlerFunc) error
+type ConsumerPipeline interface {
+	Handle(ctx context.Context, consumerContext types.MessageConsumeContext, next ConsumerHandlerFunc) error
 }

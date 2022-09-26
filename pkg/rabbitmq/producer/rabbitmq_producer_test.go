@@ -35,7 +35,7 @@ func Test_Publish_Message(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = rabbitmqProducer.Publish(context.Background(), NewProducerMessage("test"), nil)
+	err = rabbitmqProducer.PublishMessage(context.Background(), NewProducerMessage("test"), nil)
 	if err != nil {
 		return
 	}

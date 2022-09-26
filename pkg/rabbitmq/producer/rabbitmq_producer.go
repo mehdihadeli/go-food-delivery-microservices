@@ -3,11 +3,9 @@ package producer
 import (
 	"context"
 	"emperror.dev/errors"
-	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/metadata"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	messageHeader "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/message_header"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/utils"
@@ -34,11 +32,11 @@ func NewRabbitMQProducer(connection types.IConnection, builderFunc func(builder 
 	return &rabbitMQProducer{logger: logger, connection: connection, eventSerializer: eventSerializer, rabbitmqProducerOptions: builder.Build()}, nil
 }
 
-func (r *rabbitMQProducer) Publish(ctx context.Context, message types2.IMessage, metadata core.Metadata) error {
-	return r.PublishWithTopicName(ctx, message, metadata, "")
+func (r *rabbitMQProducer) PublishMessage(ctx context.Context, message types2.IMessage, meta metadata.Metadata) error {
+	return r.PublishMessageWithTopicName(ctx, message, meta, "")
 }
 
-func (r *rabbitMQProducer) PublishWithTopicName(ctx context.Context, message types2.IMessage, metadata core.Metadata, topicOrExchangeName string) error {
+func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, message types2.IMessage, meta metadata.Metadata, topicOrExchangeName string) error {
 	//https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/go/publisher_confirms.go
 	if r.connection == nil {
 		return errors.New("connection is nil")
@@ -55,17 +53,12 @@ func (r *rabbitMQProducer) PublishWithTopicName(ctx context.Context, message typ
 	}
 	defer channel.Close()
 
-	if message.GetEventTypeName() == "" {
-		message.SetEventTypeName(typeMapper.GetTypeName(message)) // just message type name not full type name because in other side package name for type could be different)
-	}
-	metadata = getMetadata(message, metadata)
+	meta = getMetadata(message, meta)
 
 	serializedObj, err := r.eventSerializer.Serialize(message)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(string(serializedObj.Data))
 
 	var exchange string
 
@@ -88,10 +81,10 @@ func (r *rabbitMQProducer) PublishWithTopicName(ctx context.Context, message typ
 	channel.NotifyPublish(confirms)
 
 	props := amqp091.Publishing{
-		CorrelationId: message.GetCorrelationId(),
+		CorrelationId: meta.GetCorrelationId(),
 		MessageId:     message.GeMessageId(),
 		Timestamp:     time.Now(),
-		Headers:       core.MetadataToMap(metadata),
+		Headers:       metadata.MetadataToMap(meta),
 		Type:          message.GetEventTypeName(), //typeMapper.GetTypeName(message) - just message type name not full type name because in other side package name for type could be different
 		ContentType:   serializedObj.ContentType,
 		Body:          serializedObj.Data,
@@ -117,27 +110,30 @@ func (r *rabbitMQProducer) PublishWithTopicName(ctx context.Context, message typ
 	return nil
 }
 
-func getMetadata(message types2.IMessage, metadata core.Metadata) core.Metadata {
-	metadata = core.FromMetadata(metadata)
+func getMetadata(message types2.IMessage, meta metadata.Metadata) metadata.Metadata {
+	meta = metadata.FromMetadata(meta)
 
-	if metadata.ExistsKey(messageHeader.MessageId) == false {
-		metadata.SetValue(messageHeader.MessageId, message.GeMessageId())
+	if message.GetEventTypeName() == "" {
+		message.SetEventTypeName(typeMapper.GetTypeName(message)) // just message type name not full type name because in other side package name for type could be different)
+	}
+	meta.SetMessageType(message.GetEventTypeName())
+
+	if meta.GetMessageId() == "" {
+		meta.SetMessageId(message.GeMessageId())
 	}
 
-	if metadata.ExistsKey(messageHeader.Created) == false {
-		metadata.SetValue(messageHeader.Created, message.GetCreated())
+	if meta.GetMessageCreated() == *new(time.Time) {
+		meta.SetMessageCreated(message.GetCreated())
 	}
 
-	if metadata.ExistsKey(messageHeader.CorrelationId) == false {
+	if meta.GetCorrelationId() == "" {
 		cid := uuid.NewV4().String()
-		metadata.SetValue(messageHeader.CorrelationId, cid)
-		message.SetCorrelationId(cid)
+		meta.SetCorrelationId(cid)
 	}
 
-	metadata.SetValue(messageHeader.Name, utils.GetMessageName(message))
-	metadata.SetValue(messageHeader.Type, message.GetEventTypeName())
+	meta.SetMessageName(utils.GetMessageName(message))
 
-	return metadata
+	return meta
 }
 
 func (r *rabbitMQProducer) ensureExchange(channel *amqp091.Channel, exchangeName string) error {

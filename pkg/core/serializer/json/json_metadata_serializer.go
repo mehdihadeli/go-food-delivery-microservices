@@ -2,7 +2,7 @@ package json
 
 import (
 	"emperror.dev/errors"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/metadata"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 )
 
@@ -13,7 +13,7 @@ func NewJsonMetadataSerializer() *JsonMetadataSerializer {
 	return &JsonMetadataSerializer{}
 }
 
-func (s *JsonMetadataSerializer) Serialize(meta core.Metadata) ([]byte, error) {
+func (s *JsonMetadataSerializer) Serialize(meta metadata.Metadata) ([]byte, error) {
 	if meta == nil {
 		return nil, nil
 	}
@@ -26,12 +26,12 @@ func (s *JsonMetadataSerializer) Serialize(meta core.Metadata) ([]byte, error) {
 	return marshal, nil
 }
 
-func (s *JsonMetadataSerializer) Deserialize(bytes []byte) (core.Metadata, error) {
+func (s *JsonMetadataSerializer) Deserialize(bytes []byte) (metadata.Metadata, error) {
 	if bytes == nil {
 		return nil, nil
 	}
 
-	var meta core.Metadata
+	var meta metadata.Metadata
 
 	err := jsonSerializer.Unmarshal(bytes, &meta)
 	if err != nil {
