@@ -20,7 +20,7 @@ type echoHttpServer struct {
 }
 
 type EchoHttpServer interface {
-	RunHttpServer(configEcho func(echoServer *echo.Echo)) error
+	RunHttpServer(ctx context.Context, configEcho func(echoServer *echo.Echo)) error
 	GracefulShutdown(ctx context.Context) error
 	ApplyVersioningFromHeader()
 	GetEchoInstance() *echo.Echo
@@ -33,7 +33,7 @@ func NewEchoHttpServer(config *EchoHttpConfig, logger logger.Logger) *echoHttpSe
 	return &echoHttpServer{echo: echo.New(), config: config, log: logger}
 }
 
-func (s *echoHttpServer) RunHttpServer(configEcho func(echo *echo.Echo)) error {
+func (s *echoHttpServer) RunHttpServer(ctx context.Context, configEcho func(echo *echo.Echo)) error {
 	s.echo.Server.ReadTimeout = constants.ReadTimeout
 	s.echo.Server.WriteTimeout = constants.WriteTimeout
 	s.echo.Server.MaxHeaderBytes = constants.MaxHeaderBytes
@@ -41,6 +41,19 @@ func (s *echoHttpServer) RunHttpServer(configEcho func(echo *echo.Echo)) error {
 	if configEcho != nil {
 		configEcho(s.echo)
 	}
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				s.log.Infof("%s is shutting down Http PORT: {%s}", s.config.Name, s.config.Port)
+				if err := s.GracefulShutdown(ctx); err != nil {
+					s.log.Warnf("(Shutdown) err: {%v}", err)
+				}
+				return
+			}
+		}
+	}()
 
 	//https://echo.labstack.com/guide/http_server/
 	return s.echo.Start(s.config.Port)

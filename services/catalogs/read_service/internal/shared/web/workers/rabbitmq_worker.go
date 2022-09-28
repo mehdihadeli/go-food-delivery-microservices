@@ -8,7 +8,7 @@ import (
 )
 
 func NewRabbitMQWorkerWorker(infra *infrastructure.InfrastructureConfigurations) web.Worker {
-	rabbitMQBus := rabbitmqBus.NewRabbitMQBus(infra.Log, infra.Consumers)
+	rabbitMQBus := rabbitmqBus.NewRabbitMQBus(infra.Log, infra.Consumers...)
 
 	return web.NewBackgroundWorker(func(ctx context.Context) error {
 		err := rabbitMQBus.Start(ctx)

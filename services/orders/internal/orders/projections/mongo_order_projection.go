@@ -65,7 +65,7 @@ func (m *mongoOrderProjection) onOrderCreated(ctx context.Context, evt *creating
 
 	orderCreatedEvent := v1.NewOrderCreatedV1(orderReadDto)
 
-	err = m.rabbitmqProducer.Publish(ctx, orderCreatedEvent, nil)
+	err = m.rabbitmqProducer.PublishMessage(ctx, orderCreatedEvent, nil)
 	if err != nil {
 		return tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[mongoOrderProjection_onOrderCreated.PublishMessage] error in publishing OrderCreated integration event"))
 	}

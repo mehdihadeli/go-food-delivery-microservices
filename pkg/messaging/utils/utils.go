@@ -8,28 +8,28 @@ import (
 	"reflect"
 )
 
-func GetMessageName(message any) string {
+func GetMessageName(message interface{}) string {
 	if reflect.TypeOf(message).Kind() == reflect.Pointer {
 		return strcase.ToSnake(reflect.TypeOf(message).Elem().Name())
 	}
 	return strcase.ToSnake(reflect.TypeOf(message).Name())
 }
 
-func GetTopicOrExchangeName(message types.IMessage) string {
+func GetTopicOrExchangeName(message interface{}) string {
 	if reflect.TypeOf(message).Kind() == reflect.Pointer {
 		return strcase.ToSnake(reflect.TypeOf(message).Elem().Name())
 	}
 	return strcase.ToSnake(reflect.TypeOf(message).Name())
 }
 
-func GetQueueName(message types.IMessage) string {
+func GetQueueName(message interface{}) string {
 	if reflect.TypeOf(message).Kind() == reflect.Pointer {
 		return strcase.ToSnake(reflect.TypeOf(message).Elem().Name())
 	}
 	return strcase.ToSnake(reflect.TypeOf(message).Name())
 }
 
-func GetRoutingKey(message types.IMessage) string {
+func GetRoutingKey(message interface{}) string {
 	if reflect.TypeOf(message).Kind() == reflect.Pointer {
 		return strcase.ToSnake(reflect.TypeOf(message).Elem().Name())
 	}
@@ -57,4 +57,3 @@ func GetAllMessageTypes() []reflect.Type {
 
 	return squares
 }
-

@@ -24,7 +24,7 @@ func NewProductUpdatedConsumer(productConsumerBase *delivery.ProductConsumersBas
 	return &productUpdatedConsumer{productConsumerBase}
 }
 
-func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext types2.IMessageConsumeContext[*ProductUpdatedV1]) error {
+func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext types2.MessageConsumeContextT[*ProductUpdatedV1]) error {
 	if consumeContext.Message() == nil {
 		return nil
 	}

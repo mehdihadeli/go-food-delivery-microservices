@@ -1,6 +1,6 @@
-package core
+package metadata
 
-import "emperror.dev/errors"
+import "time"
 
 type Metadata map[string]interface{}
 
@@ -9,13 +9,31 @@ func (m Metadata) ExistsKey(key string) bool {
 	return exists
 }
 
-func (m Metadata) GetKey(key string) (interface{}, error) {
+func (m Metadata) GetKey(key string) interface{} {
 	val, exists := m[key]
 	if !exists {
-		return nil, errors.New("key not found")
+		return nil
 	}
 
-	return val, nil
+	return val
+}
+
+func (m Metadata) GetString(key string) string {
+	val, ok := m.GetKey(key).(string)
+	if ok {
+		return val
+	}
+
+	return ""
+}
+
+func (m Metadata) GetTime(key string) time.Time {
+	val, ok := m.GetKey(key).(time.Time)
+	if ok {
+		return val
+	}
+
+	return *new(time.Time)
 }
 
 func (m Metadata) SetValue(key string, value interface{}) {

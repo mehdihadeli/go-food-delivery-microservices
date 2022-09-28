@@ -20,7 +20,20 @@ type RabbitMQConsumerOptions struct {
 	ExchangeOptions *RabbitMQExchangeOptions
 }
 
-func NewDefaultRabbitMQConsumerOptions[T types2.IMessage]() *RabbitMQConsumerOptions {
+func NewDefaultRabbitMQConsumerOptions() *RabbitMQConsumerOptions {
+	return &RabbitMQConsumerOptions{
+		ConsumerOptions:  &consumer.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
+		ConcurrencyLimit: 1,
+		PrefetchCount:    4, //how many messages we can handle at once
+		NoLocal:          false,
+		NoWait:           true,
+		BindingOptions:   &RabbitMQBindingOptions{},
+		ExchangeOptions:  &RabbitMQExchangeOptions{Durable: true, Type: types.ExchangeTopic},
+		QueueOptions:     &RabbitMQQueueOptions{Durable: true},
+	}
+}
+
+func NewDefaultRabbitMQConsumerOptionsT[T types2.IMessage]() *RabbitMQConsumerOptions {
 	return &RabbitMQConsumerOptions{
 		ConsumerOptions:  &consumer.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
 		ConcurrencyLimit: 1,

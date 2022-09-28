@@ -55,7 +55,7 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 
 	productCreated := v1.NewProductCreatedV1(productDto)
 
-	err = c.rabbitmqProducer.Publish(ctx, productCreated, nil)
+	err = c.rabbitmqProducer.PublishMessage(ctx, productCreated, nil)
 	if err != nil {
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.PublishMessage] error in publishing ProductCreated integration event"))
 	}

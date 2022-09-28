@@ -8,8 +8,30 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"net/http"
+	"reflect"
 )
+
+type ProblemDetailParser struct {
+	internalErrors map[reflect.Type]func(err error) ProblemDetailErr
+}
+
+func NewProblemDetailParser(builder func(builder *OptionBuilder)) *ProblemDetailParser {
+	optionBuilder := NewOptionBuilder()
+	builder(optionBuilder)
+	items := optionBuilder.Build()
+	return &ProblemDetailParser{internalErrors: items}
+}
+
+func (p *ProblemDetailParser) ResolveError(err error) ProblemDetailErr {
+	errType := typeMapper.GetType(err)
+	problem := p.internalErrors[errType]
+	if problem != nil {
+		return problem(err)
+	}
+	return nil
+}
 
 func ParseError(err error) ProblemDetailErr {
 	stackTrace := httpErrors.ErrorsWithStack(err)

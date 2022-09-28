@@ -60,7 +60,7 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduc
 
 	productUpdated := v1.NewProductUpdatedV1(productDto)
 
-	err = c.rabbitmqProducer.Publish(ctx, productUpdated, nil)
+	err = c.rabbitmqProducer.PublishMessage(ctx, productUpdated, nil)
 	if err != nil {
 		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[UpdateProductHandler_Handle.PublishMessage] error in publishing 'ProductUpdated' message"))
 	}

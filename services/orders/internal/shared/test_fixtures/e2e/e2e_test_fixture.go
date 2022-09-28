@@ -49,7 +49,15 @@ func NewE2ETestFixture() *E2ETestFixture {
 
 	v1Groups := &V1Groups{OrdersGroup: ordersV1}
 
+	// this should not be in integration test because of cyclic dependencies
 	err := mediatr.ConfigOrdersMediator(infrastructures)
+	if err != nil {
+		cancel()
+		return nil
+	}
+
+	// this should not be in integration test because of cyclic dependencies
+	err = consumers.ConfigConsumers(infrastructures)
 	if err != nil {
 		cancel()
 		return nil
@@ -62,11 +70,6 @@ func NewE2ETestFixture() *E2ETestFixture {
 	}
 
 	projections.ConfigOrderProjections(infrastructures)
-	err = consumers.ConfigConsumers(infrastructures)
-	if err != nil {
-		cancel()
-		return nil
-	}
 
 	httpServer := httptest.NewServer(echo)
 	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger)
@@ -97,7 +100,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 
 func (e *E2ETestFixture) Run() {
 	go func() {
-		if err := e.GrpcServer.RunGrpcServer(nil); err != nil {
+		if err := e.GrpcServer.RunGrpcServer(e.ctx, nil); err != nil {
 			e.cancel()
 			e.Log.Errorf("(s.RunGrpcServer) err: %v", err)
 			return

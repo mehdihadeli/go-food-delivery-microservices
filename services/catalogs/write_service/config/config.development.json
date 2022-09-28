@@ -5,10 +5,12 @@
     "timeout": 20
   },
   "grpc": {
+    "name":"catalogs_write_service",
     "port": ":6003",
     "development": true
   },
   "http": {
+    "name":"catalogs_write_service",
     "port": ":7000",
     "development": true,
     "timeout": 30,

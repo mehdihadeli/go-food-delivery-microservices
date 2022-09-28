@@ -1,8 +1,10 @@
 package serializer
 
-import "github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
+import (
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/metadata"
+)
 
 type MetadataSerializer interface {
-	Serialize(meta core.Metadata) ([]byte, error)
-	Deserialize(bytes []byte) (core.Metadata, error)
+	Serialize(meta metadata.Metadata) ([]byte, error)
+	Deserialize(bytes []byte) (metadata.Metadata, error)
 }

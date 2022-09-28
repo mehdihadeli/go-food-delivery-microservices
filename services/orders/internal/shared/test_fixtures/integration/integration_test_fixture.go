@@ -2,13 +2,15 @@ package integration
 
 import (
 	"context"
+	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/store"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/options"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/consumers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/projections"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/repositories"
@@ -24,10 +26,10 @@ type IntegrationTestFixture struct {
 	*infrastructure.InfrastructureConfiguration
 	OrderAggregateStore      store.AggregateStore[*aggregate.Order]
 	MongoOrderReadRepository repositories.OrderReadRepository
-	workersRunner            *webWoker.WorkersRunner
 	ctx                      context.Context
 	cancel                   context.CancelFunc
 	Cleanup                  func()
+	cleanupChan              chan struct{}
 }
 
 func NewIntegrationTestFixture() *IntegrationTestFixture {
@@ -48,42 +50,74 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 		cancel()
 		return nil
 	}
-	
+
 	projections.ConfigOrderProjections(infrastructures)
-	err = consumers.ConfigConsumers(infrastructures)
-	if err != nil {
-		cancel()
-		return nil
-	}
 
-	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorkerWorker(infrastructures), workers.NewEventStoreDBWorker(infrastructures),
-	})
-
+	cleanupChan := make(chan struct{})
 	return &IntegrationTestFixture{
+		cleanupChan: cleanupChan,
 		Cleanup: func() {
-			workersRunner.Stop(ctx)
+			cleanupChan <- struct{}{}
 			cancel()
 			cleanup()
 		},
 		InfrastructureConfiguration: infrastructures,
 		OrderAggregateStore:         orderAggregateStore,
 		MongoOrderReadRepository:    mongoOrderReadRepository,
-		workersRunner:               workersRunner,
 		ctx:                         ctx,
 		cancel:                      cancel,
 	}
 }
 
 func (e *IntegrationTestFixture) Run() {
-	workersErr := e.workersRunner.Start(e.ctx)
+	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
+		workers.NewRabbitMQWorkerWorker(e.InfrastructureConfiguration), workers.NewEventStoreDBWorker(e.InfrastructureConfiguration),
+	})
+
+	workersErr := workersRunner.Start(e.ctx)
 	go func() {
 		for {
 			select {
 			case _ = <-workersErr:
+				workersRunner.Stop(e.ctx)
 				e.cancel()
+				return
+			case <-e.cleanupChan:
+				workersRunner.Stop(e.ctx)
 				return
 			}
 		}
 	}()
+}
+
+func (e *IntegrationTestFixture) FakeConsumer(messageName string) *consumer.RabbitMQFakeTestConsumer {
+	fakeConsumer := consumer.NewRabbitMQFakeTestConsumer(
+		e.EventSerializer,
+		e.Log,
+		e.RabbitMQConnection,
+		func(builder *options.RabbitMQConsumerOptionsBuilder) {
+			builder.WithExchangeName(messageName).WithQueueName(messageName).WithRoutingKey(messageName)
+		})
+
+	e.Consumers = append(e.Consumers, fakeConsumer)
+
+	return fakeConsumer
+}
+
+func (e *IntegrationTestFixture) WaitUntilConditionMet(conditionToMet func() bool) error {
+	timeout := 20 * time.Second
+
+	startTime := time.Now()
+	timeOutExpired := false
+	meet := conditionToMet()
+	for meet == false {
+		if timeOutExpired {
+			return errors.New("Condition not met for the test, timeout exceeded")
+		}
+		time.Sleep(time.Second * 2)
+		meet = conditionToMet()
+		timeOutExpired = time.Now().Sub(startTime) > timeout
+	}
+
+	return nil
 }

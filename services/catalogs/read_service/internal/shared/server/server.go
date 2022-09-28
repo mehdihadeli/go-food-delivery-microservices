@@ -57,7 +57,7 @@ func (s *Server) Run() error {
 	switch deliveryType {
 	case "http":
 		go func() {
-			if err := echoServer.RunHttpServer(nil); err != nil {
+			if err := echoServer.RunHttpServer(ctx, nil); err != nil {
 				s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
 				serverError = err
 				cancel()
@@ -67,7 +67,7 @@ func (s *Server) Run() error {
 
 	case "grpc":
 		go func() {
-			if err := grpcServer.RunGrpcServer(nil); err != nil {
+			if err := grpcServer.RunGrpcServer(ctx, nil); err != nil {
 				s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
 				serverError = err
 				cancel()
@@ -94,22 +94,11 @@ func (s *Server) Run() error {
 		}
 	}()
 
+	// waiting for app get a canceled or completed signal
 	<-ctx.Done()
 	s.waitForShootDown(constants.WaitShotDownDuration)
 
-	switch deliveryType {
-	case "http":
-		s.log.Infof("%s is shutting down Http PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.Http.Port)
-		if err := echoServer.GracefulShutdown(ctx); err != nil {
-			s.log.Warnf("(Shutdown) err: {%v}", err)
-		}
-	case "grpc":
-		s.log.Infof("%s is shutting down Grpc PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.GRPC.Port)
-		grpcServer.GracefulShutdown()
-	}
-
-	backgroundWorkers.Stop(ctx)
-
+	// waiting for shutdown time reached
 	<-s.doneCh
 	s.log.Infof("%s server exited properly", web.GetMicroserviceName(s.cfg))
 

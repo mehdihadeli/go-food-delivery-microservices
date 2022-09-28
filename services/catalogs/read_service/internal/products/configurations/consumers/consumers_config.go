@@ -16,33 +16,33 @@ func ConfigConsumers(infra *infrastructure.InfrastructureConfigurations) error {
 	//add custom message type mappings
 	//utils.RegisterCustomMessageTypesToRegistrty(map[string]types.IMessage{"productCreatedV1": &creatingProductIntegration.ProductCreatedV1{}})
 
-	productCreatedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumer[*creatingProductIntegration.ProductCreatedV1](
-		infra.RabbitMQConnection,
-		func(builder *options.RabbitMQConsumerOptionsBuilder[*creatingProductIntegration.ProductCreatedV1]) {},
+	productCreatedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumerT[*creatingProductIntegration.ProductCreatedV1](
 		infra.EventSerializer,
 		infra.Log,
+		infra.RabbitMQConnection,
+		func(builder *options.RabbitMQConsumerOptionsBuilder) {},
 		creatingProductIntegration.NewProductCreatedConsumer(consumerBase))
 	if err != nil {
 		return err
 	}
 	infra.Consumers = append(infra.Consumers, productCreatedConsumer)
 
-	productDeletedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumer[*deletingProductIntegration.ProductDeletedV1](
-		infra.RabbitMQConnection,
-		func(builder *options.RabbitMQConsumerOptionsBuilder[*deletingProductIntegration.ProductDeletedV1]) {},
+	productDeletedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumerT[*deletingProductIntegration.ProductDeletedV1](
 		infra.EventSerializer,
 		infra.Log,
+		infra.RabbitMQConnection,
+		func(builder *options.RabbitMQConsumerOptionsBuilder) {},
 		deletingProductIntegration.NewProductDeletedConsumer(consumerBase))
 	if err != nil {
 		return err
 	}
 	infra.Consumers = append(infra.Consumers, productDeletedConsumer)
 
-	productUpdatedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumer[*updatingProductIntegration.ProductUpdatedV1](
-		infra.RabbitMQConnection,
-		func(builder *options.RabbitMQConsumerOptionsBuilder[*updatingProductIntegration.ProductUpdatedV1]) {},
+	productUpdatedConsumer, err := rabbitmqConsumer.NewRabbitMQConsumerT[*updatingProductIntegration.ProductUpdatedV1](
 		infra.EventSerializer,
 		infra.Log,
+		infra.RabbitMQConnection,
+		func(builder *options.RabbitMQConsumerOptionsBuilder) {},
 		updatingProductIntegration.NewProductUpdatedConsumer(consumerBase))
 	if err != nil {
 		return err

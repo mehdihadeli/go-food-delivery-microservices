@@ -15,7 +15,7 @@ type rabbitMQBus struct {
 	logger    logger.Logger
 }
 
-func NewRabbitMQBus(log logger.Logger, consumers []consumer.Consumer) bus.Bus {
+func NewRabbitMQBus(log logger.Logger, consumers ...consumer.Consumer) bus.Bus {
 	return &rabbitMQBus{logger: log, consumers: consumers}
 }
 
