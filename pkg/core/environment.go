@@ -5,6 +5,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"log"
 	"os"
+	"syscall"
 )
 
 func IsDevelopment() bool {
@@ -15,6 +16,16 @@ func IsDevelopment() bool {
 func IsProduction() bool {
 	env := os.Getenv("APP_ENV")
 	return env == constants.Production
+}
+
+func GetEnvironment() string {
+	if IsDevelopment() {
+		return constants.Dev
+	} else if IsProduction() {
+		return constants.Production
+	}
+	
+	return constants.Dev
 }
 
 func ConfigAppEnv(env string) string {
@@ -37,4 +48,11 @@ func ConfigAppEnv(env string) string {
 	}
 
 	return envResult
+}
+
+func EnvString(key, fallback string) string {
+	if value, ok := syscall.Getenv(key); ok {
+		return value
+	}
+	return fallback
 }

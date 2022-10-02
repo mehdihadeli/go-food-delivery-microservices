@@ -1,7 +1,5 @@
 package metadata
 
-import "time"
-
 type Metadata map[string]interface{}
 
 func (m Metadata) ExistsKey(key string) bool {
@@ -9,7 +7,7 @@ func (m Metadata) ExistsKey(key string) bool {
 	return exists
 }
 
-func (m Metadata) GetKey(key string) interface{} {
+func (m Metadata) Get(key string) interface{} {
 	val, exists := m[key]
 	if !exists {
 		return nil
@@ -18,26 +16,20 @@ func (m Metadata) GetKey(key string) interface{} {
 	return val
 }
 
-func (m Metadata) GetString(key string) string {
-	val, ok := m.GetKey(key).(string)
-	if ok {
-		return val
-	}
-
-	return ""
-}
-
-func (m Metadata) GetTime(key string) time.Time {
-	val, ok := m.GetKey(key).(time.Time)
-	if ok {
-		return val
-	}
-
-	return *new(time.Time)
-}
-
-func (m Metadata) SetValue(key string, value interface{}) {
+func (m Metadata) Set(key string, value interface{}) {
 	m[key] = value
+}
+
+func (m Metadata) Keys() []string {
+	i := 0
+	r := make([]string, len(m))
+
+	for k, _ := range m {
+		r[i] = k
+		i++
+	}
+
+	return r
 }
 
 func MapToMetadata(data map[string]interface{}) Metadata {
@@ -50,7 +42,6 @@ func MetadataToMap(meta Metadata) map[string]interface{} {
 }
 
 func FromMetadata(m Metadata) Metadata {
-
 	if m == nil {
 		return Metadata{}
 	}

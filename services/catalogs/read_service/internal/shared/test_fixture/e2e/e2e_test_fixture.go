@@ -23,7 +23,7 @@ type E2ETestFixture struct {
 	GrpcServer    grpcServer.GrpcServer
 	HttpServer    *httptest.Server
 	workersRunner *webWoker.WorkersRunner
-	ctx           context.Context
+	Ctx           context.Context
 	cancel        context.CancelFunc
 	Cleanup       func()
 }
@@ -87,20 +87,20 @@ func NewE2ETestFixture() *E2ETestFixture {
 		GrpcServer:                   grpcServer,
 		HttpServer:                   httpServer,
 		workersRunner:                workersRunner,
-		ctx:                          ctx,
+		Ctx:                          ctx,
 		cancel:                       cancel,
 	}
 }
 
 func (e *E2ETestFixture) Run() {
 	go func() {
-		if err := e.GrpcServer.RunGrpcServer(nil); err != nil {
+		if err := e.GrpcServer.RunGrpcServer(e.Ctx, nil); err != nil {
 			e.cancel()
 			e.Log.Errorf("(s.RunGrpcServer) err: %v", err)
 		}
 	}()
 
-	workersErr := e.workersRunner.Start(e.ctx)
+	workersErr := e.workersRunner.Start(e.Ctx)
 	go func() {
 		for {
 			select {

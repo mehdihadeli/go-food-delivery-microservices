@@ -10,6 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
+	consumeTracing "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/otel/tracing/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/pipeline"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/options"
@@ -17,6 +18,8 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"reflect"
 	"time"
 )
@@ -68,7 +71,7 @@ func NewRabbitMQConsumerT[T types2.IMessage](eventSerializer serializer.EventSer
 }
 
 // NewRabbitMQConsumer create a new RabbitMQ consumer
-func NewRabbitMQConsumer(eventSerializer serializer.EventSerializer, logger logger.Logger, connection types.IConnection, builderFunc func(builder *options.RabbitMQConsumerOptionsBuilder), handler consumer.ConsumerHandler, pipelines ...pipeline.ConsumerPipeline) (consumer.Consumer, error) {
+func NewRabbitMQConsumer(eventSerializer serializer.EventSerializer, logger logger.Logger, connection types.IConnection, builderFunc consumer.ConsumerBuilderFuc[*options.RabbitMQConsumerOptionsBuilder], handler consumer.ConsumerHandler, pipelines ...pipeline.ConsumerPipeline) (consumer.Consumer, error) {
 	builder := options.NewRabbitMQConsumerOptionsBuilder()
 	if builderFunc != nil {
 		builderFunc(builder)
@@ -171,6 +174,7 @@ func (r *rabbitMQConsumer[T]) Consume(ctx context.Context) error {
 						r.logger.Error("consumer connection dropped")
 						return
 					}
+
 					//https://github.com/streadway/amqp/blob/2aa28536587a0090d8280eed56c75867ce7e93ec/delivery.go#L62
 					r.handleReceived(ctx, msg)
 				}
@@ -231,8 +235,24 @@ func (r *rabbitMQConsumer[T]) handleReceived(ctx context.Context, delivery amqp0
 
 	defer func() { <-r.deliveryRoutines }()
 
+	var meta metadata.Metadata
+	if delivery.Headers != nil {
+		meta = metadata.MapToMetadata(delivery.Headers)
+	}
+
+	consumerTraceOption := &consumeTracing.ConsumerTracingOptions{
+		MessagingSystem: "rabbitmq",
+		DestinationKind: "queue",
+		Destination:     r.rabbitmqConsumerOptions.QueueOptions.Name,
+		OtherAttributes: []attribute.KeyValue{
+			semconv.MessagingRabbitmqRoutingKeyKey.String(delivery.RoutingKey),
+		},
+	}
+	ctx, beforeConsumeSpan := consumeTracing.StartConsumerSpan(ctx, &meta, string(delivery.Body), consumerTraceOption)
+
 	consumeContext := r.createConsumeContext(delivery)
 	if consumeContext == nil {
+		r.logger.Error(consumeTracing.FinishConsumerSpan(beforeConsumeSpan, errors.New("createConsumeContext is nil")).Error())
 		return
 	}
 
@@ -243,16 +263,22 @@ func (r *rabbitMQConsumer[T]) handleReceived(ctx context.Context, delivery amqp0
 	if r.rabbitmqConsumerOptions.AutoAck == false {
 		ack = func() {
 			if err := delivery.Ack(false); err != nil {
-				r.logger.Error("error sending ACK to RabbitMQ consumer: %v", err)
+				r.logger.Error("error sending ACK to RabbitMQ consumer: %v", consumeTracing.FinishConsumerSpan(beforeConsumeSpan, err))
 				return
 			}
+			_ = consumeTracing.FinishConsumerSpan(beforeConsumeSpan, nil)
+			//beforeConsumeSpan.End()
+			//afterConsumeCtx, span := consumeTracing.StartConsumerSpan(ctx, &meta, string(delivery.Body), consumerTraceOption)
+			//ctx = afterConsumeCtx
+			//span.End()
 		}
 
 		nack = func() {
 			if err := delivery.Nack(false, true); err != nil {
-				r.logger.Error("error in sending Nack to RabbitMQ consumer: %v", err)
+				r.logger.Error("error in sending Nack to RabbitMQ consumer: %v", consumeTracing.FinishConsumerSpan(beforeConsumeSpan, err))
 				return
 			}
+			_ = consumeTracing.FinishConsumerSpan(beforeConsumeSpan, nil)
 		}
 	}
 
@@ -328,7 +354,8 @@ func (r *rabbitMQConsumer[T]) handle(ctx context.Context, ack func(), nack func(
 func (r *rabbitMQConsumer[T]) createConsumeContext(delivery amqp091.Delivery) types2.MessageConsumeContextBase {
 	message := r.deserializeData(delivery.ContentType, delivery.Type, delivery.Body)
 	if reflect.ValueOf(message).IsZero() || reflect.ValueOf(message).IsNil() {
-		return *new(types2.MessageConsumeContextT[T])
+		r.logger.Error("error in deserialization of payload")
+		return *new(types2.MessageConsumeContextBase)
 	}
 
 	var meta metadata.Metadata

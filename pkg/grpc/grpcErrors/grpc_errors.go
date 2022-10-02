@@ -6,6 +6,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"time"
 )
 
@@ -29,6 +30,7 @@ type GrpcErr interface {
 	Error() string
 	ErrBody() error
 	ToJson() string
+	ToGrpcResponseErr() error
 }
 
 func NewGrpcError(status codes.Code, title string, detail string, stackTrace string) GrpcErr {
@@ -93,13 +95,25 @@ func (p *grpcErr) SetStackTrace(stackTrace string) GrpcErr {
 	return p
 }
 
+// ToGrpcResponseErr creates a gRPC error response to send grpc engine
+func (p *grpcErr) ToGrpcResponseErr() error {
+	defaultLogger.Logger.Error(p.Error())
+
+	if core.IsDevelopment() {
+		stackTrace := p.GetStackTrace()
+		fmt.Println(stackTrace)
+	}
+
+	return status.Error(p.GetStatus(), p.ToJson())
+}
+
 func (p *grpcErr) ToJson() string {
 	defaultLogger.Logger.Error(p.Error())
 	if core.IsDevelopment() {
 		stackTrace := p.GetStackTrace()
 		fmt.Println(stackTrace)
 	}
-	
+
 	return string(p.json())
 }
 

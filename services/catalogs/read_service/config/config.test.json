@@ -7,6 +7,7 @@
   "grpc": {
     "name": "catalogs_read_service",
     "port": ":6004",
+    "host": "localhost",
     "development": true
   },
   "http": {
@@ -67,6 +68,20 @@
     "serviceName": "catalogs_read_service",
     "hostPort": "localhost:6831",
     "logSpans": false
+  },
+  "otel": {
+    "enable": true,
+    "serviceName": "catalogs-read-service",
+    "instrumentationName": "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service",
+    "id": 1,
+    "alwaysOnSampler": true,
+    "jaegerExporterConfig": {
+      "agentHost": "localhost",
+      "agentPort": "6831"
+    },
+    "zipkinExporterConfig": {
+      "url": "http://localhost:9411/api/v2/spans"
+    }
   },
   "elastic": {
     "url": "http://localhost:9200",

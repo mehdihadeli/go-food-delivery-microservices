@@ -5,12 +5,13 @@
     "timeout": 20
   },
   "grpc": {
-    "name":"catalogs_write_service",
+    "name": "catalogs_write_service",
     "port": ":6003",
+    "host": "localhost",
     "development": true
   },
   "http": {
-    "name":"catalogs_write_service",
+    "name": "catalogs_write_service",
     "port": ":7000",
     "development": true,
     "timeout": 30,
@@ -70,6 +71,20 @@
     "serviceName": "catalogs_service",
     "hostPort": "localhost:6831",
     "logSpans": false
+  },
+  "otel": {
+    "enable": true,
+    "serviceName": "catalogs-write-service",
+    "instrumentationName": "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service",
+    "id": 1,
+    "alwaysOnSampler": true,
+    "jaegerExporterConfig": {
+      "agentHost": "localhost",
+      "agentPort": "6831"
+    },
+    "zipkinExporterConfig": {
+      "url": "http://localhost:9411/api/v2/spans"
+    }
   },
   "eventStoreConfig": {
     "connectionString": "esdb://localhost:2113?tls=false"

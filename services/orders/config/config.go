@@ -10,6 +10,7 @@ import (
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
@@ -34,6 +35,7 @@ type Config struct {
 	Context          Context                         `mapstructure:"context"`
 	Probes           probes.Config                   `mapstructure:"probes"`
 	Jaeger           *tracing.Config                 `mapstructure:"jaeger"`
+	OTel             *otel.OpenTelemetryConfig       `mapstructure:"otel" envPrefix:"OTel_"`
 	RabbitMQ         *config.RabbitMQConfig          `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	EventStoreConfig *eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
 	Subscriptions    *Subscriptions                  `mapstructure:"subscriptions"`

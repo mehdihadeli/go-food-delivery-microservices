@@ -29,7 +29,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Get all product",
                 "parameters": [
@@ -67,7 +67,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Create product",
                 "parameters": [
@@ -101,7 +101,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Search products",
                 "parameters": [
@@ -146,7 +146,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Get product by id",
                 "parameters": [
@@ -176,7 +176,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Update product",
                 "parameters": [
@@ -212,7 +212,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Delete product",
                 "parameters": [

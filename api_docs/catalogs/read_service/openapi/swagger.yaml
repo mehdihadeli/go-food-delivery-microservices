@@ -93,7 +93,7 @@ paths:
             $ref: '#/definitions/dtos.GetProductByIdResponseDto'
       summary: Get product
       tags:
-      - Orders
+      - Products
   /api/v1/products/search:
     get:
       consumes:
@@ -121,5 +121,5 @@ paths:
             $ref: '#/definitions/dtos.SearchProductsResponseDto'
       summary: Search products
       tags:
-      - Orders
+      - Products
 swagger: "2.0"

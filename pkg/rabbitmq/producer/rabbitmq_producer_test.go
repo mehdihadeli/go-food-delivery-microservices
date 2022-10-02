@@ -5,6 +5,8 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
@@ -15,6 +17,13 @@ import (
 
 func Test_Publish_Message(t *testing.T) {
 	test.SkipCI(t)
+	ctx := context.Background()
+	tp, err := tracing.AddOtelTracing(&otel.OpenTelemetryConfig{ServiceName: "test", Enabled: true, AlwaysOnSampler: true, JaegerExporterConfig: &otel.JaegerExporterConfig{AgentHost: "localhost", AgentPort: "6831"}})
+	if err != nil {
+		return
+	}
+	defer tp.Shutdown(ctx)
+
 	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",
@@ -28,9 +37,10 @@ func Test_Publish_Message(t *testing.T) {
 		return
 	}
 
-	rabbitmqProducer, err := NewRabbitMQProducer(conn, func(builder *options.RabbitMQProducerOptionsBuilder) {
-		builder.WithExchangeType(types.ExchangeTopic)
-	}, defaultLogger.Logger, json.NewJsonEventSerializer())
+	rabbitmqProducer, err := NewRabbitMQProducer(conn,
+		func(builder *options.RabbitMQProducerOptionsBuilder) {
+			builder.WithExchangeType(types.ExchangeTopic)
+		}, defaultLogger.Logger, json.NewJsonEventSerializer())
 	if err != nil {
 		t.Fatal(err)
 	}

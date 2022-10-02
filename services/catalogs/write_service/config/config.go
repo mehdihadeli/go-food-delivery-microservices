@@ -11,6 +11,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
@@ -19,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 var configPath string
@@ -39,6 +41,7 @@ type Config struct {
 	RabbitMQ         *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
 	Jaeger           *tracing.Config                `mapstructure:"jaeger" envPrefix:"Jaeger_"`
+	OTel             *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
 	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
 }
 
@@ -100,6 +103,14 @@ func InitConfig(environment string) (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func (cfg *Config) GetMicroserviceNameUpper() string {
+	return strings.ToUpper(cfg.ServiceName)
+}
+
+func (cfg *Config) GetMicroserviceName() string {
+	return cfg.ServiceName
 }
 
 func filename() (string, error) {

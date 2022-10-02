@@ -28,7 +28,7 @@ func (ep *updateProductEndpoint) MapRoute() {
 }
 
 // UpdateProduct
-// @Tags Orders
+// @Tags Products
 // @Summary Update product
 // @Description Update existing product
 // @Accept json

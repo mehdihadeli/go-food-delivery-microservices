@@ -11,7 +11,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/constants"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/workers"
 	"os"
 	"os/signal"
@@ -62,7 +61,7 @@ func (s *Server) Run() error {
 				cancel()
 			}
 		}()
-		s.log.Infof("%s is listening on Http PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.Http.Port)
+		s.log.Infof("%s is listening on Http PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.Http.Port)
 
 	case "grpc":
 		go func() {
@@ -72,7 +71,7 @@ func (s *Server) Run() error {
 				cancel()
 			}
 		}()
-		s.log.Infof("%s is listening on Grpc PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.GRPC.Port)
+		s.log.Infof("%s is listening on Grpc PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.GRPC.Port)
 	default:
 		panic(fmt.Sprintf("server type %s is not supported", deliveryType))
 	}
@@ -99,7 +98,7 @@ func (s *Server) Run() error {
 
 	// waiting for shutdown time reached
 	<-s.doneCh
-	s.log.Infof("%s server exited properly", web.GetMicroserviceName(s.cfg))
+	s.log.Infof("%s service exited properly", s.cfg.GetMicroserviceNameUpper())
 
 	return serverError
 }

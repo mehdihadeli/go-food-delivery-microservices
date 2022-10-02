@@ -20,7 +20,7 @@ type IntegrationTestFixture struct {
 	*infrastructure.InfrastructureConfiguration
 	ProductRepository contracts.ProductRepository
 	workersRunner     *webWoker.WorkersRunner
-	ctx               context.Context
+	Ctx               context.Context
 	cancel            context.CancelFunc
 	Cleanup           func()
 }
@@ -47,7 +47,7 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 		},
 		InfrastructureConfiguration: infrastructures,
 		ProductRepository:           productRep,
-		ctx:                         ctx,
+		Ctx:                         ctx,
 		cancel:                      cancel,
 	}
 }

@@ -7,9 +7,11 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	rabbitmqProducer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
@@ -17,17 +19,20 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares"
 	v7 "github.com/olivere/elastic/v7"
+	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 type InfrastructureConfiguration struct {
 	Log                logger.Logger
 	Cfg                *config.Config
+	TraceProvider      *trace.TracerProvider
 	Validator          *validator.Validate
 	Pgx                *postgres.Pgx
 	Gorm               *gormPostgres.Gorm
 	Metrics            *CatalogsServiceMetrics
 	Esdb               *esdb.Client
 	ElasticClient      *v7.Client
+	GrpcClient         grpc.GrpcClient
 	CustomMiddlewares  cutomMiddlewares.CustomMiddlewares
 	RabbitMQConnection types.IConnection
 	EventSerializer    serializer.EventSerializer
@@ -62,11 +67,23 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	}
 	infrastructure.Gorm = gorm
 
-	err, jaegerCleanup := ic.configJaeger()
+	grpcClient, err := grpc.NewGrpcClient(ic.cfg.GRPC)
 	if err != nil {
 		return nil, err, nil
 	}
-	cleanup = append(cleanup, jaegerCleanup)
+	cleanup = append(cleanup, func() {
+		_ = grpcClient.Close()
+	})
+	infrastructure.GrpcClient = grpcClient
+
+	traceProvider, err := tracing.AddOtelTracing(ic.cfg.OTel)
+	if err != nil {
+		return nil, err, nil
+	}
+	cleanup = append(cleanup, func() {
+		_ = traceProvider.Shutdown(ctx)
+	})
+	infrastructure.TraceProvider = traceProvider
 
 	pgx, err, postgresCleanup := ic.configPostgres()
 	if err != nil {

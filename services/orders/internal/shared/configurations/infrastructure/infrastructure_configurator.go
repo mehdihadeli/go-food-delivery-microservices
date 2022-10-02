@@ -9,9 +9,11 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	rabbitmqProducer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
@@ -20,6 +22,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/custom_middlewares"
 	v7 "github.com/olivere/elastic/v7"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 type InfrastructureConfiguration struct {
@@ -33,6 +36,8 @@ type InfrastructureConfiguration struct {
 	CheckpointRepository contracts.SubscriptionCheckpointRepository
 	ElasticClient        *v7.Client
 	MongoClient          *mongo.Client
+	GrpcClient           grpc.GrpcClient
+	TraceProvider        *trace.TracerProvider
 	CustomMiddlewares    cutomMiddlewares.CustomMiddlewares
 	Projections          []projection.IProjection
 	RabbitMQConnection   types.IConnection
@@ -68,12 +73,30 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	}
 	cleanup = append(cleanup, jaegerCleanup)
 
+	traceProvider, err := tracing.AddOtelTracing(ic.cfg.OTel)
+	if err != nil {
+		return nil, err, nil
+	}
+	cleanup = append(cleanup, func() {
+		_ = traceProvider.Shutdown(ctx)
+	})
+	infrastructure.TraceProvider = traceProvider
+
 	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
 	if err != nil {
 		return nil, err, nil
 	}
 	cleanup = append(cleanup, mongoCleanup)
 	infrastructure.MongoClient = mongoClient
+
+	grpcClient, err := grpc.NewGrpcClient(ic.cfg.GRPC)
+	if err != nil {
+		return nil, err, nil
+	}
+	cleanup = append(cleanup, func() {
+		_ = grpcClient.Close()
+	})
+	infrastructure.GrpcClient = grpcClient
 
 	esdb, checkpointRepository, esdbSerializer, err, eventStoreCleanup := ic.configEventStore()
 	if err != nil {

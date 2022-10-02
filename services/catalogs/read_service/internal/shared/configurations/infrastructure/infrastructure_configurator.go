@@ -8,9 +8,11 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	rabbitmqProducer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
@@ -18,6 +20,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/middlewares"
 	v7 "github.com/olivere/elastic/v7"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.opentelemetry.io/otel/sdk/trace"
 	"gorm.io/gorm"
 )
 
@@ -31,8 +34,10 @@ type InfrastructureConfigurations struct {
 	PgConn             *pgxpool.Pool
 	Gorm               *gorm.DB
 	Metrics            *CatalogsServiceMetrics
+	TraceProvider      *trace.TracerProvider
 	Esdb               *esdb.Client
 	MongoClient        *mongo.Client
+	GrpcClient         grpc.GrpcClient
 	ElasticClient      *v7.Client
 	Redis              redis.UniversalClient
 	MiddlewareManager  cutomMiddlewares.CustomMiddlewares
@@ -65,6 +70,24 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 		return nil, err, nil
 	}
 	cleanup = append(cleanup, jaegerCleanup)
+
+	grpcClient, err := grpc.NewGrpcClient(ic.cfg.GRPC)
+	if err != nil {
+		return nil, err, nil
+	}
+	cleanup = append(cleanup, func() {
+		_ = grpcClient.Close()
+	})
+	infrastructure.GrpcClient = grpcClient
+
+	traceProvider, err := tracing.AddOtelTracing(ic.cfg.OTel)
+	if err != nil {
+		return nil, err, nil
+	}
+	cleanup = append(cleanup, func() {
+		_ = traceProvider.Shutdown(ctx)
+	})
+	infrastructure.TraceProvider = traceProvider
 
 	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
 	if err != nil {

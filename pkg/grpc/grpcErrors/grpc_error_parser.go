@@ -4,30 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"emperror.dev/errors"
-	"fmt"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
-
-//ErrGrpcResponse get gRPC error response
-func ErrGrpcResponse(err error) error {
-	grpcErr := ParseError(err)
-	stackTrace := grpcErr.GetStackTrace()
-	defaultLogger.Logger.Error(err.Error())
-
-	if core.IsDevelopment() {
-		stackTrace := stackTrace
-		fmt.Println(stackTrace)
-	}
-
-	return status.Error(grpcErr.GetStatus(), grpcErr.ToJson())
-}
 
 //https://github.com/grpc/grpc/blob/master/doc/http-grpc-status-mapping.md
 //https://github.com/grpc/grpc/blob/master/doc/statuscodes.md

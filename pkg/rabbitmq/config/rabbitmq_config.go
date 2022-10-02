@@ -7,7 +7,7 @@ import (
 
 type RabbitMQConfig struct {
 	RabbitMqHostOptions *RabbitMqHostOptions
-	DeliveryMode        bool
+	DeliveryMode        uint8
 	Persisted           bool
 	AppId               string
 }

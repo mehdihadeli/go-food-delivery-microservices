@@ -60,7 +60,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Search products",
                 "parameters": [
@@ -105,7 +105,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Get product",
                 "parameters": [

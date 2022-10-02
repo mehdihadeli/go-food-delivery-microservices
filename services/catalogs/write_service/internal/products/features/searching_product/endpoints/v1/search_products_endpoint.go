@@ -28,7 +28,7 @@ func (ep *searchProductsEndpoint) MapRoute() {
 }
 
 // SearchProducts
-// @Tags Orders
+// @Tags Products
 // @Summary Search products
 // @Description Search products
 // @Accept json

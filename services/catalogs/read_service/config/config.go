@@ -7,6 +7,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"os"
 	"path/filepath"
@@ -40,6 +41,7 @@ type Config struct {
 	RabbitMQ         *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
 	Jaeger           *tracing.Config                `mapstructure:"jaeger" envPrefix:"Jaeger_"`
+	OTel             *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
 	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
 	Elastic          elasticsearch.Config           `mapstructure:"elastic" envPrefix:"Elastic_"`
 	ElasticIndexes   ElasticIndexes                 `mapstructure:"elasticIndexes" envPrefix:"ElasticIndexes_"`
