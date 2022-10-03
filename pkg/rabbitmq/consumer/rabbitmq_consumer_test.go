@@ -8,6 +8,8 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/pipeline"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/options"
@@ -22,6 +24,19 @@ import (
 
 func Test_Consume_Message(t *testing.T) {
 	test.SkipCI(t)
+	ctx := context.Background()
+	tp, err := tracing.AddOtelTracing(&otel.OpenTelemetryConfig{
+		ServiceName:          "test",
+		Enabled:              true,
+		AlwaysOnSampler:      true,
+		JaegerExporterConfig: &otel.JaegerExporterConfig{AgentHost: "localhost", AgentPort: "6831"},
+		ZipkinExporterConfig: &otel.ZipkinExporterConfig{Url: "http://localhost:9411/api/v2/spans"},
+	})
+	if err != nil {
+		return
+	}
+	defer tp.Shutdown(ctx)
+
 	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",
@@ -64,25 +79,25 @@ func Test_Consume_Message(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	time.Sleep(time.Second * 5)
-
-	fmt.Println("closing connection")
-	conn.Close()
-	fmt.Println(conn.IsClosed())
-
-	time.Sleep(time.Second * 10)
-	fmt.Println("after 10 second of closing connection")
-	fmt.Println(conn.IsClosed())
-
-	err = rabbitmqProducer.PublishMessage(context.Background(), NewProducerConsumerMessage("test"), nil)
-	for err != nil {
-		err = rabbitmqProducer.PublishMessage(context.Background(), NewProducerConsumerMessage("test"), nil)
-	}
+	//time.Sleep(time.Second * 5)
+	//
+	//fmt.Println("closing connection")
+	//conn.Close()
+	//fmt.Println(conn.IsClosed())
+	//
+	//time.Sleep(time.Second * 10)
+	//fmt.Println("after 10 second of closing connection")
+	//fmt.Println(conn.IsClosed())
 
 	err = rabbitmqProducer.PublishMessage(context.Background(), NewProducerConsumerMessage("test"), nil)
 	for err != nil {
 		err = rabbitmqProducer.PublishMessage(context.Background(), NewProducerConsumerMessage("test"), nil)
 	}
+
+	//err = rabbitmqProducer.PublishMessage(context.Background(), NewProducerConsumerMessage("test"), nil)
+	//for err != nil {
+	//	err = rabbitmqProducer.PublishMessage(context.Background(), NewProducerConsumerMessage("test"), nil)
+	//}
 
 	time.Sleep(time.Second * 5)
 	fmt.Println(conn.IsClosed())
@@ -91,6 +106,19 @@ func Test_Consume_Message(t *testing.T) {
 
 func Test_Consume_Default_Message(t *testing.T) {
 	test.SkipCI(t)
+	ctx := context.Background()
+	tp, err := tracing.AddOtelTracing(&otel.OpenTelemetryConfig{
+		ServiceName:          "test",
+		Enabled:              true,
+		AlwaysOnSampler:      true,
+		JaegerExporterConfig: &otel.JaegerExporterConfig{AgentHost: "localhost", AgentPort: "6831"},
+		ZipkinExporterConfig: &otel.ZipkinExporterConfig{Url: "http://localhost:9411/api/v2/spans"},
+	})
+	if err != nil {
+		return
+	}
+	defer tp.Shutdown(ctx)
+
 	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",

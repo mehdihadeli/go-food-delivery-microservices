@@ -9,7 +9,6 @@ import (
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/product_mdoule"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web"
 	"net/http"
 )
 
@@ -43,7 +42,7 @@ func (c *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Conte
 	c.configMiddlewares(c.Metrics)
 
 	c.echoServer.GetEchoInstance().GET("", func(ec echo.Context) error {
-		return ec.String(http.StatusOK, fmt.Sprintf("%s is running...", web.GetMicroserviceName(c.Cfg)))
+		return ec.String(http.StatusOK, fmt.Sprintf("%s is running...", c.Cfg.GetMicroserviceName()))
 	})
 
 	return nil

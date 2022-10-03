@@ -40,6 +40,4 @@ type Logger interface {
 	WithName(name string)
 	GrpcMiddlewareAccessLogger(method string, time time.Duration, metaData map[string][]string, err error)
 	GrpcClientInterceptorLogger(method string, req interface{}, reply interface{}, time time.Duration, metaData map[string][]string, err error)
-	KafkaProcessMessage(topic string, partition int, message string, workerID int, offset int64, time time.Time)
-	KafkaLogCommittedMessage(topic string, partition int, offset int64)
 }

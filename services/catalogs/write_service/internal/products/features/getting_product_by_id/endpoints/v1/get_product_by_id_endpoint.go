@@ -10,7 +10,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
 )
@@ -28,7 +27,7 @@ func (ep *getProductByIdEndpoint) MapRoute() {
 }
 
 // GetProductByID
-// @Tags Orders
+// @Tags Products
 // @Summary Get product by id
 // @Description Get product by id
 // @Accept json
@@ -39,20 +38,19 @@ func (ep *getProductByIdEndpoint) MapRoute() {
 func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ep.Metrics.GetProductByIdHttpRequests.Inc()
-		ctx, span := tracing.StartHttpServerTracerSpan(c, "getProductByIdEndpoint.handler")
-		defer span.Finish()
+		ctx := c.Request().Context()
 
 		request := &dtos.GetProductByIdRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductByIdEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			ep.Log.Errorf(fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
 		query := v1.NewGetProductById(request.ProductId)
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[getProductByIdEndpoint_handler.StructCtx]  query validation failed")
-			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr))
+			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", validationErr)
 			return validationErr
 		}
 
@@ -60,7 +58,7 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetProductById")
-			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": query.ProductID})
+			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.ProductID, err), logger.Fields{"ProductId": query.ProductID})
 			return err
 		}
 

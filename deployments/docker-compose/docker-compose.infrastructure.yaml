@@ -99,26 +99,26 @@ services:
     networks:
       - store
 
-  kafka-ui:
-    image: provectuslabs/kafka-ui
-    container_name: kafka-ui
-    ports:
-      - "8080:8080"
-    restart: always
-    environment:
-      - KAFKA_CLUSTERS_0_NAME=local
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+  # kafka-ui:
+  #   image: provectuslabs/kafka-ui
+  #   container_name: kafka-ui
+  #   ports:
+  #     - "8080:8080"
+  #   restart: always
+  #   environment:
+  #     - KAFKA_CLUSTERS_0_NAME=local
+  #     - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+  #     - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
 
-  kafdrop:
-    image: obsidiandynamics/kafdrop
-    container_name: kafdrop
-    ports:
-        - '9000:9000'
-    environment:
-        - 'KAFKA_BROKERCONNECT=<host:port,host:port>'
-        - 'JVM_OPTS=-Xms32M -Xmx64M'
-        - SERVER_SERVLET_CONTEXTPATH=/
+  # kafdrop:
+  #   image: obsidiandynamics/kafdrop
+  #   container_name: kafdrop
+  #   ports:
+  #       - '9000:9000'
+  #   environment:
+  #       - 'KAFKA_BROKERCONNECT=<host:port,host:port>'
+  #       - 'JVM_OPTS=-Xms32M -Xmx64M'
+  #       - SERVER_SERVLET_CONTEXTPATH=/
 
   mongo:
     image: mongo
@@ -136,8 +136,8 @@ services:
     container_name: jaeger
     restart: on-failure
     image: jaegertracing/all-in-one:1.21
-    environment:
-      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+    # environment:
+    #   - COLLECTOR_ZIPKIN_HTTP_PORT=9411
     ports:
       - "5775:5775/udp"
       - "6831:6831/udp"
@@ -146,6 +146,15 @@ services:
       - "16686:16686"
       - "14268:14268"
       - "14250:14250"
+      # - "9411:9411"
+    networks:
+      - store
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    restart: on-failure
+    container_name: zipkin
+    ports:
       - "9411:9411"
     networks:
       - store
@@ -211,6 +220,19 @@ services:
       - store
     depends_on:
       - elasticsearch
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./portainer-data:/data
+    ports:
+      - 9000:9000
 
 volumes:
   eventstore-volume-data:

@@ -16,12 +16,12 @@ import (
 	expectedStreamVersion "github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/models/stream_version"
 	esErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
 	uuid "github.com/satori/go.uuid"
+	attribute2 "go.opentelemetry.io/otel/attribute"
 	"reflect"
 )
 
@@ -36,9 +36,9 @@ func NewEventStoreAggregateStore[T models.IHaveEventSourcedAggregate](log logger
 }
 
 func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata metadata.Metadata, expectedVersion expectedStreamVersion.ExpectedStreamVersion, ctx context.Context) (*appendResult.AppendEventsResult, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.StoreWithVersion")
-	defer span.Finish()
-	span.LogFields(log.String("AggregateID", aggregate.Id().String()))
+	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.StoreWithVersion")
+	span.SetAttributes(attribute2.String("AggregateID", aggregate.Id().String()))
+	defer span.End()
 
 	if len(aggregate.UncommittedEvents()) == 0 {
 		a.log.Infow(fmt.Sprintf("[esdbAggregateStore.StoreWithVersion] No events to store for aggregateId %s", aggregate.Id()), logger.Fields{"AggregateID": aggregate.Id()})
@@ -46,7 +46,7 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata metadata.
 	}
 
 	streamId := streamName.For[T](aggregate)
-	span.LogFields(log.String("StreamId", streamId.String()))
+	span.SetAttributes(attribute2.String("StreamId", streamId.String()))
 
 	var streamEvents []*models.StreamEvent
 
@@ -61,12 +61,12 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata metadata.
 
 	streamAppendResult, err := a.eventStore.AppendEvents(streamId, expectedVersion, streamEvents, ctx)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.WrapIff(err, "[esdbAggregateStore_StoreWithVersion:AppendEvents] error in storing aggregate with id {%d}", aggregate.Id()))
+		return nil, tracing.TraceErrFromSpan(span, errors.WrapIff(err, "[esdbAggregateStore_StoreWithVersion:AppendEvents] error in storing aggregate with id {%d}", aggregate.Id()))
 	}
 
 	aggregate.MarkUncommittedEventAsCommitted()
 
-	span.LogFields(log.Object("Aggregate", aggregate))
+	span.SetAttributes(attribute.Object("Aggregate", aggregate))
 
 	a.log.Infow(fmt.Sprintf("[esdbAggregateStore.StoreWithVersion] aggregate with id %d stored successfully", aggregate.Id()), logger.Fields{"Aggregate": aggregate, "StreamId": streamId})
 
@@ -74,21 +74,22 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(aggregate T, metadata metadata.
 }
 
 func (a *esdbAggregateStore[T]) Store(aggregate T, metadata metadata.Metadata, ctx context.Context) (*appendResult.AppendEventsResult, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Store")
-	defer span.Finish()
+	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.Store")
+	defer span.End()
+
 	expectedVersion := expectedStreamVersion.FromInt64(aggregate.OriginalVersion())
 
 	streamAppendResult, err := a.StoreWithVersion(aggregate, metadata, expectedVersion, ctx)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, errors.WrapIff(err, "[esdbAggregateStore_Store:StoreWithVersion] failed to store aggregate with id{%v}", aggregate.Id()))
+		return nil, tracing.TraceErrFromSpan(span, errors.WrapIff(err, "[esdbAggregateStore_Store:StoreWithVersion] failed to store aggregate with id{%v}", aggregate.Id()))
 	}
 
 	return streamAppendResult, nil
 }
 
 func (a *esdbAggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID) (T, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Load")
-	defer span.Finish()
+	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.Load")
+	defer span.End()
 
 	position := readPosition.Start
 
@@ -96,9 +97,9 @@ func (a *esdbAggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID)
 }
 
 func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggregateId uuid.UUID, position readPosition.StreamReadPosition) (T, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.LoadWithReadPosition")
-	defer span.Finish()
-	span.LogFields(log.String("AggregateID", aggregateId.String()))
+	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.LoadWithReadPosition")
+	span.SetAttributes(attribute2.String("AggregateID", aggregateId.String()))
+	defer span.End()
 
 	var typeNameType T
 	aggregateInstance := typeMapper.InstancePointerByTypeName(typeMapper.GetFullTypeName(typeNameType))
@@ -109,20 +110,20 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 
 	method := reflect.ValueOf(aggregate).MethodByName("NewEmptyAggregate")
 	if !method.IsValid() {
-		return *new(T), errors.New("[esdbAggregateStore_LoadWithReadPosition:MethodByName] aggregate does not have a `NewEmptyAggregate` method")
+		return *new(T), tracing.TraceErrFromSpan(span, errors.New("[esdbAggregateStore_LoadWithReadPosition:MethodByName] aggregate does not have a `NewEmptyAggregate` method"))
 	}
 
 	method.Call([]reflect.Value{})
 
 	streamId := streamName.ForID[T](aggregateId)
-	span.LogFields(log.String("StreamId", streamId.String()))
+	span.SetAttributes(attribute2.String("StreamId", streamId.String()))
 
 	streamEvents, err := a.getStreamEvents(streamId, position, ctx)
 	if errors.Is(err, esdb.ErrStreamNotFound) || len(streamEvents) == 0 {
-		return *new(T), tracing.TraceWithErr(span, errors.WithMessage(esErrors.NewAggregateNotFoundError(err, aggregateId), "[esdbAggregateStore.LoadWithReadPosition] error in loading aggregate"))
+		return *new(T), tracing.TraceErrFromSpan(span, errors.WithMessage(esErrors.NewAggregateNotFoundError(err, aggregateId), "[esdbAggregateStore.LoadWithReadPosition] error in loading aggregate"))
 	}
 	if err != nil {
-		return *new(T), tracing.TraceWithErr(span, errors.WrapIff(err, "[esdbAggregateStore.LoadWithReadPosition:MethodByName] error in loading aggregate {%s}", aggregateId.String()))
+		return *new(T), tracing.TraceErrFromSpan(span, errors.WrapIff(err, "[esdbAggregateStore.LoadWithReadPosition:MethodByName] error in loading aggregate {%s}", aggregateId.String()))
 	}
 
 	var meta metadata.Metadata
@@ -135,7 +136,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 
 	err = aggregate.LoadFromHistory(domainEvents, meta)
 	if err != nil {
-		return *new(T), tracing.TraceWithErr(span, err)
+		return *new(T), tracing.TraceErrFromSpan(span, err)
 	}
 
 	a.log.Infow(fmt.Sprintf("Loaded aggregate with streamId {%s} and aggregateId {%s}",
@@ -143,18 +144,18 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(ctx context.Context, aggreg
 		aggregateId.String()),
 		logger.Fields{"Aggregate": aggregate, "StreamId": streamId.String()})
 
-	span.LogFields(log.Object("Aggregate", aggregate))
+	span.SetAttributes(attribute.Object("Aggregate", aggregate))
 
 	return aggregate, nil
 }
 
 func (a *esdbAggregateStore[T]) Exists(ctx context.Context, aggregateId uuid.UUID) (bool, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "esdbAggregateStore.Exists")
-	defer span.Finish()
-	span.LogFields(log.String("AggregateId", aggregateId.String()))
+	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.Exists")
+	span.SetAttributes(attribute2.String("AggregateID", aggregateId.String()))
+	defer span.End()
 
 	streamId := streamName.ForID[T](aggregateId)
-	span.LogFields(log.String("StreamId", streamId.String()))
+	span.SetAttributes(attribute2.String("StreamId", streamId.String()))
 
 	return a.eventStore.StreamExists(streamId, ctx)
 }

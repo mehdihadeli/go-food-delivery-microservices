@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	gorm_postgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -31,7 +30,6 @@ type Gorm struct {
 }
 
 func NewGorm(cfg *Config) (*Gorm, error) {
-
 	var dataSourceName string
 	ctx := context.Background()
 
@@ -136,8 +134,8 @@ func (db *Gorm) Migrate() error {
 //Ref: https://dev.to/rafaelgfirmino/pagination-using-gorm-scopes-3k5f
 
 func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.DB) (*utils.ListResult[T], error) {
-
-	span, ctx := opentracing.StartSpanFromContext(ctx, "gorm.Paginate")
+	ctx, span := tracing.Tracer.Start(ctx, "gorm.Paginate")
+	defer span.End()
 
 	var items []T
 	var totalRows int64
@@ -172,8 +170,7 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.D
 	}
 
 	if err := query.Find(&items).Error; err != nil {
-		tracing.TraceErr(span, err)
-		return nil, errors.WrapIf(err, "error in finding products.")
+		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "error in finding products."))
 	}
 
 	return utils.NewListResult[T](items, listQuery.GetSize(), listQuery.GetPage(), totalRows), nil

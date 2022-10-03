@@ -3,8 +3,8 @@ package customErrors
 import (
 	"emperror.dev/errors"
 	"fmt"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
+	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -12,9 +12,9 @@ import (
 func Test_BadRequest_Err(t *testing.T) {
 	rootErr2 := NewBadRequestErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
 
-	rootErr := errors.New("handling bad request error")
-	badErr := NewBadRequestErrorWrap(rootErr, "this is a bad request error")
-	err := errors.WithMessage(badErr, "outer error wrapper")
+	rootErr := errors.New("handling bad request errorUtils")
+	badErr := NewBadRequestErrorWrap(rootErr, "this is a bad request errorUtils")
+	err := errors.WithMessage(badErr, "outer errorUtils wrapper")
 
 	assert.True(t, IsBadRequestError(err))
 	assert.True(t, IsCustomError(err))
@@ -29,26 +29,26 @@ func Test_BadRequest_Err(t *testing.T) {
 	assert.NotNil(t, customError2)
 
 	assert.Equal(t, 400, customError.Status())
-	assert.Equal(t, "this is a bad request error", customError.Message())
-	assert.Equal(t, "this is a bad request error: handling bad request error", customError.Error())
+	assert.Equal(t, "this is a bad request errorUtils", customError.Message())
+	assert.Equal(t, "this is a bad request errorUtils: handling bad request errorUtils", customError.Error())
 	assert.NotNil(t, customError.Unwrap())
 	assert.NotNil(t, customError.Cause())
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
 		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false)) // Just write error messages for
-		fmt.Println(httpErrors.ErrorsWithStack(err))           //write error messages with stacktrace
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
+		fmt.Println(errorUtils.ErrorsWithStack(err))           //write errorUtils messages with stacktrace
 	} else {
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false))
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false))
 	}
 
 }
 
 func Test_NotFound_Err(t *testing.T) {
-	rootErr := errors.New("handling not found error")
-	notFoundErr := NewNotFoundErrorWrap(rootErr, "this is a not found error")
-	err := errors.WithMessage(notFoundErr, "outer error wrapper")
+	rootErr := errors.New("handling not found errorUtils")
+	notFoundErr := NewNotFoundErrorWrap(rootErr, "this is a not found errorUtils")
+	err := errors.WithMessage(notFoundErr, "outer errorUtils wrapper")
 
 	assert.True(t, IsNotFoundError(err))
 	assert.True(t, IsCustomError(err))
@@ -57,27 +57,27 @@ func Test_NotFound_Err(t *testing.T) {
 	errors.As(err, &notFound)
 
 	assert.Equal(t, 404, notFound.Status())
-	assert.Equal(t, "this is a not found error", notFound.Message())
-	assert.Equal(t, "this is a not found error: handling not found error", notFound.Error())
+	assert.Equal(t, "this is a not found errorUtils", notFound.Message())
+	assert.Equal(t, "this is a not found errorUtils: handling not found errorUtils", notFound.Error())
 	assert.NotNil(t, notFound.Unwrap())
 	assert.NotNil(t, notFound.Cause())
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
 		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false)) // Just write error messages for
-		fmt.Println(httpErrors.ErrorsWithStack(err))           //write error messages with stacktrace
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
+		fmt.Println(errorUtils.ErrorsWithStack(err))           //write errorUtils messages with stacktrace
 	} else {
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false))
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false))
 	}
 }
 
 func Test_Domain_Err(t *testing.T) {
 	rootErr2 := NewDomainErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
 
-	rootErr := errors.New("handling domain error")
-	domainErr := NewDomainErrorWithCodeWrap(rootErr, 400, "this is a domain error")
-	err := errors.WithMessage(domainErr, "outer error wrapper")
+	rootErr := errors.New("handling domain errorUtils")
+	domainErr := NewDomainErrorWithCodeWrap(rootErr, 400, "this is a domain errorUtils")
+	err := errors.WithMessage(domainErr, "outer errorUtils wrapper")
 
 	assert.True(t, IsDomainError(err))
 	assert.True(t, IsDomainError(rootErr2))
@@ -88,27 +88,27 @@ func Test_Domain_Err(t *testing.T) {
 	errors.As(err, &customError)
 
 	assert.Equal(t, 400, customError.Status())
-	assert.Equal(t, "this is a domain error", customError.Message())
-	assert.Equal(t, "this is a domain error: handling domain error", customError.Error())
+	assert.Equal(t, "this is a domain errorUtils", customError.Message())
+	assert.Equal(t, "this is a domain errorUtils: handling domain errorUtils", customError.Error())
 	assert.NotNil(t, customError.Unwrap())
 	assert.NotNil(t, customError.Cause())
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
 		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false)) // Just write error messages for
-		fmt.Println(httpErrors.ErrorsWithStack(err))           //write error messages with stacktrace
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
+		fmt.Println(errorUtils.ErrorsWithStack(err))           //write errorUtils messages with stacktrace
 	} else {
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false))
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false))
 	}
 }
 
 func Test_Application_Err(t *testing.T) {
 	rootErr2 := NewApplicationErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
-	
-	rootErr := errors.New("handling application error")
-	err := NewApplicationErrorWrapWithCode(rootErr, 400, "this is a application error")
-	err = errors.WithMessage(err, "outer error wrapper")
+
+	rootErr := errors.New("handling application errorUtils")
+	err := NewApplicationErrorWrapWithCode(rootErr, 400, "this is a application errorUtils")
+	err = errors.WithMessage(err, "outer errorUtils wrapper")
 
 	assert.True(t, IsApplicationError(err))
 	assert.True(t, IsApplicationError(rootErr2))
@@ -119,25 +119,25 @@ func Test_Application_Err(t *testing.T) {
 	errors.As(err, &appErr)
 
 	assert.Equal(t, 400, appErr.Status())
-	assert.Equal(t, "this is a application error", appErr.Message())
-	assert.Equal(t, "this is a application error: handling application error", appErr.Error())
+	assert.Equal(t, "this is a application errorUtils", appErr.Message())
+	assert.Equal(t, "this is a application errorUtils: handling application errorUtils", appErr.Error())
 	assert.NotNil(t, appErr.Unwrap())
 	assert.NotNil(t, appErr.Cause())
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
 		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false)) // Just write error messages for
-		fmt.Println(httpErrors.ErrorsWithStack(err))
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
+		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false))
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false))
 	}
 }
 
 func Test_Internal_Server_Error(t *testing.T) {
-	rootErr := errors.New("handling internal server error")
-	internalServerErr := NewInternalServerErrorWrap(rootErr, "this is a internal server error")
-	err := errors.WithMessage(internalServerErr, "this is a internal server error")
+	rootErr := errors.New("handling internal server errorUtils")
+	internalServerErr := NewInternalServerErrorWrap(rootErr, "this is a internal server errorUtils")
+	err := errors.WithMessage(internalServerErr, "this is a internal server errorUtils")
 
 	assert.True(t, IsInternalServerError(err))
 	assert.True(t, IsCustomError(err))
@@ -146,27 +146,27 @@ func Test_Internal_Server_Error(t *testing.T) {
 	errors.As(err, &internalErr)
 
 	assert.Equal(t, 500, internalErr.Status())
-	assert.Equal(t, "this is a internal server error", internalErr.Message())
-	assert.Equal(t, "this is a internal server error: handling internal server error", internalErr.Error())
+	assert.Equal(t, "this is a internal server errorUtils", internalErr.Message())
+	assert.Equal(t, "this is a internal server errorUtils: handling internal server errorUtils", internalErr.Error())
 	assert.NotNil(t, internalErr.Unwrap())
 	assert.NotNil(t, internalErr.Cause())
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
 		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false)) // Just write error messages for
-		fmt.Println(httpErrors.ErrorsWithStack(err))
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
+		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
-		fmt.Println(httpErrors.ErrorsWithStack(err))
+		fmt.Println(errorUtils.ErrorsWithStack(err))
 	}
 }
 
 func Test_Marshaling_Error(t *testing.T) {
 	rootErr2 := NewMarshalingErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
 
-	rootErr := errors.New("handling marshaling error")
-	marshalErr := NewMarshalingErrorWrap(rootErr, "this is a marshaling error")
-	err := errors.WithMessage(marshalErr, "this is a marshaling error")
+	rootErr := errors.New("handling marshaling errorUtils")
+	marshalErr := NewMarshalingErrorWrap(rootErr, "this is a marshaling errorUtils")
+	err := errors.WithMessage(marshalErr, "this is a marshaling errorUtils")
 
 	assert.True(t, IsInternalServerError(err))
 	assert.True(t, IsInternalServerError(rootErr2))
@@ -186,27 +186,27 @@ func Test_Marshaling_Error(t *testing.T) {
 	assert.NotNil(t, customErr2)
 
 	assert.Equal(t, 500, customErr.Status())
-	assert.Equal(t, "this is a marshaling error", customErr.Message())
-	assert.Equal(t, "this is a marshaling error: handling marshaling error", customErr.Error())
+	assert.Equal(t, "this is a marshaling errorUtils", customErr.Message())
+	assert.Equal(t, "this is a marshaling errorUtils: handling marshaling errorUtils", customErr.Error())
 	assert.NotNil(t, customErr.Unwrap())
 	assert.NotNil(t, customErr.Cause())
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
 		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false)) // Just write error messages for
-		fmt.Println(httpErrors.ErrorsWithStack(err))
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
+		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
-		fmt.Println(httpErrors.ErrorsWithStack(err))
+		fmt.Println(errorUtils.ErrorsWithStack(err))
 	}
 }
 
 func Test_Validation_Error(t *testing.T) {
 	rootErr2 := NewValidationErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
 
-	rootErr := errors.New("handling validation error")
-	validationErr := NewValidationErrorWrap(rootErr, "this is a validation error")
-	err := errors.WithMessage(validationErr, "this is a validation error")
+	rootErr := errors.New("handling validation errorUtils")
+	validationErr := NewValidationErrorWrap(rootErr, "this is a validation errorUtils")
+	err := errors.WithMessage(validationErr, "this is a validation errorUtils")
 
 	assert.True(t, IsBadRequestError(err))
 	assert.True(t, IsBadRequestError(rootErr2))
@@ -226,27 +226,27 @@ func Test_Validation_Error(t *testing.T) {
 	assert.NotNil(t, customErr2)
 
 	assert.Equal(t, 400, customErr.Status())
-	assert.Equal(t, "this is a validation error", customErr.Message())
-	assert.Equal(t, "this is a validation error: handling validation error", customErr.Error())
+	assert.Equal(t, "this is a validation errorUtils", customErr.Message())
+	assert.Equal(t, "this is a validation errorUtils: handling validation errorUtils", customErr.Error())
 	assert.NotNil(t, customErr.Unwrap())
 	assert.NotNil(t, customErr.Cause())
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
 		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false)) // Just write error messages for
-		fmt.Println(httpErrors.ErrorsWithStack(err))
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
+		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
-		fmt.Println(httpErrors.ErrorsWithStack(err))
+		fmt.Println(errorUtils.ErrorsWithStack(err))
 	}
 }
 
 func Test_Conflict_Error(t *testing.T) {
 	rootErr2 := NewConflictErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
 
-	rootErr := errors.New("handling conflict error")
-	conflictErr := NewConflictErrorWrap(rootErr, "this is a conflict error")
-	err := errors.WithMessage(conflictErr, "this is a conflict error")
+	rootErr := errors.New("handling conflict errorUtils")
+	conflictErr := NewConflictErrorWrap(rootErr, "this is a conflict errorUtils")
+	err := errors.WithMessage(conflictErr, "this is a conflict errorUtils")
 
 	assert.True(t, IsCustomError(err))
 	assert.True(t, IsConflictError(err))
@@ -261,18 +261,18 @@ func Test_Conflict_Error(t *testing.T) {
 	assert.NotNil(t, customErr2)
 
 	assert.Equal(t, 409, customErr.Status())
-	assert.Equal(t, "this is a conflict error", customErr.Message())
-	assert.Equal(t, "this is a conflict error: handling conflict error", customErr.Error())
+	assert.Equal(t, "this is a conflict errorUtils", customErr.Message())
+	assert.Equal(t, "this is a conflict errorUtils: handling conflict errorUtils", customErr.Error())
 	assert.NotNil(t, customErr.Unwrap())
 	assert.NotNil(t, customErr.Cause())
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
 		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
-		fmt.Println(httpErrors.ErrorsWithoutStack(err, false)) // Just write error messages for
-		fmt.Println(httpErrors.ErrorsWithStack(err))
+		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
+		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
-		fmt.Println(httpErrors.ErrorsWithStack(err))
+		fmt.Println(errorUtils.ErrorsWithStack(err))
 	}
 }
 

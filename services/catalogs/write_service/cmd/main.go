@@ -7,11 +7,8 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/zap"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/server"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web"
 	"log"
 )
-
-//https://github.com/swaggo/swag#how-to-use-it-with-gin
 
 // @contact.name Mehdi Hadeli
 // @contact.url https://github.com/mehdihadeli
@@ -29,6 +26,6 @@ func main() {
 	}
 
 	appLogger := zap.NewZapLogger(cfg.Logger)
-	appLogger.WithName(web.GetMicroserviceName(cfg))
+	appLogger.WithName(cfg.GetMicroserviceName())
 	appLogger.Fatal(server.NewServer(appLogger, cfg).Run())
 }

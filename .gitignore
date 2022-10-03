@@ -55,3 +55,10 @@ coverage.txt
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+out/
+**/.vagrant/
+.idea/
+local/data/
+portainer-data/
+.env

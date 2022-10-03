@@ -10,9 +10,9 @@ import (
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
@@ -33,7 +33,7 @@ type Config struct {
 	Http             *customEcho.EchoHttpConfig      `mapstructure:"http"`
 	Context          Context                         `mapstructure:"context"`
 	Probes           probes.Config                   `mapstructure:"probes"`
-	Jaeger           *tracing.Config                 `mapstructure:"jaeger"`
+	OTel             *otel.OpenTelemetryConfig       `mapstructure:"otel" envPrefix:"OTel_"`
 	RabbitMQ         *config.RabbitMQConfig          `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	EventStoreConfig *eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
 	Subscriptions    *Subscriptions                  `mapstructure:"subscriptions"`
@@ -94,9 +94,14 @@ func InitConfig(env string) (*Config, error) {
 		cfg.GRPC.Port = grpcPort
 	}
 
-	jaegerAddr := os.Getenv(constants.JaegerHostPort)
-	if jaegerAddr != "" {
-		cfg.Jaeger.HostPort = jaegerAddr
+	jaegerPort := os.Getenv(constants.JaegerPort)
+	if jaegerPort != "" {
+		cfg.OTel.JaegerExporterConfig.AgentPort = jaegerPort
+	}
+
+	jaegerHost := os.Getenv(constants.JaegerHost)
+	if jaegerHost != "" {
+		cfg.OTel.JaegerExporterConfig.AgentHost = jaegerHost
 	}
 
 	return cfg, nil

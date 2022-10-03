@@ -69,7 +69,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Search products",
                 "parameters": [
@@ -114,7 +114,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Orders"
+                    "Products"
                 ],
                 "summary": "Get product",
                 "parameters": [

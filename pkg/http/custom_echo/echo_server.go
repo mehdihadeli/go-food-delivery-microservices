@@ -7,7 +7,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo/custom_hadnlers"
+	customHadnlers "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo/hadnlers"
+	otelTracer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo/middlewares/otel_tracer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"go.uber.org/zap"
 	"strings"
@@ -93,6 +94,8 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 
 	s.echo.HideBanner = false
 	s.echo.HTTPErrorHandler = customHadnlers.ProblemHandler
+
+	s.echo.Use(otelTracer.Middleware(s.config.Name))
 	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogContentLength: true,
 		LogLatency:       true,
@@ -107,10 +110,8 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 			return nil
 		},
 	}))
-
 	s.echo.Use(middleware.BodyLimit(constants.BodyLimit))
 	s.echo.Use(middleware.RequestID())
-	s.echo.Use(middleware.Logger())
 	s.echo.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: constants.GzipLevel,
 		Skipper: func(c echo.Context) bool {

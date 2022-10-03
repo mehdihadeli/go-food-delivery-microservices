@@ -20,7 +20,7 @@ type E2ETestFixture struct {
 	V1         *V1Groups
 	GrpcServer grpcServer.GrpcServer
 	HttpServer *httptest.Server
-	ctx        context.Context
+	Ctx        context.Context
 	cancel     context.CancelFunc
 	Cleanup    func()
 }
@@ -72,14 +72,14 @@ func NewE2ETestFixture() *E2ETestFixture {
 		V1:                          v1Groups,
 		GrpcServer:                  grpcServer,
 		HttpServer:                  httpServer,
-		ctx:                         ctx,
+		Ctx:                         ctx,
 		cancel:                      cancel,
 	}
 }
 
 func (e *E2ETestFixture) Run() {
 	go func() {
-		if err := e.GrpcServer.RunGrpcServer(nil); err != nil {
+		if err := e.GrpcServer.RunGrpcServer(e.Ctx, nil); err != nil {
 			e.cancel()
 			e.Log.Errorf("(s.RunGrpcServer) err: %v", err)
 		}

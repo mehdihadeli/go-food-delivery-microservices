@@ -7,6 +7,7 @@
   "grpc": {
     "name":"order_service",
     "port": ":6005",
+    "host": "localhost",
     "development": true
   },
   "http": {
@@ -75,11 +76,19 @@
       "port": 5672
     }
   },
-  "jaeger": {
+  "otel": {
     "enable": true,
-    "serviceName": "orders_service",
-    "hostPort": "localhost:6831",
-    "logSpans": false
+    "serviceName": "orders-service",
+    "instrumentationName": "github.com/mehdihadeli/store-golang-microservice-sample/services/orders",
+    "id": 3,
+    "alwaysOnSampler": true,
+    "jaegerExporterConfig": {
+      "agentHost": "localhost",
+      "agentPort": "6831"
+    },
+    "zipkinExporterConfig": {
+      "url": "http://localhost:9411/api/v2/spans"
+    }
   },
   "eventStoreConfig": {
     "connectionString": "esdb://localhost:2113?tls=false"

@@ -11,11 +11,3 @@ type ProductConsumersBase struct {
 func NewProductConsumersBase(infra *infrastructure.InfrastructureConfigurations) *ProductConsumersBase {
 	return &ProductConsumersBase{InfrastructureConfigurations: infra}
 }
-
-func (pm *ProductConsumersBase) CommitMessage() {
-	pm.Metrics.SuccessKafkaMessages.Inc()
-}
-
-func (pm *ProductConsumersBase) CommitErrMessage() {
-	pm.Metrics.ErrorKafkaMessages.Inc()
-}

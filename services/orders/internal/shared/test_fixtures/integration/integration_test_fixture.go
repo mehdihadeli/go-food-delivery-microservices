@@ -26,7 +26,7 @@ type IntegrationTestFixture struct {
 	*infrastructure.InfrastructureConfiguration
 	OrderAggregateStore      store.AggregateStore[*aggregate.Order]
 	MongoOrderReadRepository repositories.OrderReadRepository
-	ctx                      context.Context
+	Ctx                      context.Context
 	cancel                   context.CancelFunc
 	Cleanup                  func()
 	cleanupChan              chan struct{}
@@ -64,7 +64,7 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 		InfrastructureConfiguration: infrastructures,
 		OrderAggregateStore:         orderAggregateStore,
 		MongoOrderReadRepository:    mongoOrderReadRepository,
-		ctx:                         ctx,
+		Ctx:                         ctx,
 		cancel:                      cancel,
 	}
 }
@@ -74,16 +74,16 @@ func (e *IntegrationTestFixture) Run() {
 		workers.NewRabbitMQWorkerWorker(e.InfrastructureConfiguration), workers.NewEventStoreDBWorker(e.InfrastructureConfiguration),
 	})
 
-	workersErr := workersRunner.Start(e.ctx)
+	workersErr := workersRunner.Start(e.Ctx)
 	go func() {
 		for {
 			select {
 			case _ = <-workersErr:
-				workersRunner.Stop(e.ctx)
+				workersRunner.Stop(e.Ctx)
 				e.cancel()
 				return
 			case <-e.cleanupChan:
-				workersRunner.Stop(e.ctx)
+				workersRunner.Stop(e.Ctx)
 				return
 			}
 		}

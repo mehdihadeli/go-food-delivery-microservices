@@ -22,7 +22,7 @@ type IntegrationTestFixture struct {
 	RedisProductRepository contracts.ProductCacheRepository
 	MongoProductRepository contracts.ProductRepository
 	workersRunner          *webWoker.WorkersRunner
-	ctx                    context.Context
+	Ctx                    context.Context
 	cancel                 context.CancelFunc
 	Cleanup                func()
 }
@@ -57,13 +57,13 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 		RedisProductRepository:       redisProductRepository,
 		MongoProductRepository:       mongoProductRepository,
 		workersRunner:                workersRunner,
-		ctx:                          ctx,
+		Ctx:                          ctx,
 		cancel:                       cancel,
 	}
 }
 
 func (e *IntegrationTestFixture) Run() {
-	workersErr := e.workersRunner.Start(e.ctx)
+	workersErr := e.workersRunner.Start(e.Ctx)
 	go func() {
 		for {
 			select {
