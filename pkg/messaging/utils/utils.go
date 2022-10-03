@@ -52,7 +52,7 @@ func GetAllMessageTypes() []reflect.Type {
 		return linq.From(i.Value)
 	})
 	d.ToSlice(&squares)
-	res := typeMapper.TypesImplementedInterface[types.IMessage](squares)
+	res := typeMapper.TypesImplementedInterfaceWithFilterTypes[types.IMessage](squares)
 	linq.From(res).Distinct().ToSlice(&squares)
 
 	return squares

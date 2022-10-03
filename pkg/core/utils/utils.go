@@ -9,25 +9,25 @@ import (
 )
 
 func GetAllDomainEventTypes() []reflect.Type {
-	var squares []reflect.Type
+	var types []reflect.Type
 	d := linq.From(typeMapper.GetAllRegisteredTypes()).SelectManyT(func(i linq.KeyValue) linq.Query {
 		return linq.From(i.Value)
 	})
-	d.ToSlice(&squares)
-	res := typeMapper.TypesImplementedInterface[domain.IDomainEvent](squares)
-	linq.From(res).Distinct().ToSlice(&squares)
+	d.ToSlice(&types)
+	res := typeMapper.TypesImplementedInterfaceWithFilterTypes[domain.IDomainEvent](types)
+	linq.From(res).Distinct().ToSlice(&types)
 
-	return squares
+	return types
 }
 
 func GetAllEventTypes() []reflect.Type {
-	var squares []reflect.Type
+	var types []reflect.Type
 	d := linq.From(typeMapper.GetAllRegisteredTypes()).SelectManyT(func(i linq.KeyValue) linq.Query {
 		return linq.From(i.Value)
 	})
-	d.ToSlice(&squares)
-	res := typeMapper.TypesImplementedInterface[core.IEvent](squares)
-	linq.From(res).Distinct().ToSlice(&squares)
+	d.ToSlice(&types)
+	res := typeMapper.TypesImplementedInterfaceWithFilterTypes[core.IEvent](types)
+	linq.From(res).Distinct().ToSlice(&types)
 
-	return squares
+	return types
 }

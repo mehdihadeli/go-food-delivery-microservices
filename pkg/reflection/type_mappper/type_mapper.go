@@ -104,7 +104,7 @@ func TypeByNameAndImplementedInterface[TInterface interface{}](typeName string) 
 	return nil
 }
 
-func TypesImplementedInterface[TInterface interface{}](types []reflect.Type) []reflect.Type {
+func TypesImplementedInterfaceWithFilterTypes[TInterface interface{}](types []reflect.Type) []reflect.Type {
 	//https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
 	implementedInterface := GetTypeFromGeneric[TInterface]()
 
@@ -112,6 +112,22 @@ func TypesImplementedInterface[TInterface interface{}](types []reflect.Type) []r
 	for _, t := range types {
 		if t.Implements(implementedInterface) {
 			res = append(res, t)
+		}
+	}
+
+	return res
+}
+
+func TypesImplementedInterface[TInterface interface{}]() []reflect.Type {
+	//https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
+	implementedInterface := GetTypeFromGeneric[TInterface]()
+
+	var res []reflect.Type
+	for _, t := range types {
+		for _, v := range t {
+			if v.Implements(implementedInterface) {
+				res = append(res, v)
+			}
 		}
 	}
 
