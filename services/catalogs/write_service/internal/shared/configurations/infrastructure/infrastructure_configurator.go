@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
@@ -17,8 +18,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares"
-	v7 "github.com/olivere/elastic/v7"
+	cutomMiddlewares "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/middlewares"
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
@@ -31,7 +31,7 @@ type InfrastructureConfiguration struct {
 	Gorm               *gormPostgres.Gorm
 	Metrics            *CatalogsServiceMetrics
 	Esdb               *esdb.Client
-	ElasticClient      *v7.Client
+	ElasticClient      *elasticsearch.Client
 	GrpcClient         grpc.GrpcClient
 	CustomMiddlewares  cutomMiddlewares.CustomMiddlewares
 	RabbitMQConnection types.IConnection

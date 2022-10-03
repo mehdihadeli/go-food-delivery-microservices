@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-playground/validator"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -18,7 +19,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/middlewares"
-	v7 "github.com/olivere/elastic/v7"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"gorm.io/gorm"
@@ -38,7 +38,7 @@ type InfrastructureConfigurations struct {
 	Esdb               *esdb.Client
 	MongoClient        *mongo.Client
 	GrpcClient         grpc.GrpcClient
-	ElasticClient      *v7.Client
+	ElasticClient      *elasticsearch.Client
 	Redis              redis.UniversalClient
 	MiddlewareManager  cutomMiddlewares.CustomMiddlewares
 	EventSerializer    serializer.EventSerializer

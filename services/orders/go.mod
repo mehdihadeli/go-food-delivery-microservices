@@ -9,6 +9,7 @@ require (
 	emperror.dev/errors v0.8.1
 	github.com/EventStore/EventStore-Client-Go v1.0.2
 	github.com/brianvoe/gofakeit/v6 v6.18.0
+	github.com/elastic/go-elasticsearch/v8 v8.4.0
 	github.com/gavv/httpexpect/v2 v2.3.1
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/labstack/echo/v4 v4.9.0
@@ -46,6 +47,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/doug-martin/goqu/v9 v9.18.0 // indirect
+	github.com/elastic/elastic-transport-go/v8 v8.1.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structs v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect

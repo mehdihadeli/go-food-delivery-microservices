@@ -2,28 +2,20 @@ package elasticsearch
 
 import (
 	"emperror.dev/errors"
-	v7 "github.com/olivere/elastic/v7"
+	"github.com/elastic/go-elasticsearch/v8"
 )
 
 type Config struct {
-	URL         string `mapstructure:"url"`
-	Sniff       bool   `mapstructure:"sniff"`
-	Gzip        bool   `mapstructure:"gzip"`
-	Explain     bool   `mapstructure:"explain"`
-	FetchSource bool   `mapstructure:"fetchSource"`
-	Version     bool   `mapstructure:"version"`
-	Pretty      bool   `mapstructure:"pretty"`
+	URL string `mapstructure:"url"`
 }
 
-func NewElasticClient(cfg Config) (*v7.Client, error) {
-	client, err := v7.NewClient(
-		v7.SetURL(cfg.URL),
-		v7.SetSniff(cfg.Sniff),
-		v7.SetGzip(cfg.Gzip),
-	)
+func NewElasticClient(cfg Config) (*elasticsearch.Client, error) {
+	es, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{cfg.URL},
+	})
 	if err != nil {
-		return nil, errors.WrapIf(err, "v7.NewClient")
+		return nil, errors.WrapIf(err, "v8.elasticsearch")
 	}
 
-	return client, nil
+	return es, nil
 }
