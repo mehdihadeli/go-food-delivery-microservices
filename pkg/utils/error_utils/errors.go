@@ -1,4 +1,4 @@
-package httpErrors
+package errorUtils
 
 import (
 	"emperror.dev/errors"
@@ -6,6 +6,16 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
 	"strings"
 )
+
+// CheckErrMessages check for specific messages contains in the error
+func CheckErrMessages(err error, messages ...string) bool {
+	for _, message := range messages {
+		if strings.Contains(strings.TrimSpace(strings.ToLower(err.Error())), strings.TrimSpace(strings.ToLower(message))) {
+			return true
+		}
+	}
+	return false
+}
 
 // ErrorsWithStack returns a string contains grpc_errors messages in the stack with its stack trace levels for given error
 func ErrorsWithStack(err error) string {

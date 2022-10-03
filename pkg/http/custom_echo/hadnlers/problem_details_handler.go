@@ -2,9 +2,9 @@ package customHadnlers
 
 import (
 	"github.com/labstack/echo/v4"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/problemDetails"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 )
 
 func ProblemHandler(err error, c echo.Context) {
@@ -18,7 +18,7 @@ func ProblemHandler(err error, c echo.Context) {
 		}
 	} else {
 		if !c.Response().Committed {
-			prb := problemDetails.NewInternalServerProblemDetail(err.Error(), httpErrors.ErrorsWithStack(err))
+			prb := problemDetails.NewInternalServerProblemDetail(err.Error(), errorUtils.ErrorsWithStack(err))
 			if _, err := prb.WriteTo(c.Response()); err != nil {
 				defaultLogger.Logger.Error(err)
 			}

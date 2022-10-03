@@ -6,8 +6,8 @@ import (
 	"emperror.dev/errors"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	"google.golang.org/grpc/codes"
 )
 
@@ -17,7 +17,7 @@ import (
 func ParseError(err error) GrpcErr {
 	customErr := customErrors.GetCustomError(err)
 	var validatorErr validator.ValidationErrors
-	stackTrace := httpErrors.ErrorsWithStack(err)
+	stackTrace := errorUtils.ErrorsWithStack(err)
 
 	if err != nil {
 		switch {

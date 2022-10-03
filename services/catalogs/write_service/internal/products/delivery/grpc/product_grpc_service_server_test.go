@@ -40,7 +40,7 @@ func TestRunner(t *testing.T) {
 
 		// Run Tests
 		productGrpcServiceTests.Test_GetProduct_By_Id(ctx)
-		productGrpcServiceTests.Test_Create_Product(ctx)
+		//productGrpcServiceTests.Test_Create_Product(ctx)
 
 		// After running the tests
 		fixture.Cleanup()

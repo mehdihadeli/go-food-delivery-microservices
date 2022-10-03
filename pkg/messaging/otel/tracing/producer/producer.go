@@ -52,7 +52,7 @@ func FinishProducerSpan(span trace.Span, err error) error {
 
 	if err != nil {
 		span.AddEvent(fmt.Sprintf("failed to publsih message '%s' to the broker", messageName))
-		_ = tracing.TraceErrFromSpan(span, err)
+		_ = messageTracing.TraceMessagingErrFromSpan(span, err)
 	}
 	span.SetAttributes(
 		attribute.Key(tracing.TraceId).String(span.SpanContext().TraceID().String()),

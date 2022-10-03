@@ -6,9 +6,9 @@ import (
 	"emperror.dev/errors"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	httpErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
+	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	"net/http"
 	"reflect"
 )
@@ -34,7 +34,7 @@ func (p *ProblemDetailParser) ResolveError(err error) ProblemDetailErr {
 }
 
 func ParseError(err error) ProblemDetailErr {
-	stackTrace := httpErrors.ErrorsWithStack(err)
+	stackTrace := errorUtils.ErrorsWithStack(err)
 	customErr := customErrors.GetCustomError(err)
 	var validatorErr validator.ValidationErrors
 

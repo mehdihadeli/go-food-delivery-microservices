@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/metadata"
+	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	trace2 "go.opentelemetry.io/otel/sdk/trace"
@@ -15,24 +16,26 @@ type traceContextKeyType int
 
 const parentSpanKey traceContextKeyType = iota + 1
 
-func TraceErrFromSpan(span trace.Span, err error) error {
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.SetAttributes(attribute.String("error_code", err.Error()))
-		span.RecordError(err)
-	}
-
-	return err
-}
-
 func TraceErrFromContext(ctx context.Context, err error) error {
 	//https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 	span := trace.SpanFromContext(ctx)
 	defer span.End()
 
 	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		span.SetAttributes(attribute.String("error_code", err.Error()))
+		stackTraceError := errorUtils.ErrorsWithStack(err)
+		span.SetStatus(codes.Error, "")
+		span.SetAttributes(attribute.String(ErrorMessage, stackTraceError))
+		span.RecordError(err)
+	}
+
+	return err
+}
+
+func TraceErrFromSpan(span trace.Span, err error) error {
+	if err != nil {
+		stackTraceError := errorUtils.ErrorsWithStack(err)
+		span.SetStatus(codes.Error, "")
+		span.SetAttributes(attribute.String(ErrorMessage, stackTraceError))
 		span.RecordError(err)
 	}
 

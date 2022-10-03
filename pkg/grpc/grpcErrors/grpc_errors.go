@@ -97,13 +97,6 @@ func (p *grpcErr) SetStackTrace(stackTrace string) GrpcErr {
 
 // ToGrpcResponseErr creates a gRPC error response to send grpc engine
 func (p *grpcErr) ToGrpcResponseErr() error {
-	defaultLogger.Logger.Error(p.Error())
-
-	if core.IsDevelopment() {
-		stackTrace := p.GetStackTrace()
-		fmt.Println(stackTrace)
-	}
-
 	return status.Error(p.GetStatus(), p.ToJson())
 }
 

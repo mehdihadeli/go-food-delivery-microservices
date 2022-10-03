@@ -30,7 +30,7 @@ func (c *GetProductsHandler) Handle(ctx context.Context, query *GetProducts) (*d
 
 	products, err := c.pgRepo.GetAllProducts(ctx, query.ListQuery)
 	if err != nil {
-		return nil, tracing.TraceErrFromContext(ctx, customErrors.NewApplicationErrorWrap(err, "[GetProductsHandler_Handle.GetAllProducts] error in getting products in the repository"))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsHandler_Handle.GetAllProducts] error in getting products in the repository"))
 	}
 
 	listResultDto, err := utils.ListResultToListResultDto[*dto.ProductDto](products)

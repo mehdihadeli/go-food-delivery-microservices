@@ -3,7 +3,7 @@ package otelTracer
 import (
 	"fmt"
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo/otel/tracing"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
@@ -34,8 +34,12 @@ func Middleware(serviceName string) echo.MiddlewareFunc {
 			c.SetRequest(request.WithContext(ctx))
 
 			err := next(c)
+
 			if err != nil {
-				err = tracing.TraceErrFromSpan(span, err)
+				c.Error(err)
+				err = tracing.TraceHttpErrFromSpanWithCode(span, err, c.Response().Status)
+			} else {
+				span.SetAttributes(semconv.HTTPAttributesFromHTTPStatusCode(c.Response().Status)...)
 			}
 
 			return err

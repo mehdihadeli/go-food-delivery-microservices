@@ -1,4 +1,4 @@
-package httpErrors
+package errorUtils
 
 import (
 	"emperror.dev/errors"
