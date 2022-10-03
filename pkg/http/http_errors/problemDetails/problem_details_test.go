@@ -51,3 +51,12 @@ func Test_Parse_Error(t *testing.T) {
 	assert.NotNil(t, notFoundError)
 	assert.Equal(t, notfoundPrb.GetStatus(), 404)
 }
+
+func TestMap(t *testing.T) {
+	Map[customErrors.BadRequestError](func(err customErrors.BadRequestError) ProblemDetailErr {
+		return NewBadRequestProblemDetail(err.Message(), err.Error())
+	})
+	s := ResolveProblemDetail(customErrors.NewBadRequestError(""))
+	_, ok := s.(ProblemDetailErr)
+	assert.True(t, ok)
+}

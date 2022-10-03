@@ -1,9 +1,11 @@
 package problemDetails
 
 import (
+	"emperror.dev/errors"
 	"encoding/json"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"net/http"
@@ -15,9 +17,9 @@ const (
 	ContentTypeJSON = "application/problem+json"
 )
 
-type ProblemDetailFunc[E error] func(err error) ProblemDetailErr
+type ProblemDetailFunc[E error] func(err E) ProblemDetailErr
 
-var internalErrorMaps map[reflect.Type]func(err error) ProblemDetailErr
+var internalErrorMaps = map[reflect.Type]func(err error) ProblemDetailErr{}
 
 // ProblemDetailErr ProblemDetail error interface
 type ProblemDetailErr interface {
@@ -171,16 +173,37 @@ func NewProblemDetailFromCodeAndDetail(status int, detail string, stackTrace str
 }
 
 func Map[E error](problem ProblemDetailFunc[E]) {
-	errorType := reflect.TypeOf(typeMapper.GetTypeFromGeneric[E]())
-	internalErrorMaps[errorType] = problem
+	errorType := typeMapper.GetTypeFromGeneric[E]()
+	if errorType.Kind() == reflect.Interface {
+		types := typeMapper.TypesImplementedInterface[E]()
+		for _, t := range types {
+			internalErrorMaps[t] = func(err error) ProblemDetailErr {
+				return problem(err.(E))
+			}
+		}
+	} else {
+		internalErrorMaps[errorType] = func(err error) ProblemDetailErr {
+			return problem(err.(E))
+		}
+	}
 }
 
 func ResolveProblemDetail(err error) ProblemDetailErr {
-	errorType := typeMapper.GetType(err)
+	resolvedErr := err
+	for {
+		_, ok := resolvedErr.(contracts.StackTracer)
+		if ok {
+			resolvedErr = errors.Unwrap(err)
+		} else {
+			break
+		}
+	}
+	errorType := typeMapper.GetType(resolvedErr)
 	problem := internalErrorMaps[errorType]
 	if problem != nil {
-		return problem(err)
+		return problem(resolvedErr)
 	}
+
 	return nil
 }
 
