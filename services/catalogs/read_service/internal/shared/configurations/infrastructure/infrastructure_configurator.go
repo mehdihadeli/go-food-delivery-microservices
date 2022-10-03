@@ -65,12 +65,6 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 
 	cleanup := []func(){}
 
-	err, jaegerCleanup := ic.configJaeger()
-	if err != nil {
-		return nil, err, nil
-	}
-	cleanup = append(cleanup, jaegerCleanup)
-
 	grpcClient, err := grpc.NewGrpcClient(ic.cfg.GRPC)
 	if err != nil {
 		return nil, err, nil

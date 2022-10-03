@@ -20,13 +20,6 @@ func init() {
 	GrpcTracer = tracing.NewCustomTracer("github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc") //instrumentation name
 }
 
-// SpanFromContext get current context span from existing grpc otel trace middleware instrument
-func SpanFromContext(ctx context.Context) (span trace.Span) {
-	span = trace.SpanFromContext(ctx)
-
-	return span
-}
-
 // StartGrpcServerTracerSpan uses when grpc otel middleware is off and create a span on 'grpc' tracer
 func StartGrpcServerTracerSpan(ctx context.Context, operationName string) (context context.Context, span trace.Span, deferSpan func()) {
 	requestMetadata, _ := metadata.FromIncomingContext(ctx)

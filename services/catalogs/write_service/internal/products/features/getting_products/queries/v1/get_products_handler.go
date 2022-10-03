@@ -35,7 +35,7 @@ func (c *GetProductsHandler) Handle(ctx context.Context, query *GetProducts) (*d
 
 	listResultDto, err := utils.ListResultToListResultDto[*dto.ProductDto](products)
 	if err != nil {
-		return nil, tracing.TraceErrFromContext(ctx, customErrors.NewApplicationErrorWrap(err, "[GetProductsHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
 	}
 
 	c.log.Info("[GetProductsHandler.Handle] products fetched")

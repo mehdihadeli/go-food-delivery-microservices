@@ -5,7 +5,6 @@ import (
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/mehdihadeli/go-mediatr"
-	grpcTracing "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc/otel/tracing"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
@@ -15,6 +14,7 @@ import (
 	gettingProductByIdDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
 	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/queries/v1"
 	updatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/commands/v1"
+	"go.opentelemetry.io/otel/trace"
 
 	creatingProductDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
@@ -32,7 +32,7 @@ func NewProductGrpcService(infra *infrastructure.InfrastructureConfiguration) *P
 }
 
 func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *productsService.CreateProductReq) (*productsService.CreateProductRes, error) {
-	span := grpcTracing.SpanFromContext(ctx)
+	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(attribute.Object("Request", req))
 	s.Metrics.CreateProductGrpcRequests.Inc()
 
@@ -58,7 +58,7 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 
 func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *productsService.UpdateProductReq) (*productsService.UpdateProductRes, error) {
 	s.Metrics.UpdateProductGrpcRequests.Inc()
-	span := grpcTracing.SpanFromContext(ctx)
+	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(attribute.Object("Request", req))
 
 	productUUID, err := uuid.FromString(req.GetProductId())
@@ -93,7 +93,7 @@ func (s *ProductGrpcServiceServer) GetProductById(ctx context.Context, req *prod
 	//defer clean()
 
 	s.Metrics.GetProductByIdGrpcRequests.Inc()
-	span := grpcTracing.SpanFromContext(ctx)
+	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(attribute.Object("Request", req))
 
 	productUUID, err := uuid.FromString(req.GetProductId())

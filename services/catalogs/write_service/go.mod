@@ -17,7 +17,6 @@ require (
 	github.com/mehdihadeli/go-mediatr v1.1.8
 	github.com/mehdihadeli/store-golang-microservice-sample v0.0.0-00010101000000-000000000000
 	github.com/olivere/elastic/v7 v7.0.32
-	github.com/opentracing/opentracing-go v1.2.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0

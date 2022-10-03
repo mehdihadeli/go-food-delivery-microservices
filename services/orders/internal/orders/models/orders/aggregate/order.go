@@ -70,7 +70,6 @@ func NewOrder(id uuid.UUID, shopItems []*value_objects.ShopItem, accountEmail, d
 }
 
 func (o *Order) UpdateShoppingCard(shopItems []*value_objects.ShopItem) error {
-
 	event, err := updatingShoppingCardEvents.NewShoppingCartUpdatedV1(shopItems)
 	if err != nil {
 		return err

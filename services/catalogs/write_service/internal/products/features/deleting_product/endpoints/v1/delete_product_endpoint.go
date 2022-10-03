@@ -3,16 +3,14 @@ package v1
 import (
 	"emperror.dev/errors"
 	"fmt"
-	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/commands/v1"
-	"net/http"
-
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	deletingProduct "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/commands/v1"
+	"net/http"
 )
 
 type deleteProductEndpoint struct {
@@ -39,20 +37,19 @@ func (ep *deleteProductEndpoint) MapRoute() {
 func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ep.Metrics.DeleteProductHttpRequests.Inc()
-		ctx, span := tracing.StartHttpServerTracerSpan(c, "deleteProductEndpoint.handler")
-		defer span.Finish()
+		ctx := c.Request().Context()
 
 		request := &deletingProduct.DeleteProductRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[deleteProductEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.Bind] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
 		command := v1.NewDeleteProduct(request.ProductID)
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[deleteProductEndpoint_handler.StructCtx] command validation failed")
-			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr)))
+			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", validationErr))
 			return validationErr
 		}
 
@@ -60,7 +57,7 @@ func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[deleteProductEndpoint_handler.Send] error in sending DeleteProduct")
-			ep.Log.Errorw(fmt.Sprintf("[deleteProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, tracing.TraceWithErr(span, err)), logger.Fields{"ProductId": command.ProductID})
+			ep.Log.Errorw(fmt.Sprintf("[deleteProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
 			return err
 		}
 

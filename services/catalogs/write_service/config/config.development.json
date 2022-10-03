@@ -66,12 +66,6 @@
       "port": 5672
     }
   },
-  "jaeger": {
-    "enable": true,
-    "serviceName": "catalogs_service",
-    "hostPort": "localhost:6831",
-    "logSpans": false
-  },
   "otel": {
     "enable": true,
     "serviceName": "catalogs-write-service",

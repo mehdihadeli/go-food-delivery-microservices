@@ -5,7 +5,6 @@ import (
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/mehdihadeli/go-mediatr"
-	grpcTracing "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc/otel/tracing"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
@@ -22,6 +21,7 @@ import (
 	gettingOrdersQueryV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/queryies/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
 	uuid "github.com/satori/go.uuid"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type OrderGrpcServiceServer struct {
@@ -33,7 +33,7 @@ func NewOrderGrpcService(infra *infrastructure.InfrastructureConfiguration) *Ord
 }
 
 func (o OrderGrpcServiceServer) CreateOrder(ctx context.Context, req *grpcOrderService.CreateOrderReq) (*grpcOrderService.CreateOrderRes, error) {
-	span := grpcTracing.SpanFromContext(ctx)
+	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(attribute2.Object("Request", req))
 
 	shopItemsDtos, err := mapper.Map[[]*dtos.ShopItemDto](req.GetShopItems())
@@ -62,7 +62,7 @@ func (o OrderGrpcServiceServer) CreateOrder(ctx context.Context, req *grpcOrderS
 
 func (o OrderGrpcServiceServer) GetOrderByID(ctx context.Context, req *grpcOrderService.GetOrderByIDReq) (*grpcOrderService.GetOrderByIDRes, error) {
 	o.Metrics.GetOrderByIdGrpcRequests.Inc()
-	span := grpcTracing.SpanFromContext(ctx)
+	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(attribute2.Object("Request", req))
 
 	orderIdUUID, err := uuid.FromString(req.Id)
@@ -110,7 +110,7 @@ func (o OrderGrpcServiceServer) UpdateShoppingCart(ctx context.Context, req *grp
 
 func (o OrderGrpcServiceServer) GetOrders(ctx context.Context, req *grpcOrderService.GetOrdersReq) (*grpcOrderService.GetOrdersRes, error) {
 	o.Metrics.GetOrdersGrpcRequests.Inc()
-	span := grpcTracing.SpanFromContext(ctx)
+	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(attribute2.Object("Request", req))
 
 	query := gettingOrdersQueryV1.NewGetOrders(&utils.ListQuery{Page: int(req.Page), Size: int(req.Size)})

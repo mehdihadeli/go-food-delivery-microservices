@@ -76,12 +76,6 @@
       "port": 5672
     }
   },
-  "jaeger": {
-    "enable": true,
-    "serviceName": "orders_service",
-    "hostPort": "localhost:6831",
-    "logSpans": false
-  },
   "otel": {
     "enable": true,
     "serviceName": "orders-service",

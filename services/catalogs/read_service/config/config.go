@@ -20,7 +20,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/redis"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/spf13/viper"
 )
 
@@ -40,7 +39,6 @@ type Config struct {
 	Redis            *redis.Config                  `mapstructure:"redis" envPrefix:"Redis_"`
 	RabbitMQ         *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
-	Jaeger           *tracing.Config                `mapstructure:"jaeger" envPrefix:"Jaeger_"`
 	OTel             *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
 	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
 	Elastic          elasticsearch.Config           `mapstructure:"elastic" envPrefix:"Elastic_"`
@@ -104,7 +102,6 @@ func InitConfig(environment string) (*Config, error) {
 
 	mongoURI := os.Getenv(constants.MongoDbURI)
 	if mongoURI != "" {
-		//cfg.Mongo.URI = "mongodb://host.docker.internal:27017"
 		cfg.Mongo.URI = mongoURI
 	}
 
@@ -113,9 +110,14 @@ func InitConfig(environment string) (*Config, error) {
 		cfg.Redis.Addr = redisAddr
 	}
 
-	jaegerAddr := os.Getenv(constants.JaegerHostPort)
-	if jaegerAddr != "" {
-		cfg.Jaeger.HostPort = jaegerAddr
+	jaegerPort := os.Getenv(constants.JaegerPort)
+	if jaegerPort != "" {
+		cfg.OTel.JaegerExporterConfig.AgentPort = jaegerPort
+	}
+
+	jaegerHost := os.Getenv(constants.JaegerHost)
+	if jaegerHost != "" {
+		cfg.OTel.JaegerExporterConfig.AgentHost = jaegerHost
 	}
 
 	return cfg, nil

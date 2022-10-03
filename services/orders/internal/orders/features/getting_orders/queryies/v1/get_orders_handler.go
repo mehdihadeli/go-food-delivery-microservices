@@ -4,14 +4,13 @@ import (
 	"context"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/repositories"
 	ordersDto "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/dtos"
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
 )
 
 type GetOrdersHandler struct {
@@ -25,18 +24,18 @@ func NewGetOrdersHandler(log logger.Logger, cfg *config.Config, mongoOrderReadRe
 }
 
 func (c *GetOrdersHandler) Handle(ctx context.Context, query *GetOrders) (*dtos.GetOrdersResponseDto, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "GetOrdersHandler.Handle")
-	span.LogFields(log.Object("Query", query))
-	defer span.Finish()
+	ctx, span := tracing.Tracer.Start(ctx, "GetOrdersHandler.Handle")
+	span.SetAttributes(attribute.Object("Query", query))
+	defer span.End()
 
 	products, err := c.mongoOrderReadRepository.GetAllOrders(ctx, query.ListQuery)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetOrdersHandler_Handle.GetAllOrders] error in getting orders in the repository"))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[GetOrdersHandler_Handle.GetAllOrders] error in getting orders in the repository"))
 	}
 
 	listResultDto, err := utils.ListResultToListResultDto[*ordersDto.OrderReadDto](products)
 	if err != nil {
-		return nil, tracing.TraceWithErr(span, customErrors.NewApplicationErrorWrap(err, "[GetOrdersHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[GetOrdersHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
 	}
 
 	c.log.Info("[GetOrdersHandler.Handle] orders fetched")

@@ -7,7 +7,6 @@ import (
 	"github.com/mehdihadeli/go-mediatr"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
 	creatingOrderv1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/commands/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/dtos"
@@ -39,20 +38,19 @@ func (ep *createOrderEndpoint) MapRoute() {
 func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ep.Metrics.CreateOrderHttpRequests.Inc()
-		ctx, span := tracing.StartHttpServerTracerSpan(c, "createOrderEndpoint.createOrder")
-		defer span.Finish()
+		ctx := c.Request().Context()
 
 		request := &dtos.CreateOrderRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[createOrderEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.Bind] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
 		command := creatingOrderv1.NewCreateOrder(request.ShopItems, request.AccountEmail, request.DeliveryAddress, time.Time(request.DeliveryTime))
 		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[createOrderEndpoint_handler.StructCtx] command validation failed")
-			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.StructCtx] err: %v", tracing.TraceWithErr(span, validationErr)))
+			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.StructCtx] err: %v", validationErr))
 			return validationErr
 		}
 
@@ -60,7 +58,7 @@ func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[createOrderEndpoint_handler.Send] error in sending CreateOrder")
-			ep.Log.Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: %v", command.OrderId, tracing.TraceWithErr(span, err)), logger.Fields{"Id": command.OrderId})
+			ep.Log.Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: %v", command.OrderId, err), logger.Fields{"Id": command.OrderId})
 			return err
 		}
 

@@ -173,27 +173,6 @@ func (l *logrusLogger) GrpcClientInterceptorLogger(method string, req interface{
 	)
 }
 
-func (l *logrusLogger) KafkaProcessMessage(topic string, partition int, message string, workerID int, offset int64, time time.Time) {
-	l.Debug(
-		"Processing Kafka message",
-		logrus.WithField(constants.Topic, topic),
-		logrus.WithField(constants.Partition, partition),
-		logrus.WithField(constants.Message, message),
-		logrus.WithField(constants.WorkerID, workerID),
-		logrus.WithField(constants.Offset, offset),
-		logrus.WithField(constants.Time, time),
-	)
-}
-
-func (l *logrusLogger) KafkaLogCommittedMessage(topic string, partition int, offset int64) {
-	l.Info(
-		"Committed Kafka message",
-		logrus.WithField(constants.Topic, topic),
-		logrus.WithField(constants.Partition, partition),
-		logrus.WithField(constants.Offset, offset),
-	)
-}
-
 func (l *logrusLogger) mapToFields(fields map[string]interface{}) *logrus.Entry {
 	return l.logger.WithFields(logrus.Fields{"ss": 1})
 }

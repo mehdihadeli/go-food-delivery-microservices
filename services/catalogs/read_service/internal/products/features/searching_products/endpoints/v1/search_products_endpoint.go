@@ -11,7 +11,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 )
 
@@ -38,16 +37,14 @@ func (ep *searchProductsEndpoint) MapRoute() {
 // @Router /api/v1/products/search [get]
 func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
 		ep.Metrics.SearchProductHttpRequests.Inc()
-		ctx, span := tracing.StartHttpServerTracerSpan(c, "searchProductsEndpoint.searchProducts")
-		defer span.Finish()
+		ctx := c.Request().Context()
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 
 		if err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[searchProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string")
-			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.GetListQueryFromCtx] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.GetListQueryFromCtx] err: %v", badRequestErr))
 			return err
 		}
 
@@ -55,7 +52,7 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[searchProductsEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.Bind] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
@@ -63,7 +60,7 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[searchProductsEndpoint_handler.StructCtx]  query validation failed")
-			ep.Log.Errorf("[searchProductsEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr))
+			ep.Log.Errorf("[searchProductsEndpoint_handler.StructCtx] err: {%v}", validationErr)
 			return validationErr
 		}
 
@@ -71,7 +68,7 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[searchProductsEndpoint_handler.Send] error in sending SearchProducts")
-			ep.Log.Error(fmt.Sprintf("[searchProductsEndpoint_handler.Send] err: {%v}", tracing.TraceWithErr(span, err)))
+			ep.Log.Error(fmt.Sprintf("[searchProductsEndpoint_handler.Send] err: {%v}", err))
 			return err
 		}
 

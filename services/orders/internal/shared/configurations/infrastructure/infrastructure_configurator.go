@@ -67,12 +67,6 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 
 	cleanup := []func(){}
 
-	err, jaegerCleanup := ic.configJaeger()
-	if err != nil {
-		return nil, err, nil
-	}
-	cleanup = append(cleanup, jaegerCleanup)
-
 	traceProvider, err := tracing.AddOtelTracing(ic.cfg.OTel)
 	if err != nil {
 		return nil, err, nil

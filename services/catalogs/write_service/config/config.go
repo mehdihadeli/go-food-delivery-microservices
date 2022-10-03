@@ -15,7 +15,6 @@ import (
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
@@ -40,7 +39,6 @@ type Config struct {
 	GormPostgres     *gormPostgres.Config           `mapstructure:"gormPostgres" envPrefix:"GormPostgres_"`
 	RabbitMQ         *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
-	Jaeger           *tracing.Config                `mapstructure:"jaeger" envPrefix:"Jaeger_"`
 	OTel             *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
 	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
 }
@@ -97,9 +95,15 @@ func InitConfig(environment string) (*Config, error) {
 	if postgresPort != "" {
 		cfg.Postgresql.Port = postgresPort
 	}
-	jaegerAddr := os.Getenv(constants.JaegerHostPort)
-	if jaegerAddr != "" {
-		cfg.Jaeger.HostPort = jaegerAddr
+
+	jaegerPort := os.Getenv(constants.JaegerPort)
+	if jaegerPort != "" {
+		cfg.OTel.JaegerExporterConfig.AgentPort = jaegerPort
+	}
+
+	jaegerHost := os.Getenv(constants.JaegerHost)
+	if jaegerHost != "" {
+		cfg.OTel.JaegerExporterConfig.AgentHost = jaegerHost
 	}
 
 	return cfg, nil

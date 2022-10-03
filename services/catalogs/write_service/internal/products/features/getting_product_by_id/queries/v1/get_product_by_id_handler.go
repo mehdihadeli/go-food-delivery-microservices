@@ -33,12 +33,12 @@ func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductByI
 
 	product, err := q.pgRepo.GetProductById(ctx, query.ProductID)
 	if err != nil {
-		return nil, tracing.TraceErrFromContext(ctx, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %d in the repository", query.ProductID)))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %d in the repository", query.ProductID)))
 	}
 
 	productDto, err := mapper.Map[*dto.ProductDto](product)
 	if err != nil {
-		return nil, tracing.TraceErrFromContext(ctx, customErrors.NewApplicationErrorWrap(err, "[GetProductByIdHandler_Handle.Map] error in the mapping product"))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[GetProductByIdHandler_Handle.Map] error in the mapping product"))
 	}
 
 	q.log.Infow(fmt.Sprintf("[GetProductByIdHandler.Handle] product with id: {%d} fetched", query.ProductID), logger.Fields{"ProductId": query.ProductID})

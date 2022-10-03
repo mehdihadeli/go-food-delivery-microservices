@@ -12,7 +12,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/tracing"
 )
 
 type getProductByIdEndpoint struct {
@@ -39,13 +38,12 @@ func (ep *getProductByIdEndpoint) MapRoute() {
 func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ep.Metrics.GetProductByIdHttpRequests.Inc()
-		ctx, span := tracing.StartHttpServerTracerSpan(c, "productsHandlers.getProductByID")
-		defer span.Finish()
+		ctx := c.Request().Context()
 
 		request := &dtos.GetProductByIdRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductByIdEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", tracing.TraceWithErr(span, badRequestErr)))
+			ep.Log.Errorf(fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
@@ -53,7 +51,7 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 
 		if err := ep.Validator.StructCtx(ctx, query); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[getProductByIdEndpoint_handler.StructCtx]  query validation failed")
-			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", tracing.TraceWithErr(span, validationErr))
+			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", validationErr)
 			return validationErr
 		}
 
@@ -61,7 +59,7 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetProductById")
-			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.Id, tracing.TraceWithErr(span, err)), logger.Fields{"productId": query.Id})
+			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.Id, err), logger.Fields{"ProductId": query.Id})
 			return err
 		}
 

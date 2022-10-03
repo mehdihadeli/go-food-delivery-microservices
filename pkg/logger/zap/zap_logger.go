@@ -246,27 +246,6 @@ func (l *zapLogger) GrpcClientInterceptorLogger(method string, req, reply interf
 	)
 }
 
-func (l *zapLogger) KafkaProcessMessage(topic string, partition int, message string, workerID int, offset int64, time time.Time) {
-	l.Debug(
-		"Processing Kafka message",
-		zap.String(constants.Topic, topic),
-		zap.Int(constants.Partition, partition),
-		zap.String(constants.Message, message),
-		zap.Int(constants.WorkerID, workerID),
-		zap.Int64(constants.Offset, offset),
-		zap.Time(constants.Time, time),
-	)
-}
-
-func (l *zapLogger) KafkaLogCommittedMessage(topic string, partition int, offset int64) {
-	l.Info(
-		"Committed Kafka message",
-		zap.String(constants.Topic, topic),
-		zap.Int(constants.Partition, partition),
-		zap.Int64(constants.Offset, offset),
-	)
-}
-
 func mapToFields(fields map[string]interface{}) []zap.Field {
 	var zapFields []zap.Field
 	for k, v := range fields {

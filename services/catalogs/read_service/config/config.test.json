@@ -63,12 +63,6 @@
     "products": "products",
     "categories": "categories"
   },
-  "jaeger": {
-    "enable": true,
-    "serviceName": "catalogs_read_service",
-    "hostPort": "localhost:6831",
-    "logSpans": false
-  },
   "otel": {
     "enable": true,
     "serviceName": "catalogs-read-service",
