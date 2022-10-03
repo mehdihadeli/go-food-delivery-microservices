@@ -2,22 +2,22 @@ package repositories
 
 import (
 	"context"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/read_models"
-	v7 "github.com/olivere/elastic/v7"
 	uuid "github.com/satori/go.uuid"
 )
 
 type elasticOrderReadRepository struct {
 	log           logger.Logger
 	cfg           *config.Config
-	elasticClient *v7.Client
+	elasticClient *elasticsearch.Client
 }
 
-func NewElasticOrderReadRepository(log logger.Logger, cfg *config.Config, elasticClient *v7.Client) repositories.OrderReadRepository {
+func NewElasticOrderReadRepository(log logger.Logger, cfg *config.Config, elasticClient *elasticsearch.Client) repositories.OrderReadRepository {
 	return &elasticOrderReadRepository{log: log, cfg: cfg, elasticClient: elasticClient}
 }
 

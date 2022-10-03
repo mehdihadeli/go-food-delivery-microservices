@@ -1,13 +1,13 @@
-# 🧺 Store Golang Microservices
+# 🧺 Store Golang Microservices Sample
 
 [![CI](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/store-golang-microservice-sample)](https://goreportcard.com/report/github.com/mehdihadeli/store-golang-microservice-sample)
-![Go Version](https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square)
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod&style=flat-square&color=ff69b4)](https://gitpod.io/#https://github.com/mehdihadeli/store-golang-microservices-sample)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/store-golang-microservice)](https://goreportcard.com/report/github.com/mehdihadeli/store-golang-microservice)
+![Go Version](https://img.shields.io/badge/go%20version-%3E=1.19-61CFDD.svg?style=flat-square)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod&style=flat-square&color=ff69b4)](https://gitpod.io/#https://github.com/mehdihadeli/store-golang-microservices)
 
-![store-golang-microservices](https://socialify.git.ci/mehdihadeli/store-golang-microservices/image?description=1&descriptionEditable=%F0%9F%A7%BA%20Practical%20store%20microservices%2C%20built%20with%20Golang%2C%20DDD%2C%20CQRS%2C%20Event%20Sourcing%2C%20Vertical%20Slice%20Architecture%2C%20and%20the%20latest%20technologies.&font=Inter&forks=1&issues=1&language=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Light)
+> A practical store sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture**. For communication between independent services, We use asynchronous messaging with using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
 
-> A practical store sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Driven Architecture**. For communication between independent services, We use asynchronous messaging with using kafka, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
+💡 This application is not business oriented and my focus is mostly on technical part, I just want to implement a sample with using different technologies, software architecture design, principles and all the thing we need for creating a microservices app.
 
 🌀 This Application is `in-progress` and I will add new features and thecnologies over time. 
 
@@ -15,31 +15,26 @@
 ## Technologies - Libraries
 
 - ✔️ **[`labstack/echo`](https://github.com/labstack/echo)** - High performance, minimalist Go web framework
-- ✔️ **[`segmentio/kafka-go`](https://github.com/segmentio/kafka-go)** - Kafka library in Go
+- ✔️ **[`uber-go/zap`](https://github.com/uber-go/zap)** - Blazing fast, structured, leveled logging in Go.
+- ✔️ **[`emperror/errors`](https://github.com/emperror/errors)** - Drop-in replacement for the standard library errors package and github.com/pkg/errors
+- ✔️ **[`open-telemetry/opentelemetry-go`](https://github.com/open-telemetry/opentelemetry-go/)** - OpenTelemetry Go API and SDK
+- ✔️ **[`open-telemetry/opentelemetry-go-contrib`](https://github.com/open-telemetry/opentelemetry-go-contrib)** - Collection of extensions for OpenTelemetry-Go.
+- ✔️ **[`rabbitmq/amqp091-go`](https://github.com/rabbitmq/amqp091-go)** - An AMQP 0-9-1 Go client maintained by the RabbitMQ team. Originally by @streadway: `streadway/amqp`
+- ✔️ **[`stretchr/testify`](https://github.com/stretchr/testify)** - A toolkit with common assertions and mocks that plays nicely with the standard library
+- ✔️ **[`mehdihadeli/go-mediatr`](https://github.com/mehdihadeli/go-mediatr)** - Mediator pattern implementation in Golang and helpful in creating CQRS based applications.
+- ✔️ **[`grpc-ecosystem/go-grpc-middleware`](https://github.com/grpc-ecosystem/go-grpc-middleware)** - Golang gRPC Middlewares: interceptor chaining, auth, logging, retries and more
 - ✔️ **[`grpc/grpc-go`](https://github.com/grpc/grpc-go)** - The Go language implementation of gRPC. HTTP/2 based RPC
-- ✔️ **[`jackc/pgx`](https://github.com/jackc/pgx)** - PostgreSQL driver and toolkit for Go
+- ✔️ **[`elastic/go-elasticsearch`](https://github.com/elastic/go-elasticsearch)** - The official Go client for Elasticsearch
+- ✔️ **[`avast/retry-go`](https://github.com/avast/retry-go)** - Simple golang library for retry mechanism
+- ✔️ **[`ahmetb/go-linq`](https://github.com/ahmetb/go-linq)** - .NET LINQ capabilities in Go
+- ✔️ **[`EventStore/EventStore-Client-Go`](https://github.com/EventStore/EventStore-Client-Go)** - Go Client for Event Store version 20 and above.
+- ✔️ **[`olivere/elastic/v7`](https://github.com/olivere/elastic/v7)** - Deprecated: Use the official Elasticsearch client for Go at
 - ✔️ **[`swaggo/swag`](https://github.com/swaggo/swag)** - Automatically generate RESTful API documentation with Swagger 2.0 for Go.
-- ✔️ **[`jaegertracing/jaeger-client-go`](https://github.com/jaegertracing/jaeger-client-go)** - Distributed tracing for go (will replace with open telemetry soon)
 - ✔️ **[`prometheus/client_golang`](github.com/prometheus/client_golang)** - Prometheus instrumentation library for Go applications
 - ✔️ **[`mongodb/mongo-go-driver`](https://github.com/mongodb/mongo-go-driver)** - The Go driver for MongoDB
 - ✔️ **[`go-redis/redis`](https://github.com/go-redis/redis)** - Type-safe Redis client for Golang
 - ✔️ **[`go-gorm/gorm`](https://github.com/go-gorm/gorm)** - The fantastic ORM library for Golang, aims to be developer friendly
-- ✔️ **[`mschneider82/problem`](https://github.com/mschneider82/problem)** - A go library that implements application/problem+json and application/problem+xml
 - ✔️ **[`go-playground/validator`](https://github.com/go-playground/validator)** - Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving
-
-## Plan
-> This project is in progress, New features will be added over time.
-
-High-level plan is represented in the table
-
-| Feature | Status |
-| ------- | ------ |
-| Building Blocks | In Progress 👷‍ |
-| Catalog Service | In Progress 👷‍ |
-| API Gateway | Not Started 🚩 |
-| Identity Service | Not Started 🚩 |
-| Customer Service | Not Started 🚩 |
-| Order Service |  In Progress 👷‍|
 
 ## Application Structure
 
