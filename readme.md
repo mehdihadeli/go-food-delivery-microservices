@@ -11,6 +11,19 @@
 
 🌀 This Application is `in-progress` and I will add new features and thecnologies over time. 
 
+## Features
+- ✅ Using `Vertical Slice Architecture` as a high level architecture
+- ✅ Using `Event Driven Architecture` on top of RabbitMQ Message Broker with a custom [Event Bus](pkg/messaging/bus/)
+- ✅ Using `Event Sourcing` in `Audit Based` services like Orders 
+- ✅ Using `CQRS Pattern` and `Mediator Pattern`on top of [Go-MediatR](https://github.com/mehdihadeli/Go-MediatR) library
+- ✅ Using RESTFul api with [Echo](https://github.com/labstack/echo) framework and using swagger with [swaggo/swag](https://github.com/swaggo/swag) library
+- ✅ Using gRpc for internal service communication
+- ✅ Using [go-playground/validator](https://github.com/go-playground/validator) for validating input data in the REST and gRpc
+- ✅ Using `Postgres` and `EventStoreDB` for write databases as relational DB and `MongoDB` and `Elasric Search` for read databases
+- ✅ Using `OpenTelemetry` for collection `Metrics` and `Distributed Tracing`
+- ✅ Using docker and `docker-compose` for deployment
+- 🚧 Using `Domain Driven Design`in most of services like Catalogs
+- 🚧 Using `Helm` and `Kubernetes` for deployment
 
 ## Technologies - Libraries
 
