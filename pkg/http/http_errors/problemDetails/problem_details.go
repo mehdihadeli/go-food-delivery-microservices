@@ -35,7 +35,6 @@ type ProblemDetailErr interface {
 	SetType(typ string) ProblemDetailErr
 	Error() string
 	ErrBody() error
-	WriteTo(w http.ResponseWriter) (int, error)
 }
 
 // ProblemDetail error struct
@@ -108,33 +107,6 @@ func (p *problemDetail) SetStackTrace(stackTrace string) ProblemDetailErr {
 	return p
 }
 
-func (p *problemDetail) json() []byte {
-	b, _ := json.Marshal(&p)
-	return b
-}
-
-// WriteTo writes the JSON Problem to an HTTP Response Writer
-func (p *problemDetail) WriteTo(w http.ResponseWriter) (int, error) {
-	defaultLogger.Logger.Error(p.Error())
-	if core.IsDevelopment() {
-		stackTrace := p.GetStackTrace()
-		fmt.Println(stackTrace)
-	}
-
-	p.writeHeaderTo(w)
-	return w.Write(p.json())
-}
-
-func (p *problemDetail) writeHeaderTo(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", ContentTypeJSON)
-	status := p.GetStatus()
-	if status == 0 {
-		status = http.StatusInternalServerError
-	}
-
-	w.WriteHeader(status)
-}
-
 // NewProblemDetail New ProblemDetail Error
 func NewProblemDetail(status int, title string, detail string, stackTrace string) ProblemDetailErr {
 	problemDetail := &problemDetail{
@@ -205,6 +177,32 @@ func ResolveProblemDetail(err error) ProblemDetailErr {
 	}
 
 	return nil
+}
+
+// WriteTo writes the JSON Problem to an HTTP Response Writer
+func WriteTo(p ProblemDetailErr, w http.ResponseWriter) (int, error) {
+	defaultLogger.Logger.Error(p.Error())
+	if core.IsDevelopment() {
+		stackTrace := p.GetStackTrace()
+		fmt.Println(stackTrace)
+	}
+
+	writeHeaderTo(p, w)
+	marshal, err := json.Marshal(&p)
+	if err != nil {
+		return 0, err
+	}
+	return w.Write(marshal)
+}
+
+func writeHeaderTo(p ProblemDetailErr, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", ContentTypeJSON)
+	status := p.GetStatus()
+	if status == 0 {
+		status = http.StatusInternalServerError
+	}
+
+	w.WriteHeader(status)
 }
 
 func getDefaultType(statusCode int) string {
