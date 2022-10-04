@@ -23,12 +23,8 @@
 - ✅ Using `Postgres` and `EventStoreDB` for write databases as relational DB and `MongoDB` and `Elasric Search` for read databases
 - ✅ Using `OpenTelemetry` for collection `Metrics` and `Distributed Tracing`
 - ✅ Using docker and `docker-compose` for deployment
-
-## Roadmap
-- 🚧 Add `Dependecny Injections` with using [uber-go/fx](https://github.com/uber-go/fx)
-- 🚧 Using `Domain Driven Design` in some of services like [Catalogs Write Service](services/catalogs/write_service/) 
+- 🚧 Using `Domain Driven Design` in some of services like [Catalogs Write Service](services/catalogs/write_service/) and [Orders Service](services/catalogs/orders/)
 - 🚧 Using `Helm` and `Kubernetes` for deployment
-- 🚧 Add `Identity Management` and `OAuth`
 
 ## Technologies - Libraries
 

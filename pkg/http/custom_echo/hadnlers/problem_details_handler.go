@@ -12,14 +12,14 @@ func ProblemHandler(err error, c echo.Context) {
 
 	if prb != nil {
 		if !c.Response().Committed {
-			if _, err := prb.WriteTo(c.Response()); err != nil {
+			if _, err := problemDetails.WriteTo(prb, c.Response()); err != nil {
 				defaultLogger.Logger.Error(err)
 			}
 		}
 	} else {
 		if !c.Response().Committed {
 			prb := problemDetails.NewInternalServerProblemDetail(err.Error(), errorUtils.ErrorsWithStack(err))
-			if _, err := prb.WriteTo(c.Response()); err != nil {
+			if _, err := problemDetails.WriteTo(prb, c.Response()); err != nil {
 				defaultLogger.Logger.Error(err)
 			}
 		}
