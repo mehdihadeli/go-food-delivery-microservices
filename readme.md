@@ -38,7 +38,7 @@
 
 ## System Architecture
 
-![](./assets/system-architecture.png)
+![](./assets/system-architecture-diagram.png)
 
 ## Application Structure
 
