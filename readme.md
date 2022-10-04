@@ -14,7 +14,8 @@
 ## Features
 - ✅ Using `Vertical Slice Architecture` as a high level architecture
 - ✅ Using `Event Driven Architecture` on top of RabbitMQ Message Broker with a custom [Event Bus](pkg/messaging/bus/)
-- ✅ Using `Event Sourcing` in `Audit Based` services like Orders 
+- ✅ Using `Data Centeric Architecture` based on CRUD in [Catalogs Read Service](services/catalogs/read_service/)
+- ✅ Using `Event Sourcing` in `Audit Based` services like [Orders Service](services/orders/) 
 - ✅ Using `CQRS Pattern` and `Mediator Pattern`on top of [Go-MediatR](https://github.com/mehdihadeli/Go-MediatR) library
 - ✅ Using RESTFul api with [Echo](https://github.com/labstack/echo) framework and using swagger with [swaggo/swag](https://github.com/swaggo/swag) library
 - ✅ Using gRpc for internal service communication
@@ -22,7 +23,7 @@
 - ✅ Using `Postgres` and `EventStoreDB` for write databases as relational DB and `MongoDB` and `Elasric Search` for read databases
 - ✅ Using `OpenTelemetry` for collection `Metrics` and `Distributed Tracing`
 - ✅ Using docker and `docker-compose` for deployment
-- 🚧 Using `Domain Driven Design`in most of services like Catalogs
+- 🚧 Using `Domain Driven Design`in some of services like [Catalogs Write Service](services/catalogs/write_service/)
 - 🚧 Using `Helm` and `Kubernetes` for deployment
 
 ## Technologies - Libraries
