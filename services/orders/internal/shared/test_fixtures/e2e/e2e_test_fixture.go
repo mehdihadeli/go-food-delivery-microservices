@@ -8,7 +8,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/consumers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/projections"
@@ -56,13 +55,6 @@ func NewE2ETestFixture() *E2ETestFixture {
 		return nil
 	}
 
-	// this should not be in integration test because of cyclic dependencies
-	err = consumers.ConfigConsumers(infrastructures)
-	if err != nil {
-		cancel()
-		return nil
-	}
-
 	err = mappings.ConfigureMappings()
 	if err != nil {
 		cancel()
@@ -75,7 +67,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger)
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorkerWorker(infrastructures), workers.NewEventStoreDBWorker(infrastructures),
+		workers.NewRabbitMQWorker(ctx, infrastructures), workers.NewEventStoreDBWorker(infrastructures),
 	})
 
 	return &E2ETestFixture{

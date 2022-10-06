@@ -12,13 +12,12 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
+	messageBus "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
-	rabbitmqProducer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/configurations"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
+	rabbitmqConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/custom_middlewares"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -26,24 +25,24 @@ import (
 )
 
 type InfrastructureConfiguration struct {
-	Log                  logger.Logger
-	Cfg                  *config.Config
-	Validator            *validator.Validate
-	Pgx                  *postgres.Pgx
-	Metrics              *OrdersServiceMetrics
-	Esdb                 *esdb.Client
-	EsdbSerializer       *eventstroredb.EsdbSerializer
-	CheckpointRepository contracts.SubscriptionCheckpointRepository
-	ElasticClient        *elasticsearch.Client
-	MongoClient          *mongo.Client
-	GrpcClient           grpc.GrpcClient
-	TraceProvider        *trace.TracerProvider
-	CustomMiddlewares    cutomMiddlewares.CustomMiddlewares
-	Projections          []projection.IProjection
-	RabbitMQConnection   types.IConnection
-	EventSerializer      serializer.EventSerializer
-	Producer             producer.Producer
-	Consumers            []consumer.Consumer
+	Log                          logger.Logger
+	Cfg                          *config.Config
+	Validator                    *validator.Validate
+	Pgx                          *postgres.Pgx
+	Metrics                      *OrdersServiceMetrics
+	Esdb                         *esdb.Client
+	EsdbSerializer               *eventstroredb.EsdbSerializer
+	CheckpointRepository         contracts.SubscriptionCheckpointRepository
+	ElasticClient                *elasticsearch.Client
+	MongoClient                  *mongo.Client
+	GrpcClient                   grpc.GrpcClient
+	TraceProvider                *trace.TracerProvider
+	CustomMiddlewares            cutomMiddlewares.CustomMiddlewares
+	Projections                  []projection.IProjection
+	EventSerializer              serializer.EventSerializer
+	Producer                     producer.Producer
+	RabbitMQConfigurationBuilder rabbitmqConfigurations.RabbitMQConfigurationBuilder
+	RabbitMQBus                  messageBus.Bus
 }
 
 type InfrastructureConfigurator interface {
@@ -103,20 +102,20 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 
 	infrastructure.EventSerializer = json.NewJsonEventSerializer()
 
-	connection, err := types.NewRabbitMQConnection(ctx, ic.cfg.RabbitMQ)
+	infrastructure.RabbitMQConfigurationBuilder = rabbitmqConfigurations.NewRabbitMQConfigurationBuilder()
+	mqBus, err := bus.NewRabbitMQBus(ctx, ic.cfg.RabbitMQ, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+		builder = infrastructure.RabbitMQConfigurationBuilder
+	}, infrastructure.EventSerializer, ic.log)
 	if err != nil {
 		return nil, err, nil
 	}
-	infrastructure.RabbitMQConnection = connection
-	cleanup = append(cleanup, func() {
-		_ = connection.Close()
-	})
 
-	mqProducer, err := rabbitmqProducer.NewRabbitMQProducer(connection, func(builder *configurations.rabbitMQProducerConfigurationBuilder) {}, ic.log, infrastructure.EventSerializer)
-	if err != nil {
-		return nil, err, nil
-	}
-	infrastructure.Producer = mqProducer
+	infrastructure.RabbitMQBus = mqBus
+	infrastructure.Producer = mqBus
+
+	cleanup = append(cleanup, func() {
+		_ = mqBus.Stop(ctx)
+	})
 
 	if err != nil {
 		return nil, err, nil

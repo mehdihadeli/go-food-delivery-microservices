@@ -79,7 +79,7 @@ func (s *Server) Run() error {
 	}
 
 	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorkerWorker(infrastructureConfigurations), workers.NewMetricsWorker(infrastructureConfigurations),
+		workers.NewRabbitMQWorker(ctx, infrastructureConfigurations), workers.NewMetricsWorker(infrastructureConfigurations),
 	})
 
 	workersErr := backgroundWorkers.Start(ctx)

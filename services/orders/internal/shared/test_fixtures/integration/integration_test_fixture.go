@@ -2,13 +2,10 @@ package integration
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/store"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/configurations/mappings"
@@ -71,7 +68,7 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 
 func (e *IntegrationTestFixture) Run() {
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorkerWorker(e.InfrastructureConfiguration), workers.NewEventStoreDBWorker(e.InfrastructureConfiguration),
+		workers.NewRabbitMQWorker(e.Ctx, e.InfrastructureConfiguration), workers.NewEventStoreDBWorker(e.InfrastructureConfiguration),
 	})
 
 	workersErr := workersRunner.Start(e.Ctx)
@@ -88,36 +85,4 @@ func (e *IntegrationTestFixture) Run() {
 			}
 		}
 	}()
-}
-
-func (e *IntegrationTestFixture) FakeConsumer(messageName string) *consumer.RabbitMQFakeTestConsumer {
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumer(
-		e.EventSerializer,
-		e.Log,
-		e.RabbitMQConnection,
-		func(builder *configurations.rabbitMQConsumerConfigurationBuilder) {
-			builder.WithExchangeName(messageName).WithQueueName(messageName).WithRoutingKey(messageName)
-		})
-
-	e.Consumers = append(e.Consumers, fakeConsumer)
-
-	return fakeConsumer
-}
-
-func (e *IntegrationTestFixture) WaitUntilConditionMet(conditionToMet func() bool) error {
-	timeout := 20 * time.Second
-
-	startTime := time.Now()
-	timeOutExpired := false
-	meet := conditionToMet()
-	for meet == false {
-		if timeOutExpired {
-			return errors.New("Condition not met for the test, timeout exceeded")
-		}
-		time.Sleep(time.Second * 2)
-		meet = conditionToMet()
-		timeOutExpired = time.Now().Sub(startTime) > timeout
-	}
-
-	return nil
 }

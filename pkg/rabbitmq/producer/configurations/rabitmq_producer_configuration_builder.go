@@ -2,12 +2,10 @@ package configurations
 
 import (
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 )
 
 type RabbitMQProducerConfigurationBuilder interface {
-	SetProducerMessageType(messageType types2.IMessage) RabbitMQProducerConfigurationBuilder
 	WithDurable(durable bool) RabbitMQProducerConfigurationBuilder
 	WithAutoDeleteExchange(autoDelete bool) RabbitMQProducerConfigurationBuilder
 	WithExchangeType(exchangeType types.ExchangeType) RabbitMQProducerConfigurationBuilder
@@ -29,11 +27,6 @@ type rabbitMQProducerConfigurationBuilder struct {
 
 func NewRabbitMQProducerConfigurationBuilder(messageType types2.IMessage) RabbitMQProducerConfigurationBuilder {
 	return &rabbitMQProducerConfigurationBuilder{rabbitmqProducerOptions: NewDefaultRabbitMQProducerConfiguration(messageType)}
-}
-
-func (b *rabbitMQProducerConfigurationBuilder) SetProducerMessageType(messageType types2.IMessage) RabbitMQProducerConfigurationBuilder {
-	b.rabbitmqProducerOptions.ProducerMessageType = utils.GetMessageBaseReflectType(messageType)
-	return b
 }
 
 func (b *rabbitMQProducerConfigurationBuilder) WithDurable(durable bool) RabbitMQProducerConfigurationBuilder {

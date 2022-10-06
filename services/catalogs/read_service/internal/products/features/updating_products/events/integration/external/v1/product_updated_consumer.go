@@ -11,30 +11,30 @@ import (
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	tracing "github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	updatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/updating_products/commands/v1"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	uuid "github.com/satori/go.uuid"
 )
 
 type productUpdatedConsumer struct {
-	*delivery.ProductConsumersBase
+	*infrastructure.InfrastructureConfigurations
 }
 
-func NewProductUpdatedConsumer(productConsumerBase *delivery.ProductConsumersBase) *productUpdatedConsumer {
-	return &productUpdatedConsumer{productConsumerBase}
+func NewProductUpdatedConsumer(infra *infrastructure.InfrastructureConfigurations) *productUpdatedConsumer {
+	return &productUpdatedConsumer{InfrastructureConfigurations: infra}
 }
 
-func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext types2.MessageConsumeContextT[*ProductUpdatedV1]) error {
-	if consumeContext.Message() == nil {
-		return nil
+func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext types2.MessageConsumeContext) error {
+	message, ok := consumeContext.Message().(*ProductUpdatedV1)
+	if !ok {
+		return errors.New("error in casting message to ProductUpdatedV1")
 	}
 
 	ctx, span := tracing.Tracer.Start(ctx, "productUpdatedConsumer.Handle")
 	span.SetAttributes(attribute.Object("Message", consumeContext.Message()))
 	defer span.End()
-	updatedProduct := consumeContext.Message()
 
-	productUUID, err := uuid.FromString(updatedProduct.ProductId)
+	productUUID, err := uuid.FromString(message.ProductId)
 	if err != nil {
 		c.Log.WarnMsg("uuid.FromString", err)
 		badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[updateProductConsumer_Consume.uuid.FromString] error in the converting uuid")
@@ -42,7 +42,7 @@ func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext type
 		return err
 	}
 
-	command := updatingProductV1.NewUpdateProduct(productUUID, updatedProduct.Name, updatedProduct.Description, updatedProduct.Price)
+	command := updatingProductV1.NewUpdateProduct(productUUID, message.Name, message.Description, message.Price)
 	if err := c.Validator.StructCtx(ctx, command); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[updateProductConsumer_Consume.StructCtx] command validation failed")
 		c.Log.Errorf(fmt.Sprintf("[updateProductConsumer_Consume.StructCtx] err: {%v}", messageTracing.TraceMessagingErrFromSpan(span, validationErr)))

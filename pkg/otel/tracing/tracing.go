@@ -141,7 +141,6 @@ func (o *openTelemtry) configExporters() error {
 	if o.config.ZipkinExporterConfig != nil {
 		zipkinExporter, err := zipkin.New(
 			o.config.ZipkinExporterConfig.Url,
-			zipkin.WithLogger(logger),
 		)
 		if err != nil {
 			return err

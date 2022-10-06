@@ -20,7 +20,6 @@ import (
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/solsw/go2linq/v2"
 	"sync"
-	"time"
 )
 
 type rabbitMQBus struct {
@@ -31,7 +30,7 @@ type rabbitMQBus struct {
 	logger                logger.Logger
 }
 
-func AddRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, serializer serializer.EventSerializer, logger logger.Logger) (bus.Bus, error) {
+func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, serializer serializer.EventSerializer, logger logger.Logger) (bus.Bus, error) {
 	builder := configurations.NewRabbitMQConfigurationBuilder()
 	rabbitmqBuilderFunc(builder)
 
@@ -63,8 +62,6 @@ func AddRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBui
 		}
 		consumers = append(consumers, c)
 	}
-	consumers[0].Start(ctx)
-	time.Sleep(time.Second * 2)
 
 	rabbitBus := &rabbitMQBus{
 		logger:                logger,

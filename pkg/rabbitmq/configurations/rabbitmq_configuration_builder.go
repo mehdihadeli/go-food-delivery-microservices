@@ -30,7 +30,6 @@ func (r *rabbitMQConfigurationBuilder) AddProducer(producerMessageType types.IMe
 	if producerBuilderFunc != nil {
 		producerBuilderFunc(builder)
 	}
-	builder.SetProducerMessageType(producerMessageType)
 	r.producerBuilders = append(r.producerBuilders, builder)
 
 	return r
