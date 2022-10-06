@@ -11,29 +11,30 @@ import (
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	deletingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/deleting_products/commands/v1"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	uuid "github.com/satori/go.uuid"
 )
 
 type productDeletedConsumer struct {
-	*delivery.ProductConsumersBase
+	*infrastructure.InfrastructureConfigurations
 }
 
-func NewProductDeletedConsumer(productConsumerBase *delivery.ProductConsumersBase) *productDeletedConsumer {
-	return &productDeletedConsumer{productConsumerBase}
+func NewProductDeletedConsumer(infra *infrastructure.InfrastructureConfigurations) *productDeletedConsumer {
+	return &productDeletedConsumer{InfrastructureConfigurations: infra}
 }
 
-func (c *productDeletedConsumer) Handle(ctx context.Context, consumeContext types2.MessageConsumeContextT[*ProductDeletedV1]) error {
-	if consumeContext.Message() == nil {
-		return nil
+func (c *productDeletedConsumer) Handle(ctx context.Context, consumeContext types2.MessageConsumeContext) error {
+	message, ok := consumeContext.Message().(*ProductDeletedV1)
+	if !ok {
+		return errors.New("error in casting message to ProductDeletedV1")
 	}
 
 	ctx, span := tracing.Tracer.Start(ctx, "productDeletedConsumer.Handle")
 	span.SetAttributes(attribute.Object("Message", consumeContext.Message()))
 	defer span.End()
 
-	productUUID, err := uuid.FromString(consumeContext.Message().ProductId)
+	productUUID, err := uuid.FromString(message.ProductId)
 	if err != nil {
 		badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[productDeletedConsumer_Handle.uuid.FromString] error in the converting uuid")
 		c.Log.Errorf(fmt.Sprintf("[productDeletedConsumer_Handle.uuid.FromString] err: %v", messageTracing.TraceMessagingErrFromSpan(span, badRequestErr)))

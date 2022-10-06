@@ -4,7 +4,6 @@ import (
 	"context"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/consumers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
@@ -28,11 +27,6 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 	}
 
 	err = mediatr.ConfigProductsMediator(c.InfrastructureConfigurations)
-	if err != nil {
-		return err
-	}
-
-	err = consumers.ConfigConsumers(c.InfrastructureConfigurations)
 	if err != nil {
 		return err
 	}

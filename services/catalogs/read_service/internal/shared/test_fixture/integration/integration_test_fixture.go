@@ -4,8 +4,6 @@ import (
 	"context"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mappings"
@@ -42,7 +40,7 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 	}
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorkerWorker(infrastructures),
+		workers.NewRabbitMQWorker(ctx, infrastructures),
 	})
 
 	return &IntegrationTestFixture{
@@ -71,18 +69,4 @@ func (e *IntegrationTestFixture) Run() {
 			}
 		}
 	}()
-}
-
-func (e *IntegrationTestFixture) FakeConsumer(messageName string) *consumer.RabbitMQFakeTestConsumer {
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumer(
-		e.EventSerializer,
-		e.Log,
-		e.RabbitMQConnection,
-		func(builder *configurations.rabbitMQConsumerConfigurationBuilder) {
-			builder.WithExchangeName(messageName).WithQueueName(messageName).WithRoutingKey(messageName)
-		})
-
-	e.Consumers = append(e.Consumers, fakeConsumer)
-
-	return fakeConsumer
 }

@@ -20,10 +20,11 @@ type RabbitMQProducerConfiguration struct {
 	ContentEncoding     string
 }
 
-func NewDefaultRabbitMQProducerConfiguration(message types2.IMessage) *RabbitMQProducerConfiguration {
+func NewDefaultRabbitMQProducerConfiguration(messageType types2.IMessage) *RabbitMQProducerConfiguration {
 	return &RabbitMQProducerConfiguration{
-		ExchangeOptions: &options.RabbitMQExchangeOptions{Durable: true, Type: types.ExchangeTopic, Name: utils.GetTopicOrExchangeName(message)},
-		DeliveryMode:    2,
-		RoutingKey:      utils.GetRoutingKey(message),
+		ExchangeOptions:     &options.RabbitMQExchangeOptions{Durable: true, Type: types.ExchangeTopic, Name: utils.GetTopicOrExchangeName(messageType)},
+		DeliveryMode:        2,
+		RoutingKey:          utils.GetRoutingKey(messageType),
+		ProducerMessageType: utils.GetMessageBaseReflectType(messageType),
 	}
 }

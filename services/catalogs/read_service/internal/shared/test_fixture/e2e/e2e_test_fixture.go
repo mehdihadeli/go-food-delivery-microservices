@@ -8,9 +8,9 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/consumers"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mediatr"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/workers"
 	"net/http/httptest"
@@ -59,7 +59,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 	}
 
 	// this should not be in integration test because of cyclic dependencies
-	err = consumers.ConfigConsumers(infrastructures)
+	err = rabbitmq.ConfigConsumers(infrastructures)
 	if err != nil {
 		cancel()
 		return nil
@@ -69,7 +69,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 	httpServer := httptest.NewServer(echo)
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorkerWorker(infrastructures),
+		workers.NewRabbitMQWorker(ctx, infrastructures),
 	})
 
 	return &E2ETestFixture{

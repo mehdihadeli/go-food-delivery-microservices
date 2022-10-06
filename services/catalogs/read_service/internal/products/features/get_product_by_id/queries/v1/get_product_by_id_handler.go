@@ -34,22 +34,30 @@ func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductByI
 	defer span.End()
 
 	var product *models.Product
-	redisProduct, err := q.redisRepository.GetProduct(ctx, query.Id.String())
+	redisProduct, err := q.redisRepository.GetProductById(ctx, query.Id.String())
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProduct] error in getting product with id %d in the redis repository", query.Id)))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %d in the redis repository", query.Id)))
 	}
 
 	if redisProduct != nil {
 		product = redisProduct
 	} else {
-		mongoProduct, err := q.mongoRepository.GetProductById(ctx, query.Id)
+		var mongoProduct *models.Product
+		mongoProduct, err = q.mongoRepository.GetProductById(ctx, query.Id)
 		if err != nil {
-			return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProduct] error in getting product with id %d in the mongo repository", query.Id)))
+			return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %d in the mongo repository", query.Id)))
 		}
+		if mongoProduct == nil {
+			mongoProduct, err = q.mongoRepository.GetProductByProductId(ctx, query.Id)
+		}
+		if mongoProduct == nil {
+			return nil, nil
+		}
+
 		product = mongoProduct
-		err = q.redisRepository.PutProduct(ctx, product.ProductId, product)
+		err = q.redisRepository.PutProduct(ctx, product.Id, product)
 		if err != nil {
-			return nil, tracing.TraceErrFromSpan(span, err)
+			return new(getProductByIdDtos.GetProductByIdResponseDto), tracing.TraceErrFromSpan(span, err)
 		}
 	}
 

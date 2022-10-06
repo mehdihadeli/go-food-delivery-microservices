@@ -78,6 +78,7 @@ func (s *Server) Run() error {
 
 	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
 		workers.NewMetricsWorker(infrastructureConfigurations),
+		workers.NewRabbitMQWorker(ctx, infrastructureConfigurations),
 	})
 
 	workersErr := backgroundWorkers.Start(ctx)

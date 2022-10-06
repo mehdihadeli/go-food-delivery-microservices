@@ -11,6 +11,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	consumerConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
+	producerConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
 	uuid "github.com/satori/go.uuid"
@@ -22,7 +23,7 @@ func Test_AddRabbitMQ(t *testing.T) {
 	ctx := context.Background()
 
 	fakeConsumer := consumer.NewRabbitMQFakeTestConsumer()
-	b, err := AddRabbitMQBus(ctx, &config.RabbitMQConfig{
+	b, err := NewRabbitMQBus(ctx, &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",
 			Password: "guest",
@@ -30,8 +31,8 @@ func Test_AddRabbitMQ(t *testing.T) {
 			Port:     5672,
 		}},
 		func(builder configurations.RabbitMQConfigurationBuilder) {
-			//builder.AddProducer(ProducerConsumerMessage{}, func(builder producerConfigurations.RabbitMQProducerConfigurationBuilder) {
-			//})
+			builder.AddProducer(ProducerConsumerMessage{}, func(builder producerConfigurations.RabbitMQProducerConfigurationBuilder) {
+			})
 			builder.AddConsumer(ProducerConsumerMessage{},
 				func(builder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
 					builder.WithHandlers(func(consumerHandlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {

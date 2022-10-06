@@ -5,16 +5,16 @@ import (
 	rabbitmqBus "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/rabbitmq"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/rabbitmq"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 )
 
-func NewRabbitMQWorker(ctx context.Context, infra *infrastructure.InfrastructureConfigurations) web.Worker {
+func NewRabbitMQWorker(ctx context.Context, infra *infrastructure.InfrastructureConfiguration) web.Worker {
 	bus, _ := rabbitmqBus.NewRabbitMQBus(
 		ctx,
 		infra.Cfg.RabbitMQ,
 		func(builder configurations.RabbitMQConfigurationBuilder) {
-			rabbitmq.ConfigRabbitMQ(builder, infra)
+			rabbitmq.ConfigCatalogsRabbitMQ(builder, infra)
 		},
 		infra.EventSerializer,
 		infra.Log)

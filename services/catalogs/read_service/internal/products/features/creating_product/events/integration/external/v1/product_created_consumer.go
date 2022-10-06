@@ -11,29 +11,28 @@ import (
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
 	creatingProduct "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product/commands/v1"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 )
 
 type productCreatedConsumer struct {
-	*delivery.ProductConsumersBase
+	*infrastructure.InfrastructureConfigurations
 }
 
-func NewProductCreatedConsumer(productConsumerBase *delivery.ProductConsumersBase) *productCreatedConsumer {
-	return &productCreatedConsumer{productConsumerBase}
+func NewProductCreatedConsumer(infra *infrastructure.InfrastructureConfigurations) *productCreatedConsumer {
+	return &productCreatedConsumer{InfrastructureConfigurations: infra}
 }
 
-func (c *productCreatedConsumer) Handle(ctx context.Context, consumeContext types2.MessageConsumeContextT[*ProductCreatedV1]) error {
-	if consumeContext.Message() == nil {
-		return nil
+func (c *productCreatedConsumer) Handle(ctx context.Context, consumeContext types2.MessageConsumeContext) error {
+	product, ok := consumeContext.Message().(*ProductCreatedV1)
+	if !ok {
+		return errors.New("error in casting message to ProductCreatedV1")
 	}
 
 	ctx, span := tracing.Tracer.Start(ctx, "productCreatedConsumer.Handle")
 	span.SetAttributes(attribute.Object("Message", consumeContext.Message()))
 	defer span.End()
-
-	product := consumeContext.Message()
 
 	command := v1.NewCreateProduct(product.ProductId, product.Name, product.Description, product.Price, product.CreatedAt)
 	if err := c.Validator.StructCtx(ctx, command); err != nil {

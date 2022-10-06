@@ -54,8 +54,8 @@ func (r *redisProductRepository) PutProduct(ctx context.Context, key string, pro
 	return nil
 }
 
-func (r *redisProductRepository) GetProduct(ctx context.Context, key string) (*models.Product, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "redisRepository.GetProduct")
+func (r *redisProductRepository) GetProductById(ctx context.Context, key string) (*models.Product, error) {
+	ctx, span := tracing.Tracer.Start(ctx, "redisRepository.GetProductById")
 	span.SetAttributes(attribute2.String("PrefixKey", r.getRedisProductPrefixKey()))
 	span.SetAttributes(attribute2.String("Key", key))
 	defer span.End()
@@ -76,7 +76,7 @@ func (r *redisProductRepository) GetProduct(ctx context.Context, key string) (*m
 
 	span.SetAttributes(attribute.Object("Product", product))
 
-	r.log.Infow(fmt.Sprintf("[redisProductRepository.GetProduct] product with with key '%s', prefix '%s' laoded", key, r.getRedisProductPrefixKey()),
+	r.log.Infow(fmt.Sprintf("[redisProductRepository.GetProductById] product with with key '%s', prefix '%s' laoded", key, r.getRedisProductPrefixKey()),
 		logger.Fields{"Product": product, "Id": product.ProductId, "Key": key, "PrefixKey": r.getRedisProductPrefixKey()})
 
 	return &product, nil
