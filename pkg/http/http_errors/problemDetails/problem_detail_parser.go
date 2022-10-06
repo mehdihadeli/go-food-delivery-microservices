@@ -25,7 +25,7 @@ func NewProblemDetailParser(builder func(builder *OptionBuilder)) *ProblemDetail
 }
 
 func (p *ProblemDetailParser) ResolveError(err error) ProblemDetailErr {
-	errType := typeMapper.GetType(err)
+	errType := typeMapper.GetReflectType(err)
 	problem := p.internalErrors[errType]
 	if problem != nil {
 		return problem(err)

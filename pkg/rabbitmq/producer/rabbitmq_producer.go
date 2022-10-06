@@ -11,7 +11,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/rabbitmq/amqp091-go"
@@ -22,33 +22,34 @@ import (
 )
 
 type rabbitMQProducer struct {
-	logger          logger.Logger
-	connection      types.IConnection
-	eventSerializer serializer.EventSerializer
-	producerConfig  *options.RabbitMQProducerOptions
+	logger                  logger.Logger
+	connection              types.IConnection
+	eventSerializer         serializer.EventSerializer
+	producersConfigurations map[string]*configurations.RabbitMQProducerConfiguration
 }
 
-func NewRabbitMQProducer(connection types.IConnection, builderFunc producer.ProducerBuilderFuc[*options.RabbitMQProducerOptionsBuilder], logger logger.Logger, eventSerializer serializer.EventSerializer) (producer.Producer, error) {
-	builder := options.NewRabbitMQProducerOptionsBuilder()
-	if builderFunc != nil {
-		builderFunc(builder)
-	}
-
-	return &rabbitMQProducer{logger: logger, connection: connection, eventSerializer: eventSerializer, producerConfig: builder.Build()}, nil
+func NewRabbitMQProducer(connection types.IConnection, rabbitmqProducersConfiguration map[string]*configurations.RabbitMQProducerConfiguration, logger logger.Logger, eventSerializer serializer.EventSerializer) (producer.Producer, error) {
+	return &rabbitMQProducer{logger: logger, connection: connection, eventSerializer: eventSerializer, producersConfigurations: rabbitmqProducersConfiguration}, nil
 }
 
 func (r *rabbitMQProducer) PublishMessage(ctx context.Context, message types2.IMessage, meta metadata.Metadata) error {
 	return r.PublishMessageWithTopicName(ctx, message, meta, "")
 }
 
+func (r *rabbitMQProducer) getProducerConfigurationByMessage(message types2.IMessage) *configurations.RabbitMQProducerConfiguration {
+	messageType := utils.GetMessageBaseReflectType(message)
+	return r.producersConfigurations[messageType.String()]
+}
+
 func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, message types2.IMessage, meta metadata.Metadata, topicOrExchangeName string) error {
+	producerConfiguration := r.getProducerConfigurationByMessage(message)
 	var exchange string
 	var routingKey string
 
 	if topicOrExchangeName != "" {
 		exchange = topicOrExchangeName
-	} else if r.producerConfig.ExchangeOptions.Name != "" {
-		exchange = r.producerConfig.ExchangeOptions.Name
+	} else if producerConfiguration.ExchangeOptions.Name != "" {
+		exchange = producerConfiguration.ExchangeOptions.Name
 	} else {
 		exchange = utils.GetTopicOrExchangeName(message)
 	}
@@ -88,7 +89,7 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, mess
 	}
 	defer channel.Close()
 
-	err = r.ensureExchange(channel, exchange)
+	err = r.ensureExchange(producerConfiguration, channel, exchange)
 	if err != nil {
 		return producer2.FinishProducerSpan(beforeProduceSpan, err)
 	}
@@ -108,12 +109,12 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, mess
 		Type:            message.GetEventTypeName(), //typeMapper.GetTypeName(message) - just message type name not full type name because in other side package name for type could be different
 		ContentType:     serializedObj.ContentType,
 		Body:            serializedObj.Data,
-		DeliveryMode:    r.producerConfig.DeliveryMode,
-		Expiration:      r.producerConfig.Expiration,
-		AppId:           r.producerConfig.AppId,
-		Priority:        r.producerConfig.Priority,
-		ReplyTo:         r.producerConfig.ReplyTo,
-		ContentEncoding: r.producerConfig.ContentEncoding,
+		DeliveryMode:    producerConfiguration.DeliveryMode,
+		Expiration:      producerConfiguration.Expiration,
+		AppId:           producerConfiguration.AppId,
+		Priority:        producerConfiguration.Priority,
+		ReplyTo:         producerConfiguration.ReplyTo,
+		ContentEncoding: producerConfiguration.ContentEncoding,
 	}
 
 	err = channel.PublishWithContext(
@@ -161,15 +162,15 @@ func (r *rabbitMQProducer) getMetadata(message types2.IMessage, meta metadata.Me
 	return meta
 }
 
-func (r *rabbitMQProducer) ensureExchange(channel *amqp091.Channel, exchangeName string) error {
+func (r *rabbitMQProducer) ensureExchange(producersConfigurations *configurations.RabbitMQProducerConfiguration, channel *amqp091.Channel, exchangeName string) error {
 	err := channel.ExchangeDeclare(
 		exchangeName,
-		string(r.producerConfig.ExchangeOptions.Type),
-		r.producerConfig.ExchangeOptions.Durable,
-		r.producerConfig.ExchangeOptions.AutoDelete,
+		string(producersConfigurations.ExchangeOptions.Type),
+		producersConfigurations.ExchangeOptions.Durable,
+		producersConfigurations.ExchangeOptions.AutoDelete,
 		false,
 		false,
-		r.producerConfig.ExchangeOptions.Args,
+		producersConfigurations.ExchangeOptions.Args,
 	)
 	if err != nil {
 		return err

@@ -5,7 +5,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/options"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
@@ -60,7 +60,7 @@ func (e *IntegrationTestFixture) FakeConsumer(messageName string) *consumer.Rabb
 		e.EventSerializer,
 		e.Log,
 		e.RabbitMQConnection,
-		func(builder *options.RabbitMQConsumerOptionsBuilder) {
+		func(builder *configurations.rabbitMQConsumerConfigurationBuilder) {
 			builder.WithExchangeName(messageName).WithQueueName(messageName).WithRoutingKey(messageName)
 		})
 

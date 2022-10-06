@@ -7,7 +7,7 @@ import (
 	consumer2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/options"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 )
 
@@ -16,7 +16,7 @@ type RabbitMQFakeTestConsumer struct {
 	consumer2.Consumer
 }
 
-func NewRabbitMQFakeTestConsumer(eventSerializer serializer.EventSerializer, logger logger.Logger, connection types2.IConnection, builderFunc func(builder *options.RabbitMQConsumerOptionsBuilder)) *RabbitMQFakeTestConsumer {
+func NewRabbitMQFakeTestConsumer(eventSerializer serializer.EventSerializer, logger logger.Logger, connection types2.IConnection, builderFunc func(builder *configurations.rabbitMQConsumerConfigurationBuilder)) *RabbitMQFakeTestConsumer {
 	fakeConsumer := &RabbitMQFakeTestConsumer{}
 
 	t, err := consumer.NewRabbitMQConsumer(eventSerializer, logger, connection, builderFunc, fakeConsumer)

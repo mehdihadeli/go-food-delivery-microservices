@@ -154,6 +154,15 @@ func GetTypeName(input interface{}) string {
 	return fmt.Sprintf("*%s", t.Elem().Name())
 }
 
+func GetNonPointerTypeName(input interface{}) string {
+	t := reflect.TypeOf(input)
+	if t.Kind() != reflect.Ptr {
+		return t.Name()
+	}
+
+	return t.Elem().Name()
+}
+
 func GetTypeNameByType(typ reflect.Type) string {
 	if typ.Kind() != reflect.Ptr {
 		return typ.Name()
@@ -182,13 +191,29 @@ func GetTypeFromGeneric[T interface{}]() reflect.Type {
 	return res
 }
 
-func GetType(value interface{}) reflect.Type {
+func GetReflectType(value interface{}) reflect.Type {
 	if reflect.TypeOf(value).Kind() == reflect.Pointer && reflect.TypeOf(value).Elem().Kind() == reflect.Interface {
 		return reflect.TypeOf(value).Elem()
 	}
 
 	res := reflect.TypeOf(value)
 	return res
+}
+
+func GetBaseType(value interface{}) interface{} {
+	if reflect.ValueOf(value).Kind() == reflect.Pointer {
+		return reflect.ValueOf(value).Elem().Interface()
+	}
+
+	return value
+}
+
+func GetBaseReflectType(value interface{}) reflect.Type {
+	if reflect.ValueOf(value).Kind() == reflect.Pointer {
+		return reflect.TypeOf(reflect.ValueOf(value).Elem().Interface())
+	}
+
+	return reflect.TypeOf(value)
 }
 
 func InstanceByT[T any]() T {
