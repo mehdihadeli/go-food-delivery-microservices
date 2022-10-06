@@ -15,7 +15,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	rabbitmqProducer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/middlewares"
@@ -108,7 +108,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 		_ = connection.Close()
 	})
 
-	mqProducer, err := rabbitmqProducer.NewRabbitMQProducer(connection, func(builder *options.RabbitMQProducerOptionsBuilder) {}, ic.log, infrastructure.EventSerializer)
+	mqProducer, err := rabbitmqProducer.NewRabbitMQProducer(connection, func(builder *configurations.rabbitMQProducerConfigurationBuilder) {}, ic.log, infrastructure.EventSerializer)
 	if err != nil {
 		return nil, err, nil
 	}

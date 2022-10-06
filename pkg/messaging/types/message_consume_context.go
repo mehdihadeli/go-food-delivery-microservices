@@ -16,12 +16,6 @@ type MessageConsumeContextBase interface {
 	Metadata() metadata.Metadata
 }
 
-type MessageConsumeContextT[T IMessage] interface {
-	MessageConsumeContextBase
-	Message() T
-	ToMessageConsumeContext() MessageConsumeContext
-}
-
 type MessageConsumeContext interface {
 	MessageConsumeContextBase
 	Message() IMessage
@@ -36,11 +30,6 @@ type messageConsumeContextBase struct {
 	created       time.Time
 	tag           uint64
 	correlationId string
-}
-
-type messageConsumeContextT[T IMessage] struct {
-	MessageConsumeContextBase
-	message T
 }
 
 type messageConsumeContext struct {
@@ -60,12 +49,6 @@ func NewMessageContextBase(body interface{}, meta metadata.Metadata, contentType
 		correlationId: correlationId,
 	}
 }
-func NewMessageConsumeContextT[T IMessage](message T, meta metadata.Metadata, contentType string, messageType string, created time.Time, deliveryTag uint64, messageId string, correlationId string) MessageConsumeContextT[T] {
-	return &messageConsumeContextT[T]{
-		message:                   message,
-		MessageConsumeContextBase: NewMessageContextBase(message, meta, contentType, messageType, created, deliveryTag, messageId, correlationId),
-	}
-}
 
 func NewMessageConsumeContext(message IMessage, meta metadata.Metadata, contentType string, messageType string, created time.Time, deliveryTag uint64, messageId string, correlationId string) MessageConsumeContext {
 	return &messageConsumeContext{
@@ -76,14 +59,6 @@ func NewMessageConsumeContext(message IMessage, meta metadata.Metadata, contentT
 
 func (m *messageConsumeContext) Message() IMessage {
 	return m.message
-}
-
-func (m *messageConsumeContextT[T]) Message() T {
-	return m.message
-}
-
-func (m *messageConsumeContextT[T]) ToMessageConsumeContext() MessageConsumeContext {
-	return NewMessageConsumeContext(m.Message(), m.Metadata(), m.ContentType(), m.MessageType(), m.Created(), m.DeliveryTag(), m.MessageId(), m.CorrelationId())
 }
 
 func (m *messageConsumeContextBase) MessageId() string {

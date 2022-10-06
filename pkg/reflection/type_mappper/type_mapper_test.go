@@ -19,9 +19,9 @@ func TestTypes(t *testing.T) {
 	c2 := GetTypeFromGeneric[*Test]()
 	c3 := GetTypeFromGeneric[ITest]()
 
-	d1 := GetType(Test{})
-	d2 := GetType(&Test{})
-	d3 := GetType((*ITest)(nil))
+	d1 := GetReflectType(Test{})
+	d2 := GetReflectType(&Test{})
+	d3 := GetReflectType((*ITest)(nil))
 
 	q := TypeByName("typeMapper.Test")
 	q1 := InstanceByTypeName("typeMapper.Test").(Test)

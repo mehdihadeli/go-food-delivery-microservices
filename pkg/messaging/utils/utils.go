@@ -15,6 +15,10 @@ func GetMessageName(message interface{}) string {
 	return strcase.ToSnake(reflect.TypeOf(message).Name())
 }
 
+func GetMessageBaseReflectType(message interface{}) reflect.Type {
+	return typeMapper.GetBaseReflectType(message)
+}
+
 func GetTopicOrExchangeName(message interface{}) string {
 	if reflect.TypeOf(message).Kind() == reflect.Pointer {
 		return strcase.ToSnake(reflect.TypeOf(message).Elem().Name())
@@ -42,7 +46,7 @@ func RegisterCustomMessageTypesToRegistrty(typesMap map[string]types.IMessage) {
 	}
 
 	for k, v := range typesMap {
-		typeMapper.RegisterTypeWithKey(k, typeMapper.GetType(v))
+		typeMapper.RegisterTypeWithKey(k, typeMapper.GetReflectType(v))
 	}
 }
 

@@ -170,7 +170,7 @@ func ResolveProblemDetail(err error) ProblemDetailErr {
 			break
 		}
 	}
-	errorType := typeMapper.GetType(resolvedErr)
+	errorType := typeMapper.GetReflectType(resolvedErr)
 	problem := internalErrorMaps[errorType]
 	if problem != nil {
 		return problem(resolvedErr)
