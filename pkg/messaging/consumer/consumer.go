@@ -5,6 +5,6 @@ import (
 )
 
 type Consumer interface {
-	Consume(ctx context.Context) error
-	UnConsume(ctx context.Context) error
+	Start(ctx context.Context) error
+	Stop(ctx context.Context) error
 }

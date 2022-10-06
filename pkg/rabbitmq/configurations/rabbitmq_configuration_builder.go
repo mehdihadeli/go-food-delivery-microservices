@@ -26,7 +26,7 @@ func NewRabbitMQConfigurationBuilder() RabbitMQConfigurationBuilder {
 }
 
 func (r *rabbitMQConfigurationBuilder) AddProducer(producerMessageType types.IMessage, producerBuilderFunc producerConfigurations.RabbitMQProducerConfigurationBuilderFuc) RabbitMQConfigurationBuilder {
-	builder := producerConfigurations.NewRabbitMQProducerConfigurationBuilder()
+	builder := producerConfigurations.NewRabbitMQProducerConfigurationBuilder(producerMessageType)
 	if producerBuilderFunc != nil {
 		producerBuilderFunc(builder)
 	}
@@ -37,11 +37,10 @@ func (r *rabbitMQConfigurationBuilder) AddProducer(producerMessageType types.IMe
 }
 
 func (r *rabbitMQConfigurationBuilder) AddConsumer(consumerMessageType types.IMessage, consumerBuilderFunc consumerConfigurations.RabbitMQConsumerConfigurationBuilderFuc) RabbitMQConfigurationBuilder {
-	builder := consumerConfigurations.NewRabbitMQConsumerConfigurationBuilderT(consumerMessageType)
+	builder := consumerConfigurations.NewRabbitMQConsumerConfigurationBuilder(consumerMessageType)
 	if consumerBuilderFunc != nil {
 		consumerBuilderFunc(builder)
 	}
-	builder.SetConsumerMessageType(consumerMessageType)
 	r.consumerBuilders = append(r.consumerBuilders, builder)
 
 	return r

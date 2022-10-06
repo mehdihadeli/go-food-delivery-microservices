@@ -2,13 +2,8 @@ package consumer
 
 import (
 	"context"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	consumer2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
-	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 )
 
 type RabbitMQFakeTestConsumer struct {
@@ -16,15 +11,8 @@ type RabbitMQFakeTestConsumer struct {
 	consumer2.Consumer
 }
 
-func NewRabbitMQFakeTestConsumer(eventSerializer serializer.EventSerializer, logger logger.Logger, connection types2.IConnection, builderFunc func(builder *configurations.rabbitMQConsumerConfigurationBuilder)) *RabbitMQFakeTestConsumer {
-	fakeConsumer := &RabbitMQFakeTestConsumer{}
-
-	t, err := consumer.NewRabbitMQConsumer(eventSerializer, logger, connection, builderFunc, fakeConsumer)
-	if err != nil {
-		return nil
-	}
-	fakeConsumer.Consumer = t
-	return fakeConsumer
+func NewRabbitMQFakeTestConsumer() *RabbitMQFakeTestConsumer {
+	return &RabbitMQFakeTestConsumer{}
 }
 
 func (f *RabbitMQFakeTestConsumer) Handle(ctx context.Context, consumeContext types.MessageConsumeContext) error {

@@ -4,6 +4,8 @@ import (
 	"emperror.dev/errors"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	"runtime/debug"
 	"strings"
 )
 
@@ -83,4 +85,10 @@ func RootStackTrace(err error) string {
 	}
 
 	return stackStr
+}
+
+func HandlePanic() {
+	if r := recover(); r != nil {
+		defaultLogger.Logger.Error("stacktrace from panic: \n" + string(debug.Stack()))
+	}
 }

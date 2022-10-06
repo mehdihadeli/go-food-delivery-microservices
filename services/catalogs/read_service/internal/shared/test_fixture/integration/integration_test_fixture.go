@@ -2,7 +2,6 @@ package integration
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
@@ -14,7 +13,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/data/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/workers"
-	"time"
 )
 
 type IntegrationTestFixture struct {
@@ -87,22 +85,4 @@ func (e *IntegrationTestFixture) FakeConsumer(messageName string) *consumer.Rabb
 	e.Consumers = append(e.Consumers, fakeConsumer)
 
 	return fakeConsumer
-}
-
-func (e *IntegrationTestFixture) WaitUntilConditionMet(conditionToMet func() bool) error {
-	timeout := 20 * time.Second
-
-	startTime := time.Now()
-	timeOutExpired := false
-	meet := conditionToMet()
-	for meet == false {
-		if timeOutExpired {
-			return errors.New("Condition not met for the test, timeout exceeded")
-		}
-		time.Sleep(time.Second * 2)
-		meet = conditionToMet()
-		timeOutExpired = time.Now().Sub(startTime) > timeout
-	}
-
-	return nil
 }

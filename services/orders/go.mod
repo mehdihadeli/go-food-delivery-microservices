@@ -15,7 +15,6 @@ require (
 	github.com/labstack/echo/v4 v4.9.0
 	github.com/mehdihadeli/go-mediatr v1.1.8
 	github.com/mehdihadeli/store-golang-microservice-sample v0.0.0-00010101000000-000000000000
-	github.com/olivere/elastic/v7 v7.0.32
 	github.com/prometheus/client_golang v1.13.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.12.0
@@ -112,6 +111,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.5.0 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/solsw/go2linq/v2 v2.3.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
@@ -140,6 +140,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
+	golang.org/x/exp v0.0.0-20220613132600-b0d781184e0d // indirect
 	golang.org/x/net v0.0.0-20220728030405-41545e8bf201 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8 // indirect

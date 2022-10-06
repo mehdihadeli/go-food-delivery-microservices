@@ -15,6 +15,13 @@ func GetMessageName(message interface{}) string {
 	return strcase.ToSnake(reflect.TypeOf(message).Name())
 }
 
+func GetMessageNameFromType(message reflect.Type) string {
+	if message.Kind() == reflect.Pointer {
+		return strcase.ToSnake(message.Elem().Name())
+	}
+	return strcase.ToSnake(message.Name())
+}
+
 func GetMessageBaseReflectType(message interface{}) reflect.Type {
 	return typeMapper.GetBaseReflectType(message)
 }
@@ -26,6 +33,13 @@ func GetTopicOrExchangeName(message interface{}) string {
 	return strcase.ToSnake(reflect.TypeOf(message).Name())
 }
 
+func GetTopicOrExchangeNameFromType(message reflect.Type) string {
+	if message.Kind() == reflect.Pointer {
+		return strcase.ToSnake(message.Elem().Name())
+	}
+	return strcase.ToSnake(message.Name())
+}
+
 func GetQueueName(message interface{}) string {
 	if reflect.TypeOf(message).Kind() == reflect.Pointer {
 		return strcase.ToSnake(reflect.TypeOf(message).Elem().Name())
@@ -33,11 +47,25 @@ func GetQueueName(message interface{}) string {
 	return strcase.ToSnake(reflect.TypeOf(message).Name())
 }
 
+func GetQueueNameFromType(message reflect.Type) string {
+	if message.Kind() == reflect.Pointer {
+		return strcase.ToSnake(message.Elem().Name())
+	}
+	return strcase.ToSnake(message.Name())
+}
+
 func GetRoutingKey(message interface{}) string {
 	if reflect.TypeOf(message).Kind() == reflect.Pointer {
 		return strcase.ToSnake(reflect.TypeOf(message).Elem().Name())
 	}
 	return strcase.ToSnake(reflect.TypeOf(message).Name())
+}
+
+func GetRoutingKeyFromType(message reflect.Type) string {
+	if message.Kind() == reflect.Pointer {
+		return strcase.ToSnake(message.Elem().Name())
+	}
+	return strcase.ToSnake(message.Name())
 }
 
 func RegisterCustomMessageTypesToRegistrty(typesMap map[string]types.IMessage) {

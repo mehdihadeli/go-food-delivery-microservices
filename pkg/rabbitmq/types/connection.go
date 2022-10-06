@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
+	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	"github.com/rabbitmq/amqp091-go"
 )
 
@@ -106,6 +107,7 @@ func (c *internalConnection) connect() error {
 	notifyClose := c.Connection.NotifyClose(make(chan *amqp091.Error))
 
 	go func() {
+		defer errorUtils.HandlePanic()
 		<-notifyClose //Listen to NotifyClose
 		c.isConnected = false
 		c.errConnectionChan <- errors.New("Connection Closed")
@@ -115,6 +117,7 @@ func (c *internalConnection) connect() error {
 }
 
 func (c *internalConnection) handleReconnecting(ctx context.Context) {
+	defer errorUtils.HandlePanic()
 	for {
 		select {
 		case err := <-c.errConnectionChan:

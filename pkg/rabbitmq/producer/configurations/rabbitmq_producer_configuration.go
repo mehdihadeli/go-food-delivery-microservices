@@ -1,6 +1,8 @@
 package configurations
 
 import (
+	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/options"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"reflect"
@@ -9,6 +11,7 @@ import (
 type RabbitMQProducerConfiguration struct {
 	ProducerMessageType reflect.Type
 	ExchangeOptions     *options.RabbitMQExchangeOptions
+	RoutingKey          string
 	DeliveryMode        uint8
 	Priority            uint8
 	AppId               string
@@ -17,9 +20,10 @@ type RabbitMQProducerConfiguration struct {
 	ContentEncoding     string
 }
 
-func NewDefaultRabbitMQProducerConfiguration() *RabbitMQProducerConfiguration {
+func NewDefaultRabbitMQProducerConfiguration(message types2.IMessage) *RabbitMQProducerConfiguration {
 	return &RabbitMQProducerConfiguration{
-		ExchangeOptions: &options.RabbitMQExchangeOptions{Durable: true, Type: types.ExchangeTopic},
+		ExchangeOptions: &options.RabbitMQExchangeOptions{Durable: true, Type: types.ExchangeTopic, Name: utils.GetTopicOrExchangeName(message)},
 		DeliveryMode:    2,
+		RoutingKey:      utils.GetRoutingKey(message),
 	}
 }

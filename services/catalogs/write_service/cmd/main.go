@@ -5,6 +5,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/zap"
+	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/server"
 	"log"
@@ -17,6 +18,9 @@ import (
 // @description Catalogs Write-Service Api.
 func main() {
 	flag.Parse()
+
+	//https://stackoverflow.com/questions/52103182/how-to-get-the-stacktrace-of-a-panic-and-store-as-a-variable
+	defer errorUtils.HandlePanic()
 
 	env := core.ConfigAppEnv(constants.Dev)
 

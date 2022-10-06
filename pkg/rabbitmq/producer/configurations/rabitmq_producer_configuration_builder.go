@@ -12,6 +12,7 @@ type RabbitMQProducerConfigurationBuilder interface {
 	WithAutoDeleteExchange(autoDelete bool) RabbitMQProducerConfigurationBuilder
 	WithExchangeType(exchangeType types.ExchangeType) RabbitMQProducerConfigurationBuilder
 	WithExchangeName(exchangeName string) RabbitMQProducerConfigurationBuilder
+	WithRoutingKey(routingKey string) RabbitMQProducerConfigurationBuilder
 	WithExchangeArgs(args map[string]any) RabbitMQProducerConfigurationBuilder
 	WithDeliveryMode(deliveryMode uint8) RabbitMQProducerConfigurationBuilder
 	WithPriority(priority uint8) RabbitMQProducerConfigurationBuilder
@@ -26,8 +27,8 @@ type rabbitMQProducerConfigurationBuilder struct {
 	rabbitmqProducerOptions *RabbitMQProducerConfiguration
 }
 
-func NewRabbitMQProducerConfigurationBuilder() RabbitMQProducerConfigurationBuilder {
-	return &rabbitMQProducerConfigurationBuilder{rabbitmqProducerOptions: NewDefaultRabbitMQProducerConfiguration()}
+func NewRabbitMQProducerConfigurationBuilder(messageType types2.IMessage) RabbitMQProducerConfigurationBuilder {
+	return &rabbitMQProducerConfigurationBuilder{rabbitmqProducerOptions: NewDefaultRabbitMQProducerConfiguration(messageType)}
 }
 
 func (b *rabbitMQProducerConfigurationBuilder) SetProducerMessageType(messageType types2.IMessage) RabbitMQProducerConfigurationBuilder {
@@ -47,6 +48,11 @@ func (b *rabbitMQProducerConfigurationBuilder) WithAutoDeleteExchange(autoDelete
 
 func (b *rabbitMQProducerConfigurationBuilder) WithExchangeType(exchangeType types.ExchangeType) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.ExchangeOptions.Type = exchangeType
+	return b
+}
+
+func (b *rabbitMQProducerConfigurationBuilder) WithRoutingKey(routingKey string) RabbitMQProducerConfigurationBuilder {
+	b.rabbitmqProducerOptions.RoutingKey = routingKey
 	return b
 }
 
