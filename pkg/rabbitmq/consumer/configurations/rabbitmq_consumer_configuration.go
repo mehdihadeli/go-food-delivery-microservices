@@ -26,28 +26,16 @@ type RabbitMQConsumerConfiguration struct {
 	ExchangeOptions *options.RabbitMQExchangeOptions
 }
 
-func NewDefaultRabbitMQConsumerConfiguration() *RabbitMQConsumerConfiguration {
+func NewDefaultRabbitMQConsumerConfiguration(messageType types2.IMessage) *RabbitMQConsumerConfiguration {
 	return &RabbitMQConsumerConfiguration{
-		ConsumerOptions:  &consumer.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
-		ConcurrencyLimit: 1,
-		PrefetchCount:    4, //how many messages we can handle at once
-		NoLocal:          false,
-		NoWait:           true,
-		BindingOptions:   &options.RabbitMQBindingOptions{},
-		ExchangeOptions:  &options.RabbitMQExchangeOptions{Durable: true, Type: types.ExchangeTopic},
-		QueueOptions:     &options.RabbitMQQueueOptions{Durable: true},
-	}
-}
-
-func NewDefaultRabbitMQConsumerConfigurationT(messageType types2.IMessage) *RabbitMQConsumerConfiguration {
-	return &RabbitMQConsumerConfiguration{
-		ConsumerOptions:  &consumer.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
-		ConcurrencyLimit: 1,
-		PrefetchCount:    4, //how many messages we can handle at once
-		NoLocal:          false,
-		NoWait:           true,
-		BindingOptions:   &options.RabbitMQBindingOptions{RoutingKey: utils.GetRoutingKey(messageType)},
-		ExchangeOptions:  &options.RabbitMQExchangeOptions{Durable: true, Type: types.ExchangeTopic, Name: utils.GetTopicOrExchangeName(messageType)},
-		QueueOptions:     &options.RabbitMQQueueOptions{Durable: true, Name: utils.GetQueueName(messageType)},
+		ConsumerOptions:     &consumer.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
+		ConcurrencyLimit:    1,
+		PrefetchCount:       4, //how many messages we can handle at once
+		NoLocal:             false,
+		NoWait:              true,
+		BindingOptions:      &options.RabbitMQBindingOptions{RoutingKey: utils.GetRoutingKey(messageType)},
+		ExchangeOptions:     &options.RabbitMQExchangeOptions{Durable: true, Type: types.ExchangeTopic, Name: utils.GetTopicOrExchangeName(messageType)},
+		QueueOptions:        &options.RabbitMQQueueOptions{Durable: true, Name: utils.GetQueueName(messageType)},
+		ConsumerMessageType: utils.GetMessageBaseReflectType(messageType),
 	}
 }

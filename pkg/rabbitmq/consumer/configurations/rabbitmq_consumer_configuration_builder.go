@@ -4,12 +4,10 @@ import (
 	messageConsumer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/pipeline"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 )
 
 type RabbitMQConsumerConfigurationBuilder interface {
-	SetConsumerMessageType(consumerMessageType types2.IMessage) RabbitMQConsumerConfigurationBuilder
 	WithHandlers(consumerBuilderFunc messageConsumer.ConsumerHandlerConfigurationBuilderFunc) RabbitMQConsumerConfigurationBuilder
 	WIthPipelines(pipelineBuilderFunc pipeline.ConsumerPipelineConfigurationBuilderFunc) RabbitMQConsumerConfigurationBuilder
 	WithExitOnError(exitOnError bool) RabbitMQConsumerConfigurationBuilder
@@ -39,12 +37,8 @@ type rabbitMQConsumerConfigurationBuilder struct {
 	handlersBuilder                messageConsumer.ConsumerHandlerConfigurationBuilder
 }
 
-func NewRabbitMQConsumerConfigurationBuilderT(messageType types2.IMessage) RabbitMQConsumerConfigurationBuilder {
-	return &rabbitMQConsumerConfigurationBuilder{rabbitmqConsumerConfigurations: NewDefaultRabbitMQConsumerConfigurationT(messageType)}
-}
-
-func NewRabbitMQConsumerConfigurationBuilder() RabbitMQConsumerConfigurationBuilder {
-	return &rabbitMQConsumerConfigurationBuilder{rabbitmqConsumerConfigurations: NewDefaultRabbitMQConsumerConfiguration()}
+func NewRabbitMQConsumerConfigurationBuilder(messageType types2.IMessage) RabbitMQConsumerConfigurationBuilder {
+	return &rabbitMQConsumerConfigurationBuilder{rabbitmqConsumerConfigurations: NewDefaultRabbitMQConsumerConfiguration(messageType)}
 }
 
 func (b *rabbitMQConsumerConfigurationBuilder) WIthPipelines(pipelineBuilderFunc pipeline.ConsumerPipelineConfigurationBuilderFunc) RabbitMQConsumerConfigurationBuilder {
@@ -64,11 +58,6 @@ func (b *rabbitMQConsumerConfigurationBuilder) WithHandlers(consumerBuilderFunc 
 	}
 	b.handlersBuilder = builder
 
-	return b
-}
-
-func (b *rabbitMQConsumerConfigurationBuilder) SetConsumerMessageType(consumerMessageType types2.IMessage) RabbitMQConsumerConfigurationBuilder {
-	b.rabbitmqConsumerConfigurations.ConsumerMessageType = utils.GetMessageBaseReflectType(consumerMessageType)
 	return b
 }
 

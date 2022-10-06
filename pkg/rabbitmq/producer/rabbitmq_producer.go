@@ -29,7 +29,12 @@ type rabbitMQProducer struct {
 }
 
 func NewRabbitMQProducer(connection types.IConnection, rabbitmqProducersConfiguration map[string]*configurations.RabbitMQProducerConfiguration, logger logger.Logger, eventSerializer serializer.EventSerializer) (producer.Producer, error) {
-	return &rabbitMQProducer{logger: logger, connection: connection, eventSerializer: eventSerializer, producersConfigurations: rabbitmqProducersConfiguration}, nil
+	return &rabbitMQProducer{
+		logger:                  logger,
+		connection:              connection,
+		eventSerializer:         eventSerializer,
+		producersConfigurations: rabbitmqProducersConfiguration,
+	}, nil
 }
 
 func (r *rabbitMQProducer) PublishMessage(ctx context.Context, message types2.IMessage, meta metadata.Metadata) error {
@@ -43,18 +48,28 @@ func (r *rabbitMQProducer) getProducerConfigurationByMessage(message types2.IMes
 
 func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, message types2.IMessage, meta metadata.Metadata, topicOrExchangeName string) error {
 	producerConfiguration := r.getProducerConfigurationByMessage(message)
+
+	if producerConfiguration == nil {
+		producerConfiguration = configurations.NewDefaultRabbitMQProducerConfiguration(message)
+	}
+
 	var exchange string
 	var routingKey string
 
 	if topicOrExchangeName != "" {
 		exchange = topicOrExchangeName
-	} else if producerConfiguration.ExchangeOptions.Name != "" {
+	} else if producerConfiguration != nil && producerConfiguration.ExchangeOptions.Name != "" {
 		exchange = producerConfiguration.ExchangeOptions.Name
 	} else {
 		exchange = utils.GetTopicOrExchangeName(message)
 	}
 
-	routingKey = utils.GetRoutingKey(message)
+	if producerConfiguration != nil && producerConfiguration.RoutingKey != "" {
+		routingKey = producerConfiguration.RoutingKey
+	} else {
+		routingKey = utils.GetRoutingKey(message)
+	}
+
 	meta = r.getMetadata(message, meta)
 
 	producerOptions := &producer2.ProducerTracingOptions{

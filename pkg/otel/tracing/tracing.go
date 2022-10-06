@@ -46,6 +46,10 @@ type openTelemtry struct {
 // Tracer global tracer for app
 var Tracer trace.Tracer
 
+func init() {
+	Tracer = NewCustomTracer("app-tracer") //instrumentation name
+}
+
 func AddOtelTracing(config *otel2.OpenTelemetryConfig) (*tracesdk.TracerProvider, error) {
 	openTel := &openTelemtry{config: config}
 
@@ -108,6 +112,7 @@ func (o *openTelemtry) configTracerProvider() error {
 		// Always be sure to batch in production.
 		tracesdk.WithBatcher(o.jaegerExporter),
 		tracesdk.WithBatcher(o.zipkinExporter),
+		tracesdk.WithBatcher(o.stdExporter),
 		tracesdk.WithSampler(sampler),
 
 		// https://opentelemetry.io/docs/instrumentation/go/exporting_data/#resources
