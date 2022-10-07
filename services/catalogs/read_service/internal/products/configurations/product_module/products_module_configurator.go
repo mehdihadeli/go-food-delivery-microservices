@@ -7,17 +7,17 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
+	contracts2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
 type productsModuleConfigurator struct {
-	*infrastructure.InfrastructureConfigurations
+	contracts2.InfrastructureConfiguration
 	echoServer customEcho.EchoHttpServer
 	grpcServer grpcServer.GrpcServer
 }
 
-func NewProductsModuleConfigurator(infrastructure *infrastructure.InfrastructureConfigurations, echoServer customEcho.EchoHttpServer, grpcServer grpcServer.GrpcServer) contracts.ProductsModuleConfigurator {
-	return &productsModuleConfigurator{InfrastructureConfigurations: infrastructure, echoServer: echoServer, grpcServer: grpcServer}
+func NewProductsModuleConfigurator(infrastructure contracts2.InfrastructureConfiguration, echoServer customEcho.EchoHttpServer, grpcServer grpcServer.GrpcServer) contracts.ProductsModuleConfigurator {
+	return &productsModuleConfigurator{InfrastructureConfiguration: infrastructure, echoServer: echoServer, grpcServer: grpcServer}
 }
 
 func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context) error {
@@ -26,12 +26,12 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 		return err
 	}
 
-	err = mediatr.ConfigProductsMediator(c.InfrastructureConfigurations)
+	err = mediatr.ConfigProductsMediator(c.InfrastructureConfiguration)
 	if err != nil {
 		return err
 	}
 
-	if c.Cfg.DeliveryType == "grpc" {
+	if c.GetCfg().DeliveryType == "grpc" {
 		c.configGrpc(ctx)
 	} else {
 		c.configEndpoints(ctx)

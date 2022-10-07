@@ -12,16 +12,16 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	deletingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/deleting_products/commands/v1"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 	uuid "github.com/satori/go.uuid"
 )
 
 type productDeletedConsumer struct {
-	*infrastructure.InfrastructureConfigurations
+	contracts.InfrastructureConfiguration
 }
 
-func NewProductDeletedConsumer(infra *infrastructure.InfrastructureConfigurations) *productDeletedConsumer {
-	return &productDeletedConsumer{InfrastructureConfigurations: infra}
+func NewProductDeletedConsumer(infra contracts.InfrastructureConfiguration) *productDeletedConsumer {
+	return &productDeletedConsumer{InfrastructureConfiguration: infra}
 }
 
 func (c *productDeletedConsumer) Handle(ctx context.Context, consumeContext types2.MessageConsumeContext) error {
@@ -37,15 +37,15 @@ func (c *productDeletedConsumer) Handle(ctx context.Context, consumeContext type
 	productUUID, err := uuid.FromString(message.ProductId)
 	if err != nil {
 		badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[productDeletedConsumer_Handle.uuid.FromString] error in the converting uuid")
-		c.Log.Errorf(fmt.Sprintf("[productDeletedConsumer_Handle.uuid.FromString] err: %v", messageTracing.TraceMessagingErrFromSpan(span, badRequestErr)))
+		c.GetLog().Errorf(fmt.Sprintf("[productDeletedConsumer_Handle.uuid.FromString] err: %v", messageTracing.TraceMessagingErrFromSpan(span, badRequestErr)))
 
 		return err
 	}
 
 	command := deletingProductV1.NewDeleteProduct(productUUID)
-	if err := c.Validator.StructCtx(ctx, command); err != nil {
+	if err := c.GetValidator().StructCtx(ctx, command); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[productDeletedConsumer_Handle.StructCtx] command validation failed")
-		c.Log.Errorf(fmt.Sprintf("[productDeletedConsumer_Consume.StructCtx] err: {%v}", messageTracing.TraceMessagingErrFromSpan(span, validationErr)))
+		c.GetLog().Errorf(fmt.Sprintf("[productDeletedConsumer_Consume.StructCtx] err: {%v}", messageTracing.TraceMessagingErrFromSpan(span, validationErr)))
 
 		return err
 	}
@@ -54,7 +54,7 @@ func (c *productDeletedConsumer) Handle(ctx context.Context, consumeContext type
 
 	if err != nil {
 		err = errors.WithMessage(err, "[productDeletedConsumer_Handle.Send] error in sending DeleteProduct")
-		c.Log.Errorw(fmt.Sprintf("[productDeletedConsumer_Handle.Send] id: {%s}, err: {%v}", command.ProductId, messageTracing.TraceMessagingErrFromSpan(span, err)), logger.Fields{"Id": command.ProductId})
+		c.GetLog().Errorw(fmt.Sprintf("[productDeletedConsumer_Handle.Send] id: {%s}, err: {%v}", command.ProductId, messageTracing.TraceMessagingErrFromSpan(span, err)), logger.Fields{"Id": command.ProductId})
 	}
 
 	return nil

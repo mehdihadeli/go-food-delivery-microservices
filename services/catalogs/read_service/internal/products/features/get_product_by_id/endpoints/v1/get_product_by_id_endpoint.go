@@ -37,21 +37,21 @@ func (ep *getProductByIdEndpoint) MapRoute() {
 // @Router /api/v1/products/{id} [get]
 func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ep.Metrics.GetProductByIdHttpRequests.Inc()
+		//ep.Metrics.GetProductByIdHttpRequests.Inc()
 		ctx := c.Request().Context()
 
 		request := &dtos.GetProductByIdRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductByIdEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", badRequestErr))
+			ep.GetLog().Errorf(fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
 		query := &gettingProductByIdV1.GetProductById{Id: request.Id}
 
-		if err := ep.Validator.StructCtx(ctx, query); err != nil {
+		if err := ep.GetValidator().StructCtx(ctx, query); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[getProductByIdEndpoint_handler.StructCtx]  query validation failed")
-			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", validationErr)
+			ep.GetLog().Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", validationErr)
 			return validationErr
 		}
 
@@ -59,7 +59,7 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetProductById")
-			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.Id, err), logger.Fields{"ProductId": query.Id})
+			ep.GetLog().Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.Id, err), logger.Fields{"ProductId": query.Id})
 			return err
 		}
 

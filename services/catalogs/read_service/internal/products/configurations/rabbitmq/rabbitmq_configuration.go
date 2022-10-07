@@ -7,10 +7,10 @@ import (
 	creatingProductIntegration "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/creating_product/events/integration/external/v1"
 	deletingProductIntegration "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/deleting_products/events/integration/external/v1"
 	updatingProductIntegration "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/updating_products/events/integration/external/v1"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
-func ConfigRabbitMQ(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder, infra *infrastructure.InfrastructureConfigurations) {
+func ConfigRabbitMQ(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder, infra contracts.InfrastructureConfiguration) {
 	//add custom message type mappings
 	//utils.RegisterCustomMessageTypesToRegistrty(map[string]types.IMessage{"productCreatedV1": &creatingProductIntegration.ProductCreatedV1{}})
 

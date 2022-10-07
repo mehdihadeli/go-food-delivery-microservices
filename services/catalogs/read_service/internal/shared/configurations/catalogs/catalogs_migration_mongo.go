@@ -9,39 +9,39 @@ import (
 )
 
 func (c *catalogsServiceConfigurator) migrationCatalogsMongo(ctx context.Context, mongoClient *mongo.Client) {
-	err := mongoClient.Database(c.Cfg.Mongo.Db).CreateCollection(ctx, c.Cfg.MongoCollections.Products)
+	err := mongoClient.Database(c.GetCfg().Mongo.Db).CreateCollection(ctx, c.GetCfg().MongoCollections.Products)
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			c.Log.Warnf("(CreateCollection) err: {%v}", err)
+			c.GetLog().Warnf("(CreateCollection) err: {%v}", err)
 		}
 	}
 
 	indexOptions := options.Index().SetSparse(true).SetUnique(true)
-	index, err := mongoClient.Database(c.Cfg.Mongo.Db).Collection(c.Cfg.MongoCollections.Products).Indexes().CreateOne(ctx, mongo.IndexModel{
+	index, err := mongoClient.Database(c.GetCfg().Mongo.Db).Collection(c.GetCfg().MongoCollections.Products).Indexes().CreateOne(ctx, mongo.IndexModel{
 		Keys:    bson.D{{Key: consts.ProductIdIndex, Value: 1}},
 		Options: indexOptions,
 	})
 	if err != nil && mongo.IsDuplicateKeyError(err) {
-		c.Log.Warnf("(CreateOne) err: {%v}", err)
+		c.GetLog().Warnf("(CreateOne) err: {%v}", err)
 	}
-	c.Log.Infof("(CreatedIndex) index: {%s}", index)
+	c.GetLog().Infof("(CreatedIndex) index: {%s}", index)
 
-	list, err := mongoClient.Database(c.Cfg.Mongo.Db).Collection(c.Cfg.MongoCollections.Products).Indexes().List(ctx)
+	list, err := mongoClient.Database(c.GetCfg().Mongo.Db).Collection(c.GetCfg().MongoCollections.Products).Indexes().List(ctx)
 	if err != nil {
-		c.Log.Warnf("(initMongoDBCollections) [List] err: {%v}", err)
+		c.GetLog().Warnf("(initMongoDBCollections) [List] err: {%v}", err)
 	}
 
 	if list != nil {
 		var results []bson.M
 		if err := list.All(ctx, &results); err != nil {
-			c.Log.Warnf("(All) err: {%v}", err)
+			c.GetLog().Warnf("(All) err: {%v}", err)
 		}
-		c.Log.Infof("(indexes) results: {%#v}", results)
+		c.GetLog().Infof("(indexes) results: {%#v}", results)
 	}
 
-	collections, err := mongoClient.Database(c.Cfg.Mongo.Db).ListCollectionNames(ctx, bson.M{})
+	collections, err := mongoClient.Database(c.GetCfg().Mongo.Db).ListCollectionNames(ctx, bson.M{})
 	if err != nil {
-		c.Log.Warnf("(ListCollections) err: {%v}", err)
+		c.GetLog().Warnf("(ListCollections) err: {%v}", err)
 	}
-	c.Log.Infof("(Collections) created collections: {%v}", collections)
+	c.GetLog().Infof("(Collections) created collections: {%v}", collections)
 }
