@@ -18,7 +18,7 @@ import (
 
 type E2ETestFixture struct {
 	Echo *echo.Echo
-	*infrastructure.InfrastructureConfigurations
+	*infrastructure.infrastructureConfigurations
 	V1            *V1Groups
 	GrpcServer    grpcServer.GrpcServer
 	HttpServer    *httptest.Server
@@ -81,7 +81,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 			echo.Shutdown(ctx)
 			httpServer.Close()
 		},
-		InfrastructureConfigurations: infrastructures,
+		infrastructureConfigurations: infrastructures,
 		Echo:                         echo,
 		V1:                           v1Groups,
 		GrpcServer:                   grpcServer,

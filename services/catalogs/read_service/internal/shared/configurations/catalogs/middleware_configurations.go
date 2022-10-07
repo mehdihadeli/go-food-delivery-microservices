@@ -8,7 +8,7 @@ import (
 func (c *catalogsServiceConfigurator) configMiddlewares(metrics *infrastructure.CatalogsServiceMetrics) {
 	c.echoServer.SetupDefaultMiddlewares()
 
-	middlewares := customMiddlewares.NewCustomMiddlewares(c.Log, c.Cfg, getHttpMetricsCb(metrics))
+	middlewares := customMiddlewares.NewCustomMiddlewares(c.GetLog(), c.GetCfg(), getHttpMetricsCb(metrics))
 	c.echoServer.AddMiddlewares(middlewares.RequestMetricsMiddleware)
 }
 

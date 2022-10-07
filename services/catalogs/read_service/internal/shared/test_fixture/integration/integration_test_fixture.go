@@ -14,7 +14,7 @@ import (
 )
 
 type IntegrationTestFixture struct {
-	*infrastructure.InfrastructureConfigurations
+	*infrastructure.infrastructureConfigurations
 	RedisProductRepository contracts.ProductCacheRepository
 	MongoProductRepository contracts.ProductRepository
 	workersRunner          *webWoker.WorkersRunner
@@ -49,7 +49,7 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 			cancel()
 			cleanup()
 		},
-		InfrastructureConfigurations: infrastructures,
+		infrastructureConfigurations: infrastructures,
 		RedisProductRepository:       redisProductRepository,
 		MongoProductRepository:       mongoProductRepository,
 		workersRunner:                workersRunner,

@@ -8,19 +8,19 @@ import (
 	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id/endpoints/v1"
 	gettingProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/getting_products/endpoints/v1"
 	searchingProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products/endpoints/v1"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
 func (c *productsModuleConfigurator) configEndpoints(ctx context.Context) {
-	configV1Endpoints(c.echoServer, c.InfrastructureConfigurations, ctx)
+	configV1Endpoints(c.echoServer, c.InfrastructureConfiguration, ctx)
 }
 
-func configV1Endpoints(echoServer customEcho.EchoHttpServer, infra *infrastructure.InfrastructureConfigurations, ctx context.Context) {
+func configV1Endpoints(echoServer customEcho.EchoHttpServer, infra contracts.InfrastructureConfiguration, ctx context.Context) {
 	echoServer.ConfigGroup("/api/v1", func(v1 *echo.Group) {
 		group := v1.Group("/products")
 		productEndpointBase := &delivery.ProductEndpointBase{
-			ProductsGroup:                group,
-			InfrastructureConfigurations: infra,
+			ProductsGroup:               group,
+			InfrastructureConfiguration: infra,
 		}
 
 		// GetProducts

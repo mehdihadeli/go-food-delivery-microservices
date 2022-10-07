@@ -15,7 +15,7 @@ func Test_Product_By_Id_E2E(t *testing.T) {
 	test.SkipCI(t)
 	fixture := e2e.NewE2ETestFixture()
 
-	e := NewGetProductByIdEndpoint(delivery.NewProductEndpointBase(fixture.InfrastructureConfigurations, fixture.V1.ProductsGroup))
+	e := NewGetProductByIdEndpoint(delivery.NewProductEndpointBase(fixture.infrastructureConfigurations, fixture.V1.ProductsGroup))
 	e.MapRoute()
 
 	fixture.Run()

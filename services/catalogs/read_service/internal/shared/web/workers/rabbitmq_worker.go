@@ -2,34 +2,19 @@ package workers
 
 import (
 	"context"
-	rabbitmqBus "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/rabbitmq"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
-func NewRabbitMQWorker(ctx context.Context, infra *infrastructure.InfrastructureConfigurations) web.Worker {
-	bus, _ := rabbitmqBus.NewRabbitMQBus(
-		ctx,
-		infra.Cfg.RabbitMQ,
-		func(builder configurations.RabbitMQConfigurationBuilder) {
-			rabbitmq.ConfigRabbitMQ(builder, infra)
-		},
-		infra.EventSerializer,
-		infra.Log)
-
-	infra.RabbitMQBus = bus
-	infra.Producer = bus
-
+func NewRabbitMQWorker(ctx context.Context, infra contracts.InfrastructureConfiguration) web.Worker {
 	return web.NewBackgroundWorker(func(ctx context.Context) error {
-		err := bus.Start(ctx)
+		err := infra.GetRabbitMQBus().Start(ctx)
 		if err != nil {
-			infra.Log.Errorf("[RabbitMQWorkerWorker.Start] error in the starting rabbitmq worker: {%v}", err)
+			infra.GetLog().Errorf("[RabbitMQWorkerWorker.Start] error in the starting rabbitmq worker: {%v}", err)
 			return err
 		}
 		return nil
 	}, func(ctx context.Context) error {
-		return bus.Stop(ctx)
+		return infra.GetRabbitMQBus().Stop(ctx)
 	})
 }
