@@ -17,11 +17,11 @@ import (
 )
 
 type productCreatedConsumer struct {
-	contracts.InfrastructureConfiguration
+	contracts.InfrastructureConfigurations
 }
 
-func NewProductCreatedConsumer(infra contracts.InfrastructureConfiguration) *productCreatedConsumer {
-	return &productCreatedConsumer{InfrastructureConfiguration: infra}
+func NewProductCreatedConsumer(infra contracts.InfrastructureConfigurations) *productCreatedConsumer {
+	return &productCreatedConsumer{InfrastructureConfigurations: infra}
 }
 
 func (c *productCreatedConsumer) Handle(ctx context.Context, consumeContext types2.MessageConsumeContext) error {
@@ -35,9 +35,9 @@ func (c *productCreatedConsumer) Handle(ctx context.Context, consumeContext type
 	defer span.End()
 
 	command := v1.NewCreateProduct(product.ProductId, product.Name, product.Description, product.Price, product.CreatedAt)
-	if err := c.GetValidator().StructCtx(ctx, command); err != nil {
+	if err := c.Validator().StructCtx(ctx, command); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[productCreatedConsumer_Handle.StructCtx] command validation failed")
-		c.GetLog().Errorf(fmt.Sprintf("[productCreatedConsumer_Handle.StructCtx] err: {%v}", messageTracing.TraceMessagingErrFromSpan(span, validationErr)))
+		c.Log().Errorf(fmt.Sprintf("[productCreatedConsumer_Handle.StructCtx] err: {%v}", messageTracing.TraceMessagingErrFromSpan(span, validationErr)))
 
 		return err
 	}
@@ -45,7 +45,7 @@ func (c *productCreatedConsumer) Handle(ctx context.Context, consumeContext type
 
 	if err != nil {
 		err = errors.WithMessage(err, "[productCreatedConsumer_Handle.Send] error in sending CreateProduct")
-		c.GetLog().Errorw(fmt.Sprintf("[productCreatedConsumer_Handle.Send] id: {%s}, err: {%v}", command.ProductId, messageTracing.TraceMessagingErrFromSpan(span, err)), logger.Fields{"Id": command.ProductId})
+		c.Log().Errorw(fmt.Sprintf("[productCreatedConsumer_Handle.Send] id: {%s}, err: {%v}", command.ProductId, messageTracing.TraceMessagingErrFromSpan(span, err)), logger.Fields{"Id": command.ProductId})
 	}
 
 	return nil

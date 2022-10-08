@@ -11,14 +11,16 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/workers"
 	"net/http/httptest"
 )
 
 type E2ETestFixture struct {
 	Echo *echo.Echo
-	*infrastructure.InfrastructureConfiguration
+	contracts.InfrastructureConfigurations
 	V1            *V1Groups
 	GrpcServer    grpcServer.GrpcServer
 	HttpServer    *httptest.Server
@@ -45,25 +47,31 @@ func NewE2ETestFixture() *E2ETestFixture {
 
 	v1Groups := &V1Groups{ProductsGroup: productsV1}
 
-	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, cfg, infrastructures.Gorm.DB)
+	productRep := repositories.NewPostgresProductRepository(infrastructures.Log(), cfg, infrastructures.Gorm().DB)
 
-	err := mediatr.ConfigProductsMediator(productRep, infrastructures)
+	mq, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, cfg.RabbitMQ, infrastructures)
 	if err != nil {
 		cancel()
 		return nil
 	}
 
-	err = mappings.ConfigureMappings()
+	err = mediatr.ConfigProductsMediator(productRep, infrastructures, mq)
 	if err != nil {
 		cancel()
 		return nil
 	}
 
-	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger)
+	err = mappings.ConfigureProductsMappings()
+	if err != nil {
+		cancel()
+		return nil
+	}
+
+	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger, cfg.ServiceName, infrastructures.Metrics())
 	httpServer := httptest.NewServer(echo)
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(ctx, infrastructures),
+		workers.NewRabbitMQWorker(infrastructures.Log(), mq),
 	})
 
 	return &E2ETestFixture{
@@ -75,14 +83,14 @@ func NewE2ETestFixture() *E2ETestFixture {
 			echo.Shutdown(ctx)
 			httpServer.Close()
 		},
-		InfrastructureConfiguration: infrastructures,
-		Echo:                        echo,
-		V1:                          v1Groups,
-		GrpcServer:                  grpcServer,
-		HttpServer:                  httpServer,
-		workersRunner:               workersRunner,
-		Ctx:                         ctx,
-		cancel:                      cancel,
+		InfrastructureConfigurations: infrastructures,
+		Echo:                         echo,
+		V1:                           v1Groups,
+		GrpcServer:                   grpcServer,
+		HttpServer:                   httpServer,
+		workersRunner:                workersRunner,
+		Ctx:                          ctx,
+		cancel:                       cancel,
 	}
 }
 
@@ -90,7 +98,7 @@ func (e *E2ETestFixture) Run() {
 	go func() {
 		if err := e.GrpcServer.RunGrpcServer(e.Ctx, nil); err != nil {
 			e.cancel()
-			e.Log.Errorf("(s.RunGrpcServer) err: %v", err)
+			e.Log().Errorf("(s.RunGrpcServer) err: %v", err)
 		}
 	}()
 

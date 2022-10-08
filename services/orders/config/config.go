@@ -11,12 +11,14 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/spf13/viper"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 var configPath string
@@ -26,19 +28,20 @@ func init() {
 }
 
 type Config struct {
-	DeliveryType     string                          `mapstructure:"deliveryType"`
-	ServiceName      string                          `mapstructure:"serviceName"`
-	Logger           *logger.LogConfig               `mapstructure:"logger"`
-	GRPC             *grpc.GrpcConfig                `mapstructure:"grpc"`
-	Http             *customEcho.EchoHttpConfig      `mapstructure:"http"`
-	Context          Context                         `mapstructure:"context"`
-	Probes           probes.Config                   `mapstructure:"probes"`
-	OTel             *otel.OpenTelemetryConfig       `mapstructure:"otel" envPrefix:"OTel_"`
-	RabbitMQ         *config.RabbitMQConfig          `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
-	EventStoreConfig *eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
-	Subscriptions    *Subscriptions                  `mapstructure:"subscriptions"`
-	Mongo            *mongodb.MongoDbConfig          `mapstructure:"mongo" envPrefix:"Mongo_"`
-	MongoCollections MongoCollections                `mapstructure:"mongoCollections" envPrefix:"MongoCollections_"`
+	DeliveryType      string                          `mapstructure:"deliveryType"`
+	ServiceName       string                          `mapstructure:"serviceName"`
+	Logger            *logger.LogConfig               `mapstructure:"logger"`
+	GRPC              *grpc.GrpcConfig                `mapstructure:"grpc"`
+	Http              *customEcho.EchoHttpConfig      `mapstructure:"http"`
+	Context           Context                         `mapstructure:"context"`
+	Probes            probes.Config                   `mapstructure:"probes"`
+	OTel              *otel.OpenTelemetryConfig       `mapstructure:"otel" envPrefix:"OTel_"`
+	OTelMetricsConfig *metrics.OTelMetricsConfig      `mapstructure:"otelMetrics" envPrefix:"OTelMetrics_"`
+	RabbitMQ          *config.RabbitMQConfig          `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
+	EventStoreConfig  *eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
+	Subscriptions     *Subscriptions                  `mapstructure:"subscriptions"`
+	Mongo             *mongodb.MongoDbConfig          `mapstructure:"mongo" envPrefix:"Mongo_"`
+	MongoCollections  MongoCollections                `mapstructure:"mongoCollections" envPrefix:"MongoCollections_"`
 }
 
 type Context struct {
@@ -105,6 +108,14 @@ func InitConfig(env string) (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func (cfg *Config) GetMicroserviceNameUpper() string {
+	return strings.ToUpper(cfg.ServiceName)
+}
+
+func (cfg *Config) GetMicroserviceName() string {
+	return cfg.ServiceName
 }
 
 func filename() (string, error) {

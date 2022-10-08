@@ -9,12 +9,14 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
+	contracts2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/workers"
 )
 
 type IntegrationTestFixture struct {
-	*infrastructure.InfrastructureConfiguration
+	contracts2.InfrastructureConfigurations
 	ProductRepository contracts.ProductRepository
 	workersRunner     *webWoker.WorkersRunner
 	Ctx               context.Context
@@ -29,16 +31,22 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
 	infrastructures, _, cleanup := c.ConfigInfrastructures(context.Background())
 
-	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, cfg, infrastructures.Gorm.DB)
+	productRep := repositories.NewPostgresProductRepository(infrastructures.Log(), cfg, infrastructures.Gorm().DB)
 
-	err := mappings.ConfigureMappings()
+	err := mappings.ConfigureProductsMappings()
+	if err != nil {
+		cancel()
+		return nil
+	}
+
+	mq, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, cfg.RabbitMQ, infrastructures)
 	if err != nil {
 		cancel()
 		return nil
 	}
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(ctx, infrastructures),
+		workers.NewRabbitMQWorker(infrastructures.Log(), mq),
 	})
 
 	return &IntegrationTestFixture{
@@ -47,11 +55,11 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 			cancel()
 			cleanup()
 		},
-		InfrastructureConfiguration: infrastructures,
-		ProductRepository:           productRep,
-		workersRunner:               workersRunner,
-		Ctx:                         ctx,
-		cancel:                      cancel,
+		InfrastructureConfigurations: infrastructures,
+		ProductRepository:            productRep,
+		workersRunner:                workersRunner,
+		Ctx:                          ctx,
+		cancel:                       cancel,
 	}
 }
 

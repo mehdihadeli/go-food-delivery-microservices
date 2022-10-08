@@ -37,29 +37,29 @@ func (ep *searchProductsEndpoint) MapRoute() {
 // @Router /api/v1/products/search [get]
 func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ep.Metrics.SearchProductHttpRequests.Inc()
 		ctx := c.Request().Context()
+		ep.CatalogsMetrics.SearchProductHttpRequests().Add(ctx, 1)
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 
 		if err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[searchProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string")
-			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.GetListQueryFromCtx] err: %v", badRequestErr))
+			ep.Log().Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.GetListQueryFromCtx] err: %v", badRequestErr))
 			return err
 		}
 
 		request := &dtos.SearchProductsRequestDto{ListQuery: listQuery}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[searchProductsEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.Bind] err: %v", badRequestErr))
+			ep.Log().Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
 		query := v1.NewSearchProducts(request.SearchText, request.ListQuery)
 
-		if err := ep.Validator.StructCtx(ctx, query); err != nil {
+		if err := ep.Validator().StructCtx(ctx, query); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[searchProductsEndpoint_handler.StructCtx]  query validation failed")
-			ep.Log.Errorf("[searchProductsEndpoint_handler.StructCtx] err: {%v}", validationErr)
+			ep.Log().Errorf("[searchProductsEndpoint_handler.StructCtx] err: {%v}", validationErr)
 			return validationErr
 		}
 
@@ -67,7 +67,7 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[searchProductsEndpoint_handler.Send] error in sending SearchProducts")
-			ep.Log.Error(fmt.Sprintf("[searchProductsEndpoint_handler.Send] err: {%v}", err))
+			ep.Log().Error(fmt.Sprintf("[searchProductsEndpoint_handler.Send] err: {%v}", err))
 			return err
 		}
 

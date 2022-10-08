@@ -37,19 +37,19 @@ func (ep *getProductsEndpoint) MapRoute() {
 func (ep *getProductsEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		ep.Metrics.GetProductsHttpRequests.Inc()
+		ep.CatalogsMetrics.GetProductsHttpRequests().Add(ctx, 1)
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 		if err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string")
-			ep.Log.Errorf(fmt.Sprintf("[getProductsEndpoint_handler.GetListQueryFromCtx] err: %v", badRequestErr))
+			ep.Log().Errorf(fmt.Sprintf("[getProductsEndpoint_handler.GetListQueryFromCtx] err: %v", badRequestErr))
 			return err
 		}
 
 		request := &dtos.GetProductsRequestDto{ListQuery: listQuery}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductsEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[getProductsEndpoint_handler.Bind] err: %v", badRequestErr))
+			ep.Log().Errorf(fmt.Sprintf("[getProductsEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
@@ -59,7 +59,7 @@ func (ep *getProductsEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[getProductsEndpoint_handler.Send] error in sending GetProducts")
-			ep.Log.Error(fmt.Sprintf("[getProductsEndpoint_handler.Send] err: {%v}", err))
+			ep.Log().Error(fmt.Sprintf("[getProductsEndpoint_handler.Send] err: {%v}", err))
 			return err
 		}
 

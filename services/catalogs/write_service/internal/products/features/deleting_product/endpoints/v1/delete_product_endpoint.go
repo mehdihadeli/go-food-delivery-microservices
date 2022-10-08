@@ -36,20 +36,20 @@ func (ep *deleteProductEndpoint) MapRoute() {
 // @Router /api/v1/products/{id} [delete]
 func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ep.Metrics.DeleteProductHttpRequests.Inc()
 		ctx := c.Request().Context()
+		ep.CatalogsMetrics.DeleteProductHttpRequests().Add(ctx, 1)
 
 		request := &deletingProduct.DeleteProductRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[deleteProductEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.Bind] err: %v", badRequestErr))
+			ep.Log().Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
 		command := v1.NewDeleteProduct(request.ProductID)
-		if err := ep.Validator.StructCtx(ctx, command); err != nil {
+		if err := ep.Validator().StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[deleteProductEndpoint_handler.StructCtx] command validation failed")
-			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", validationErr))
+			ep.Log().Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", validationErr))
 			return validationErr
 		}
 
@@ -57,7 +57,7 @@ func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[deleteProductEndpoint_handler.Send] error in sending DeleteProduct")
-			ep.Log.Errorw(fmt.Sprintf("[deleteProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
+			ep.Log().Errorw(fmt.Sprintf("[deleteProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
 			return err
 		}
 

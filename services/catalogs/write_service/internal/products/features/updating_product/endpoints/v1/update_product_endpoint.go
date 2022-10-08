@@ -38,21 +38,21 @@ func (ep *updateProductEndpoint) MapRoute() {
 // @Router /api/v1/products/{id} [put]
 func (ep *updateProductEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ep.Metrics.UpdateProductHttpRequests.Inc()
 		ctx := c.Request().Context()
+		ep.CatalogsMetrics.UpdateProductHttpRequests().Add(ctx, 1)
 
 		request := &updatingProduct.UpdateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[updateProductEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[updateProductEndpoint_handler.Bind] err: %v", badRequestErr))
+			ep.Log().Errorf(fmt.Sprintf("[updateProductEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
 		command := v1.NewUpdateProduct(request.ProductID, request.Name, request.Description, request.Price)
 
-		if err := ep.Validator.StructCtx(ctx, command); err != nil {
+		if err := ep.Validator().StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[updateProductEndpoint_handler.StructCtx] command validation failed")
-			ep.Log.Errorf(fmt.Sprintf("[updateProductEndpoint_handler.StructCtx] err: {%v}", validationErr))
+			ep.Log().Errorf(fmt.Sprintf("[updateProductEndpoint_handler.StructCtx] err: {%v}", validationErr))
 			return validationErr
 		}
 
@@ -60,7 +60,7 @@ func (ep *updateProductEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[updateProductEndpoint_handler.Send] error in sending UpdateProduct")
-			ep.Log.Errorw(fmt.Sprintf("[updateProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
+			ep.Log().Errorw(fmt.Sprintf("[updateProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
 			return err
 		}
 

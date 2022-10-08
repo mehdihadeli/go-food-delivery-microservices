@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func ConfigureMappings() error {
+func ConfigureProductsMappings() error {
 	err := mapper.CreateMap[*models.Product, *dto.ProductDto]()
 	if err != nil {
 		return err

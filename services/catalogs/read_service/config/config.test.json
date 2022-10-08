@@ -25,15 +25,6 @@
       "metrics"
     ]
   },
-  "probes": {
-    "readinessPath": "/ready",
-    "livenessPath": "/live",
-    "port": ":3003",
-    "pprof": ":6003",
-    "prometheusPath": "/metrics",
-    "prometheusPort": ":8003",
-    "checkIntervalSeconds": 10
-  },
   "logger": {
     "level": "debug",
     "logType": 0
@@ -76,6 +67,11 @@
     "zipkinExporterConfig": {
       "url": "http://localhost:9411/api/v2/spans"
     }
+  },
+  "otelMetrics": {
+    "port": ":2221",
+    "metricsRoutePath": "/metrics",
+    "name": "catalogs-read-service"
   },
   "elastic": {
     "url": "http://localhost:9200",

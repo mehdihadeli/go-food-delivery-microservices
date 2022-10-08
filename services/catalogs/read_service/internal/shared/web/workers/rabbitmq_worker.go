@@ -2,19 +2,20 @@ package workers
 
 import (
 	"context"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
-func NewRabbitMQWorker(ctx context.Context, infra contracts.InfrastructureConfiguration) web.Worker {
+func NewRabbitMQWorker(logger logger.Logger, bus bus.Bus) web.Worker {
 	return web.NewBackgroundWorker(func(ctx context.Context) error {
-		err := infra.GetRabbitMQBus().Start(ctx)
+		err := bus.Start(ctx)
 		if err != nil {
-			infra.GetLog().Errorf("[RabbitMQWorkerWorker.Start] error in the starting rabbitmq worker: {%v}", err)
+			logger.Errorf("[RabbitMQWorkerWorker.Start] error in the starting rabbitmq worker: {%v}", err)
 			return err
 		}
 		return nil
 	}, func(ctx context.Context) error {
-		return infra.GetRabbitMQBus().Stop(ctx)
+		return bus.Stop(ctx)
 	})
 }

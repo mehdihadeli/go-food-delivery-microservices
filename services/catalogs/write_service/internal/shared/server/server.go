@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
-	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
@@ -32,18 +30,15 @@ func (s *Server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	grpcServer := grpcServer.NewGrpcServer(s.cfg.GRPC, s.log)
-	echoServer := customEcho.NewEchoHttpServer(s.cfg.Http, s.log)
-
 	ic := infrastructure.NewInfrastructureConfigurator(s.log, s.cfg)
-	infrastructureConfigurations, err, infraCleanup := ic.ConfigInfrastructures(ctx)
+	infrastructureConfigurations, infraCleanup, err := ic.ConfigInfrastructures(ctx)
 	if err != nil {
 		return err
 	}
 	defer infraCleanup()
 
-	catalogsConfigurator := catalogs.NewCatalogsServiceConfigurator(infrastructureConfigurations, echoServer, grpcServer)
-	err = catalogsConfigurator.ConfigureCatalogsService(ctx)
+	catalogsConfigurator := catalogs.NewCatalogsServiceConfigurator(infrastructureConfigurations)
+	catalogConfigurations, err := catalogsConfigurator.ConfigureCatalogsService(ctx)
 	if err != nil {
 		return err
 	}
@@ -55,7 +50,7 @@ func (s *Server) Run() error {
 	switch deliveryType {
 	case "http":
 		go func() {
-			if err := echoServer.RunHttpServer(ctx, nil); err != nil {
+			if err := catalogConfigurations.CatalogsEchoServer().RunHttpServer(ctx, nil); err != nil {
 				s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
 				serverError = err
 				cancel()
@@ -65,7 +60,7 @@ func (s *Server) Run() error {
 
 	case "grpc":
 		go func() {
-			if err := grpcServer.RunGrpcServer(ctx, nil); err != nil {
+			if err := catalogConfigurations.CatalogsGrpcServer().RunGrpcServer(ctx, nil); err != nil {
 				s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
 				serverError = err
 				cancel()
@@ -77,8 +72,7 @@ func (s *Server) Run() error {
 	}
 
 	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewMetricsWorker(infrastructureConfigurations),
-		workers.NewRabbitMQWorker(ctx, infrastructureConfigurations),
+		workers.NewRabbitMQWorker(s.log, catalogConfigurations.CatalogsBus()),
 	})
 
 	workersErr := backgroundWorkers.Start(ctx)

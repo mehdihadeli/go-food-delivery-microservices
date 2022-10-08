@@ -26,7 +26,7 @@ require (
 	github.com/swaggo/swag v1.8.3
 	go.mongodb.org/mongo-driver v1.9.1
 	go.opentelemetry.io/otel v1.10.0
-	go.opentelemetry.io/otel/sdk v1.10.0
+	go.opentelemetry.io/otel/metric v0.32.1
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1
 	gorm.io/gorm v1.23.6
@@ -134,8 +134,11 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.28.0 // indirect
 	go.opentelemetry.io/contrib/propagators/ot v1.10.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.10.0 // indirect
+	go.opentelemetry.io/otel/exporters/prometheus v0.32.1 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.10.0 // indirect
 	go.opentelemetry.io/otel/exporters/zipkin v1.10.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.10.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v0.32.1 // indirect
 	go.opentelemetry.io/otel/trace v1.10.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
