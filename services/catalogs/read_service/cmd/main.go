@@ -8,7 +8,6 @@ import (
 	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/server"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web"
 	"log"
 )
 
@@ -32,8 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	logrusLogger := zap.NewZapLogger(cfg.Logger)
-	logrusLogger.WithName(web.GetMicroserviceName(cfg))
-
-	logrusLogger.Fatal(server.NewServer(logrusLogger, cfg).Run())
+	appLogger := zap.NewZapLogger(cfg.Logger)
+	appLogger.WithName(cfg.GetMicroserviceName())
+	appLogger.Fatal(server.NewServer(appLogger, cfg).Run())
 }

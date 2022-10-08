@@ -6,11 +6,9 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	otelMetrics "github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
-	rabbitmqBus "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
-	rabbitmqConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
@@ -23,60 +21,53 @@ func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config) contra
 	return &infrastructureConfigurator{log: log, cfg: cfg}
 }
 
-func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (contracts.InfrastructureConfiguration, error, func()) {
-	infrastructure := &infrastructureConfigurations{Cfg: ic.cfg, Log: ic.log, Validator: validator.New()}
-
-	metrics := ic.configCatalogsMetrics()
-	infrastructure.Metrics = metrics
+func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (contracts.InfrastructureConfigurations, func(), error) {
+	infrastructure := &infrastructureConfigurations{cfg: ic.cfg, log: ic.log, validator: validator.New()}
 
 	cleanup := []func(){}
 
 	grpcClient, err := grpc.NewGrpcClient(ic.cfg.GRPC)
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 	cleanup = append(cleanup, func() {
 		_ = grpcClient.Close()
 	})
-	infrastructure.GrpcClient = grpcClient
+	infrastructure.grpcClient = grpcClient
 
 	traceProvider, err := tracing.AddOtelTracing(ic.cfg.OTel)
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 	cleanup = append(cleanup, func() {
 		_ = traceProvider.Shutdown(ctx)
 	})
 
+	meter, err := otelMetrics.AddOtelMetrics(ctx, ic.cfg.OTelMetricsConfig, ic.log)
+	if err != nil {
+		return nil, nil, err
+	}
+	infrastructure.metrics = meter
+
 	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 	cleanup = append(cleanup, mongoCleanup)
-	infrastructure.MongoClient = mongoClient
+	infrastructure.mongoClient = mongoClient
 
 	redis, err, redisCleanup := ic.configRedis(ctx)
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 	cleanup = append(cleanup, redisCleanup)
-	infrastructure.Redis = redis
+	infrastructure.redis = redis
 
-	infrastructure.EventSerializer = json.NewJsonEventSerializer()
-	infrastructure.RabbitMQBus, _ = rabbitmqBus.NewRabbitMQBus(
-		ctx,
-		infrastructure.GetCfg().RabbitMQ,
-		func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
-			rabbitmq.ConfigRabbitMQ(builder, infrastructure)
-		},
-		infrastructure.GetEventSerializer(),
-		infrastructure.GetLog())
+	infrastructure.eventSerializer = json.NewJsonEventSerializer()
 
-	infrastructure.RabbitMQConfigurationBuilder = rabbitmqConfigurations.NewRabbitMQConfigurationBuilder()
-
-	return infrastructure, nil, func() {
+	return infrastructure, func() {
 		for _, c := range cleanup {
 			defer c()
 		}
-	}
+	}, nil
 }

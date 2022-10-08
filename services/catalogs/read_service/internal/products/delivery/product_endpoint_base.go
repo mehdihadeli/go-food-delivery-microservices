@@ -6,10 +6,10 @@ import (
 )
 
 type ProductEndpointBase struct {
-	contracts.InfrastructureConfiguration
+	contracts.InfrastructureConfigurations
 	ProductsGroup *echo.Group
 }
 
-func NewProductEndpointBase(infra contracts.InfrastructureConfiguration, productsGroup *echo.Group) *ProductEndpointBase {
-	return &ProductEndpointBase{InfrastructureConfiguration: infra, ProductsGroup: productsGroup}
+func NewProductEndpointBase(infra contracts.InfrastructureConfigurations, productsGroup *echo.Group) *ProductEndpointBase {
+	return &ProductEndpointBase{InfrastructureConfigurations: infra, ProductsGroup: productsGroup}
 }

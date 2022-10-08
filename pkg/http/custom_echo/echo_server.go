@@ -8,48 +8,58 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	customHadnlers "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo/hadnlers"
+	otelMetrics "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo/middlewares/otel_metrics"
 	otelTracer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo/middlewares/otel_tracer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
 	"strings"
 )
 
 type echoHttpServer struct {
-	echo   *echo.Echo
-	config *EchoHttpConfig
-	log    logger.Logger
+	echo         *echo.Echo
+	config       *EchoHttpConfig
+	log          logger.Logger
+	meter        metric.Meter
+	serviceName  string
+	routeBuilder *RouteBuilder
 }
 
 type EchoHttpServer interface {
-	RunHttpServer(ctx context.Context, configEcho func(echoServer *echo.Echo)) error
+	RunHttpServer(ctx context.Context, configEcho ...func(echo *echo.Echo)) error
 	GracefulShutdown(ctx context.Context) error
 	ApplyVersioningFromHeader()
 	GetEchoInstance() *echo.Echo
 	SetupDefaultMiddlewares()
+	RouteBuilder() *RouteBuilder
 	AddMiddlewares(middlewares ...echo.MiddlewareFunc)
 	ConfigGroup(groupName string, groupFunc func(group *echo.Group))
 }
 
-func NewEchoHttpServer(config *EchoHttpConfig, logger logger.Logger) *echoHttpServer {
-	return &echoHttpServer{echo: echo.New(), config: config, log: logger}
+func NewEchoHttpServer(config *EchoHttpConfig, logger logger.Logger, serviceName string, meter metric.Meter) *echoHttpServer {
+	e := echo.New()
+	return &echoHttpServer{echo: e, config: config, log: logger, meter: meter, serviceName: serviceName, routeBuilder: NewRouteBuilder(e)}
 }
 
-func (s *echoHttpServer) RunHttpServer(ctx context.Context, configEcho func(echo *echo.Echo)) error {
+func (s *echoHttpServer) RunHttpServer(ctx context.Context, configEcho ...func(echo *echo.Echo)) error {
 	s.echo.Server.ReadTimeout = constants.ReadTimeout
 	s.echo.Server.WriteTimeout = constants.WriteTimeout
 	s.echo.Server.MaxHeaderBytes = constants.MaxHeaderBytes
 
-	if configEcho != nil {
-		configEcho(s.echo)
+	if len(configEcho) > 0 {
+		ehcoFunc := configEcho[0]
+		if ehcoFunc != nil {
+			configEcho[0](s.echo)
+		}
 	}
 
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
-				s.log.Infof("%s is shutting down Http PORT: {%s}", s.config.Name, s.config.Port)
+				s.log.Infof("%s is shutting down Http PORT: {%s}", s.serviceName, s.config.Port)
 				if err := s.GracefulShutdown(ctx); err != nil {
-					s.log.Warnf("(Shutdown) err: {%v}", err)
+					s.log.Errorf("(Shutdown) err: {%v}", err)
 				}
 				return
 			}
@@ -58,6 +68,10 @@ func (s *echoHttpServer) RunHttpServer(ctx context.Context, configEcho func(echo
 
 	//https://echo.labstack.com/guide/http_server/
 	return s.echo.Start(s.config.Port)
+}
+
+func (s *echoHttpServer) RouteBuilder() *RouteBuilder {
+	return s.routeBuilder
 }
 
 func (s *echoHttpServer) ConfigGroup(groupName string, groupFunc func(group *echo.Group)) {
@@ -95,7 +109,11 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 	s.echo.HideBanner = false
 	s.echo.HTTPErrorHandler = customHadnlers.ProblemHandler
 
-	s.echo.Use(otelTracer.Middleware(s.config.Name))
+	s.echo.Use(otelTracer.Middleware(s.serviceName))
+	if s.meter != nil {
+		s.echo.Use(otelMetrics.Middleware(s.meter, s.serviceName))
+	}
+
 	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogContentLength: true,
 		LogLatency:       true,

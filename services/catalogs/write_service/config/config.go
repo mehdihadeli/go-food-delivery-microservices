@@ -12,8 +12,8 @@ import (
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/spf13/viper"
 	"os"
@@ -29,18 +29,18 @@ func init() {
 }
 
 type Config struct {
-	DeliveryType     string                         `mapstructure:"deliveryType" env:"DeliveryType"`
-	ServiceName      string                         `mapstructure:"serviceName" env:"ServiceName"`
-	Logger           *logger.LogConfig              `mapstructure:"logger" envPrefix:"Logger_"`
-	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
-	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
-	Context          Context                        `mapstructure:"context" envPrefix:"Context_"`
-	Postgresql       *postgres.Config               `mapstructure:"postgres" envPrefix:"Postgresql_"`
-	GormPostgres     *gormPostgres.Config           `mapstructure:"gormPostgres" envPrefix:"GormPostgres_"`
-	RabbitMQ         *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
-	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
-	OTel             *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
-	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
+	DeliveryType      string                         `mapstructure:"deliveryType" env:"DeliveryType"`
+	ServiceName       string                         `mapstructure:"serviceName" env:"ServiceName"`
+	Logger            *logger.LogConfig              `mapstructure:"logger" envPrefix:"Logger_"`
+	GRPC              *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
+	Http              *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
+	Context           Context                        `mapstructure:"context" envPrefix:"Context_"`
+	Postgresql        *postgres.Config               `mapstructure:"postgres" envPrefix:"Postgresql_"`
+	GormPostgres      *gormPostgres.Config           `mapstructure:"gormPostgres" envPrefix:"GormPostgres_"`
+	RabbitMQ          *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
+	OTel              *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
+	OTelMetricsConfig *metrics.OTelMetricsConfig     `mapstructure:"otelMetrics" envPrefix:"OTelMetrics_"`
+	EventStoreConfig  eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
 }
 
 type Context struct {

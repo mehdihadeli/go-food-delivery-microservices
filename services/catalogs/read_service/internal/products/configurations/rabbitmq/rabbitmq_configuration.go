@@ -10,7 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
-func ConfigRabbitMQ(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder, infra contracts.InfrastructureConfiguration) {
+func ConfigProductsRabbitMQ(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder, infra contracts.InfrastructureConfigurations) {
 	//add custom message type mappings
 	//utils.RegisterCustomMessageTypesToRegistrty(map[string]types.IMessage{"productCreatedV1": &creatingProductIntegration.ProductCreatedV1{}})
 

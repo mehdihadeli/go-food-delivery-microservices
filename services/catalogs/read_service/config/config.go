@@ -8,17 +8,18 @@ import (
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"emperror.dev/errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/redis"
 	"github.com/spf13/viper"
 )
@@ -30,21 +31,21 @@ func init() {
 }
 
 type Config struct {
-	DeliveryType     string                         `mapstructure:"deliveryType" env:"DeliveryType"`
-	ServiceName      string                         `mapstructure:"serviceName" env:"ServiceName"`
-	Logger           *logger.LogConfig              `mapstructure:"logger" envPrefix:"Logger_"`
-	GRPC             *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
-	Http             *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
-	Context          Context                        `mapstructure:"context" envPrefix:"Context_"`
-	Redis            *redis.Config                  `mapstructure:"redis" envPrefix:"Redis_"`
-	RabbitMQ         *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
-	Probes           probes.Config                  `mapstructure:"probes" envPrefix:"Probes_"`
-	OTel             *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
-	EventStoreConfig eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
-	Elastic          elasticsearch.Config           `mapstructure:"elastic" envPrefix:"Elastic_"`
-	ElasticIndexes   ElasticIndexes                 `mapstructure:"elasticIndexes" envPrefix:"ElasticIndexes_"`
-	Mongo            *mongodb.MongoDbConfig         `mapstructure:"mongo" envPrefix:"Mongo_"`
-	MongoCollections MongoCollections               `mapstructure:"mongoCollections" envPrefix:"MongoCollections_"`
+	DeliveryType      string                         `mapstructure:"deliveryType" env:"DeliveryType"`
+	ServiceName       string                         `mapstructure:"serviceName" env:"ServiceName"`
+	Logger            *logger.LogConfig              `mapstructure:"logger" envPrefix:"Logger_"`
+	GRPC              *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
+	Http              *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
+	Context           Context                        `mapstructure:"context" envPrefix:"Context_"`
+	Redis             *redis.Config                  `mapstructure:"redis" envPrefix:"Redis_"`
+	RabbitMQ          *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
+	OTel              *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
+	OTelMetricsConfig *metrics.OTelMetricsConfig     `mapstructure:"otelMetrics" envPrefix:"OTelMetrics_"`
+	EventStoreConfig  eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig" envPrefix:"EventStoreConfig_"`
+	Elastic           elasticsearch.Config           `mapstructure:"elastic" envPrefix:"Elastic_"`
+	ElasticIndexes    ElasticIndexes                 `mapstructure:"elasticIndexes" envPrefix:"ElasticIndexes_"`
+	Mongo             *mongodb.MongoDbConfig         `mapstructure:"mongo" envPrefix:"Mongo_"`
+	MongoCollections  MongoCollections               `mapstructure:"mongoCollections" envPrefix:"MongoCollections_"`
 }
 
 type Context struct {
@@ -121,6 +122,14 @@ func InitConfig(environment string) (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func (cfg *Config) GetMicroserviceNameUpper() string {
+	return strings.ToUpper(cfg.ServiceName)
+}
+
+func (cfg *Config) GetMicroserviceName() string {
+	return cfg.ServiceName
 }
 
 func filename() (string, error) {

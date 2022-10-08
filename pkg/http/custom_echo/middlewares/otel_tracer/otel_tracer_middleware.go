@@ -42,6 +42,9 @@ func Middleware(serviceName string) echo.MiddlewareFunc {
 				span.SetAttributes(semconv.HTTPAttributesFromHTTPStatusCode(c.Response().Status)...)
 			}
 
+			//update request context
+			c.SetRequest(request.WithContext(ctx))
+
 			return err
 		}
 	}

@@ -90,6 +90,11 @@
       "url": "http://localhost:9411/api/v2/spans"
     }
   },
+  "otelMetrics": {
+    "port": ":2222",
+    "metricsRoutePath": "/metrics",
+    "name": "orders-service"
+  },
   "eventStoreConfig": {
     "connectionString": "esdb://localhost:2113?tls=false"
   },

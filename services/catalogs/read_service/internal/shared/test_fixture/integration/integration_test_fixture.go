@@ -9,12 +9,14 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/data/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/catalogs/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
+	contracts2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/web/workers"
 )
 
 type IntegrationTestFixture struct {
-	*infrastructure.infrastructureConfigurations
+	contracts2.InfrastructureConfigurations
 	RedisProductRepository contracts.ProductCacheRepository
 	MongoProductRepository contracts.ProductRepository
 	workersRunner          *webWoker.WorkersRunner
@@ -30,17 +32,23 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
 	infrastructures, _, cleanup := c.ConfigInfrastructures(context.Background())
 
-	mongoProductRepository := repositories.NewMongoProductRepository(infrastructures.Log, cfg, infrastructures.MongoClient)
-	redisProductRepository := repositories.NewRedisRepository(infrastructures.Log, cfg, infrastructures.Redis)
+	mongoProductRepository := repositories.NewMongoProductRepository(infrastructures.Log(), cfg, infrastructures.MongoClient())
+	redisProductRepository := repositories.NewRedisRepository(infrastructures.Log(), cfg, infrastructures.Redis())
 
-	err := mappings.ConfigureMappings()
+	err := mappings.ConfigeProductsMappings()
+	if err != nil {
+		cancel()
+		return nil
+	}
+	
+	mq, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, cfg.RabbitMQ, infrastructures)
 	if err != nil {
 		cancel()
 		return nil
 	}
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(ctx, infrastructures),
+		workers.NewRabbitMQWorker(infrastructures.Log(), mq),
 	})
 
 	return &IntegrationTestFixture{
@@ -49,7 +57,7 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 			cancel()
 			cleanup()
 		},
-		infrastructureConfigurations: infrastructures,
+		InfrastructureConfigurations: infrastructures,
 		RedisProductRepository:       redisProductRepository,
 		MongoProductRepository:       mongoProductRepository,
 		workersRunner:                workersRunner,
