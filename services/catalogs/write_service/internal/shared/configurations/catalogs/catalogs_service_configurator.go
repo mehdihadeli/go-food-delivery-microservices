@@ -8,7 +8,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations"
-	catalogsMetrics "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/metrics"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 	"net/http"
@@ -34,13 +34,11 @@ func (c *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Conte
 		})
 	})
 
-	if c.Cfg().DeliveryType == "http" {
-		// Catalogs Swagger Configs
-		c.configSwagger(catalogsServiceConfigurations.catalogsEchoServer.RouteBuilder())
-	}
+	// Catalogs Swagger Configs
+	c.configSwagger(catalogsServiceConfigurations.catalogsEchoServer.RouteBuilder())
 
 	// Catalogs Metrics Configs
-	metrics, err := catalogsMetrics.ConfigCatalogsMetrics(c.Cfg(), c.Metrics())
+	metrics, err := metrics.ConfigCatalogsMetrics(c.Cfg(), c.Metrics())
 	if err != nil {
 		return nil, err
 	}

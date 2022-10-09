@@ -20,8 +20,11 @@
 - ✅ Using RESTFul api with [Echo](https://github.com/labstack/echo) framework and using swagger with [swaggo/swag](https://github.com/swaggo/swag) library
 - ✅ Using gRpc for internal service communication
 - ✅ Using [go-playground/validator](https://github.com/go-playground/validator) for validating input data in the REST and gRpc
-- ✅ Using `Postgres` and `EventStoreDB` for write databases as relational DB and `MongoDB` and `Elasric Search` for read databases
-- ✅ Using `OpenTelemetry` for collection `Metrics` and `Distributed Tracing`
+- ✅ Using `Postgres` and `EventStoreDB` for write databases with fully supports transactions(ACID) 
+- ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL) 
+- ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
+- ✅ Using `OpenTelemetry` for collection `Metrics` with using Prometheus and Grafana
+- ✅ Using `End2End Test` and `Integration Test` for testing some of the features 
 - ✅ Using docker and `docker-compose` for deployment
 - 🚧 Using `Domain Driven Design` in some of services like [Catalogs Write Service](services/catalogs/write_service/) and [Orders Service](services/catalogs/orders/)
 - 🚧 Using `Helm` and `Kubernetes` for deployment

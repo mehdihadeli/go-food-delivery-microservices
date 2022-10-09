@@ -15,7 +15,7 @@ func Test_Create_Product_Command_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*CreateProduct, *dtos.CreateProductResponseDto](NewCreateProductHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository, fixture.Producer))
+	err := mediatr.RegisterRequestHandler[*CreateProduct, *dtos.CreateProductResponseDto](NewCreateProductHandler(fixture.Log(), fixture.Cfg(), fixture.ProductRepository, fixture.Bus))
 	if err != nil {
 		return
 	}

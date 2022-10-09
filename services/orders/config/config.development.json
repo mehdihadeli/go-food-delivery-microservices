@@ -1,17 +1,14 @@
 {
   "serviceName": "order_service",
-  "deliveryType": "http",
   "context": {
     "timeout": 20
   },
   "grpc": {
-    "name":"order_service",
     "port": ":6005",
     "host": "localhost",
     "development": true
   },
   "http": {
-    "name":"order_service",
     "port": ":8000",
     "development": true,
     "timeout": 30,
@@ -24,15 +21,6 @@
     "ignoreLogUrls": [
       "metrics"
     ]
-  },
-  "probes": {
-    "readinessPath": "/ready",
-    "livenessPath": "/live",
-    "port": ":3002",
-    "pprof": ":6002",
-    "prometheusPath": "/metrics",
-    "prometheusPort": ":8002",
-    "checkIntervalSeconds": 10
   },
   "logger": {
     "level": "debug",

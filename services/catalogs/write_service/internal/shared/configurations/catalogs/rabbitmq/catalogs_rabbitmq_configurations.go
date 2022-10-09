@@ -16,7 +16,7 @@ func ConfigCatalogsRabbitMQ(ctx context.Context, mqConfig *config2.RabbitMQConfi
 		mqConfig,
 		func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
 			// Products RabbitMQ configuration
-			rabbitmq.ConfigProductsRabbitMQ(builder, infra)
+			rabbitmq.ConfigProductsRabbitMQ(builder)
 		},
 		infra.EventSerializer(),
 		infra.Log())

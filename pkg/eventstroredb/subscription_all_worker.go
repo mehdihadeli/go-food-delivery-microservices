@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/mehdihadeli/go-mediatr"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -37,7 +38,14 @@ type EventStoreDBSubscriptionToAllOptions struct {
 	Prefix                      string
 }
 
-func NewEsdbSubscriptionAllWorker(log logger.Logger, db *esdb.Client, cfg *EventStoreConfig, esdbSerializer *EsdbSerializer, subscriptionRepository contracts.SubscriptionCheckpointRepository, projectionPublisher projection.IProjectionPublisher) *esdbSubscriptionAllWorker {
+func NewEsdbSubscriptionAllWorker(log logger.Logger, db *esdb.Client, cfg *EventStoreConfig, esdbSerializer *EsdbSerializer, subscriptionRepository contracts.SubscriptionCheckpointRepository, projectionBuilderFunc ProjectionBuilderFuc) EsdbSubscriptionAllWorker {
+	builder := NewProjectionsBuilder()
+	if projectionBuilderFunc != nil {
+		projectionBuilderFunc(builder)
+	}
+	projectionConfigurations := builder.Build()
+	projectionPublisher := es.NewProjectionPublisher(projectionConfigurations.Projections)
+
 	return &esdbSubscriptionAllWorker{db: db, cfg: cfg, log: log, esdbSerializer: esdbSerializer, subscriptionCheckpointRepository: subscriptionRepository, projectionPublisher: projectionPublisher}
 }
 

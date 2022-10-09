@@ -27,13 +27,11 @@ func NewProductsModuleConfigurator(infrastructure contracts2.InfrastructureConfi
 }
 
 func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context) error {
-	if c.Cfg().DeliveryType == "grpc" {
-		//Config Products Grpc
-		grpc.ConfigProductsGrpc(ctx, c.grpcServiceBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
-	} else {
-		//Config Products Endpoints
-		endpoints.ConfigProductsEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
-	}
+	//Config Products Grpc
+	grpc.ConfigProductsGrpc(ctx, c.grpcServiceBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
+
+	//Config Products Endpoints
+	endpoints.ConfigProductsEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
 
 	productRepository := repositoriesImp.NewPostgresProductRepository(c.Log(), c.Cfg(), c.Gorm().DB)
 

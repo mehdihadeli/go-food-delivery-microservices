@@ -34,10 +34,8 @@ func (ic *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Cont
 		})
 	})
 
-	if ic.Cfg().DeliveryType == "http" {
-		// Catalogs Swagger Configs
-		ic.configSwagger(catalogsServiceConfigurations.catalogsEchoServer.RouteBuilder())
-	}
+	// Catalogs Swagger Configs
+	ic.configSwagger(catalogsServiceConfigurations.catalogsEchoServer.RouteBuilder())
 
 	// Catalogs Metrics Configs
 	metrics, err := catalogsMetrics.ConfigCatalogsMetrics(ic.Cfg(), ic.Metrics())

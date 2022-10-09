@@ -11,27 +11,27 @@ import (
 	gettingOrdersDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/dtos"
 	gettingOrdersV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/queryies/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/aggregate"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/contracts"
 )
 
-func ConfigOrdersMediator(infra *infrastructure.InfrastructureConfiguration) error {
-	eventStore := eventstroredb.NewEventStoreDbEventStore(infra.Log, infra.Esdb, infra.EsdbSerializer)
-	orderAggregateStore := eventstroredb.NewEventStoreAggregateStore[*aggregate.Order](infra.Log, eventStore, infra.EsdbSerializer)
+func ConfigOrdersMediator(infra contracts.InfrastructureConfigurations) error {
+	eventStore := eventstroredb.NewEventStoreDbEventStore(infra.Log(), infra.Esdb(), infra.EsdbSerializer())
+	orderAggregateStore := eventstroredb.NewEventStoreAggregateStore[*aggregate.Order](infra.Log(), eventStore, infra.EsdbSerializer())
 
-	mongoOrderReadRepository := repositories.NewMongoOrderReadRepository(infra.Log, infra.Cfg, infra.MongoClient)
+	mongoOrderReadRepository := repositories.NewMongoOrderReadRepository(infra.Log(), infra.Cfg(), infra.MongoClient())
 
 	//https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
-	err := mediatr.RegisterRequestHandler[*creatingOrderV1.CreateOrder, *creatingOrderDtos.CreateOrderResponseDto](creatingOrderV1.NewCreateOrderHandler(infra.Log, infra.Cfg, orderAggregateStore))
+	err := mediatr.RegisterRequestHandler[*creatingOrderV1.CreateOrder, *creatingOrderDtos.CreateOrderResponseDto](creatingOrderV1.NewCreateOrderHandler(infra.Log(), infra.Cfg(), orderAggregateStore))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*gettingOrderByIdV1.GetOrderById, *gettingOrderByIdDtos.GetOrderByIdResponseDto](gettingOrderByIdV1.NewGetOrderByIdHandler(infra.Log, infra.Cfg, mongoOrderReadRepository))
+	err = mediatr.RegisterRequestHandler[*gettingOrderByIdV1.GetOrderById, *gettingOrderByIdDtos.GetOrderByIdResponseDto](gettingOrderByIdV1.NewGetOrderByIdHandler(infra.Log(), infra.Cfg(), mongoOrderReadRepository))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*gettingOrdersV1.GetOrders, *gettingOrdersDtos.GetOrdersResponseDto](gettingOrdersV1.NewGetOrdersHandler(infra.Log, infra.Cfg, mongoOrderReadRepository))
+	err = mediatr.RegisterRequestHandler[*gettingOrdersV1.GetOrders, *gettingOrdersDtos.GetOrdersResponseDto](gettingOrdersV1.NewGetOrdersHandler(infra.Log(), infra.Cfg(), mongoOrderReadRepository))
 	if err != nil {
 		return err
 	}

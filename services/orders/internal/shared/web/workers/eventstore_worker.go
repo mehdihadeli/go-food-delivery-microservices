@@ -3,32 +3,24 @@ package workers
 import (
 	"context"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
 )
 
-func NewEventStoreDBWorker(infra *infrastructure.InfrastructureConfiguration) web.Worker {
-	esdbWorker := eventstroredb.NewEsdbSubscriptionAllWorker(
-		infra.Log,
-		infra.Esdb,
-		infra.Cfg.EventStoreConfig,
-		infra.EsdbSerializer,
-		infra.CheckpointRepository,
-		es.NewProjectionPublisher(infra.Projections))
-
+func NewEventStoreDBWorker(logger logger.Logger, cfg *config.Config, subscriptionAllWorker eventstroredb.EsdbSubscriptionAllWorker) web.Worker {
 	return web.NewBackgroundWorker(func(ctx context.Context) error {
 		option := &eventstroredb.EventStoreDBSubscriptionToAllOptions{
 			FilterOptions: &esdb.SubscriptionFilter{
 				Type:     esdb.StreamFilterType,
-				Prefixes: infra.Cfg.Subscriptions.OrderSubscription.Prefix,
+				Prefixes: cfg.Subscriptions.OrderSubscription.Prefix,
 			},
-			SubscriptionId: infra.Cfg.Subscriptions.OrderSubscription.SubscriptionId,
+			SubscriptionId: cfg.Subscriptions.OrderSubscription.SubscriptionId,
 		}
-		err := esdbWorker.SubscribeAll(ctx, option)
+		err := subscriptionAllWorker.SubscribeAll(ctx, option)
 		if err != nil {
-			infra.Log.Errorf("[EventStoreDBWorker.SubscribeAll] error in the subscribing eventstore: {%v}", err)
+			logger.Errorf("[EventStoreDBWorker.SubscribeAll] error in the subscribing eventstore: {%v}", err)
 			return err
 		}
 		return nil

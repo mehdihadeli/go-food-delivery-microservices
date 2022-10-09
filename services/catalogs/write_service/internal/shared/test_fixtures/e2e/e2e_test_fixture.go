@@ -6,11 +6,13 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
@@ -21,13 +23,15 @@ import (
 type E2ETestFixture struct {
 	Echo *echo.Echo
 	contracts.InfrastructureConfigurations
-	V1            *V1Groups
-	GrpcServer    grpcServer.GrpcServer
-	HttpServer    *httptest.Server
-	workersRunner *webWoker.WorkersRunner
-	Ctx           context.Context
-	cancel        context.CancelFunc
-	Cleanup       func()
+	V1              *V1Groups
+	GrpcServer      grpcServer.GrpcServer
+	HttpServer      *httptest.Server
+	Bus             bus.Bus
+	CatalogsMetrics contracts.CatalogsMetrics
+	workersRunner   *webWoker.WorkersRunner
+	Ctx             context.Context
+	cancel          context.CancelFunc
+	Cleanup         func()
 }
 
 type V1Groups struct {
@@ -39,7 +43,12 @@ func NewE2ETestFixture() *E2ETestFixture {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
-	infrastructures, _, cleanup := c.ConfigInfrastructures(context.Background())
+	infrastructures, cleanup, err := c.ConfigInfrastructures(context.Background())
+	if err != nil {
+		cancel()
+		return nil
+	}
+
 	echo := echo.New()
 
 	v1Group := echo.Group("/api/v1")
@@ -50,6 +59,12 @@ func NewE2ETestFixture() *E2ETestFixture {
 	productRep := repositories.NewPostgresProductRepository(infrastructures.Log(), cfg, infrastructures.Gorm().DB)
 
 	mq, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, cfg.RabbitMQ, infrastructures)
+	if err != nil {
+		cancel()
+		return nil
+	}
+
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(cfg, infrastructures.Metrics())
 	if err != nil {
 		cancel()
 		return nil
@@ -88,6 +103,8 @@ func NewE2ETestFixture() *E2ETestFixture {
 		V1:                           v1Groups,
 		GrpcServer:                   grpcServer,
 		HttpServer:                   httpServer,
+		Bus:                          mq,
+		CatalogsMetrics:              catalogsMetrics,
 		workersRunner:                workersRunner,
 		Ctx:                          ctx,
 		cancel:                       cancel,

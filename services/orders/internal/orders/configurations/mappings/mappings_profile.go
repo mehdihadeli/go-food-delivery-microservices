@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func ConfigureMappings() error {
+func ConfigureOrdersMappings() error {
 
 	// Order -> OrderDto
 	err := mapper.CreateMap[*aggregate.Order, *dtos.OrderDto]()
