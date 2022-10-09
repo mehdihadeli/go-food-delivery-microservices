@@ -17,7 +17,7 @@ func Test_Create_Product_E2E(t *testing.T) {
 	test.SkipCI(t)
 	fixture := e2e.NewE2ETestFixture()
 
-	e := NewCreteProductEndpoint(delivery.NewProductEndpointBase(fixture.InfrastructureConfiguration, fixture.V1.ProductsGroup))
+	e := NewCreteProductEndpoint(delivery.NewProductEndpointBase(fixture.InfrastructureConfigurations, fixture.V1.ProductsGroup, fixture.Bus, fixture.CatalogsMetrics))
 	e.MapRoute()
 
 	fixture.Run()

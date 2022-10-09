@@ -12,7 +12,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/probes"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/spf13/viper"
 	"os"
@@ -34,7 +33,6 @@ type Config struct {
 	GRPC              *grpc.GrpcConfig                `mapstructure:"grpc"`
 	Http              *customEcho.EchoHttpConfig      `mapstructure:"http"`
 	Context           Context                         `mapstructure:"context"`
-	Probes            probes.Config                   `mapstructure:"probes"`
 	OTel              *otel.OpenTelemetryConfig       `mapstructure:"otel" envPrefix:"OTel_"`
 	OTelMetricsConfig *metrics.OTelMetricsConfig      `mapstructure:"otelMetrics" envPrefix:"OTelMetrics_"`
 	RabbitMQ          *config.RabbitMQConfig          `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`

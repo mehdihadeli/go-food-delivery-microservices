@@ -24,13 +24,13 @@ func TestRunner(t *testing.T) {
 	//https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
 	t.Run("GRPC", func(t *testing.T) {
 		// Before running the tests
-		productGrpcService := NewProductGrpcService(fixture.InfrastructureConfiguration)
+		productGrpcService := NewProductGrpcService(fixture.InfrastructureConfigurations, fixture.CatalogsMetrics, fixture.Bus)
 		productService.RegisterProductsServiceServer(fixture.GrpcServer.GetCurrentGrpcServer(), productGrpcService)
 
 		ctx := fixture.Ctx
 		fixture.Run()
 
-		productGrpcClient := productService.NewProductsServiceClient(fixture.GrpcClient.GetGrpcConnection())
+		productGrpcClient := productService.NewProductsServiceClient(fixture.GrpcClient().GetGrpcConnection())
 
 		productGrpcServiceTests := ProductGrpcServiceTests{
 			T:                     t,

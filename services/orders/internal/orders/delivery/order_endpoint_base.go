@@ -2,14 +2,17 @@ package delivery
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/infrastructure"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/contracts"
 )
 
 type OrderEndpointBase struct {
-	*infrastructure.InfrastructureConfiguration
-	OrdersGroup *echo.Group
+	contracts.InfrastructureConfigurations
+	OrdersGroup   *echo.Group
+	OrdersMetrics contracts.OrdersMetrics
+	Bus           bus.Bus
 }
 
-func NewOrderEndpointBase(infra *infrastructure.InfrastructureConfiguration, ordersGroup *echo.Group) *OrderEndpointBase {
-	return &OrderEndpointBase{OrdersGroup: ordersGroup, InfrastructureConfiguration: infra}
+func NewOrderEndpointBase(infra contracts.InfrastructureConfigurations, ordersGroup *echo.Group, bus bus.Bus, ordersMetrics contracts.OrdersMetrics) *OrderEndpointBase {
+	return &OrderEndpointBase{OrdersGroup: ordersGroup, InfrastructureConfigurations: infra, Bus: bus, OrdersMetrics: ordersMetrics}
 }

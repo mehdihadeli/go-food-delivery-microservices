@@ -36,20 +36,20 @@ func (ep *getOrdersEndpoint) MapRoute() {
 // @Router /api/v1/orders [get]
 func (ep *getOrdersEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ep.Metrics.GetOrdersHttpRequests.Inc()
 		ctx := c.Request().Context()
+		ep.OrdersMetrics.GetOrdersHttpRequests().Add(ctx, 1)
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 		if err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getOrdersEndpoint_handler.GetListQueryFromCtx] error in getting data from query string")
-			ep.Log.Errorf(fmt.Sprintf("[getOrdersEndpoint_handler.GetListQueryFromCtx] err: %v", badRequestErr))
+			ep.Log().Errorf(fmt.Sprintf("[getOrdersEndpoint_handler.GetListQueryFromCtx] err: %v", badRequestErr))
 			return err
 		}
 
 		request := &dtos.GetOrdersRequestDto{ListQuery: listQuery}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getOrdersEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[getOrdersEndpoint_handler.Bind] err: %v", badRequestErr))
+			ep.Log().Errorf(fmt.Sprintf("[getOrdersEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
@@ -59,7 +59,7 @@ func (ep *getOrdersEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[getOrdersEndpoint_handler.Send] error in sending GetOrders")
-			ep.Log.Error(fmt.Sprintf("[getOrdersEndpoint_handler.Send] err: {%v}", err))
+			ep.Log().Error(fmt.Sprintf("[getOrdersEndpoint_handler.Send] err: {%v}", err))
 			return err
 		}
 

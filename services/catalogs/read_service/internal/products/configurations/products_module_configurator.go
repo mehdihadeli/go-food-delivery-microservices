@@ -23,13 +23,11 @@ func NewProductsModuleConfigurator(infrastructure contracts2.InfrastructureConfi
 }
 
 func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context) error {
-	if c.Cfg().DeliveryType == "grpc" {
-		//Config Products Grpc
-		grpc.ConfigProductsGrpc(ctx, c.grpcServiceBuilder, c.InfrastructureConfigurations)
-	} else {
-		//Config Products Endpoints
-		endpoints.ConfigProductsEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations)
-	}
+	//Config Products Grpc
+	grpc.ConfigProductsGrpc(ctx, c.grpcServiceBuilder, c.InfrastructureConfigurations)
+
+	//Config Products Endpoints
+	endpoints.ConfigProductsEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations)
 
 	//Config Products Mappings
 	err := mappings.ConfigeProductsMappings()

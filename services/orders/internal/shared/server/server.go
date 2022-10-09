@@ -2,10 +2,7 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
-	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
@@ -33,52 +30,41 @@ func (s *Server) Run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	grpcServer := grpcServer.NewGrpcServer(s.cfg.GRPC, s.log)
-	echoServer := customEcho.NewEchoHttpServer(s.cfg.Http, s.log)
-
 	ic := infrastructure.NewInfrastructureConfigurator(s.log, s.cfg)
-	infrastructureConfigurations, err, infraCleanup := ic.ConfigInfrastructures(ctx)
+	infrastructureConfigurations, infraCleanup, err := ic.ConfigInfrastructures(ctx)
 	if err != nil {
 		return err
 	}
 	defer infraCleanup()
 
-	ordersConfigurator := orders.NewOrdersServiceConfigurator(infrastructureConfigurations, echoServer, grpcServer)
-	err = ordersConfigurator.ConfigureOrdersService(ctx)
+	ordersConfigurator := orders.NewOrdersServiceConfigurator(infrastructureConfigurations)
+	ordersConfigurations, err := ordersConfigurator.ConfigureOrdersService(ctx)
 	if err != nil {
 		return err
 	}
 
-	deliveryType := s.cfg.DeliveryType
-
 	var serverError error
 
-	switch deliveryType {
-	case "http":
-		go func() {
-			if err := echoServer.RunHttpServer(ctx, nil); err != nil {
-				s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
-				serverError = err
-				cancel()
-			}
-		}()
-		s.log.Infof("%s is listening on Http PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.Http.Port)
+	go func() {
+		if err := ordersConfigurations.OrdersEchoServer().RunHttpServer(ctx, nil); err != nil {
+			s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
+			serverError = err
+			cancel()
+		}
+	}()
+	s.log.Infof("%s is listening on Http PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.Http.Port)
 
-	case "grpc":
-		go func() {
-			if err := grpcServer.RunGrpcServer(ctx, nil); err != nil {
-				s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
-				serverError = err
-				cancel()
-			}
-		}()
-		s.log.Infof("%s is listening on Grpc PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.GRPC.Port)
-	default:
-		panic(fmt.Sprintf("server type %s is not supported", deliveryType))
-	}
+	go func() {
+		if err := ordersConfigurations.OrdersGrpcServer().RunGrpcServer(ctx, nil); err != nil {
+			s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
+			serverError = err
+			cancel()
+		}
+	}()
+	s.log.Infof("%s is listening on Grpc PORT: {%s}", web.GetMicroserviceName(s.cfg), s.cfg.GRPC.Port)
 
 	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(ctx, infrastructureConfigurations), workers.NewEventStoreDBWorker(infrastructureConfigurations), workers.NewMetricsWorker(infrastructureConfigurations),
+		workers.NewRabbitMQWorker(s.log, ordersConfigurations.OrdersBus()), workers.NewEventStoreDBWorker(s.log, s.cfg, ordersConfigurations.OrdersSubscriptionAllWorker()),
 	})
 
 	workersErr := backgroundWorkers.Start(ctx)

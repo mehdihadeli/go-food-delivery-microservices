@@ -42,7 +42,7 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 
 	mongoOrderReadRepository := orderRepositories.NewMongoOrderReadRepository(infrastructures.Log, infrastructures.Cfg, infrastructures.MongoClient)
 
-	err := mappings.ConfigureMappings()
+	err := mappings.ConfigureOrdersMappings()
 	if err != nil {
 		cancel()
 		return nil

@@ -4,11 +4,13 @@ import (
 	"context"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/data/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/catalogs/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/catalogs/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	contracts2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
@@ -19,6 +21,8 @@ type IntegrationTestFixture struct {
 	contracts2.InfrastructureConfigurations
 	RedisProductRepository contracts.ProductCacheRepository
 	MongoProductRepository contracts.ProductRepository
+	Bus                    bus.Bus
+	CatalogsMetrics        contracts2.CatalogsMetrics
 	workersRunner          *webWoker.WorkersRunner
 	Ctx                    context.Context
 	cancel                 context.CancelFunc
@@ -40,8 +44,14 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 		cancel()
 		return nil
 	}
-	
+
 	mq, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, cfg.RabbitMQ, infrastructures)
+	if err != nil {
+		cancel()
+		return nil
+	}
+
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(cfg, infrastructures.Metrics())
 	if err != nil {
 		cancel()
 		return nil
@@ -61,6 +71,8 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 		RedisProductRepository:       redisProductRepository,
 		MongoProductRepository:       mongoProductRepository,
 		workersRunner:                workersRunner,
+		CatalogsMetrics:              catalogsMetrics,
+		Bus:                          mq,
 		Ctx:                          ctx,
 		cancel:                       cancel,
 	}

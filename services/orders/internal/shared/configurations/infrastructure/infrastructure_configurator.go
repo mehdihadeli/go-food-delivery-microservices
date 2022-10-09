@@ -2,128 +2,87 @@ package infrastructure
 
 import (
 	"context"
-	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/elastic/go-elasticsearch/v8"
+	"emperror.dev/errors"
 	"github.com/go-playground/validator"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	messageBus "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
+	otelMetrics "github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
-	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/bus"
-	rabbitmqConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/custom_middlewares"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.opentelemetry.io/otel/sdk/trace"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/contracts"
 )
-
-type InfrastructureConfiguration struct {
-	Log                          logger.Logger
-	Cfg                          *config.Config
-	Validator                    *validator.Validate
-	Pgx                          *postgres.Pgx
-	Metrics                      *OrdersServiceMetrics
-	Esdb                         *esdb.Client
-	EsdbSerializer               *eventstroredb.EsdbSerializer
-	CheckpointRepository         contracts.SubscriptionCheckpointRepository
-	ElasticClient                *elasticsearch.Client
-	MongoClient                  *mongo.Client
-	GrpcClient                   grpc.GrpcClient
-	TraceProvider                *trace.TracerProvider
-	CustomMiddlewares            cutomMiddlewares.CustomMiddlewares
-	Projections                  []projection.IProjection
-	EventSerializer              serializer.EventSerializer
-	Producer                     producer.Producer
-	RabbitMQConfigurationBuilder rabbitmqConfigurations.RabbitMQConfigurationBuilder
-	RabbitMQBus                  messageBus.Bus
-}
-
-type InfrastructureConfigurator interface {
-	ConfigureInfrastructure() error
-}
 
 type infrastructureConfigurator struct {
 	log logger.Logger
 	cfg *config.Config
 }
 
-func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config) *infrastructureConfigurator {
+func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config) contracts.InfrastructureConfigurator {
 	return &infrastructureConfigurator{log: log, cfg: cfg}
 }
 
-func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*InfrastructureConfiguration, error, func()) {
-	infrastructure := &InfrastructureConfiguration{Cfg: ic.cfg, Log: ic.log, Validator: validator.New()}
+func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (contracts.InfrastructureConfigurations, func(), error) {
+	infrastructure := &infrastructureConfigurations{cfg: ic.cfg, log: ic.log, validator: validator.New()}
 
-	metrics := ic.configCatalogsMetrics()
-	infrastructure.Metrics = metrics
+	meter, err := otelMetrics.AddOtelMetrics(ctx, ic.cfg.OTelMetricsConfig, ic.log)
+	if err != nil {
+		return nil, nil, err
+	}
+	infrastructure.metrics = meter
 
 	cleanup := []func(){}
 
 	traceProvider, err := tracing.AddOtelTracing(ic.cfg.OTel)
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 	cleanup = append(cleanup, func() {
 		_ = traceProvider.Shutdown(ctx)
 	})
-	infrastructure.TraceProvider = traceProvider
-
-	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
-	if err != nil {
-		return nil, err, nil
-	}
-	cleanup = append(cleanup, mongoCleanup)
-	infrastructure.MongoClient = mongoClient
 
 	grpcClient, err := grpc.NewGrpcClient(ic.cfg.GRPC)
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 	cleanup = append(cleanup, func() {
 		_ = grpcClient.Close()
 	})
-	infrastructure.GrpcClient = grpcClient
+	infrastructure.grpcClient = grpcClient
 
-	esdb, checkpointRepository, esdbSerializer, err, eventStoreCleanup := ic.configEventStore()
+	mongo, err := mongodb.NewMongoDB(ctx, ic.cfg.Mongo)
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, errors.WrapIf(err, "NewMongoDBConn")
 	}
-	cleanup = append(cleanup, eventStoreCleanup)
-	infrastructure.Esdb = esdb
-	infrastructure.CheckpointRepository = checkpointRepository
-	infrastructure.EsdbSerializer = esdbSerializer
-
-	infrastructure.EventSerializer = json.NewJsonEventSerializer()
-
-	infrastructure.RabbitMQConfigurationBuilder = rabbitmqConfigurations.NewRabbitMQConfigurationBuilder()
-	mqBus, err := bus.NewRabbitMQBus(ctx, ic.cfg.RabbitMQ, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
-		builder = infrastructure.RabbitMQConfigurationBuilder
-	}, infrastructure.EventSerializer, ic.log)
-	if err != nil {
-		return nil, err, nil
-	}
-
-	infrastructure.RabbitMQBus = mqBus
-	infrastructure.Producer = mqBus
-
+	ic.log.Infof("(Mongo connected) SessionsInProgress: {%v}", mongo.MongoClient.NumberSessionsInProgress())
 	cleanup = append(cleanup, func() {
-		_ = mqBus.Stop(ctx)
+		_ = mongo.Close() // nolint: errcheck
 	})
+	infrastructure.mongoClient = mongo.MongoClient
+
+	esdb, err := eventstroredb.NewEventStoreDB(ic.cfg.EventStoreConfig)
+	if err != nil {
+		return nil, nil, err
+	}
+	esdbSerializer := eventstroredb.NewEsdbSerializer(json.NewJsonMetadataSerializer(), json.NewJsonEventSerializer())
+	subscriptionRepository := eventstroredb.NewEsdbSubscriptionCheckpointRepository(esdb, ic.log, esdbSerializer)
+	cleanup = append(cleanup, func() {
+		_ = esdb.Close() // nolint: errcheck
+	})
+	infrastructure.esdb = esdb
+	infrastructure.checkpointRepository = subscriptionRepository
+	infrastructure.esdbSerializer = esdbSerializer
+	infrastructure.eventSerializer = json.NewJsonEventSerializer()
 
 	if err != nil {
-		return nil, err, nil
+		return nil, nil, err
 	}
 
-	return infrastructure, nil, func() {
+	return infrastructure, func() {
 		for _, c := range cleanup {
 			c()
 		}
-	}
+	}, nil
 }

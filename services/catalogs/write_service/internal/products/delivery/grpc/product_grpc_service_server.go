@@ -34,7 +34,7 @@ type ProductGrpcServiceServer struct {
 }
 
 func NewProductGrpcService(infra contracts.InfrastructureConfigurations, catalogsMetrics contracts.CatalogsMetrics, bus bus.Bus) *ProductGrpcServiceServer {
-	return &ProductGrpcServiceServer{InfrastructureConfigurations: infra}
+	return &ProductGrpcServiceServer{InfrastructureConfigurations: infra, catalogsMetrics: catalogsMetrics, bus: bus}
 }
 
 func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *productsService.CreateProductReq) (*productsService.CreateProductRes, error) {

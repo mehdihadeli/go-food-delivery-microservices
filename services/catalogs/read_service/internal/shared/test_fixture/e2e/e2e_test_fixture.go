@@ -6,10 +6,12 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mediator"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/catalogs/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/catalogs/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
@@ -20,13 +22,15 @@ import (
 type E2ETestFixture struct {
 	Echo *echo.Echo
 	contracts.InfrastructureConfigurations
-	V1            *V1Groups
-	GrpcServer    grpcServer.GrpcServer
-	HttpServer    *httptest.Server
-	workersRunner *webWoker.WorkersRunner
-	Ctx           context.Context
-	cancel        context.CancelFunc
-	Cleanup       func()
+	V1              *V1Groups
+	GrpcServer      grpcServer.GrpcServer
+	HttpServer      *httptest.Server
+	Bus             bus.Bus
+	CatalogsMetrics contracts.CatalogsMetrics
+	workersRunner   *webWoker.WorkersRunner
+	Ctx             context.Context
+	cancel          context.CancelFunc
+	Cleanup         func()
 }
 
 type V1Groups struct {
@@ -53,13 +57,19 @@ func NewE2ETestFixture() *E2ETestFixture {
 		return nil
 	}
 
-	err = mappings.ConfigeProductsMappings()
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(cfg, infrastructures.Metrics())
 	if err != nil {
 		cancel()
 		return nil
 	}
 
 	mq, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, cfg.RabbitMQ, infrastructures)
+	if err != nil {
+		cancel()
+		return nil
+	}
+
+	err = mappings.ConfigeProductsMappings()
 	if err != nil {
 		cancel()
 		return nil
@@ -84,6 +94,8 @@ func NewE2ETestFixture() *E2ETestFixture {
 		InfrastructureConfigurations: infrastructures,
 		Echo:                         echo,
 		V1:                           v1Groups,
+		Bus:                          mq,
+		CatalogsMetrics:              catalogsMetrics,
 		GrpcServer:                   grpcServer,
 		HttpServer:                   httpServer,
 		workersRunner:                workersRunner,

@@ -7,7 +7,6 @@ import (
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcCtxTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	grpcPrometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	grpcError "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc/interceptors/grpc_error"
 	otelMetrics "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc/interceptors/otel_metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -97,8 +96,6 @@ func (s *grpcServer) RunGrpcServer(ctx context.Context, configGrpc ...func(grpcS
 			grpcFunc(s.server)
 		}
 	}
-
-	grpcPrometheus.Register(s.server)
 
 	if s.config.Development {
 		reflection.Register(s.server)

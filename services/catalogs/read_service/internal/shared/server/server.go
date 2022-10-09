@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
@@ -43,33 +42,25 @@ func (s *Server) Run() error {
 		return err
 	}
 
-	deliveryType := s.cfg.DeliveryType
-
 	var serverError error
 
-	switch deliveryType {
-	case "http":
-		go func() {
-			if err := catalogConfigurations.CatalogsEchoServer().RunHttpServer(ctx, nil); err != nil {
-				s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
-				serverError = err
-				cancel()
-			}
-		}()
-		s.log.Infof("%s is listening on Http PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.Http.Port)
+	go func() {
+		if err := catalogConfigurations.CatalogsEchoServer().RunHttpServer(ctx, nil); err != nil {
+			s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
+			serverError = err
+			cancel()
+		}
+	}()
+	s.log.Infof("%s is listening on Http PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.Http.Port)
 
-	case "grpc":
-		go func() {
-			if err := catalogConfigurations.CatalogsGrpcServer().RunGrpcServer(ctx, nil); err != nil {
-				s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
-				serverError = err
-				cancel()
-			}
-		}()
-		s.log.Infof("%s is listening on Grpc PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.GRPC.Port)
-	default:
-		panic(fmt.Sprintf("server type %s is not supported", deliveryType))
-	}
+	go func() {
+		if err := catalogConfigurations.CatalogsGrpcServer().RunGrpcServer(ctx, nil); err != nil {
+			s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
+			serverError = err
+			cancel()
+		}
+	}()
+	s.log.Infof("%s is listening on Grpc PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.GRPC.Port)
 
 	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
 		workers.NewRabbitMQWorker(s.log, catalogConfigurations.CatalogsBus()),

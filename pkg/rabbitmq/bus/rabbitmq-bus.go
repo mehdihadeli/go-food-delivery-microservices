@@ -32,7 +32,9 @@ type rabbitMQBus struct {
 
 func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, serializer serializer.EventSerializer, logger logger.Logger) (bus.Bus, error) {
 	builder := configurations.NewRabbitMQConfigurationBuilder()
-	rabbitmqBuilderFunc(builder)
+	if rabbitmqBuilderFunc != nil {
+		rabbitmqBuilderFunc(builder)
+	}
 
 	rabbitmqConfiguration := builder.Build()
 

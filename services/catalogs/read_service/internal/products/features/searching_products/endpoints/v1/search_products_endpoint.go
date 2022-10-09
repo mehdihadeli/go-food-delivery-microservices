@@ -37,8 +37,8 @@ func (ep *searchProductsEndpoint) MapRoute() {
 // @Router /api/v1/products/search [get]
 func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		//ep.CatalogsMetrics.SearchProductHttpRequests.Inc()
 		ctx := c.Request().Context()
+		ep.CatalogsMetrics.SearchProductHttpRequests().Add(ctx, 1)
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 

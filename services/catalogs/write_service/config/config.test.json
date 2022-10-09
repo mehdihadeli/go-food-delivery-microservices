@@ -1,11 +1,9 @@
 {
   "serviceName": "catalogs_write_service",
-  "deliveryType": "http",
   "context": {
     "timeout": 20
   },
   "grpc": {
-    "name": "catalogs_write_service",
     "port": ":6003",
     "host": "localhost",
     "development": true

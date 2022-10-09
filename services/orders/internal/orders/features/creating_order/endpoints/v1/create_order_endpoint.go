@@ -37,20 +37,20 @@ func (ep *createOrderEndpoint) MapRoute() {
 // @Router /api/v1/orders [post]
 func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		ep.Metrics.CreateOrderHttpRequests.Inc()
 		ctx := c.Request().Context()
+		ep.OrdersMetrics.CreateOrderHttpRequests().Add(ctx, 1)
 
 		request := &dtos.CreateOrderRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[createOrderEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.Bind] err: %v", badRequestErr))
+			ep.Log().Errorf(fmt.Sprintf("[createOrderEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
 		command := creatingOrderv1.NewCreateOrder(request.ShopItems, request.AccountEmail, request.DeliveryAddress, time.Time(request.DeliveryTime))
-		if err := ep.Validator.StructCtx(ctx, command); err != nil {
+		if err := ep.Validator().StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[createOrderEndpoint_handler.StructCtx] command validation failed")
-			ep.Log.Errorf(fmt.Sprintf("[createOrderEndpoint_handler.StructCtx] err: %v", validationErr))
+			ep.Log().Errorf(fmt.Sprintf("[createOrderEndpoint_handler.StructCtx] err: %v", validationErr))
 			return validationErr
 		}
 
@@ -58,7 +58,7 @@ func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[createOrderEndpoint_handler.Send] error in sending CreateOrder")
-			ep.Log.Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: %v", command.OrderId, err), logger.Fields{"Id": command.OrderId})
+			ep.Log().Errorw(fmt.Sprintf("[createOrderEndpoint_handler.Send] id: {%s}, err: %v", command.OrderId, err), logger.Fields{"Id": command.OrderId})
 			return err
 		}
 

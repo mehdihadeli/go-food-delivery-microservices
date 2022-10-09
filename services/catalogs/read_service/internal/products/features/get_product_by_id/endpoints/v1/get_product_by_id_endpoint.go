@@ -37,8 +37,8 @@ func (ep *getProductByIdEndpoint) MapRoute() {
 // @Router /api/v1/products/{id} [get]
 func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		//ep.CatalogsMetrics.GetProductByIdHttpRequests.Inc()
 		ctx := c.Request().Context()
+		ep.CatalogsMetrics.GetProductByIdHttpRequests().Add(ctx, 1)
 
 		request := &dtos.GetProductByIdRequestDto{}
 		if err := c.Bind(request); err != nil {

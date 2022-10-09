@@ -55,7 +55,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 		return nil
 	}
 
-	err = mappings.ConfigureMappings()
+	err = mappings.ConfigureOrdersMappings()
 	if err != nil {
 		cancel()
 		return nil
