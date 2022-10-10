@@ -15,7 +15,7 @@ func Test_Orders_E2E(t *testing.T) {
 	test.SkipCI(t)
 	fixture := e2e.NewE2ETestFixture()
 
-	e := NewGetOrdersEndpoint(delivery.NewOrderEndpointBase(fixture.InfrastructureConfiguration, fixture.V1.OrdersGroup))
+	e := NewGetOrdersEndpoint(delivery.NewOrderEndpointBase(fixture.InfrastructureConfigurations, fixture.V1.OrdersGroup, fixture.Bus, fixture.OrdersMetrics))
 	e.MapRoute()
 
 	fixture.Run()

@@ -25,7 +25,7 @@ func Test_Create_Order_E2E(t *testing.T) {
 	test.SkipCI(t)
 
 	fixture := e2e.NewE2ETestFixture()
-	e := NewCreteOrderEndpoint(delivery.NewOrderEndpointBase(fixture.InfrastructureConfiguration, fixture.V1.OrdersGroup))
+	e := NewCreteOrderEndpoint(delivery.NewOrderEndpointBase(fixture.InfrastructureConfigurations, fixture.V1.OrdersGroup, fixture.Bus, fixture.OrdersMetrics))
 	e.MapRoute()
 
 	fixture.Run()
@@ -53,6 +53,4 @@ func Test_Create_Order_E2E(t *testing.T) {
 		WithJSON(request).
 		Expect().
 		Status(http.StatusCreated)
-
-	time.Sleep(time.Second * 2)
 }

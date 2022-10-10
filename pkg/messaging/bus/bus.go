@@ -8,4 +8,5 @@ import (
 type Bus interface {
 	producer.Producer
 	consumer.ConsumersControl
+	consumer.ConsumerConnector
 }

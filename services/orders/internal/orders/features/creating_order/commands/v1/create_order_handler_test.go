@@ -6,8 +6,10 @@ import (
 	"github.com/mehdihadeli/go-mediatr"
 	customTypes "github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/custom_types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
 	ordersDto "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/dtos"
+	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/events/integration/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/test_fixtures/integration"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -19,12 +21,16 @@ func Test_Create_Order_Command_Handler(t *testing.T) {
 	fixture := integration.NewIntegrationTestFixture()
 	defer fixture.Cleanup()
 
-	err := mediatr.RegisterRequestHandler[*CreateOrder, *dtos.CreateOrderResponseDto](NewCreateOrderHandler(fixture.Log, fixture.Cfg, fixture.OrderAggregateStore))
+	err := mediatr.RegisterRequestHandler[*CreateOrder, *dtos.CreateOrderResponseDto](NewCreateOrderHandler(fixture.Log(), fixture.Cfg(), fixture.OrderAggregateStore))
 	if err != nil {
 		return
 	}
 
-	//fakeConsumer := consumer.NewRabbitMQFakeTestConsumer()
+	fakeConsumer := consumer.NewRabbitMQFakeTestConsumer()
+	err = fixture.Bus.ConnectConsumer(v1.OrderCreatedV1{}, fakeConsumer)
+	if err != nil {
+		return
+	}
 
 	if err != nil {
 		return
@@ -53,7 +59,8 @@ func Test_Create_Order_Command_Handler(t *testing.T) {
 	assert.Equal(t, command.OrderId, result.OrderId)
 	time.Sleep(time.Second * 2)
 
-	//assert.NoError(t, fixture.WaitUntilConditionMet(func() bool {
-	//	return fakeConsumer.IsHandled()
-	//}))
+	// ensuring message published to the rabbitmq broker
+	assert.NoError(t, test.WaitUntilConditionMet(func() bool {
+		return fakeConsumer.IsHandled()
+	}))
 }

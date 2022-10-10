@@ -226,6 +226,10 @@ func (r *rabbitMQConsumer) Stop(ctx context.Context) error {
 	}
 }
 
+func (r *rabbitMQConsumer) ConnectHandler(handler consumer.ConsumerHandler) {
+	r.handlers = append(r.handlers, handler)
+}
+
 func (r *rabbitMQConsumer) reConsumeOnDropConnection(ctx context.Context) {
 	go func() {
 		defer errorUtils.HandlePanic()
