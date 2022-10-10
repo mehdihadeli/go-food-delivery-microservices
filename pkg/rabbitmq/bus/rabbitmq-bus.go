@@ -3,6 +3,7 @@ package bus
 import (
 	"context"
 	"emperror.dev/errors"
+	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/metadata"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -10,6 +11,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	consumer2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer"
@@ -19,18 +21,26 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/rabbitmqErrors"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/solsw/go2linq/v2"
+	"reflect"
 	"sync"
 )
 
+type RabbitMQBus interface {
+	bus.Bus
+	consumerConfigurations.RabbitMQConsumerConnector
+}
+
 type rabbitMQBus struct {
-	consumers             []consumer.Consumer
+	consumers             map[reflect.Type]consumer.Consumer
 	producer              producer.Producer
 	rabbitmqConfiguration *configurations.RabbitMQConfiguration
 	rabbitmqConfig        *config.RabbitMQConfig
 	logger                logger.Logger
+	serializer            serializer.EventSerializer
+	rabbitmqConnection    types2.IConnection
 }
 
-func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, serializer serializer.EventSerializer, logger logger.Logger) (bus.Bus, error) {
+func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, serializer serializer.EventSerializer, logger logger.Logger) (RabbitMQBus, error) {
 	builder := configurations.NewRabbitMQConfigurationBuilder()
 	if rabbitmqBuilderFunc != nil {
 		rabbitmqBuilderFunc(builder)
@@ -40,7 +50,7 @@ func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBui
 
 	conn, err := types2.NewRabbitMQConnection(ctx, cfg)
 	if err != nil {
-		return nil, err
+		return *new(RabbitMQBus), err
 	}
 
 	producersConfiguration := go2linq.ToMapMust(go2linq.NewEnSlice(rabbitmqConfiguration.ProducersConfigurations...), func(source *producerConfigurations.RabbitMQProducerConfiguration) string {
@@ -53,27 +63,77 @@ func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBui
 
 	p, err := producer2.NewRabbitMQProducer(conn, producersConfiguration, logger, serializer)
 	if err != nil {
-		return nil, err
+		return *new(RabbitMQBus), err
 	}
 
-	var consumers []consumer.Consumer
+	var consumers = map[reflect.Type]consumer.Consumer{}
 	for _, consumerConfiguration := range consumersConfiguration {
 		c, err := consumer2.NewRabbitMQConsumer(conn, consumerConfiguration, serializer, logger)
 		if err != nil {
-			return nil, err
+			return *new(RabbitMQBus), err
 		}
-		consumers = append(consumers, c)
+
+		consumers[consumerConfiguration.ConsumerMessageType] = c
 	}
 
 	rabbitBus := &rabbitMQBus{
 		logger:                logger,
+		serializer:            serializer,
 		rabbitmqConfiguration: rabbitmqConfiguration,
 		rabbitmqConfig:        cfg,
 		producer:              p,
 		consumers:             consumers,
+		rabbitmqConnection:    conn,
 	}
 
 	return rabbitBus, err
+}
+
+func (r *rabbitMQBus) ConnectConsumer(messageType types.IMessage, handler consumer.ConsumerHandler) error {
+	c := r.consumers[utils.GetMessageBaseReflectType(messageType)]
+	if c == nil {
+		consumerBuilder := consumerConfigurations.NewRabbitMQConsumerConfigurationBuilder(messageType)
+		consumerBuilder.WithHandlers(func(builder consumer.ConsumerHandlerConfigurationBuilder) {
+			builder.AddHandler(handler)
+		})
+		consumerConfig := consumerBuilder.Build()
+		mqConsumer, err := consumer2.NewRabbitMQConsumer(r.rabbitmqConnection, consumerConfig, r.serializer, r.logger)
+		if err != nil {
+			return err
+		}
+		r.consumers[utils.GetMessageBaseReflectType(messageType)] = mqConsumer
+	} else {
+		return errors.New(fmt.Sprintf("consumer %s already registerd", utils.GetMessageBaseReflectType(messageType).String()))
+	}
+
+	return nil
+}
+
+func (r *rabbitMQBus) ConnectRabbitMQConsumer(messageType types.IMessage, consumerBuilderFunc consumerConfigurations.RabbitMQConsumerConfigurationBuilderFuc) error {
+	c := r.consumers[utils.GetMessageBaseReflectType(messageType)]
+	if c == nil {
+		builder := consumerConfigurations.NewRabbitMQConsumerConfigurationBuilder(messageType)
+		if consumerBuilderFunc != nil {
+			consumerBuilderFunc(builder)
+		}
+		consumerConfig := builder.Build()
+		mqConsumer, err := consumer2.NewRabbitMQConsumer(r.rabbitmqConnection, consumerConfig, r.serializer, r.logger)
+		if err != nil {
+			return err
+		}
+		r.consumers[utils.GetMessageBaseReflectType(messageType)] = mqConsumer
+	} else {
+		return errors.New(fmt.Sprintf("consumer %s already registerd", utils.GetMessageBaseReflectType(messageType).String()))
+	}
+
+	return nil
+}
+
+func (r *rabbitMQBus) ConnectConsumerHandler(messageType types.IMessage, handler consumer.ConsumerHandler) {
+	c := r.consumers[utils.GetMessageBaseReflectType(messageType)]
+	if c != nil {
+		c.ConnectHandler(handler)
+	}
 }
 
 func (r *rabbitMQBus) Start(ctx context.Context) error {

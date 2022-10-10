@@ -23,6 +23,9 @@ func Test_AddRabbitMQ(t *testing.T) {
 	ctx := context.Background()
 
 	fakeConsumer := consumer.NewRabbitMQFakeTestConsumer()
+	fakeConsumer2 := consumer.NewRabbitMQFakeTestConsumer()
+	fakeConsumer3 := consumer.NewRabbitMQFakeTestConsumer()
+
 	b, err := NewRabbitMQBus(ctx, &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{
 			UserName: "guest",
@@ -38,12 +41,26 @@ func Test_AddRabbitMQ(t *testing.T) {
 					builder.WithHandlers(func(consumerHandlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
 						consumerHandlerBuilder.AddHandler(NewTestMessageHandler())
 						consumerHandlerBuilder.AddHandler(NewTestMessageHandler2())
-						consumerHandlerBuilder.AddHandler(fakeConsumer)
 					}).WIthPipelines(func(consumerPipelineBuilder pipeline.ConsumerPipelineConfigurationBuilder) {
 						consumerPipelineBuilder.AddPipeline(NewPipeline1())
 					})
 				})
 		}, json.NewJsonEventSerializer(), defaultLogger.Logger)
+	if err != nil {
+		return
+	}
+
+	err = b.ConnectRabbitMQConsumer(ProducerConsumerMessage{}, func(consumerBuilder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
+		consumerBuilder.WithHandlers(func(handlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
+			handlerBuilder.AddHandler(fakeConsumer)
+		})
+	})
+	if err != nil {
+		return
+	}
+	b.ConnectConsumerHandler(ProducerConsumerMessage{}, fakeConsumer2)
+
+	err = b.ConnectConsumer(ProducerConsumerMessage{}, fakeConsumer3)
 	if err != nil {
 		return
 	}
@@ -59,7 +76,7 @@ func Test_AddRabbitMQ(t *testing.T) {
 	}
 
 	err = test.WaitUntilConditionMet(func() bool {
-		return fakeConsumer.IsHandled()
+		return fakeConsumer.IsHandled() && fakeConsumer2.IsHandled() && fakeConsumer3.IsHandled()
 	})
 	assert.NoError(t, err)
 

@@ -15,7 +15,7 @@ func Test_Get_Orders_Query_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*GetOrders, *dtos.GetOrdersResponseDto](NewGetOrdersHandler(fixture.Log, fixture.Cfg, fixture.MongoOrderReadRepository))
+	err := mediatr.RegisterRequestHandler[*GetOrders, *dtos.GetOrdersResponseDto](NewGetOrdersHandler(fixture.Log(), fixture.Cfg(), fixture.MongoOrderReadRepository))
 	if err != nil {
 		return
 	}
