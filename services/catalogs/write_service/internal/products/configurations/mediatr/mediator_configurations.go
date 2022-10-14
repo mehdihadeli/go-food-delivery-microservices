@@ -17,34 +17,34 @@ import (
 	contracts2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 )
 
-func ConfigProductsMediator(pgRepo contracts.ProductRepository, infra contracts2.InfrastructureConfigurations, producer producer.Producer) error {
+func ConfigProductsMediator(pgRepo contracts.ProductRepository, infra *contracts2.InfrastructureConfigurations, producer producer.Producer) error {
 	//https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
-	err := mediatr.RegisterRequestHandler[*creatingProductV1.CreateProduct, *creatingProductsDtos.CreateProductResponseDto](creatingProductV1.NewCreateProductHandler(infra.Log(), infra.Cfg(), pgRepo, producer))
+	err := mediatr.RegisterRequestHandler[*creatingProductV1.CreateProduct, *creatingProductsDtos.CreateProductResponseDto](creatingProductV1.NewCreateProductHandler(infra.Log, infra.Cfg, pgRepo, producer))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*gettingProductsV1.GetProducts, *gettingProductsDtos.GetProductsResponseDto](gettingProductsV1.NewGetProductsHandler(infra.Log(), infra.Cfg(), pgRepo))
+	err = mediatr.RegisterRequestHandler[*gettingProductsV1.GetProducts, *gettingProductsDtos.GetProductsResponseDto](gettingProductsV1.NewGetProductsHandler(infra.Log, infra.Cfg, pgRepo))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*searchingProductsV1.SearchProducts, *searchingProductsDtos.SearchProductsResponseDto](searchingProductsV1.NewSearchProductsHandler(infra.Log(), infra.Cfg(), pgRepo))
+	err = mediatr.RegisterRequestHandler[*searchingProductsV1.SearchProducts, *searchingProductsDtos.SearchProductsResponseDto](searchingProductsV1.NewSearchProductsHandler(infra.Log, infra.Cfg, pgRepo))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*updatingProductV1.UpdateProduct, *mediatr.Unit](updatingProductV1.NewUpdateProductHandler(infra.Log(), infra.Cfg(), pgRepo, producer))
+	err = mediatr.RegisterRequestHandler[*updatingProductV1.UpdateProduct, *mediatr.Unit](updatingProductV1.NewUpdateProductHandler(infra.Log, infra.Cfg, pgRepo, producer))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*deletingProductV1.DeleteProduct, *mediatr.Unit](deletingProductV1.NewDeleteProductHandler(infra.Log(), infra.Cfg(), pgRepo, producer))
+	err = mediatr.RegisterRequestHandler[*deletingProductV1.DeleteProduct, *mediatr.Unit](deletingProductV1.NewDeleteProductHandler(infra.Log, infra.Cfg, pgRepo, producer))
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*geettingProductByIdV1.GetProductById, *gettingProductByIdDtos.GetProductByIdResponseDto](geettingProductByIdV1.NewGetProductByIdHandler(infra.Log(), infra.Cfg(), pgRepo))
+	err = mediatr.RegisterRequestHandler[*geettingProductByIdV1.GetProductById, *gettingProductByIdDtos.GetProductByIdResponseDto](geettingProductByIdV1.NewGetProductByIdHandler(infra.Log, infra.Cfg, pgRepo))
 	if err != nil {
 		return err
 	}

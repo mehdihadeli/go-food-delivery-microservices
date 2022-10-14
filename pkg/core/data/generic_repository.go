@@ -1,17 +1,26 @@
 package data
 
-import "context"
+import (
+	"context"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
+	uuid "github.com/satori/go.uuid"
+)
 
-type GenericRepository[D DataModel[E], E any] interface {
-	Add(ctx context.Context, entity E) error
-	AddAll(ctx context.Context, entities []E) error
-	GetById(ctx context.Context, id int) (E, error)
-	GetAll(ctx context.Context) ([]E, error)
-	Where(ctx context.Context, params E) ([]E, error)
-	Update(ctx context.Context, entity E) error
-	UpdateAll(ctx context.Context, entities []E) error
-	Delete(ctx context.Context, id int) error
-	SkipTake(skip int, take int, ctx context.Context) ([]E, error)
+type GenericRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}] interface {
+	Add(ctx context.Context, entity TEntity) error
+	AddAll(ctx context.Context, entities []TEntity) error
+	GetById(ctx context.Context, id uuid.UUID) (TEntity, error)
+	GetAll(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[TEntity], error)
+	Search(ctx context.Context, searchTerm string, listQuery *utils.ListQuery) (*utils.ListResult[TEntity], error)
+	Where(ctx context.Context, filters map[string]interface{}) ([]TEntity, error)
+	Update(ctx context.Context, entity TEntity) error
+	UpdateAll(ctx context.Context, entities []TEntity) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	SkipTake(skip int, take int, ctx context.Context) ([]TEntity, error)
 	Count(ctx context.Context) int64
-	Find(ctx context.Context, specification Specification) ([]E, error)
+	Find(ctx context.Context, specification Specification) ([]TEntity, error)
+}
+
+type GenericRepository[TEntity interface{}] interface {
+	GenericRepositoryWithDataModel[TEntity, TEntity]
 }

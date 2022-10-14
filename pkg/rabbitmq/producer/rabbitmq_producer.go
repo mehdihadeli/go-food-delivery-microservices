@@ -3,6 +3,7 @@ package producer
 import (
 	"context"
 	"emperror.dev/errors"
+	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/metadata"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -47,6 +48,10 @@ func (r *rabbitMQProducer) getProducerConfigurationByMessage(message types2.IMes
 }
 
 func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, message types2.IMessage, meta metadata.Metadata, topicOrExchangeName string) error {
+	if message.IsMessage() == false {
+		return errors.New(fmt.Sprintf("message %s is not a message type or message property is nil", utils.GetMessageBaseReflectType(message)))
+	}
+
 	producerConfiguration := r.getProducerConfigurationByMessage(message)
 
 	if producerConfiguration == nil {

@@ -50,7 +50,7 @@ func Test_Consume_Message(t *testing.T) {
 		return
 	}
 
-	fakeHandler := consumer.NewRabbitMQFakeTestConsumer()
+	fakeHandler := consumer.NewRabbitMQFakeTestConsumerHandler()
 	builder := configurations.NewRabbitMQConsumerConfigurationBuilder(ProducerConsumerMessage{})
 	builder.WithHandlers(func(consumerHandlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
 		consumerHandlerBuilder.AddHandler(NewTestMessageHandler())

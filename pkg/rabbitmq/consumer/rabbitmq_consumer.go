@@ -272,9 +272,9 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 	}
 	ctx, beforeConsumeSpan := consumeTracing.StartConsumerSpan(ctx, &meta, string(delivery.Body), consumerTraceOption)
 
-	consumeContext := r.createConsumeContext(delivery)
-	if consumeContext == nil {
-		r.logger.Error(consumeTracing.FinishConsumerSpan(beforeConsumeSpan, errors.New("createConsumeContext is nil")).Error())
+	consumeContext, err := r.createConsumeContext(delivery)
+	if err != nil {
+		r.logger.Error(consumeTracing.FinishConsumerSpan(beforeConsumeSpan, err))
 		return
 	}
 
@@ -366,11 +366,14 @@ func (r *rabbitMQConsumer) runHandlersWithRetry(ctx context.Context, handler con
 	return err
 }
 
-func (r *rabbitMQConsumer) createConsumeContext(delivery amqp091.Delivery) messagingTypes.MessageConsumeContextBase {
+func (r *rabbitMQConsumer) createConsumeContext(delivery amqp091.Delivery) (messagingTypes.MessageConsumeContextBase, error) {
 	message := r.deserializeData(delivery.ContentType, delivery.Type, delivery.Body)
 	if reflect.ValueOf(message).IsZero() || reflect.ValueOf(message).IsNil() {
-		r.logger.Error("error in deserialization of payload")
-		return *new(messagingTypes.MessageConsumeContextBase)
+		return *new(messagingTypes.MessageConsumeContextBase), errors.New("error in deserialization of payload")
+	}
+	m, ok := message.(messagingTypes.IMessage)
+	if !ok || m.IsMessage() == false {
+		return nil, errors.New(fmt.Sprintf("message %s is not a message type or message property is nil", utils.GetMessageBaseReflectType(message)))
 	}
 
 	var meta metadata.Metadata
@@ -379,7 +382,7 @@ func (r *rabbitMQConsumer) createConsumeContext(delivery amqp091.Delivery) messa
 	}
 
 	consumeContext := messagingTypes.NewMessageConsumeContext(message.(messagingTypes.IMessage), meta, delivery.ContentType, delivery.Type, delivery.Timestamp, delivery.DeliveryTag, delivery.MessageId, delivery.CorrelationId)
-	return consumeContext
+	return consumeContext, nil
 }
 
 func (r *rabbitMQConsumer) deserializeData(contentType string, eventType string, body []byte) interface{} {

@@ -2,6 +2,7 @@ package contracts
 
 import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
@@ -12,14 +13,15 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-type InfrastructureConfigurations interface {
-	Log() logger.Logger
-	Cfg() *config.Config
-	Validator() *validator.Validate
-	Pgx() *postgres.Pgx
-	Gorm() *gormPostgres.Gorm
-	Esdb() *esdb.Client
-	Metrics() metric.Meter
-	GrpcClient() grpc.GrpcClient
-	EventSerializer() serializer.EventSerializer
+type InfrastructureConfigurations struct {
+	Log             logger.Logger
+	Cfg             *config.Config
+	Validator       *validator.Validate
+	Pgx             *postgres.Pgx
+	Gorm            *gormPostgres.Gorm
+	Metrics         metric.Meter
+	Esdb            *esdb.Client
+	ElasticClient   *elasticsearch.Client
+	GrpcClient      grpc.GrpcClient
+	EventSerializer serializer.EventSerializer
 }

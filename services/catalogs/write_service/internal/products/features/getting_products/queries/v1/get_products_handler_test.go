@@ -15,7 +15,7 @@ func Test_Get_All_Product_Query_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*GetProducts, *dtos.GetProductsResponseDto](NewGetProductsHandler(fixture.Log(), fixture.Cfg(), fixture.ProductRepository))
+	err := mediatr.RegisterRequestHandler[*GetProducts, *dtos.GetProductsResponseDto](NewGetProductsHandler(fixture.Log, fixture.Cfg, fixture.ProductRepository))
 	if err != nil {
 		return
 	}

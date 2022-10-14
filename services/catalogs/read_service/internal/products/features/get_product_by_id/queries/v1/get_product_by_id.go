@@ -7,3 +7,7 @@ import (
 type GetProductById struct {
 	Id uuid.UUID `validate:"required"`
 }
+
+func NewGetProductById(id uuid.UUID) *GetProductById {
+	return &GetProductById{Id: id}
+}

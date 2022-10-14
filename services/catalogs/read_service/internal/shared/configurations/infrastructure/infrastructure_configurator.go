@@ -21,8 +21,8 @@ func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config) contra
 	return &infrastructureConfigurator{log: log, cfg: cfg}
 }
 
-func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (contracts.InfrastructureConfigurations, func(), error) {
-	infrastructure := &infrastructureConfigurations{cfg: ic.cfg, log: ic.log, validator: validator.New()}
+func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*contracts.InfrastructureConfigurations, func(), error) {
+	infrastructure := &contracts.InfrastructureConfigurations{Cfg: ic.cfg, Log: ic.log, Validator: validator.New()}
 
 	cleanup := []func(){}
 
@@ -33,7 +33,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	cleanup = append(cleanup, func() {
 		_ = grpcClient.Close()
 	})
-	infrastructure.grpcClient = grpcClient
+	infrastructure.GrpcClient = grpcClient
 
 	traceProvider, err := tracing.AddOtelTracing(ic.cfg.OTel)
 	if err != nil {
@@ -47,23 +47,23 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	if err != nil {
 		return nil, nil, err
 	}
-	infrastructure.metrics = meter
+	infrastructure.Metrics = meter
 
 	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 	cleanup = append(cleanup, mongoCleanup)
-	infrastructure.mongoClient = mongoClient
+	infrastructure.MongoClient = mongoClient
 
 	redis, err, redisCleanup := ic.configRedis(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
 	cleanup = append(cleanup, redisCleanup)
-	infrastructure.redis = redis
+	infrastructure.Redis = redis
 
-	infrastructure.eventSerializer = json.NewJsonEventSerializer()
+	infrastructure.EventSerializer = json.NewJsonEventSerializer()
 
 	return infrastructure, func() {
 		for _, c := range cleanup {

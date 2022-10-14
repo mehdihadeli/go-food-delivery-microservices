@@ -6,5 +6,5 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
-func ConfigProductsGrpc(ctx context.Context, builder *grpcServer.GrpcServiceBuilder, infra contracts.InfrastructureConfigurations) {
+func ConfigProductsGrpc(ctx context.Context, builder *grpcServer.GrpcServiceBuilder, infra *contracts.InfrastructureConfigurations) {
 }

@@ -15,50 +15,50 @@ import (
 )
 
 type catalogsServiceConfigurator struct {
-	contracts.InfrastructureConfigurations
+	*contracts.InfrastructureConfigurations
 }
 
-func NewCatalogsServiceConfigurator(infrastructureConfiguration contracts.InfrastructureConfigurations) contracts.CatalogsServiceConfigurator {
+func NewCatalogsServiceConfigurator(infrastructureConfiguration *contracts.InfrastructureConfigurations) contracts.CatalogsServiceConfigurator {
 	return &catalogsServiceConfigurator{InfrastructureConfigurations: infrastructureConfiguration}
 }
 
-func (c *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Context) (contracts.CatalogServiceConfigurations, error) {
-	catalogsServiceConfigurations := &catalogsServiceConfigurations{}
+func (c *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Context) (*contracts.CatalogsServiceConfigurations, error) {
+	catalogsServiceConfigurations := &contracts.CatalogsServiceConfigurations{}
 
-	catalogsServiceConfigurations.catalogsGrpcServer = grpc.NewGrpcServer(c.Cfg().GRPC, c.Log(), c.Cfg().ServiceName, c.Metrics())
-	catalogsServiceConfigurations.catalogsEchoServer = customEcho.NewEchoHttpServer(c.Cfg().Http, c.Log(), c.Cfg().ServiceName, c.Metrics())
+	catalogsServiceConfigurations.CatalogsGrpcServer = grpc.NewGrpcServer(c.Cfg.GRPC, c.Log, c.Cfg.ServiceName, c.Metrics)
+	catalogsServiceConfigurations.CatalogsEchoServer = customEcho.NewEchoHttpServer(c.Cfg.Http, c.Log, c.Cfg.ServiceName, c.Metrics)
 
-	catalogsServiceConfigurations.catalogsEchoServer.RouteBuilder().RegisterRoutes(func(e *echo.Echo) {
+	catalogsServiceConfigurations.CatalogsEchoServer.RouteBuilder().RegisterRoutes(func(e *echo.Echo) {
 		e.GET("", func(ec echo.Context) error {
-			return ec.String(http.StatusOK, fmt.Sprintf("%s is running...", c.Cfg().GetMicroserviceNameUpper()))
+			return ec.String(http.StatusOK, fmt.Sprintf("%s is running...", c.Cfg.GetMicroserviceNameUpper()))
 		})
 	})
 
 	// Catalogs Swagger Configs
-	c.configSwagger(catalogsServiceConfigurations.catalogsEchoServer.RouteBuilder())
+	c.configSwagger(catalogsServiceConfigurations.CatalogsEchoServer.RouteBuilder())
 
 	// Catalogs Metrics Configs
-	metrics, err := metrics.ConfigCatalogsMetrics(c.Cfg(), c.Metrics())
+	metrics, err := metrics.ConfigCatalogsMetrics(c.Cfg, c.Metrics)
 	if err != nil {
 		return nil, err
 	}
-	catalogsServiceConfigurations.catalogsMetrics = metrics
+	catalogsServiceConfigurations.CatalogsMetrics = metrics
 
 	// Catalogs RabbitMQ Configs
-	bus, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, c.Cfg().RabbitMQ, c.InfrastructureConfigurations)
+	bus, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, c.Cfg.RabbitMQ, c.InfrastructureConfigurations)
 	if err != nil {
 		return nil, err
 	}
-	catalogsServiceConfigurations.catalogsBus = bus
+	catalogsServiceConfigurations.CatalogsBus = bus
 
 	// Catalogs Product Module Configs
-	pc := configurations.NewProductsModuleConfigurator(c.InfrastructureConfigurations, metrics, bus, catalogsServiceConfigurations.catalogsEchoServer.RouteBuilder(), catalogsServiceConfigurations.catalogsGrpcServer.GrpcServiceBuilder())
+	pc := configurations.NewProductsModuleConfigurator(c.InfrastructureConfigurations, metrics, bus, catalogsServiceConfigurations.CatalogsEchoServer.RouteBuilder(), catalogsServiceConfigurations.CatalogsGrpcServer.GrpcServiceBuilder())
 	err = pc.ConfigureProductsModule(ctx)
 	if err != nil {
 		return nil, errors.WithMessage(err, "[CatalogsServiceConfigurator_ConfigureCatalogsService.ConfigureProductsModule] error in product module configurator")
 	}
 
-	err = c.migrateCatalogs(c.Gorm())
+	err = c.migrateCatalogs(c.Gorm)
 	if err != nil {
 		return nil, errors.WithMessage(err, "[CatalogsServiceConfigurator_ConfigureCatalogsService.migrateCatalogs] error in migrateCatalogs")
 	}

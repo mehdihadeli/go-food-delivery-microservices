@@ -216,10 +216,9 @@ func GetBaseReflectType(value interface{}) reflect.Type {
 	return reflect.TypeOf(value)
 }
 
-func InstanceByT[T any]() T {
+func GenericInstanceByT[T any]() T {
 	//https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
-	var msg T
-	typ := reflect.TypeOf(msg).Elem()
+	typ := GetTypeFromGeneric[T]()
 	return getInstanceFromType(typ).(T)
 }
 
@@ -262,13 +261,6 @@ func InstanceByPackageName(pkgPath string, name string) interface{} {
 	typ := TypeByPackageName(pkgPath, name)
 
 	return getInstanceFromType(typ)
-}
-
-// GenericInstanceByTypeName return an empty instance of the generic type by its name
-func GenericInstanceByTypeName[T any](typeName string) T {
-	var res = InstanceByTypeName(typeName).(T)
-
-	return res
 }
 
 func getInstanceFromType(typ reflect.Type) interface{} {

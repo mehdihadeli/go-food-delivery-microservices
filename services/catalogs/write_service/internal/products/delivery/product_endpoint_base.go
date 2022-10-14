@@ -7,12 +7,12 @@ import (
 )
 
 type ProductEndpointBase struct {
-	contracts.InfrastructureConfigurations
+	*contracts.InfrastructureConfigurations
 	ProductsGroup   *echo.Group
-	CatalogsMetrics contracts.CatalogsMetrics
+	CatalogsMetrics *contracts.CatalogsMetrics
 	Bus             bus.Bus
 }
 
-func NewProductEndpointBase(infra contracts.InfrastructureConfigurations, productsGroup *echo.Group, bus bus.Bus, catalogsMetrics contracts.CatalogsMetrics) *ProductEndpointBase {
+func NewProductEndpointBase(infra *contracts.InfrastructureConfigurations, productsGroup *echo.Group, bus bus.Bus, catalogsMetrics *contracts.CatalogsMetrics) *ProductEndpointBase {
 	return &ProductEndpointBase{ProductsGroup: productsGroup, InfrastructureConfigurations: infra, Bus: bus, CatalogsMetrics: catalogsMetrics}
 }

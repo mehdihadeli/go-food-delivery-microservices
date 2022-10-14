@@ -30,7 +30,7 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduc
 	span.SetAttributes(attribute.Object("Command", command))
 	defer span.End()
 
-	product, err := c.mongoRepository.GetProductByProductId(ctx, command.ProductId)
+	product, err := c.mongoRepository.GetProductByProductId(ctx, command.ProductId.String())
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[UpdateProductHandler_Handle.GetProductById] error in fetching product with productId %s in the mongo repository", command.ProductId)))
 	}

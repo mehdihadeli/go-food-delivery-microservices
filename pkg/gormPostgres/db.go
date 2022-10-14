@@ -2,10 +2,13 @@ package gormPostgres
 
 import (
 	"context"
+	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"go.uber.org/zap"
@@ -15,13 +18,13 @@ import (
 )
 
 type Config struct {
-	Host       string                     `mapstructure:"host"`
-	Port       string                     `mapstructure:"port"`
-	User       string                     `mapstructure:"user"`
-	DBName     string                     `mapstructure:"dbName"`
-	SSLMode    bool                       `mapstructure:"sslMode"`
-	Password   string                     `mapstructure:"password"`
-	Migrations migrations.MigrationParams `mapstructure:"migrations"`
+	Host       string               `mapstructure:"host"`
+	Port       int                  `mapstructure:"port"`
+	User       string               `mapstructure:"user"`
+	DBName     string               `mapstructure:"dbName"`
+	SSLMode    bool                 `mapstructure:"sslMode"`
+	Password   string               `mapstructure:"password"`
+	Migrations data.MigrationParams `mapstructure:"migrations"`
 }
 
 type Gorm struct {
@@ -43,7 +46,7 @@ func NewGorm(cfg *Config) (*Gorm, error) {
 		return nil, err
 	}
 
-	dataSourceName = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
+	dataSourceName = fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s",
 		cfg.Host,
 		cfg.Port,
 		cfg.User,
@@ -66,11 +69,12 @@ func (db *Gorm) Close() {
 }
 
 func createDB(cfg *Config, ctx context.Context) error {
-	datasource := fmt.Sprintf("host=%s port=%s user=%s password=%s",
-		cfg.Host,
-		cfg.Port,
+	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'
+	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/postgres?sslmode=disable",
 		cfg.User,
 		cfg.Password,
+		cfg.Host,
+		cfg.Port,
 	)
 
 	poolCfg, err := pgxpool.ParseConfig(datasource)
@@ -116,7 +120,7 @@ func (db *Gorm) Migrate() error {
 		return nil
 	}
 
-	mp := migrations.MigrationParams{
+	mp := data.MigrationParams{
 		DbName:        db.config.DBName,
 		VersionTable:  db.config.Migrations.VersionTable,
 		MigrationsDir: db.config.Migrations.MigrationsDir,
@@ -124,10 +128,41 @@ func (db *Gorm) Migrate() error {
 	}
 
 	d, _ := db.DB.DB()
-	if err := migrations.RunPostgresMigration(d, mp); err != nil {
+	if err := runPostgresMigration(d, mp); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func runPostgresMigration(db *sql.DB, p data.MigrationParams) error {
+	d, err := postgres.WithInstance(db, &postgres.Config{
+		MigrationsTable: p.VersionTable,
+		DatabaseName:    p.DbName,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to initialize migrator: %w", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance("file://"+p.MigrationsDir, p.DbName, d)
+	if err != nil {
+		return fmt.Errorf("failed to initialize migrator: %w", err)
+	}
+
+	if p.TargetVersion == 0 {
+		err = m.Up()
+	} else {
+		err = m.Migrate(p.TargetVersion)
+	}
+
+	if err == migrate.ErrNoChange {
+		return nil
+	}
+
+	zap.L().Info("migration finished")
+	if err != nil {
+		return fmt.Errorf("failed to migrate database: %w", err)
+	}
 	return nil
 }
 

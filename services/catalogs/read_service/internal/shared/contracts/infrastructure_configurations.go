@@ -15,17 +15,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type InfrastructureConfigurations interface {
-	Log() logger.Logger
-	Cfg() *config.Config
-	Validator() *validator.Validate
-	PgConn() *pgxpool.Pool
-	Gorm() *gorm.DB
-	Esdb() *esdb.Client
-	MongoClient() *mongo.Client
-	Metrics() metric.Meter
-	GrpcClient() grpc.GrpcClient
-	ElasticClient() *elasticsearch.Client
-	Redis() redis.UniversalClient
-	EventSerializer() serializer.EventSerializer
+type InfrastructureConfigurations struct {
+	Log             logger.Logger
+	Cfg             *config.Config
+	Validator       *validator.Validate
+	PgConn          *pgxpool.Pool
+	Gorm            *gorm.DB
+	Metrics         metric.Meter
+	Esdb            *esdb.Client
+	MongoClient     *mongo.Client
+	GrpcClient      grpc.GrpcClient
+	ElasticClient   *elasticsearch.Client
+	Redis           redis.UniversalClient
+	EventSerializer serializer.EventSerializer
 }
