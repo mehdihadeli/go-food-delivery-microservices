@@ -5,5 +5,5 @@ import (
 )
 
 type InfrastructureConfigurator interface {
-	ConfigInfrastructures(ctx context.Context) (InfrastructureConfigurations, func(), error)
+	ConfigInfrastructures(ctx context.Context) (*InfrastructureConfigurations, func(), error)
 }

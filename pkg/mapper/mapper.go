@@ -5,7 +5,6 @@ package mapper
 
 import (
 	"emperror.dev/errors"
-	"flag"
 	"fmt"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/iancoleman/strcase"
@@ -192,9 +191,6 @@ func Map[TDes any, TSrc any](src TSrc) (TDes, error) {
 }
 
 func configProfile(srcType reflect.Type, destType reflect.Type) {
-	// parse logger flags
-	flag.Parse()
-
 	// check for provided types kind.
 	// if not struct - skip.
 	if srcType.Kind() != reflect.Struct {

@@ -89,19 +89,10 @@ func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBui
 	return rabbitBus, err
 }
 
-func (r *rabbitMQBus) ConnectConsumer(messageType types.IMessage, handler consumer.ConsumerHandler) error {
+func (r *rabbitMQBus) ConnectConsumer(messageType types.IMessage, consumer consumer.Consumer) error {
 	c := r.consumers[utils.GetMessageBaseReflectType(messageType)]
 	if c == nil {
-		consumerBuilder := consumerConfigurations.NewRabbitMQConsumerConfigurationBuilder(messageType)
-		consumerBuilder.WithHandlers(func(builder consumer.ConsumerHandlerConfigurationBuilder) {
-			builder.AddHandler(handler)
-		})
-		consumerConfig := consumerBuilder.Build()
-		mqConsumer, err := consumer2.NewRabbitMQConsumer(r.rabbitmqConnection, consumerConfig, r.serializer, r.logger)
-		if err != nil {
-			return err
-		}
-		r.consumers[utils.GetMessageBaseReflectType(messageType)] = mqConsumer
+		r.consumers[utils.GetMessageBaseReflectType(messageType)] = consumer
 	} else {
 		return errors.New(fmt.Sprintf("consumer %s already registerd", utils.GetMessageBaseReflectType(messageType).String()))
 	}
@@ -129,11 +120,23 @@ func (r *rabbitMQBus) ConnectRabbitMQConsumer(messageType types.IMessage, consum
 	return nil
 }
 
-func (r *rabbitMQBus) ConnectConsumerHandler(messageType types.IMessage, handler consumer.ConsumerHandler) {
+func (r *rabbitMQBus) ConnectConsumerHandler(messageType types.IMessage, consumerHandler consumer.ConsumerHandler) error {
 	c := r.consumers[utils.GetMessageBaseReflectType(messageType)]
 	if c != nil {
-		c.ConnectHandler(handler)
+		c.ConnectHandler(consumerHandler)
+	} else {
+		consumerBuilder := consumerConfigurations.NewRabbitMQConsumerConfigurationBuilder(messageType)
+		consumerBuilder.WithHandlers(func(builder consumer.ConsumerHandlerConfigurationBuilder) {
+			builder.AddHandler(consumerHandler)
+		})
+		consumerConfig := consumerBuilder.Build()
+		mqConsumer, err := consumer2.NewRabbitMQConsumer(r.rabbitmqConnection, consumerConfig, r.serializer, r.logger)
+		if err != nil {
+			return err
+		}
+		r.consumers[utils.GetMessageBaseReflectType(messageType)] = mqConsumer
 	}
+	return nil
 }
 
 func (r *rabbitMQBus) Start(ctx context.Context) error {

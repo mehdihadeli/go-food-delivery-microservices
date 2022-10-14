@@ -2,24 +2,22 @@ package consumer
 
 import (
 	"context"
-	consumer2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 )
 
-type RabbitMQFakeTestConsumer struct {
+type RabbitMQFakeTestConsumerHandler struct {
 	isHandled bool
-	consumer2.Consumer
 }
 
-func NewRabbitMQFakeTestConsumer() *RabbitMQFakeTestConsumer {
-	return &RabbitMQFakeTestConsumer{}
+func NewRabbitMQFakeTestConsumerHandler() *RabbitMQFakeTestConsumerHandler {
+	return &RabbitMQFakeTestConsumerHandler{}
 }
 
-func (f *RabbitMQFakeTestConsumer) Handle(ctx context.Context, consumeContext types.MessageConsumeContext) error {
+func (f *RabbitMQFakeTestConsumerHandler) Handle(ctx context.Context, consumeContext types.MessageConsumeContext) error {
 	f.isHandled = true
 	return nil
 }
 
-func (f *RabbitMQFakeTestConsumer) IsHandled() bool {
+func (f *RabbitMQFakeTestConsumerHandler) IsHandled() bool {
 	return f.isHandled
 }

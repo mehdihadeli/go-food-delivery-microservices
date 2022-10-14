@@ -22,9 +22,9 @@ import (
 func Test_AddRabbitMQ(t *testing.T) {
 	ctx := context.Background()
 
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumer()
-	fakeConsumer2 := consumer.NewRabbitMQFakeTestConsumer()
-	fakeConsumer3 := consumer.NewRabbitMQFakeTestConsumer()
+	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler()
+	fakeConsumer2 := consumer.NewRabbitMQFakeTestConsumerHandler()
+	fakeConsumer3 := consumer.NewRabbitMQFakeTestConsumerHandler()
 
 	b, err := NewRabbitMQBus(ctx, &config.RabbitMQConfig{
 		RabbitMqHostOptions: &config.RabbitMqHostOptions{

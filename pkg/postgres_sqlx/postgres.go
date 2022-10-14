@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/jackc/pgx/v4/stdlib" // load pgx driver for PostgreSQL
 	"github.com/jmoiron/sqlx"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/migrations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 	"go.uber.org/zap"
 	"os"
 	"strconv"
@@ -17,13 +19,13 @@ import (
 )
 
 type Config struct {
-	Host       string                     `mapstructure:"host"`
-	Port       string                     `mapstructure:"port"`
-	User       string                     `mapstructure:"user"`
-	DBName     string                     `mapstructure:"dbName"`
-	SSLMode    bool                       `mapstructure:"sslMode"`
-	Password   string                     `mapstructure:"password"`
-	Migrations migrations.MigrationParams `mapstructure:"migrations"`
+	Host       string               `mapstructure:"host"`
+	Port       string               `mapstructure:"port"`
+	User       string               `mapstructure:"user"`
+	DBName     string               `mapstructure:"dbName"`
+	SSLMode    bool                 `mapstructure:"sslMode"`
+	Password   string               `mapstructure:"password"`
+	Migrations data.MigrationParams `mapstructure:"migrations"`
 }
 
 type Sqlx struct {
@@ -141,17 +143,48 @@ func (db *Sqlx) Migrate() error {
 		return nil
 	}
 
-	mp := migrations.MigrationParams{
+	mp := data.MigrationParams{
 		DbName:        db.config.DBName,
 		VersionTable:  db.config.Migrations.VersionTable,
 		MigrationsDir: db.config.Migrations.MigrationsDir,
 		TargetVersion: db.config.Migrations.TargetVersion,
 	}
 
-	if err := migrations.RunPostgresMigration(db.DB, mp); err != nil {
+	if err := runPostgresMigration(db.DB, mp); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func runPostgresMigration(db *sql.DB, p data.MigrationParams) error {
+	d, err := postgres.WithInstance(db, &postgres.Config{
+		MigrationsTable: p.VersionTable,
+		DatabaseName:    p.DbName,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to initialize migrator: %w", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance("file://"+p.MigrationsDir, p.DbName, d)
+	if err != nil {
+		return fmt.Errorf("failed to initialize migrator: %w", err)
+	}
+
+	if p.TargetVersion == 0 {
+		err = m.Up()
+	} else {
+		err = m.Migrate(p.TargetVersion)
+	}
+
+	if err == migrate.ErrNoChange {
+		return nil
+	}
+
+	zap.L().Info("migration finished")
+	if err != nil {
+		return fmt.Errorf("failed to migrate database: %w", err)
+	}
 	return nil
 }
 

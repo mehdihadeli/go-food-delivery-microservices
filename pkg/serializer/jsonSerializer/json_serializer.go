@@ -31,7 +31,7 @@ func Unmarshal(data []byte, v interface{}) error {
 }
 
 func UnmarshalT[T any](data []byte) error {
-	v := typeMapper.InstanceByT[T]()
+	v := typeMapper.GenericInstanceByT[T]()
 	//https://pkg.go.dev/encoding/json#Unmarshal
 	err := json.Unmarshal(data, v)
 	if err != nil {

@@ -41,10 +41,11 @@
     "poolSize": 300
   },
   "mongo": {
-    "uri": "mongodb://localhost:27017",
+    "host": "localhost",
+    "port": 27017,
     "user": "admin",
     "password": "admin",
-    "db": "catalogs_service",
+    "database": "catalogs_service",
     "useAuth": true
   },
   "mongoCollections": {

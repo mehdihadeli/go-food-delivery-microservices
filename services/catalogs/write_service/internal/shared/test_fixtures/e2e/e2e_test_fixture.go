@@ -22,12 +22,12 @@ import (
 
 type E2ETestFixture struct {
 	Echo *echo.Echo
-	contracts.InfrastructureConfigurations
+	*contracts.InfrastructureConfigurations
 	V1              *V1Groups
 	GrpcServer      grpcServer.GrpcServer
 	HttpServer      *httptest.Server
 	Bus             bus.Bus
-	CatalogsMetrics contracts.CatalogsMetrics
+	CatalogsMetrics *contracts.CatalogsMetrics
 	workersRunner   *webWoker.WorkersRunner
 	Ctx             context.Context
 	cancel          context.CancelFunc
@@ -56,7 +56,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 
 	v1Groups := &V1Groups{ProductsGroup: productsV1}
 
-	productRep := repositories.NewPostgresProductRepository(infrastructures.Log(), cfg, infrastructures.Gorm().DB)
+	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, cfg, infrastructures.Gorm.DB)
 
 	mq, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, cfg.RabbitMQ, infrastructures)
 	if err != nil {
@@ -64,7 +64,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 		return nil
 	}
 
-	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(cfg, infrastructures.Metrics())
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(cfg, infrastructures.Metrics)
 	if err != nil {
 		cancel()
 		return nil
@@ -82,11 +82,11 @@ func NewE2ETestFixture() *E2ETestFixture {
 		return nil
 	}
 
-	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger, cfg.ServiceName, infrastructures.Metrics())
+	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger, cfg.ServiceName, infrastructures.Metrics)
 	httpServer := httptest.NewServer(echo)
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(infrastructures.Log(), mq),
+		workers.NewRabbitMQWorker(infrastructures.Log, mq),
 	})
 
 	return &E2ETestFixture{
@@ -115,7 +115,7 @@ func (e *E2ETestFixture) Run() {
 	go func() {
 		if err := e.GrpcServer.RunGrpcServer(e.Ctx, nil); err != nil {
 			e.cancel()
-			e.Log().Errorf("(s.RunGrpcServer) err: %v", err)
+			e.Log.Errorf("(s.RunGrpcServer) err: %v", err)
 		}
 	}()
 

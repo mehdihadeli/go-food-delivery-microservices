@@ -45,7 +45,7 @@ func (s *Server) Run() error {
 	var serverError error
 
 	go func() {
-		if err := catalogConfigurations.CatalogsEchoServer().RunHttpServer(ctx, nil); err != nil {
+		if err := catalogConfigurations.CatalogsEchoServer.RunHttpServer(ctx, nil); err != nil {
 			s.log.Errorf("(s.RunHttpServer) err: {%v}", err)
 			serverError = err
 			cancel()
@@ -54,7 +54,7 @@ func (s *Server) Run() error {
 	s.log.Infof("%s is listening on Http PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.Http.Port)
 
 	go func() {
-		if err := catalogConfigurations.CatalogsGrpcServer().RunGrpcServer(ctx, nil); err != nil {
+		if err := catalogConfigurations.CatalogsGrpcServer.RunGrpcServer(ctx, nil); err != nil {
 			s.log.Errorf("(s.RunGrpcServer) err: {%v}", err)
 			serverError = err
 			cancel()
@@ -63,7 +63,7 @@ func (s *Server) Run() error {
 	s.log.Infof("%s is listening on Grpc PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.GRPC.Port)
 
 	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(s.log, catalogConfigurations.CatalogsBus()),
+		workers.NewRabbitMQWorker(s.log, catalogConfigurations.CatalogsBus),
 	})
 
 	workersErr := backgroundWorkers.Start(ctx)

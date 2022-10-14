@@ -16,16 +16,15 @@ func Test_Create_Product_Command_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*CreateProduct, *creating_product.CreateProductResponseDto](NewCreateProductHandler(fixture.Log(), fixture.Cfg(), fixture.MongoProductRepository, fixture.RedisProductRepository))
-	if err != nil {
-		return
-	}
+	err := mediatr.RegisterRequestHandler[*CreateProduct, *creating_product.CreateProductResponseDto](NewCreateProductHandler(fixture.Log, fixture.Cfg, fixture.MongoProductRepository, fixture.RedisProductRepository))
+	assert.NoError(t, err)
 
 	fixture.Run()
 	defer fixture.Cleanup()
 
 	command := NewCreateProduct(gofakeit.UUID(), gofakeit.Name(), gofakeit.AdjectiveDescriptive(), gofakeit.Price(150, 6000), time.Now())
 	result, err := mediatr.Send[*CreateProduct, *creating_product.CreateProductResponseDto](context.Background(), command)
+	assert.NoError(t, err)
 
 	assert.NotNil(t, result)
 	assert.NotEmpty(t, result.Id)

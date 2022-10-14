@@ -10,7 +10,7 @@ import (
 	googleGrpc "google.golang.org/grpc"
 )
 
-func ConfigProductsGrpc(ctx context.Context, builder *grpcServer.GrpcServiceBuilder, infra contracts.InfrastructureConfigurations, bus bus.Bus, metrics contracts.CatalogsMetrics) {
+func ConfigProductsGrpc(ctx context.Context, builder *grpcServer.GrpcServiceBuilder, infra *contracts.InfrastructureConfigurations, bus bus.Bus, metrics *contracts.CatalogsMetrics) {
 	productGrpcService := grpc.NewProductGrpcService(infra, metrics, bus)
 	builder.RegisterRoutes(func(server *googleGrpc.Server) {
 		productService.RegisterProductsServiceServer(server, productGrpcService)

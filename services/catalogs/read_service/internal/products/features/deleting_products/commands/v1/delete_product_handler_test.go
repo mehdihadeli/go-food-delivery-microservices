@@ -14,18 +14,15 @@ func Test_Delete_Product_Command_Handler(t *testing.T) {
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	err := mediatr.RegisterRequestHandler[*DeleteProduct, *mediatr.Unit](NewDeleteProductHandler(fixture.Log(), fixture.Cfg(), fixture.MongoProductRepository, fixture.RedisProductRepository))
-	if err != nil {
-		return
-	}
+	err := mediatr.RegisterRequestHandler[*DeleteProduct, *mediatr.Unit](NewDeleteProductHandler(fixture.Log, fixture.Cfg, fixture.MongoProductRepository, fixture.RedisProductRepository))
+	assert.NoError(t, err)
 
 	fixture.Run()
 	defer fixture.Cleanup()
 
-	productId, err := uuid.FromString("7f545256-4f20-4ef3-bdff-dd3c8e4a5408")
-	if err != nil {
-		return
-	}
+	productId, err := uuid.FromString("399beedb-0f2c-4dc6-b53c-51aa0a2f7a91")
+	assert.NoError(t, err)
+
 	command := NewDeleteProduct(productId)
 	result, err := mediatr.Send[*DeleteProduct, *mediatr.Unit](context.Background(), command)
 

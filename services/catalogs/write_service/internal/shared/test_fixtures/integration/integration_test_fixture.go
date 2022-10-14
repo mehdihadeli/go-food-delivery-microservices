@@ -18,10 +18,10 @@ import (
 )
 
 type IntegrationTestFixture struct {
-	contracts2.InfrastructureConfigurations
+	*contracts2.InfrastructureConfigurations
 	ProductRepository contracts.ProductRepository
 	Bus               bus.Bus
-	CatalogsMetrics   contracts2.CatalogsMetrics
+	CatalogsMetrics   *contracts2.CatalogsMetrics
 	workersRunner     *webWoker.WorkersRunner
 	Ctx               context.Context
 	cancel            context.CancelFunc
@@ -39,7 +39,7 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 		return nil
 	}
 
-	productRep := repositories.NewPostgresProductRepository(infrastructures.Log(), cfg, infrastructures.Gorm().DB)
+	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, cfg, infrastructures.Gorm.DB)
 
 	err = mappings.ConfigureProductsMappings()
 	if err != nil {
@@ -53,14 +53,14 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 		return nil
 	}
 
-	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(cfg, infrastructures.Metrics())
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(cfg, infrastructures.Metrics)
 	if err != nil {
 		cancel()
 		return nil
 	}
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(infrastructures.Log(), mq),
+		workers.NewRabbitMQWorker(infrastructures.Log, mq),
 	})
 
 	return &IntegrationTestFixture{

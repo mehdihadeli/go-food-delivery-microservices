@@ -34,7 +34,7 @@ func (m mongoOrderReadRepository) GetAllOrders(ctx context.Context, listQuery *u
 	ctx, span := tracing.Tracer.Start(ctx, "mongoOrderReadRepository.GetAllOrders")
 	defer span.End()
 
-	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
+	collection := m.mongoClient.Database(m.cfg.Mongo.Database).Collection(m.cfg.MongoCollections.Orders)
 
 	result, err := mongodb.Paginate[*read_models.OrderReadModel](ctx, listQuery, collection, nil)
 	if err != nil {
@@ -53,7 +53,7 @@ func (m mongoOrderReadRepository) SearchOrders(ctx context.Context, searchText s
 	span.SetAttributes(attribute2.String("SearchText", searchText))
 	defer span.End()
 
-	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
+	collection := m.mongoClient.Database(m.cfg.Mongo.Database).Collection(m.cfg.MongoCollections.Orders)
 
 	filter := bson.D{
 		{Key: "$or", Value: bson.A{
@@ -78,7 +78,7 @@ func (m mongoOrderReadRepository) GetOrderById(ctx context.Context, id uuid.UUID
 	span.SetAttributes(attribute2.String("Id", id.String()))
 	defer span.End()
 
-	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
+	collection := m.mongoClient.Database(m.cfg.Mongo.Database).Collection(m.cfg.MongoCollections.Orders)
 
 	var order read_models.OrderReadModel
 	if err := collection.FindOne(ctx, bson.M{"_id": id.String()}).Decode(&order); err != nil {
@@ -100,7 +100,7 @@ func (m mongoOrderReadRepository) GetOrderByOrderId(ctx context.Context, orderId
 	span.SetAttributes(attribute2.String("OrderId", orderId.String()))
 	defer span.End()
 
-	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
+	collection := m.mongoClient.Database(m.cfg.Mongo.Database).Collection(m.cfg.MongoCollections.Orders)
 
 	var order read_models.OrderReadModel
 	if err := collection.FindOne(ctx, bson.M{"orderId": orderId.String()}).Decode(&order); err != nil {
@@ -121,7 +121,7 @@ func (m mongoOrderReadRepository) CreateOrder(ctx context.Context, order *read_m
 	ctx, span := tracing.Tracer.Start(ctx, "mongoOrderReadRepository.CreateOrder")
 	defer span.End()
 
-	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
+	collection := m.mongoClient.Database(m.cfg.Mongo.Database).Collection(m.cfg.MongoCollections.Orders)
 	_, err := collection.InsertOne(ctx, order, &options.InsertOneOptions{})
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "[mongoOrderReadRepository_CreateOrder.InsertOne] error in the inserting order into the database."))
@@ -137,7 +137,7 @@ func (m mongoOrderReadRepository) UpdateOrder(ctx context.Context, order *read_m
 	ctx, span := tracing.Tracer.Start(ctx, "mongoOrderReadRepository.UpdateOrder")
 	defer span.End()
 
-	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
+	collection := m.mongoClient.Database(m.cfg.Mongo.Database).Collection(m.cfg.MongoCollections.Orders)
 
 	ops := options.FindOneAndUpdate()
 	ops.SetReturnDocument(options.After)
@@ -159,7 +159,7 @@ func (m mongoOrderReadRepository) DeleteOrderByID(ctx context.Context, uuid uuid
 	span.SetAttributes(attribute2.String("Id", uuid.String()))
 	defer span.End()
 
-	collection := m.mongoClient.Database(m.cfg.Mongo.Db).Collection(m.cfg.MongoCollections.Orders)
+	collection := m.mongoClient.Database(m.cfg.Mongo.Database).Collection(m.cfg.MongoCollections.Orders)
 
 	if err := collection.FindOneAndDelete(ctx, bson.M{"_id": uuid.String()}).Err(); err != nil {
 		return tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf(

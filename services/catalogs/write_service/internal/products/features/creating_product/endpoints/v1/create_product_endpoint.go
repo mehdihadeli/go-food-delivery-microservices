@@ -38,19 +38,19 @@ func (ep *createProductEndpoint) MapRoute() {
 func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		ep.CatalogsMetrics.CreateProductHttpRequests().Add(ctx, 1)
+		ep.CatalogsMetrics.CreateProductHttpRequests.Add(ctx, 1)
 
 		request := &dtos.CreateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[createProductEndpoint_handler.Bind] error in the binding request")
-			ep.Log().Errorf(fmt.Sprintf("[createProductEndpoint_handler.Bind] err: %v", badRequestErr))
+			ep.Log.Errorf(fmt.Sprintf("[createProductEndpoint_handler.Bind] err: %v", badRequestErr))
 			return badRequestErr
 		}
 
 		command := v1.NewCreateProduct(request.Name, request.Description, request.Price)
-		if err := ep.Validator().StructCtx(ctx, command); err != nil {
+		if err := ep.Validator.StructCtx(ctx, command); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(err, "[createProductEndpoint_handler.StructCtx] command validation failed")
-			ep.Log().Errorf(fmt.Sprintf("[createProductEndpoint_handler.StructCtx] err: {%v}", validationErr))
+			ep.Log.Errorf(fmt.Sprintf("[createProductEndpoint_handler.StructCtx] err: {%v}", validationErr))
 			return validationErr
 		}
 
@@ -58,7 +58,7 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 
 		if err != nil {
 			err = errors.WithMessage(err, "[createProductEndpoint_handler.Send] error in sending CreateProduct")
-			ep.Log().Errorw(fmt.Sprintf("[createProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
+			ep.Log.Errorw(fmt.Sprintf("[createProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
 			return err
 		}
 

@@ -15,14 +15,14 @@ import (
 )
 
 type productsModuleConfigurator struct {
-	contracts2.InfrastructureConfigurations
+	*contracts2.InfrastructureConfigurations
 	routeBuilder       *customEcho.RouteBuilder
 	grpcServiceBuilder *grpcServer.GrpcServiceBuilder
 	bus                bus.Bus
-	catalogsMetrics    contracts2.CatalogsMetrics
+	catalogsMetrics    *contracts2.CatalogsMetrics
 }
 
-func NewProductsModuleConfigurator(infrastructure contracts2.InfrastructureConfigurations, catalogsMetrics contracts2.CatalogsMetrics, bus bus.Bus, routeBuilder *customEcho.RouteBuilder, grpcServiceBuilder *grpcServer.GrpcServiceBuilder) contracts.ProductsModuleConfigurator {
+func NewProductsModuleConfigurator(infrastructure *contracts2.InfrastructureConfigurations, catalogsMetrics *contracts2.CatalogsMetrics, bus bus.Bus, routeBuilder *customEcho.RouteBuilder, grpcServiceBuilder *grpcServer.GrpcServiceBuilder) contracts.ProductsModuleConfigurator {
 	return &productsModuleConfigurator{InfrastructureConfigurations: infrastructure, routeBuilder: routeBuilder, grpcServiceBuilder: grpcServiceBuilder, bus: bus, catalogsMetrics: catalogsMetrics}
 }
 
@@ -33,7 +33,7 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 	//Config Products Endpoints
 	endpoints.ConfigProductsEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
 
-	productRepository := repositoriesImp.NewPostgresProductRepository(c.Log(), c.Cfg(), c.Gorm().DB)
+	productRepository := repositoriesImp.NewPostgresProductRepository(c.Log, c.Cfg, c.Gorm.DB)
 
 	//Config Products Mappings
 	err := mappings.ConfigureProductsMappings()
