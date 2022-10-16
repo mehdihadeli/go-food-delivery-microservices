@@ -5,7 +5,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	postgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/postgres_pgx"

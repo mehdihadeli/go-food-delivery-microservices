@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/zapadapter"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	otelMetrics "github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"

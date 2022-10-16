@@ -37,7 +37,7 @@ type Config struct {
 	GRPC              *grpc.GrpcConfig               `mapstructure:"grpc" envPrefix:"GRPC_"`
 	Http              *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
 	Context           Context                        `mapstructure:"context" envPrefix:"Context_"`
-	Redis             *redis.Config                  `mapstructure:"redis" envPrefix:"Redis_"`
+	Redis             *redis.RedisConfig             `mapstructure:"redis" envPrefix:"Redis_"`
 	RabbitMQ          *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	OTel              *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
 	OTelMetricsConfig *metrics.OTelMetricsConfig     `mapstructure:"otelMetrics" envPrefix:"OTelMetrics_"`

@@ -7,25 +7,21 @@ import (
 	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/jackc/pgx/v4/stdlib" // load pgx driver for PostgreSQL
 	"github.com/jmoiron/sqlx"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
-	"go.uber.org/zap"
+	"github.com/uptrace/bun/driver/pgdriver"
 	"os"
 	"strconv"
 	"time"
 )
 
 type Config struct {
-	Host       string               `mapstructure:"host"`
-	Port       string               `mapstructure:"port"`
-	User       string               `mapstructure:"user"`
-	DBName     string               `mapstructure:"dbName"`
-	SSLMode    bool                 `mapstructure:"sslMode"`
-	Password   string               `mapstructure:"password"`
-	Migrations data.MigrationParams `mapstructure:"migrations"`
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	DBName   string `mapstructure:"dbName"`
+	SSLMode  bool   `mapstructure:"sslMode"`
+	Password string `mapstructure:"password"`
 }
 
 type Sqlx struct {
@@ -58,7 +54,7 @@ func NewSqlxConn(cfg *Config) (*Sqlx, error) {
 		return nil, err
 	}
 
-	dataSourceName = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
+	dataSourceName = fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s",
 		cfg.Host,
 		cfg.Port,
 		cfg.User,
@@ -99,19 +95,19 @@ func NewSqlxConn(cfg *Config) (*Sqlx, error) {
 }
 
 func createDB(cfg *Config) error {
-	datasource := fmt.Sprintf("host=%s port=%s user=%s password=%s",
-		cfg.Host,
-		cfg.Port,
+	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'
+	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,
 		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		"postgres",
 	)
-	db, err := sqlx.Connect("pgx", datasource)
-	if err != nil {
-		return fmt.Errorf("error, not connected to database, %w", err)
-	}
+
+	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(datasource)))
 
 	var exists int
-	rows, err := db.Query(fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
+	rows, err := sqldb.Query(fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
 	if err != nil {
 		return err
 	}
@@ -127,64 +123,13 @@ func createDB(cfg *Config) error {
 		return nil
 	}
 
-	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s", cfg.DBName))
+	_, err = sqldb.Exec(fmt.Sprintf("CREATE DATABASE %s", cfg.DBName))
 	if err != nil {
 		return err
 	}
 
-	defer db.Close()
+	defer sqldb.Close()
 
-	return nil
-}
-
-func (db *Sqlx) Migrate() error {
-	if db.config.Migrations.SkipMigration {
-		zap.L().Info("database migration skipped")
-		return nil
-	}
-
-	mp := data.MigrationParams{
-		DbName:        db.config.DBName,
-		VersionTable:  db.config.Migrations.VersionTable,
-		MigrationsDir: db.config.Migrations.MigrationsDir,
-		TargetVersion: db.config.Migrations.TargetVersion,
-	}
-
-	if err := runPostgresMigration(db.DB, mp); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func runPostgresMigration(db *sql.DB, p data.MigrationParams) error {
-	d, err := postgres.WithInstance(db, &postgres.Config{
-		MigrationsTable: p.VersionTable,
-		DatabaseName:    p.DbName,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to initialize migrator: %w", err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance("file://"+p.MigrationsDir, p.DbName, d)
-	if err != nil {
-		return fmt.Errorf("failed to initialize migrator: %w", err)
-	}
-
-	if p.TargetVersion == 0 {
-		err = m.Up()
-	} else {
-		err = m.Migrate(p.TargetVersion)
-	}
-
-	if err == migrate.ErrNoChange {
-		return nil
-	}
-
-	zap.L().Info("migration finished")
-	if err != nil {
-		return fmt.Errorf("failed to migrate database: %w", err)
-	}
 	return nil
 }
 

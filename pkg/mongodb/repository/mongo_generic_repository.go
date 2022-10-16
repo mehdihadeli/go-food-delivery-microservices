@@ -2,72 +2,362 @@ package repository
 
 import (
 	"context"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
+	"emperror.dev/errors"
+	"fmt"
+	"github.com/goccy/go-reflect"
+	"github.com/iancoleman/strcase"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data/specification"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
+	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
+	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	uuid "github.com/satori/go.uuid"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type mongoGenericRepository[TDataModel interface{}, TEntity interface{}] struct {
-	db *mongo.Client
+	db             *mongo.Client
+	databaseName   string
+	collectionName string
+}
+
+// NewGenericMongoRepositoryWithDataModel create new gorm generic repository
+func NewGenericMongoRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}](db *mongo.Client, databaseName string, collectionName string) *mongoGenericRepository[TDataModel, TEntity] {
+	return &mongoGenericRepository[TDataModel, TEntity]{
+		db:             db,
+		collectionName: collectionName,
+		databaseName:   databaseName,
+	}
+}
+
+// NewGenericMongoRepository create new gorm generic repository
+func NewGenericMongoRepository[TEntity interface{}](db *mongo.Client, databaseName string, collectionName string) *mongoGenericRepository[TEntity, TEntity] {
+	return &mongoGenericRepository[TEntity, TEntity]{
+		db:             db,
+		collectionName: collectionName,
+		databaseName:   databaseName,
+	}
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) Add(ctx context.Context, entity TEntity) error {
-	//TODO implement me
-	panic("implement me")
+	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
+	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+
+	if modelType == dataModelType {
+		_, err := collection.InsertOne(ctx, entity, &options.InsertOneOptions{})
+		if err != nil {
+			return err
+		}
+		return nil
+	} else {
+		dataModel, err := mapper.Map[TDataModel](entity)
+		if err != nil {
+			return err
+		}
+		_, err = collection.InsertOne(ctx, dataModel, &options.InsertOneOptions{})
+		if err != nil {
+			return err
+		}
+		e, err := mapper.Map[TEntity](dataModel)
+		if err != nil {
+			return err
+		}
+		reflectionHelper.SetValue[TEntity](entity, e)
+	}
+	return nil
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) AddAll(ctx context.Context, entities []TEntity) error {
-	//TODO implement me
-	panic("implement me")
+	for _, entity := range entities {
+		err := m.Add(ctx, entity)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) GetById(ctx context.Context, id uuid.UUID) (TEntity, error) {
-	//TODO implement me
-	panic("implement me")
+	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
+	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+
+	if modelType == dataModelType {
+		var model TEntity
+		if err := collection.FindOne(ctx, bson.M{"_id": id.String()}).Decode(&model); err != nil {
+			// ErrNoDocuments means that the filter did not match any documents in the collection
+			if err == mongo.ErrNoDocuments {
+				return *new(TEntity), nil
+			}
+			return *new(TEntity), errors.WrapIf(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
+		}
+		return model, nil
+	} else {
+		var dataModel TDataModel
+		if err := collection.FindOne(ctx, bson.M{"_id": id.String()}).Decode(&dataModel); err != nil {
+			// ErrNoDocuments means that the filter did not match any documents in the collection
+			if err == mongo.ErrNoDocuments {
+				return *new(TEntity), nil
+			}
+			return *new(TEntity), errors.WrapIf(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
+		}
+		entity, err := mapper.Map[TEntity](dataModel)
+		if err != nil {
+			return *new(TEntity), err
+		}
+		return entity, nil
+	}
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) GetAll(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[TEntity], error) {
-	//TODO implement me
-	panic("implement me")
+	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
+	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+
+	if modelType == dataModelType {
+		result, err := mongodb.Paginate[TEntity](ctx, listQuery, collection, nil)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	} else {
+		result, err := mongodb.Paginate[TDataModel](ctx, listQuery, collection, nil)
+		if err != nil {
+			return nil, err
+		}
+		models, err := utils.ListResultToListResultDto[TEntity](result)
+		if err != nil {
+			return nil, err
+		}
+		return models, nil
+	}
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) Search(ctx context.Context, searchTerm string, listQuery *utils.ListQuery) (*utils.ListResult[TEntity], error) {
-	//TODO implement me
-	panic("implement me")
+	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
+	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+
+	if modelType == dataModelType {
+		fields := reflectionHelper.GetAllFields(typeMapper.GetTypeFromGeneric[TEntity]())
+		var a bson.A
+		for _, field := range fields {
+			if field.Type.Kind() != reflect.String {
+				continue
+			}
+			name := strcase.ToLowerCamel(field.Name)
+			a = append(a, bson.D{{Key: name, Value: primitive.Regex{Pattern: searchTerm, Options: "gi"}}})
+		}
+		filter := bson.D{
+			{Key: "$or", Value: a},
+		}
+		result, err := mongodb.Paginate[TEntity](ctx, listQuery, collection, filter)
+		if err != nil {
+			return nil, err
+		}
+		return result, nil
+	} else {
+		fields := reflectionHelper.GetAllFields(typeMapper.GetTypeFromGeneric[TDataModel]())
+		var a bson.A
+		for _, field := range fields {
+			if field.Type.Kind() != reflect.String {
+				continue
+			}
+			name := strcase.ToLowerCamel(field.Name)
+			a = append(a, bson.D{{Key: name, Value: primitive.Regex{Pattern: searchTerm, Options: "gi"}}})
+		}
+		filter := bson.D{
+			{Key: "$or", Value: a},
+		}
+		result, err := mongodb.Paginate[TDataModel](ctx, listQuery, collection, filter)
+		if err != nil {
+			return nil, err
+		}
+		models, err := utils.ListResultToListResultDto[TEntity](result)
+		if err != nil {
+			return nil, err
+		}
+		return models, nil
+	}
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) Where(ctx context.Context, filters map[string]interface{}) ([]TEntity, error) {
-	//TODO implement me
-	panic("implement me")
+	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
+	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+
+	cursorResult, err := collection.Find(ctx, filters)
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursorResult.Close(ctx) // nolint: errcheck
+
+	if modelType == dataModelType {
+		var models []TEntity
+
+		for cursorResult.Next(ctx) {
+			var e TEntity
+			if err := cursorResult.Decode(&e); err != nil {
+				return nil, errors.WrapIf(err, "Find")
+			}
+			models = append(models, e)
+		}
+
+		return models, nil
+	} else {
+		var dataModels []TDataModel
+
+		for cursorResult.Next(ctx) {
+			var d TDataModel
+			if err := cursorResult.Decode(&d); err != nil {
+				return nil, errors.WrapIf(err, "Find")
+			}
+			dataModels = append(dataModels, d)
+		}
+
+		models, err := mapper.Map[[]TEntity](dataModels)
+		if err != nil {
+			return nil, err
+		}
+		return models, nil
+	}
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) Update(ctx context.Context, entity TEntity) error {
-	//TODO implement me
-	panic("implement me")
+	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
+	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+	ops := options.FindOneAndUpdate()
+	ops.SetReturnDocument(options.After)
+	ops.SetUpsert(true)
+
+	if modelType == dataModelType {
+		var id interface{}
+		id = reflectionHelper.GetFieldValueByName(entity, "Id")
+		if id == nil {
+			id = reflectionHelper.GetFieldValueByName(entity, "ID")
+			if id == nil {
+				return errors.New("id field not found")
+			}
+		}
+
+		var updated TEntity
+		//https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
+		if err := collection.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": entity}, ops).Decode(&updated); err != nil {
+			return err
+		}
+	} else {
+		dataModel, err := mapper.Map[TDataModel](entity)
+		if err != nil {
+			return err
+		}
+
+		var id interface{}
+		id = reflectionHelper.GetFieldValueByName(dataModel, "Id")
+		if id == nil {
+			id = reflectionHelper.GetFieldValueByName(dataModel, "ID")
+			if id == nil {
+				return errors.New("id field not found")
+			}
+		}
+		//https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
+		if err := collection.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": dataModel}, ops).Decode(&dataModel); err != nil {
+			return err
+		}
+
+		e, err := mapper.Map[TEntity](dataModel)
+		if err != nil {
+			return err
+		}
+		reflectionHelper.SetValue[TEntity](entity, e)
+	}
+
+	return nil
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) UpdateAll(ctx context.Context, entities []TEntity) error {
-	//TODO implement me
-	panic("implement me")
+	for _, e := range entities {
+		err := m.Update(ctx, e)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) Delete(ctx context.Context, id uuid.UUID) error {
-	//TODO implement me
-	panic("implement me")
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+
+	if err := collection.FindOneAndDelete(ctx, bson.M{"_id": id.String()}).Err(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) SkipTake(skip int, take int, ctx context.Context) ([]TEntity, error) {
-	//TODO implement me
-	panic("implement me")
+func (m *mongoGenericRepository[TDataModel, TEntity]) SkipTake(ctx context.Context, skip int, take int) ([]TEntity, error) {
+	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
+	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+	l := int64(take)
+	s := int64(skip)
+
+	cursorResult, err := collection.Find(ctx, bson.D{}, &options.FindOptions{
+		Limit: &l,
+		Skip:  &s,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursorResult.Close(ctx) // nolint: errcheck
+
+	if modelType == dataModelType {
+		var models []TEntity
+		for cursorResult.Next(ctx) {
+			var e TEntity
+			if err := cursorResult.Decode(&e); err != nil {
+				return nil, errors.WrapIf(err, "Find")
+			}
+			models = append(models, e)
+		}
+
+		return models, nil
+	} else {
+		var dataModels []TDataModel
+		for cursorResult.Next(ctx) {
+			var d TDataModel
+			if err := cursorResult.Decode(&d); err != nil {
+				return nil, errors.WrapIf(err, "Find")
+			}
+			dataModels = append(dataModels, d)
+		}
+		models, err := mapper.Map[[]TEntity](dataModels)
+		if err != nil {
+			return nil, err
+		}
+		return models, nil
+	}
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) Count(ctx context.Context) int64 {
-	//TODO implement me
-	panic("implement me")
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+	count, err := collection.CountDocuments(ctx, bson.M{})
+	if err != nil {
+		return 0
+	}
+	return count
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) Find(ctx context.Context, specification data.Specification) ([]TEntity, error) {
+func (m *mongoGenericRepository[TDataModel, TEntity]) Find(ctx context.Context, specification specification.Specification) ([]TEntity, error) {
 	//TODO implement me
 	panic("implement me")
 }

@@ -9,7 +9,7 @@ import (
 type PostgresContainerOptions struct {
 	Database  string
 	Host      string
-	Port      int
+	Port      string
 	HostPort  int
 	UserName  string
 	Password  string

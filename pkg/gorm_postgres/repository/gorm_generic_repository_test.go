@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "github.com/lib/pq" // postgres driver
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data/specification"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
@@ -387,8 +388,38 @@ func Test_Count_With_Data_Model(t *testing.T) {
 	assert.Equal(t, count, int64(2))
 }
 
+func Test_Find(t *testing.T) {
+	ctx := context.Background()
+	repository, err := setupGenericGormRepository(ctx, t)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entities, err := repository.Find(ctx, specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")))
+	if err != nil {
+		return
+	}
+	assert.Equal(t, len(entities), 1)
+}
+
+func Test_Find_With_Data_Model(t *testing.T) {
+	ctx := context.Background()
+	repository, err := setupGenericGormRepositoryWithDataModel(ctx, t)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	entities, err := repository.Find(ctx, specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")))
+	if err != nil {
+		return
+	}
+	assert.Equal(t, len(entities), 1)
+}
+
 func setupGenericGormRepositoryWithDataModel(ctx context.Context, t *testing.T) (data.GenericRepositoryWithDataModel[*ProductGorm, *Product], error) {
-	db, err := testcontainer.NewTestContainerGormContainer().Start(ctx, t)
+	db, err := testcontainer.NewGormTestContainers().Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
@@ -402,7 +433,7 @@ func setupGenericGormRepositoryWithDataModel(ctx context.Context, t *testing.T) 
 }
 
 func setupGenericGormRepository(ctx context.Context, t *testing.T) (data.GenericRepository[*ProductGorm], error) {
-	db, err := testcontainer.NewTestContainerGormContainer().Start(ctx, t)
+	db, err := testcontainer.NewGormTestContainers().Start(ctx, t)
 
 	err = seedData(ctx, db)
 	if err != nil {

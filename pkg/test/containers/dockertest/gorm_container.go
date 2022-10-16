@@ -2,7 +2,7 @@ package dockertest
 
 import (
 	"context"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/contracts"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
@@ -13,16 +13,16 @@ import (
 	"testing"
 )
 
-type dockerTestGormContainer struct {
+type gormDockerTest struct {
 	resource       *dockertest.Resource
 	defaultOptions *contracts.PostgresContainerOptions
 }
 
-func NewDockerTestGormContainer() contracts.GormContainer {
-	return &dockerTestGormContainer{
+func NewGormDockerTest() contracts.GormContainer {
+	return &gormDockerTest{
 		defaultOptions: &contracts.PostgresContainerOptions{
 			Database:  "test_db",
-			Port:      5432,
+			Port:      "5432",
 			Host:      "localhost",
 			UserName:  "dockertest",
 			Password:  "dockertest",
@@ -33,7 +33,7 @@ func NewDockerTestGormContainer() contracts.GormContainer {
 	}
 }
 
-func (g *dockerTestGormContainer) Start(ctx context.Context, t *testing.T, options ...*contracts.PostgresContainerOptions) (*gorm.DB, error) {
+func (g *gormDockerTest) Start(ctx context.Context, t *testing.T, options ...*contracts.PostgresContainerOptions) (*gorm.DB, error) {
 	//https://github.com/ory/dockertest/blob/v3/examples/PostgreSQL.md
 	//https://github.com/bozd4g/fb.testcontainers
 	pool, err := dockertest.NewPool("")
@@ -75,7 +75,7 @@ func (g *dockerTestGormContainer) Start(ctx context.Context, t *testing.T, optio
 	var db *gorm.DB
 
 	if err = pool.Retry(func() error {
-		gormDb, err := gormPostgres.NewGorm(&gormPostgres.Config{
+		gormDb, err := gormPostgres.NewGorm(&gormPostgres.GormConfig{
 			Port:     g.defaultOptions.HostPort,
 			Host:     g.defaultOptions.Host,
 			Password: g.defaultOptions.Password,
@@ -98,11 +98,11 @@ func (g *dockerTestGormContainer) Start(ctx context.Context, t *testing.T, optio
 	return db, nil
 }
 
-func (g *dockerTestGormContainer) Cleanup(ctx context.Context) error {
+func (g *gormDockerTest) Cleanup(ctx context.Context) error {
 	return g.resource.Close()
 }
 
-func (g *dockerTestGormContainer) getRunOptions(opts ...*contracts.PostgresContainerOptions) *dockertest.RunOptions {
+func (g *gormDockerTest) getRunOptions(opts ...*contracts.PostgresContainerOptions) *dockertest.RunOptions {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {
@@ -111,7 +111,7 @@ func (g *dockerTestGormContainer) getRunOptions(opts ...*contracts.PostgresConta
 		if option.Host != "" {
 			g.defaultOptions.Host = option.Host
 		}
-		if option.Port != 0 {
+		if option.Port != "" {
 			g.defaultOptions.Port = option.Port
 		}
 		if option.UserName != "" {
@@ -141,9 +141,9 @@ func (g *dockerTestGormContainer) getRunOptions(opts ...*contracts.PostgresConta
 			"listen_addresses = '*'",
 		},
 		Hostname:     g.defaultOptions.Host,
-		ExposedPorts: []string{strconv.Itoa(g.defaultOptions.Port)},
+		ExposedPorts: []string{g.defaultOptions.Port},
 		PortBindings: map[docker.Port][]docker.PortBinding{
-			docker.Port(strconv.Itoa(g.defaultOptions.Port)): {{HostIP: "0.0.0.0", HostPort: strconv.Itoa(g.defaultOptions.HostPort)}},
+			docker.Port(g.defaultOptions.Port): {{HostIP: "0.0.0.0", HostPort: strconv.Itoa(g.defaultOptions.HostPort)}},
 		},
 	}
 

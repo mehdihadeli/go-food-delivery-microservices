@@ -4,14 +4,15 @@ import (
 	"context"
 	"emperror.dev/errors"
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
+	"github.com/iancoleman/strcase"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data/specification"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
+	"reflect"
 )
 
 // gorm generic repository
@@ -126,16 +127,35 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Search(ctx context.Context,
 	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	if modelType == dataModelType {
-		whereQuery := fmt.Sprintf("%s IN (?)", "Name")
-		query := r.db.Where(whereQuery, searchTerm)
+		fields := reflectionHelper.GetAllFields(typeMapper.GetTypeFromGeneric[TEntity]())
+		query := r.db
+
+		for _, field := range fields {
+			if field.Type.Kind() != reflect.String {
+				continue
+			}
+			f := strcase.ToSnake(field.Name)
+			whereQuery := fmt.Sprintf("%s IN (?)", f)
+			query = r.db.Where(whereQuery, searchTerm)
+		}
+
 		result, err := gormPostgres.Paginate[TEntity](ctx, listQuery, query)
 		if err != nil {
 			return nil, err
 		}
 		return result, nil
 	} else {
-		whereQuery := fmt.Sprintf("%s IN (?)", "Name")
-		query := r.db.Where(whereQuery, searchTerm)
+		query := r.db
+		fields := reflectionHelper.GetAllFields(typeMapper.GetTypeFromGeneric[TDataModel]())
+
+		for _, field := range fields {
+			if field.Type.Kind() != reflect.String {
+				continue
+			}
+			f := strcase.ToSnake(field.Name)
+			whereQuery := fmt.Sprintf("%s IN (?)", f)
+			query = r.db.Where(whereQuery, searchTerm)
+		}
 		result, err := gormPostgres.Paginate[TDataModel](ctx, listQuery, query)
 		if err != nil {
 			return nil, err
@@ -215,7 +235,7 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Delete(ctx context.Context,
 	if err != nil {
 		return err
 	}
-	
+
 	err = r.db.WithContext(ctx).Delete(entity, id).Error
 	if err != nil {
 		return err
@@ -224,7 +244,7 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Delete(ctx context.Context,
 	return nil
 }
 
-func (r *gormGenericRepository[TDataModel, TEntity]) SkipTake(skip int, take int, ctx context.Context) ([]TEntity, error) {
+func (r *gormGenericRepository[TDataModel, TEntity]) SkipTake(ctx context.Context, skip int, take int) ([]TEntity, error) {
 	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	if modelType == dataModelType {
@@ -255,7 +275,7 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Count(ctx context.Context) 
 	return count
 }
 
-func (r *gormGenericRepository[TDataModel, TEntity]) Find(ctx context.Context, specification data.Specification) ([]TEntity, error) {
+func (r *gormGenericRepository[TDataModel, TEntity]) Find(ctx context.Context, specification specification.Specification) ([]TEntity, error) {
 	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	if modelType == dataModelType {

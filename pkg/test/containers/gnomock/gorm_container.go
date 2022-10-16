@@ -3,7 +3,7 @@ package gnomock
 import (
 	"context"
 	"emperror.dev/errors"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/contracts"
 	"github.com/orlangure/gnomock"
 	"github.com/orlangure/gnomock/preset/postgres"
@@ -21,7 +21,7 @@ func NewGnoMockGormContainer() *gnoMockGormContainer {
 	return &gnoMockGormContainer{
 		defaultOptions: &contracts.PostgresContainerOptions{
 			Database:  "test_db",
-			Port:      5432,
+			Port:      "5432",
 			Host:      "localhost",
 			UserName:  "genomocktest",
 			Password:  "genomocktest",
@@ -47,7 +47,7 @@ func (g *gnoMockGormContainer) Start(ctx context.Context, t *testing.T, options 
 
 	t.Cleanup(func() { _ = gnomock.Stop(container) })
 
-	db, err := gormPostgres.NewGorm(&gormPostgres.Config{
+	db, err := gormPostgres.NewGorm(&gormPostgres.GormConfig{
 		Port:     g.defaultOptions.HostPort,
 		Host:     container.Host,
 		Password: g.defaultOptions.Password,
@@ -72,7 +72,7 @@ func (g *gnoMockGormContainer) getRunOptions(opts ...*contracts.PostgresContaine
 		if option.Host != "" {
 			g.defaultOptions.Host = option.Host
 		}
-		if option.Port != 0 {
+		if option.Port != "" {
 			g.defaultOptions.Port = option.Port
 		}
 		if option.UserName != "" {

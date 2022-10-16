@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data/specification"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 )
@@ -16,9 +17,9 @@ type GenericRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}]
 	Update(ctx context.Context, entity TEntity) error
 	UpdateAll(ctx context.Context, entities []TEntity) error
 	Delete(ctx context.Context, id uuid.UUID) error
-	SkipTake(skip int, take int, ctx context.Context) ([]TEntity, error)
+	SkipTake(ctx context.Context, skip int, take int) ([]TEntity, error)
 	Count(ctx context.Context) int64
-	Find(ctx context.Context, specification Specification) ([]TEntity, error)
+	Find(ctx context.Context, specification specification.Specification) ([]TEntity, error)
 }
 
 type GenericRepository[TEntity interface{}] interface {

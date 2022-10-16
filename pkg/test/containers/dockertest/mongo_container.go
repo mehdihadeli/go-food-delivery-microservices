@@ -13,16 +13,16 @@ import (
 	"testing"
 )
 
-type dockerTestMongoContainer struct {
+type mongoDockerTest struct {
 	resource       *dockertest.Resource
 	defaultOptions *contracts.MongoContainerOptions
 }
 
-func NewDockerTestMongoContainer() contracts.MongoContainer {
-	return &dockerTestMongoContainer{
+func NewMongoDockerTest() contracts.MongoContainer {
+	return &mongoDockerTest{
 		defaultOptions: &contracts.MongoContainerOptions{
 			Database:  "test_db",
-			Port:      27017,
+			Port:      "27017",
 			Host:      "localhost",
 			UserName:  "dockertest",
 			Password:  "dockertest",
@@ -33,7 +33,7 @@ func NewDockerTestMongoContainer() contracts.MongoContainer {
 	}
 }
 
-func (g *dockerTestMongoContainer) Start(ctx context.Context, t *testing.T, options ...*contracts.MongoContainerOptions) (*mongo.Client, error) {
+func (g *mongoDockerTest) Start(ctx context.Context, t *testing.T, options ...*contracts.MongoContainerOptions) (*mongo.Client, error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
@@ -56,7 +56,7 @@ func (g *dockerTestMongoContainer) Start(ctx context.Context, t *testing.T, opti
 	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 
 	g.resource = resource
-	i, _ := strconv.Atoi(resource.GetPort(fmt.Sprintf("%d/tcp", g.defaultOptions.Port)))
+	i, _ := strconv.Atoi(resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Port)))
 	g.defaultOptions.HostPort = i
 
 	t.Cleanup(func() { _ = resource.Close() })
@@ -94,11 +94,11 @@ func (g *dockerTestMongoContainer) Start(ctx context.Context, t *testing.T, opti
 	return mongoClient, nil
 }
 
-func (g *dockerTestMongoContainer) Cleanup(ctx context.Context) error {
+func (g *mongoDockerTest) Cleanup(ctx context.Context) error {
 	return g.resource.Close()
 }
 
-func (g *dockerTestMongoContainer) getRunOptions(opts ...*contracts.MongoContainerOptions) *dockertest.RunOptions {
+func (g *mongoDockerTest) getRunOptions(opts ...*contracts.MongoContainerOptions) *dockertest.RunOptions {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {
@@ -107,7 +107,7 @@ func (g *dockerTestMongoContainer) getRunOptions(opts ...*contracts.MongoContain
 		if option.Host != "" {
 			g.defaultOptions.Host = option.Host
 		}
-		if option.Port != 0 {
+		if option.Port != "" {
 			g.defaultOptions.Port = option.Port
 		}
 		if option.UserName != "" {
@@ -129,7 +129,7 @@ func (g *dockerTestMongoContainer) getRunOptions(opts ...*contracts.MongoContain
 			"MONGO_INITDB_ROOT_PASSWORD=" + g.defaultOptions.Password,
 		},
 		Hostname:     g.defaultOptions.Host,
-		ExposedPorts: []string{strconv.Itoa(g.defaultOptions.Port)},
+		ExposedPorts: []string{g.defaultOptions.Port},
 	}
 
 	return runOptions

@@ -7,12 +7,9 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v4/stdlib"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
-	"go.uber.org/zap"
+	"github.com/uptrace/bun/driver/pgdriver"
 	"time"
 )
 
@@ -24,13 +21,12 @@ import (
 )
 
 type Config struct {
-	Host       string               `mapstructure:"host"`
-	Port       string               `mapstructure:"port"`
-	User       string               `mapstructure:"user"`
-	DBName     string               `mapstructure:"dbName"`
-	SSLMode    bool                 `mapstructure:"sslMode"`
-	Password   string               `mapstructure:"password"`
-	Migrations data.MigrationParams `mapstructure:"migrations"`
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	DBName   string `mapstructure:"dbName"`
+	SSLMode  bool   `mapstructure:"sslMode"`
+	Password string `mapstructure:"password"`
 }
 
 const (
@@ -57,21 +53,18 @@ type Pgx struct {
 }
 
 // NewPgxPoolConn func for connection to PostgreSQL database.
-func NewPgxPoolConn(cfg *Config, logger pgx.Logger, logLevel pgx.LogLevel) (*Pgx, error) {
-	ctx := context.Background()
-	var dataSourceName string
-
+func NewPgxPoolConn(ctx context.Context, cfg *Config, logger pgx.Logger, logLevel pgx.LogLevel) (*Pgx, error) {
 	if cfg.DBName == "" {
 		return nil, errors.New("DBName is required in the config.")
 	}
 
-	err := createDB(cfg, ctx)
-
+	err := createDB(cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	dataSourceName = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s",
+	var dataSourceName string
+	dataSourceName = fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s",
 		cfg.Host,
 		cfg.Port,
 		cfg.User,
@@ -136,26 +129,20 @@ func (db *Pgx) Close() {
 	_ = db.DB.Close()
 }
 
-func createDB(cfg *Config, ctx context.Context) error {
-	datasource := fmt.Sprintf("host=%s port=%s user=%s password=%s",
-		cfg.Host,
-		cfg.Port,
+func createDB(cfg *Config) error {
+	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'
+	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,
 		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		"postgres",
 	)
 
-	poolCfg, err := pgxpool.ParseConfig(datasource)
-	if err != nil {
-		return err
-	}
-
-	connPool, err := pgxpool.ConnectConfig(ctx, poolCfg)
-	if err != nil {
-		return errors.WrapIf(err, "pgx.ConnectConfig")
-	}
+	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(datasource)))
 
 	var exists int
-	rows, err := connPool.Query(context.Background(), fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
+	rows, err := sqldb.Query(fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
 	if err != nil {
 		return err
 	}
@@ -171,64 +158,13 @@ func createDB(cfg *Config, ctx context.Context) error {
 		return nil
 	}
 
-	_, err = connPool.Exec(context.Background(), fmt.Sprintf("CREATE DATABASE %s", cfg.DBName))
+	_, err = sqldb.Exec(fmt.Sprintf("CREATE DATABASE %s", cfg.DBName))
 	if err != nil {
 		return err
 	}
 
-	defer connPool.Close()
+	defer sqldb.Close()
 
-	return nil
-}
-
-func (db *Pgx) Migrate() error {
-	if db.config.Migrations.SkipMigration {
-		zap.L().Info("database migration skipped")
-		return nil
-	}
-
-	mp := data.MigrationParams{
-		DbName:        db.config.DBName,
-		VersionTable:  db.config.Migrations.VersionTable,
-		MigrationsDir: db.config.Migrations.MigrationsDir,
-		TargetVersion: db.config.Migrations.TargetVersion,
-	}
-
-	if err := runPostgresMigration(db.DB, mp); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func runPostgresMigration(db *sql.DB, p data.MigrationParams) error {
-	d, err := postgres.WithInstance(db, &postgres.Config{
-		MigrationsTable: p.VersionTable,
-		DatabaseName:    p.DbName,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to initialize migrator: %w", err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance("file://"+p.MigrationsDir, p.DbName, d)
-	if err != nil {
-		return fmt.Errorf("failed to initialize migrator: %w", err)
-	}
-
-	if p.TargetVersion == 0 {
-		err = m.Up()
-	} else {
-		err = m.Migrate(p.TargetVersion)
-	}
-
-	if err == migrate.ErrNoChange {
-		return nil
-	}
-
-	zap.L().Info("migration finished")
-	if err != nil {
-		return fmt.Errorf("failed to migrate database: %w", err)
-	}
 	return nil
 }
 
