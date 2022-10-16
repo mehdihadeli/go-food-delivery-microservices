@@ -4,15 +4,11 @@ import (
 	"context"
 	"emperror.dev/errors"
 	"fmt"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	"github.com/kamva/mgm/v3"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.uber.org/zap"
 	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -33,13 +29,12 @@ type MongoDb struct {
 }
 
 type MongoDbConfig struct {
-	Host       string               `mapstructure:"host"`
-	Port       int                  `mapstructure:"port"`
-	User       string               `mapstructure:"user"`
-	Password   string               `mapstructure:"password"`
-	Database   string               `mapstructure:"database"`
-	UseAuth    bool                 `mapstructure:"useAuth"`
-	Migrations data.MigrationParams `mapstructure:"migrations"`
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
+	Database string `mapstructure:"database"`
+	UseAuth  bool   `mapstructure:"useAuth"`
 }
 
 // NewMongoDB Create new MongoDB client
@@ -79,46 +74,6 @@ func NewMongoDB(ctx context.Context, cfg *MongoDbConfig) (*MongoDb, error) {
 
 func (m *MongoDb) Close() error {
 	return m.MongoClient.Disconnect(context.Background())
-}
-
-func (m *MongoDb) Migrate() error {
-	if m.config.Migrations.SkipMigration {
-		zap.L().Info("database migration skipped")
-		return nil
-	}
-
-	mp := data.MigrationParams{
-		DbName:        m.config.Database,
-		VersionTable:  m.config.Migrations.VersionTable,
-		MigrationsDir: m.config.Migrations.MigrationsDir,
-		TargetVersion: m.config.Migrations.TargetVersion,
-	}
-
-	d, err := mongodb.WithInstance(m.MongoClient, &mongodb.Config{DatabaseName: mp.DbName, MigrationsCollection: mp.VersionTable})
-	if err != nil {
-		return fmt.Errorf("failed to initialize migrator: %w", err)
-	}
-
-	mig, err := migrate.NewWithDatabaseInstance("file://"+mp.MigrationsDir, mp.DbName, d)
-	if err != nil {
-		return fmt.Errorf("failed to initialize migrator: %w", err)
-	}
-
-	if mp.TargetVersion == 0 {
-		err = mig.Up()
-	} else {
-		err = mig.Migrate(mp.TargetVersion)
-	}
-
-	if err == migrate.ErrNoChange {
-		return nil
-	}
-
-	zap.L().Info("migration finished")
-	if err != nil {
-		return fmt.Errorf("failed to migrate database: %w", err)
-	}
-	return nil
 }
 
 //https://stackoverflow.com/a/23650312/581476

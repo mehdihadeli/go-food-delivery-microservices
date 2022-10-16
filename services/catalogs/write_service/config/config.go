@@ -7,7 +7,7 @@ import (
 	"github.com/caarlos0/env/v6"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -36,7 +36,7 @@ type Config struct {
 	Http              *customEcho.EchoHttpConfig     `mapstructure:"http" envPrefix:"Http_"`
 	Context           Context                        `mapstructure:"context" envPrefix:"Context_"`
 	Postgresql        *postgres.Config               `mapstructure:"postgres" envPrefix:"Postgresql_"`
-	GormPostgres      *gormPostgres.Config           `mapstructure:"gormPostgres" envPrefix:"GormPostgres_"`
+	GormPostgres      *gormPostgres.GormConfig       `mapstructure:"gormPostgres" envPrefix:"GormPostgres_"`
 	RabbitMQ          *config.RabbitMQConfig         `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
 	OTel              *otel.OpenTelemetryConfig      `mapstructure:"otel" envPrefix:"OTel_"`
 	OTelMetricsConfig *metrics.OTelMetricsConfig     `mapstructure:"otelMetrics" envPrefix:"OTelMetrics_"`

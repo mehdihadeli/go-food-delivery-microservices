@@ -4,35 +4,35 @@ import (
 	"context"
 	"fmt"
 	"github.com/docker/go-connections/nat"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/contracts"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
 )
 
-type gormTestContainers struct {
+type mongoTestContainers struct {
 	container      testcontainers.Container
-	defaultOptions *contracts.PostgresContainerOptions
+	defaultOptions *contracts.MongoContainerOptions
 }
 
-func NewGormTestContainers() *gormTestContainers {
-	return &gormTestContainers{
-		defaultOptions: &contracts.PostgresContainerOptions{
+func NewMongoTestContainers() *mongoTestContainers {
+	return &mongoTestContainers{
+		defaultOptions: &contracts.MongoContainerOptions{
 			Database:  "test_db",
-			Port:      "5432",
+			Port:      "27017",
 			Host:      "localhost",
 			UserName:  "testcontainers",
 			Password:  "testcontainers",
 			Tag:       "latest",
-			ImageName: "postgres",
-			Name:      "postgresql-testcontainer",
+			ImageName: "mongo",
+			Name:      "mongo-testcontainer",
 		},
 	}
 }
 
-func (g *gormTestContainers) Start(ctx context.Context, t *testing.T, options ...*contracts.PostgresContainerOptions) (*gorm.DB, error) {
+func (g *mongoTestContainers) Start(ctx context.Context, t *testing.T, options ...*contracts.MongoContainerOptions) (*mongo.Client, error) {
 	//https://github.com/testcontainers/testcontainers-go
 	//https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
 	containerReq := g.getRunOptions(options...)
@@ -67,23 +67,26 @@ func (g *gormTestContainers) Start(ctx context.Context, t *testing.T, options ..
 	// Clean up the container after the test is complete
 	t.Cleanup(func() { _ = dbContainer.Terminate(ctx) })
 
-	db, err := gormPostgres.NewGorm(&gormPostgres.GormConfig{
-		Port:     g.defaultOptions.HostPort,
-		Host:     host,
-		Password: g.defaultOptions.Password,
-		DBName:   g.defaultOptions.Database,
-		SSLMode:  false,
+	db, err := mongodb.NewMongoDB(ctx, &mongodb.MongoDbConfig{
 		User:     g.defaultOptions.UserName,
+		Password: g.defaultOptions.Password,
+		UseAuth:  false,
+		Host:     host,
+		Port:     g.defaultOptions.HostPort,
+		Database: g.defaultOptions.Database,
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return db.DB, nil
+	return db.MongoClient, nil
 }
 
-func (g *gormTestContainers) Cleanup(ctx context.Context) error {
+func (g *mongoTestContainers) Cleanup(ctx context.Context) error {
 	return g.container.Terminate(ctx)
 }
 
-func (g *gormTestContainers) getRunOptions(opts ...*contracts.PostgresContainerOptions) testcontainers.ContainerRequest {
+func (g *mongoTestContainers) getRunOptions(opts ...*contracts.MongoContainerOptions) testcontainers.ContainerRequest {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {
@@ -106,23 +109,16 @@ func (g *gormTestContainers) getRunOptions(opts ...*contracts.PostgresContainerO
 		}
 	}
 
-	//hostFreePort, err := freeport.GetFreePort()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//g.defaultOptions.HostPort = hostFreePort
-
 	port, _ := nat.NewPort("tcp", g.defaultOptions.Port)
 
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
-		ExposedPorts: []string{string(port)},
+		ExposedPorts: []string{g.defaultOptions.Port},
 		WaitingFor:   wait.ForListeningPort(port),
 		Hostname:     g.defaultOptions.Host,
 		Env: map[string]string{
-			"POSTGRES_DB":       g.defaultOptions.Database,
-			"POSTGRES_PASSWORD": g.defaultOptions.Password,
-			"POSTGRES_USER":     g.defaultOptions.UserName,
+			"MONGO_INITDB_ROOT_USERNAME": g.defaultOptions.UserName,
+			"MONGO_INITDB_ROOT_PASSWORD": g.defaultOptions.Password,
 		},
 	}
 

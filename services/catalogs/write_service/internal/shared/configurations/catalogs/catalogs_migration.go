@@ -1,7 +1,7 @@
 package catalogs
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gormPostgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 )
 

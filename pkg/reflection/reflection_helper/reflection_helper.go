@@ -12,11 +12,25 @@ import (
 	"unsafe"
 )
 
+func GetAllFields(typ reflect.Type) []reflect.StructField {
+	var fields []reflect.StructField
+	if typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+	for i := 0; i < typ.NumField(); i++ {
+		fields = append(fields, typ.Field(i))
+	}
+	return fields
+}
+
 func GetFieldValueByIndex[T any](object T, index int) interface{} {
 	v := reflect.ValueOf(&object).Elem()
 	if v.Kind() == reflect.Ptr {
 		val := v.Elem()
 		field := val.Field(index)
+		if field.IsValid() == false {
+			return nil
+		}
 		// for all exported fields (public)
 		if field.CanInterface() {
 			return field.Interface()
@@ -28,6 +42,9 @@ func GetFieldValueByIndex[T any](object T, index int) interface{} {
 		// for all exported fields (public)
 		val := v
 		field := val.Field(index)
+		if field.IsValid() == false {
+			return nil
+		}
 		if field.CanInterface() {
 			return field.Interface()
 		} else {
@@ -48,6 +65,9 @@ func GetFieldValueByName[T any](object T, name string) interface{} {
 	if v.Kind() == reflect.Ptr {
 		val := v.Elem()
 		field := val.FieldByName(name)
+		if field.IsValid() == false {
+			return nil
+		}
 		// for all exported fields (public)
 		if field.CanInterface() {
 			return field.Interface()
@@ -59,6 +79,9 @@ func GetFieldValueByName[T any](object T, name string) interface{} {
 		// for all exported fields (public)
 		val := v
 		field := val.FieldByName(name)
+		if field.IsValid() == false {
+			return nil
+		}
 		if field.CanInterface() {
 			return field.Interface()
 		} else {
@@ -81,6 +104,9 @@ func SetFieldValueByIndex[T any](object T, index int, value interface{}) {
 	if v.Kind() == reflect.Ptr {
 		val := v.Elem()
 		field := val.Field(index)
+		if field.IsValid() == false {
+			return
+		}
 		// for all exported fields (public)
 		if field.CanInterface() && field.CanAddr() && field.CanSet() {
 			field.Set(reflect.ValueOf(value))
@@ -92,6 +118,9 @@ func SetFieldValueByIndex[T any](object T, index int, value interface{}) {
 		// for all exported fields (public)
 		val := v
 		field := val.Field(index)
+		if field.IsValid() == false {
+			return
+		}
 		if field.CanInterface() && field.CanAddr() && field.CanSet() {
 			field.Set(reflect.ValueOf(value))
 			object = val.Interface().(T)
@@ -114,6 +143,9 @@ func SetFieldValueByName[T any](object T, name string, value interface{}) {
 	if v.Kind() == reflect.Ptr {
 		val := v.Elem()
 		field := val.FieldByName(name)
+		if field.IsValid() == false {
+			return
+		}
 		// for all exported fields (public)
 		if field.CanInterface() && field.CanAddr() && field.CanSet() {
 			field.Set(reflect.ValueOf(value))
@@ -125,6 +157,9 @@ func SetFieldValueByName[T any](object T, name string, value interface{}) {
 		// for all exported fields (public)
 		val := v
 		field := val.FieldByName(name)
+		if field.IsValid() == false {
+			return
+		}
 		if field.CanInterface() && field.CanAddr() && field.CanSet() {
 			field.Set(reflect.ValueOf(value))
 			object = val.Interface().(T)
