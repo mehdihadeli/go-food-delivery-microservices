@@ -19,6 +19,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+//https://github.com/Kamva/mgm
+//https://github.com/mongodb/mongo-go-driver
+//https://blog.logrocket.com/how-to-use-mongodb-with-go/
+//https://www.mongodb.com/docs/drivers/go/current/quick-reference/
+//https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
+//https://www.mongodb.com/docs
+
 type mongoGenericRepository[TDataModel interface{}, TEntity interface{}] struct {
 	db             *mongo.Client
 	databaseName   string
@@ -91,6 +98,10 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetById(ctx context.Contex
 
 	if modelType == dataModelType {
 		var model TEntity
+		//https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
+		//https://www.mongodb.com/docs/drivers/go/current/quick-reference/
+		//https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
+		//https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.10.3/bson
 		if err := collection.FindOne(ctx, bson.M{"_id": id.String()}).Decode(&model); err != nil {
 			// ErrNoDocuments means that the filter did not match any documents in the collection
 			if err == mongo.ErrNoDocuments {
@@ -188,11 +199,12 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Search(ctx context.Context
 	}
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) Where(ctx context.Context, filters map[string]interface{}) ([]TEntity, error) {
+func (m *mongoGenericRepository[TDataModel, TEntity]) GetByFilter(ctx context.Context, filters map[string]interface{}) ([]TEntity, error) {
 	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
+	//we could use also bson.D{} for filtering, it is also a map
 	cursorResult, err := collection.Find(ctx, filters)
 	if err != nil {
 		return nil, err
@@ -228,6 +240,45 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Where(ctx context.Context,
 			return nil, err
 		}
 		return models, nil
+	}
+}
+
+func (m *mongoGenericRepository[TDataModel, TEntity]) GetByFuncFilter(ctx context.Context, filterFunc func(TEntity) bool) ([]TEntity, error) {
+	return nil, nil
+}
+
+func (m *mongoGenericRepository[TDataModel, TEntity]) FirstOrDefault(ctx context.Context, filters map[string]interface{}) (TEntity, error) {
+	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
+	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
+
+	if modelType == dataModelType {
+		var model TEntity
+		//we could use also bson.D{} for filtering, it is also a map
+		if err := collection.FindOne(ctx, filters).Decode(&model); err != nil {
+			// ErrNoDocuments means that the filter did not match any documents in the collection
+			if err == mongo.ErrNoDocuments {
+				return *new(TEntity), nil
+			}
+			return *new(TEntity), err
+		}
+
+		return model, nil
+	} else {
+		var dataModel TDataModel
+		if err := collection.FindOne(ctx, filters).Decode(&dataModel); err != nil {
+			// ErrNoDocuments means that the filter did not match any documents in the collection
+			if err == mongo.ErrNoDocuments {
+				return *new(TEntity), nil
+			}
+			return *new(TEntity), err
+		}
+
+		model, err := mapper.Map[TEntity](dataModel)
+		if err != nil {
+			return *new(TEntity), err
+		}
+		return model, nil
 	}
 }
 

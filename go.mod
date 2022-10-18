@@ -16,6 +16,8 @@ require (
 	github.com/elastic/go-elasticsearch/v8 v8.4.0
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-resty/resty/v2 v2.7.0
+	github.com/go-testfixtures/testfixtures/v3 v3.8.1
 	github.com/goccy/go-json v0.9.10
 	github.com/goccy/go-reflect v1.2.0
 	github.com/gofrs/uuid v4.2.0+incompatible
@@ -25,7 +27,7 @@ require (
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/joho/godotenv v1.3.0
+	github.com/joho/godotenv v1.4.0
 	github.com/kamva/mgm/v3 v3.4.1
 	github.com/labstack/echo/v4 v4.9.0
 	github.com/lib/pq v1.10.7
@@ -125,7 +127,6 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/mattn/go-sqlite3 v1.14.12 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/moby/sys/mount v0.3.3 // indirect
 	github.com/moby/sys/mountinfo v0.6.2 // indirect

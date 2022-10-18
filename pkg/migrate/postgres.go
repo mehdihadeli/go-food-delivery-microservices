@@ -52,7 +52,7 @@ func Up(config *MigrationConfig) error {
 	}
 
 	// determine the project's root path
-	_, callerPath, _, _ := runtime.Caller(0) // nolint:dogsled
+	_, callerPath, _, _ := runtime.Caller(1) // nolint:dogsled
 
 	// look for migrations source starting from project's root dir
 	sourceURL := fmt.Sprintf(

@@ -127,6 +127,10 @@ proto_orders_order_service:
 	@echo Generating order_service client proto
 	protoc --go_out=./services/orders/internal/orders/contracts/proto/service_clients --go-grpc_opt=require_unimplemented_servers=false --go-grpc_out=./services/orders/internal/orders/contracts/proto/service_clients/ api_docs/orders/protobuf/orders/service_clients/*.proto
 
+#https://github.com/swaggo/swag/issues/817
+swagger_fix:
+	@echo Starting swagger generatingfixing swagger generation
+	cd services/catalogs/write_service && go get -u github.com/swaggo/swag/cmd/swag@v1.6.7
 
 # Swagger Catalogs Write Service  #https://github.com/swaggo/swag/issues/817
 swagger_catalogs_write:

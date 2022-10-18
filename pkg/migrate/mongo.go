@@ -40,7 +40,7 @@ func (config *MigrationConfig) Migrate(ctx context.Context) error {
 	}
 
 	// determine the project's root path
-	_, callerPath, _, _ := runtime.Caller(0) // nolint:dogsled
+	_, callerPath, _, _ := runtime.Caller(1) // nolint:dogsled
 
 	// look for migrations source starting from project's root dir
 	sourceURL := fmt.Sprintf(
@@ -68,6 +68,6 @@ func (config *MigrationConfig) Migrate(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to migrate database: %w", err)
 	}
-	
+
 	return nil
 }

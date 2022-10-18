@@ -1,9 +1,10 @@
-package bun_postgres
+package postgres
 
 import (
 	"database/sql"
 	"emperror.dev/errors"
 	"fmt"
+	bun2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/bun"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
@@ -11,16 +12,7 @@ import (
 	_ "github.com/uptrace/bun/driver/pgdriver"
 )
 
-type BunConfig struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	User     string `mapstructure:"user"`
-	DBName   string `mapstructure:"dbName"`
-	SSLMode  bool   `mapstructure:"sslMode"`
-	Password string `mapstructure:"password"`
-}
-
-func NewBunDB(cfg *BunConfig) (*bun.DB, error) {
+func NewBunDB(cfg *bun2.BunConfig) (*bun.DB, error) {
 	if cfg.DBName == "" {
 		return nil, errors.New("DBName is required in the config.")
 	}
@@ -63,7 +55,7 @@ func NewBunDB(cfg *BunConfig) (*bun.DB, error) {
 	return db, nil
 }
 
-func createDB(cfg *BunConfig) error {
+func createDB(cfg *bun2.BunConfig) error {
 	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'
 	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,
