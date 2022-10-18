@@ -11,29 +11,28 @@ import (
 	"context"
 	"emperror.dev/errors"
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	uuid2 "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 type mongoProductRepository struct {
-	log         logger.Logger
-	cfg         *config.Config
-	mongoClient *mongo.Client
+	log               logger.Logger
+	cfg               *config.Config
+	mongoClient       *mongo.Client
+	genericRepository data.GenericRepository[*models.Product]
 }
 
-func NewMongoProductRepository(log logger.Logger, cfg *config.Config, mongoClient *mongo.Client) contracts.ProductRepository {
-	return &mongoProductRepository{log: log, cfg: cfg, mongoClient: mongoClient}
+func NewMongoProductRepository(log logger.Logger, cfg *config.Config, mongoClient *mongo.Client, genericRepository data.GenericRepository[*models.Product]) contracts.ProductRepository {
+	return &mongoProductRepository{log: log, cfg: cfg, mongoClient: mongoClient, genericRepository: genericRepository}
 }
 
 func (p *mongoProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[*models.Product], error) {
@@ -41,9 +40,10 @@ func (p *mongoProductRepository) GetAllProducts(ctx context.Context, listQuery *
 	defer span.End()
 
 	//https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
-	collection := p.mongoClient.Database(p.cfg.Mongo.Database).Collection(p.cfg.MongoCollections.Products)
-
-	result, err := mongodb.Paginate[*models.Product](ctx, listQuery, collection, nil)
+	result, err := p.genericRepository.GetAll(ctx, listQuery)
+	if err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "[mongoProductRepository_GetAllProducts.Paginate] error in the paginate"))
 	}
@@ -60,16 +60,7 @@ func (p *mongoProductRepository) SearchProducts(ctx context.Context, searchText 
 	span.SetAttributes(attribute2.String("SearchText", searchText))
 	defer span.End()
 
-	collection := p.mongoClient.Database(p.cfg.Mongo.Database).Collection(p.cfg.MongoCollections.Products)
-
-	filter := bson.D{
-		{Key: "$or", Value: bson.A{
-			bson.D{{Key: "name", Value: primitive.Regex{Pattern: searchText, Options: "gi"}}},
-			bson.D{{Key: "description", Value: primitive.Regex{Pattern: searchText, Options: "gi"}}},
-		}},
-	}
-
-	result, err := mongodb.Paginate[*models.Product](ctx, listQuery, collection, filter)
+	result, err := p.genericRepository.Search(ctx, searchText, listQuery)
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "[mongoProductRepository_SearchProducts.Paginate] error in the paginate"))
 	}
@@ -86,18 +77,13 @@ func (p *mongoProductRepository) GetProductById(ctx context.Context, uuid string
 	span.SetAttributes(attribute2.String("Id", uuid))
 	defer span.End()
 
-	//https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
-	//https://www.mongodb.com/docs/drivers/go/current/quick-reference/
-	//https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
-	//https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.10.3/bson
-	collection := p.mongoClient.Database(p.cfg.Mongo.Database).Collection(p.cfg.MongoCollections.Products)
+	id, err := uuid2.FromString(uuid)
+	if err != nil {
+		return nil, err
+	}
 
-	var product models.Product
-	if err := collection.FindOne(ctx, bson.M{"_id": uuid}).Decode(&product); err != nil {
-		// ErrNoDocuments means that the filter did not match any documents in the collection
-		if err == mongo.ErrNoDocuments {
-			return nil, nil
-		}
+	product, err := p.genericRepository.GetById(ctx, id)
+	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf("[mongoProductRepository_GetProductById.FindOne] can't find the product with id %s into the database.", uuid)))
 	}
 
@@ -105,7 +91,7 @@ func (p *mongoProductRepository) GetProductById(ctx context.Context, uuid string
 
 	p.log.Infow(fmt.Sprintf("[mongoProductRepository.GetProductById] product with id %s laoded", uuid), logger.Fields{"Product": product, "Id": uuid})
 
-	return &product, nil
+	return product, nil
 }
 
 func (p *mongoProductRepository) GetProductByProductId(ctx context.Context, uuid string) (*models.Product, error) {
@@ -114,18 +100,8 @@ func (p *mongoProductRepository) GetProductByProductId(ctx context.Context, uuid
 	span.SetAttributes(attribute2.String("ProductId", productId))
 	defer span.End()
 
-	//https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
-	//https://www.mongodb.com/docs/drivers/go/current/quick-reference/
-	//https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
-	//https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.10.3/bson
-	collection := p.mongoClient.Database(p.cfg.Mongo.Database).Collection(p.cfg.MongoCollections.Products)
-
-	var product models.Product
-	if err := collection.FindOne(ctx, bson.D{{"productId", productId}}).Decode(&product); err != nil {
-		// ErrNoDocuments means that the filter did not match any documents in the collection
-		if err == mongo.ErrNoDocuments {
-			return nil, nil
-		}
+	product, err := p.genericRepository.FirstOrDefault(ctx, map[string]interface{}{"productId": uuid})
+	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf("[mongoProductRepository_GetProductById.FindOne] can't find the product with productId %s into the database.", uuid)))
 	}
 
@@ -133,15 +109,14 @@ func (p *mongoProductRepository) GetProductByProductId(ctx context.Context, uuid
 
 	p.log.Infow(fmt.Sprintf("[mongoProductRepository.GetProductById] product with productId %s laoded", productId), logger.Fields{"Product": product, "ProductId": uuid})
 
-	return &product, nil
+	return product, nil
 }
 
 func (p *mongoProductRepository) CreateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
 	ctx, span := tracing.Tracer.Start(ctx, "mongoProductRepository.CreateProduct")
 	defer span.End()
 
-	collection := p.mongoClient.Database(p.cfg.Mongo.Database).Collection(p.cfg.MongoCollections.Products)
-	_, err := collection.InsertOne(ctx, product, &options.InsertOneOptions{})
+	err := p.genericRepository.Add(ctx, product)
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "[mongoProductRepository_CreateProduct.InsertOne] error in the inserting product into the database."))
 	}
@@ -157,22 +132,16 @@ func (p *mongoProductRepository) UpdateProduct(ctx context.Context, updateProduc
 	ctx, span := tracing.Tracer.Start(ctx, "mongoProductRepository.UpdateProduct")
 	defer span.End()
 
-	collection := p.mongoClient.Database(p.cfg.Mongo.Database).Collection(p.cfg.MongoCollections.Products)
-
-	ops := options.FindOneAndUpdate()
-	ops.SetReturnDocument(options.After)
-	ops.SetUpsert(true)
-
-	var updated models.Product
+	err := p.genericRepository.Update(ctx, updateProduct)
 	//https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
-	if err := collection.FindOneAndUpdate(ctx, bson.M{"_id": updateProduct.Id}, bson.M{"$set": updateProduct}, ops).Decode(&updated); err != nil {
+	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf("[mongoProductRepository_UpdateProduct.FindOneAndUpdate] error in updating product with id %s into the database.", updateProduct.ProductId)))
 	}
 
 	span.SetAttributes(attribute.Object("Product", updateProduct))
 	p.log.Infow(fmt.Sprintf("[mongoProductRepository.UpdateProduct] product with id '%s' updated", updateProduct.ProductId), logger.Fields{"Product": updateProduct, "Id": updateProduct.ProductId})
 
-	return &updated, nil
+	return updateProduct, nil
 }
 
 func (p *mongoProductRepository) DeleteProductByID(ctx context.Context, uuid string) error {
@@ -180,9 +149,13 @@ func (p *mongoProductRepository) DeleteProductByID(ctx context.Context, uuid str
 	span.SetAttributes(attribute2.String("Id", uuid))
 	defer span.End()
 
-	collection := p.mongoClient.Database(p.cfg.Mongo.Database).Collection(p.cfg.MongoCollections.Products)
+	id, err := uuid2.FromString(uuid)
+	if err != nil {
+		return err
+	}
 
-	if err := collection.FindOneAndDelete(ctx, bson.M{"_id": uuid}).Err(); err != nil {
+	err = p.genericRepository.Delete(ctx, id)
+	if err != nil {
 		return tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf(
 			"[mongoProductRepository_DeleteProductByID.FindOneAndDelete] error in deleting product with id %d from the database.", uuid)))
 	}

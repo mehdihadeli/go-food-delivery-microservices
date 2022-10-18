@@ -166,6 +166,46 @@ func Test_Get_By_Id_With_Data_Model(t *testing.T) {
 	assert.Nil(t, nilResult)
 }
 
+func Test_First_Or_Default(t *testing.T) {
+	ctx := context.Background()
+	repository, err := setupGenericMongoRepository(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	all, err := repository.GetAll(ctx, utils.NewListQuery(10, 1))
+	if err != nil {
+		return
+	}
+	p := all.Items[0]
+
+	single, err := repository.FirstOrDefault(ctx, map[string]interface{}{"_id": p.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(t, single)
+}
+
+func Test_First_Or_Default_With_Data_Model(t *testing.T) {
+	ctx := context.Background()
+	repository, err := setupGenericMongoRepositoryWithDataModel(ctx, t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	all, err := repository.GetAll(ctx, utils.NewListQuery(10, 1))
+	if err != nil {
+		return
+	}
+	p := all.Items[0]
+
+	single, err := repository.FirstOrDefault(ctx, map[string]interface{}{"_id": p.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(t, single)
+}
+
 func Test_Get_All(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericMongoRepository(ctx, t)
@@ -225,11 +265,11 @@ func Test_Search_With_Data_Model(t *testing.T) {
 	assert.Equal(t, len(models.Items), 1)
 }
 
-func Test_Where(t *testing.T) {
+func Test_GetByFilter(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericMongoRepository(ctx, t)
 
-	models, err := repository.Where(ctx, map[string]interface{}{"name": "seed_product1"})
+	models, err := repository.GetByFilter(ctx, map[string]interface{}{"name": "seed_product1"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -238,11 +278,11 @@ func Test_Where(t *testing.T) {
 	assert.Equal(t, len(models), 1)
 }
 
-func Test_Where_With_Data_Model(t *testing.T) {
+func Test_GetByFilter_With_Data_Model(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericMongoRepositoryWithDataModel(ctx, t)
 
-	models, err := repository.Where(ctx, map[string]interface{}{"name": "seed_product1"})
+	models, err := repository.GetByFilter(ctx, map[string]interface{}{"name": "seed_product1"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -445,7 +485,7 @@ func setupGenericMongoRepositoryWithDataModel(ctx context.Context, t *testing.T)
 		return nil, err
 	}
 
-	err = seedData(ctx, db)
+	err = seedAndMigration(ctx, db)
 	if err != nil {
 		return nil, err
 	}
@@ -459,7 +499,7 @@ func setupGenericMongoRepository(ctx context.Context, t *testing.T) (data.Generi
 		return nil, err
 	}
 
-	err = seedData(ctx, db)
+	err = seedAndMigration(ctx, db)
 	if err != nil {
 		return nil, err
 	}
@@ -467,7 +507,7 @@ func setupGenericMongoRepository(ctx context.Context, t *testing.T) (data.Generi
 	return NewGenericMongoRepository[*ProductMongo](db, DatabaseName, CollectionName), nil
 }
 
-func seedData(ctx context.Context, db *mongo.Client) error {
+func seedAndMigration(ctx context.Context, db *mongo.Client) error {
 	var seedProducts = []*ProductMongo{
 		{
 			ID:          uuid.NewV4().String(), // we generate id ourselves because auto generate mongo string id column with type _id is not an uuid

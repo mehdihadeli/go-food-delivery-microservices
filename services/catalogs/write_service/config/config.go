@@ -19,6 +19,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -93,7 +94,11 @@ func InitConfig(environment string) (*Config, error) {
 	}
 	postgresPort := os.Getenv(constants.PostgresqlPort)
 	if postgresPort != "" {
-		cfg.Postgresql.Port = postgresPort
+		port, err := strconv.Atoi(postgresPort)
+		if err != nil {
+			return nil, err
+		}
+		cfg.Postgresql.Port = port
 	}
 
 	jaegerPort := os.Getenv(constants.JaegerPort)

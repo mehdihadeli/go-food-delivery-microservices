@@ -255,7 +255,7 @@ func Test_Where(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericGormRepository(ctx, t)
 
-	models, err := repository.Where(ctx, map[string]interface{}{"name": "seed_product1"})
+	models, err := repository.GetByFilter(ctx, map[string]interface{}{"name": "seed_product1"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -268,7 +268,7 @@ func Test_Where_With_Data_Model(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericGormRepositoryWithDataModel(ctx, t)
 
-	models, err := repository.Where(ctx, map[string]interface{}{"name": "seed_product1"})
+	models, err := repository.GetByFilter(ctx, map[string]interface{}{"name": "seed_product1"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -424,7 +424,7 @@ func setupGenericGormRepositoryWithDataModel(ctx context.Context, t *testing.T) 
 		return nil, err
 	}
 
-	err = seedData(ctx, db)
+	err = seedAndMigration(ctx, db)
 	if err != nil {
 		return nil, err
 	}
@@ -435,7 +435,7 @@ func setupGenericGormRepositoryWithDataModel(ctx context.Context, t *testing.T) 
 func setupGenericGormRepository(ctx context.Context, t *testing.T) (data.GenericRepository[*ProductGorm], error) {
 	db, err := testcontainer.NewGormTestContainers().Start(ctx, t)
 
-	err = seedData(ctx, db)
+	err = seedAndMigration(ctx, db)
 	if err != nil {
 		return nil, err
 	}
@@ -443,7 +443,7 @@ func setupGenericGormRepository(ctx context.Context, t *testing.T) (data.Generic
 	return NewGenericGormRepository[*ProductGorm](db), nil
 }
 
-func seedData(ctx context.Context, db *gorm.DB) error {
+func seedAndMigration(ctx context.Context, db *gorm.DB) error {
 	err := db.AutoMigrate(ProductGorm{})
 	if err != nil {
 		return err

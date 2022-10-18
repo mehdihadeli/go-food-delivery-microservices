@@ -107,10 +107,10 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.D
 
 	var items []T
 	var totalRows int64
-	db.Model(items).Count(&totalRows)
+	db.Model(items).WithContext(ctx).Count(&totalRows)
 
 	// generate where query
-	query := db.Offset(listQuery.GetOffset()).Limit(listQuery.GetLimit()).Order(listQuery.GetOrderBy())
+	query := db.WithContext(ctx).Offset(listQuery.GetOffset()).Limit(listQuery.GetLimit()).Order(listQuery.GetOrderBy())
 
 	if listQuery.Filters != nil {
 		for _, filter := range listQuery.Filters {
@@ -121,16 +121,16 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.D
 			switch action {
 			case "equals":
 				whereQuery := fmt.Sprintf("%s = ?", column)
-				query = query.Where(whereQuery, value)
+				query = query.WithContext(ctx).Where(whereQuery, value)
 				break
 			case "contains":
 				whereQuery := fmt.Sprintf("%s LIKE ?", column)
-				query = query.Where(whereQuery, "%"+value+"%")
+				query = query.WithContext(ctx).Where(whereQuery, "%"+value+"%")
 				break
 			case "in":
 				whereQuery := fmt.Sprintf("%s IN (?)", column)
 				queryArray := strings.Split(value, ",")
-				query = query.Where(whereQuery, queryArray)
+				query = query.WithContext(ctx).Where(whereQuery, queryArray)
 				break
 
 			}

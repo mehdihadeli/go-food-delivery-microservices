@@ -101,16 +101,6 @@ func InitConfig(environment string) (*Config, error) {
 		cfg.GRPC.Port = grpcPort
 	}
 
-	mongoURI := os.Getenv(constants.MongoDbURI)
-	if mongoURI != "" {
-		cfg.Mongo.URI = mongoURI
-	}
-
-	redisAddr := os.Getenv(constants.RedisAddr)
-	if redisAddr != "" {
-		cfg.Redis.Addr = redisAddr
-	}
-
 	jaegerPort := os.Getenv(constants.JaegerPort)
 	if jaegerPort != "" {
 		cfg.OTel.JaegerExporterConfig.AgentPort = jaegerPort
