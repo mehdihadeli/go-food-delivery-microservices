@@ -17,7 +17,7 @@ func ConfigOrdersEndpoints(ctx context.Context, routeBuilder *customEcho.RouteBu
 }
 
 func configV1Endpoints(ctx context.Context, routeBuilder *customEcho.RouteBuilder, infra contracts.InfrastructureConfigurations, bus bus.Bus, metrics contracts.OrdersMetrics) {
-	routeBuilder.RegisterGroup("/api/v1", func(v1 *echo.Group) {
+	routeBuilder.RegisterGroupFunc("/api/v1", func(v1 *echo.Group) {
 		ordersGroup := v1.Group("/orders")
 
 		orderEndpointBase := delivery.NewOrderEndpointBase(infra, ordersGroup, bus, metrics)

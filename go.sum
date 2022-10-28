@@ -1000,6 +1000,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182aff
 github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2/go.mod h1:eD9eIE7cdwcMi9rYluz88Jz2VyhSmden33/aXg4oVIY=
 github.com/mehdihadeli/go-mediatr v1.1.8 h1:Gc4EUoL7Lx7vFupoUx5T/1W2wjRMpKq4Zm0+B4RXKKU=
 github.com/mehdihadeli/go-mediatr v1.1.8/go.mod h1:lwgZl7qVL/RKomObBblhG3uEte/r4nJDV95Vd+nGrMw=
+github.com/mehdihadeli/go-mediatr v1.1.9 h1:WDbVxuc7j7jEKdeENYB1SSdfJwXsH/pTNbIWuHDwB6o=
+github.com/mehdihadeli/go-mediatr v1.1.9/go.mod h1:lwgZl7qVL/RKomObBblhG3uEte/r4nJDV95Vd+nGrMw=
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/pkcs11 v1.0.3/go.mod h1:XsNlhZGX73bx86s2hdc/FuaLm2CPZJemRLMA+WTFxgs=
 github.com/miekg/pkcs11 v1.1.1/go.mod h1:XsNlhZGX73bx86s2hdc/FuaLm2CPZJemRLMA+WTFxgs=

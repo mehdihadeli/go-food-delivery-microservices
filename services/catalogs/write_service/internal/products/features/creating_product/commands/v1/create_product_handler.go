@@ -10,7 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
 	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/events/integration/v1"
@@ -21,11 +21,11 @@ import (
 type CreateProductHandler struct {
 	log              logger.Logger
 	cfg              *config.Config
-	repository       contracts.ProductRepository
+	repository       data.ProductRepository
 	rabbitmqProducer producer.Producer
 }
 
-func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository contracts.ProductRepository, rabbitmqProducer producer.Producer) *CreateProductHandler {
+func NewCreateProductHandler(log logger.Logger, cfg *config.Config, repository data.ProductRepository, rabbitmqProducer producer.Producer) *CreateProductHandler {
 	return &CreateProductHandler{log: log, cfg: cfg, repository: repository, rabbitmqProducer: rabbitmqProducer}
 }
 

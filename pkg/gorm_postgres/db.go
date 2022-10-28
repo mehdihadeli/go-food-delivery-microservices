@@ -22,12 +22,7 @@ type GormConfig struct {
 	Password string `mapstructure:"password"`
 }
 
-type Gorm struct {
-	DB     *gorm.DB
-	config *GormConfig
-}
-
-func NewGorm(cfg *GormConfig) (*Gorm, error) {
+func NewGorm(cfg *GormConfig) (*gorm.DB, error) {
 	if cfg.DBName == "" {
 		return nil, errors.New("DBName is required in the config.")
 	}
@@ -52,12 +47,7 @@ func NewGorm(cfg *GormConfig) (*Gorm, error) {
 		return nil, err
 	}
 
-	return &Gorm{DB: gormDb, config: cfg}, nil
-}
-
-func (db *Gorm) Close() {
-	d, _ := db.DB.DB()
-	_ = d.Close()
+	return gormDb, nil
 }
 
 func createDB(cfg *GormConfig) error {

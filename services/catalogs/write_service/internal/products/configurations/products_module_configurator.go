@@ -27,21 +27,21 @@ func NewProductsModuleConfigurator(infrastructure *contracts2.InfrastructureConf
 }
 
 func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context) error {
-	//Config Products Grpc
+	//cfg Products Grpc
 	grpc.ConfigProductsGrpc(ctx, c.grpcServiceBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
 
-	//Config Products Endpoints
+	//cfg Products Endpoints
 	endpoints.ConfigProductsEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
 
-	productRepository := repositoriesImp.NewPostgresProductRepository(c.Log, c.Cfg, c.Gorm.DB)
+	productRepository := repositoriesImp.NewPostgresProductRepository(c.Log, c.Cfg, c.Gorm)
 
-	//Config Products Mappings
+	//cfg Products Mappings
 	err := mappings.ConfigureProductsMappings()
 	if err != nil {
 		return err
 	}
 
-	//Config Products Mediators
+	//cfg Products Mediators
 	err = mediatr.ConfigProductsMediator(productRepository, c.InfrastructureConfigurations, c.bus)
 	if err != nil {
 		return err

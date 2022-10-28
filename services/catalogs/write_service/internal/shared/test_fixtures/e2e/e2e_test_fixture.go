@@ -2,119 +2,151 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"github.com/labstack/echo/v4"
+	mediatr2 "github.com/mehdihadeli/go-mediatr"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
+	"github.com/stretchr/testify/suite"
+	"time"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
+	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
+	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
+	rabbitmqConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer/rabbitmq"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mediatr"
+	rabbitmq2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/metrics"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/workers"
-	"net/http/httptest"
+	"github.com/stretchr/testify/require"
+	"net/http"
+	"testing"
 )
 
+type E2ETestSharedFixture struct {
+	Cfg *config.Config
+	Log logger.Logger
+	suite.Suite
+}
+
 type E2ETestFixture struct {
-	Echo *echo.Echo
-	*contracts.InfrastructureConfigurations
-	V1              *V1Groups
-	GrpcServer      grpcServer.GrpcServer
-	HttpServer      *httptest.Server
-	Bus             bus.Bus
-	CatalogsMetrics *contracts.CatalogsMetrics
-	workersRunner   *webWoker.WorkersRunner
-	Ctx             context.Context
-	cancel          context.CancelFunc
-	Cleanup         func()
+	GrpcServer grpcServer.GrpcServer
+	HttpServer customEcho.EchoHttpServer
+	*delivery.ProductEndpointBase
+	workersRunner *webWoker.WorkersRunner
+	Ctx           context.Context
+	cancel        context.CancelFunc
 }
 
-type V1Groups struct {
-	ProductsGroup *echo.Group
-}
-
-func NewE2ETestFixture() *E2ETestFixture {
+func NewE2ETestSharedFixture(t *testing.T) *E2ETestSharedFixture {
+	// we could use EmptyLogger if we don't want to log anything
+	log := defaultLogger.Logger
 	cfg, _ := config.InitConfig(constants.Test)
 
+	err := mappings.ConfigureProductsMappings()
+	if err != nil {
+		require.FailNow(t, err.Error())
+	}
+	require.NoError(t, err)
+
+	integration := &E2ETestSharedFixture{
+		Cfg: cfg,
+		Log: log,
+	}
+
+	return integration
+}
+
+func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 	ctx, cancel := context.WithCancel(context.Background())
-	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
-	infrastructures, cleanup, err := c.ConfigInfrastructures(context.Background())
+
+	// we could use EmptyLogger if we don't want to log anything
+	c := infrastructure.NewTestInfrastructureConfigurator(shared.T(), shared.Log, shared.Cfg)
+	infrastructures, cleanup, err := c.ConfigInfrastructures(ctx)
 	if err != nil {
 		cancel()
 		return nil
 	}
 
-	echo := echo.New()
+	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, infrastructures.Cfg, infrastructures.Gorm)
 
-	v1Group := echo.Group("/api/v1")
-	productsV1 := v1Group.Group("/products")
-
-	v1Groups := &V1Groups{ProductsGroup: productsV1}
-
-	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, cfg, infrastructures.Gorm.DB)
-
-	mq, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, cfg.RabbitMQ, infrastructures)
+	mqBus, err := rabbitmq.NewRabbitMQTestContainers().Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+		// Products RabbitMQ configuration
+		rabbitmq2.ConfigProductsRabbitMQ(builder)
+	})
 	if err != nil {
 		cancel()
-		return nil
+		require.FailNow(shared.T(), err.Error())
 	}
 
-	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(cfg, infrastructures.Metrics)
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(infrastructures.Cfg, infrastructures.Metrics)
 	if err != nil {
 		cancel()
-		return nil
+		require.FailNow(shared.T(), err.Error())
 	}
 
-	err = mediatr.ConfigProductsMediator(productRep, infrastructures, mq)
+	err = mediatr.ConfigProductsMediator(productRep, infrastructures, mqBus)
 	if err != nil {
 		cancel()
-		return nil
+		require.FailNow(shared.T(), err.Error())
 	}
 
-	err = mappings.ConfigureProductsMappings()
-	if err != nil {
-		cancel()
-		return nil
-	}
+	grpcServer := grpcServer.NewGrpcServer(infrastructures.Cfg.GRPC, defaultLogger.Logger, infrastructures.Cfg.ServiceName, infrastructures.Metrics)
+	httpServer := customEcho.NewEchoHttpServer(infrastructures.Cfg.Http, defaultLogger.Logger, infrastructures.Cfg.ServiceName, infrastructures.Metrics)
+	httpServer.SetupDefaultMiddlewares()
 
-	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger, cfg.ServiceName, infrastructures.Metrics)
-	httpServer := httptest.NewServer(echo)
+	var productEndpointBase *delivery.ProductEndpointBase
+
+	httpServer.RouteBuilder().RegisterGroupFunc("/api/v1", func(v1 *echo.Group) {
+		group := v1.Group("/products")
+		productEndpointBase = delivery.NewProductEndpointBase(infrastructures, group, mqBus, catalogsMetrics)
+	})
+
+	httpServer.RouteBuilder().RegisterRoutes(func(e *echo.Echo) {
+		e.GET("", func(ec echo.Context) error {
+			return ec.String(http.StatusOK, fmt.Sprintf("%s is running...", infrastructures.Cfg.GetMicroserviceNameUpper()))
+		})
+	})
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(infrastructures.Log, mq),
+		workers.NewRabbitMQWorker(infrastructures.Log, mqBus),
+	})
+
+	shared.T().Cleanup(func() {
+		// with Cancel() we send signal to done() channel to stop grpc, http and workers gracefully
+		//https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
+		//https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
+		mediatr2.ClearRequestRegistrations()
+		cancel()
+		cleanup()
 	})
 
 	return &E2ETestFixture{
-		Cleanup: func() {
-			workersRunner.Stop(ctx)
-			cancel()
-			cleanup()
-			grpcServer.GracefulShutdown()
-			echo.Shutdown(ctx)
-			httpServer.Close()
-		},
-		InfrastructureConfigurations: infrastructures,
-		Echo:                         echo,
-		V1:                           v1Groups,
-		GrpcServer:                   grpcServer,
-		HttpServer:                   httpServer,
-		Bus:                          mq,
-		CatalogsMetrics:              catalogsMetrics,
-		workersRunner:                workersRunner,
-		Ctx:                          ctx,
-		cancel:                       cancel,
+		GrpcServer:          grpcServer,
+		HttpServer:          httpServer,
+		ProductEndpointBase: productEndpointBase,
+		workersRunner:       workersRunner,
+		Ctx:                 ctx,
+		cancel:              cancel,
 	}
 }
 
 func (e *E2ETestFixture) Run() {
 	go func() {
 		if err := e.GrpcServer.RunGrpcServer(e.Ctx, nil); err != nil {
-			e.cancel()
+			e.Log.Errorf("(s.RunGrpcServer) err: %v", err)
+		}
+	}()
+
+	go func() {
+		if err := e.HttpServer.RunHttpServer(e.Ctx, nil); err != nil {
 			e.Log.Errorf("(s.RunGrpcServer) err: %v", err)
 		}
 	}()
@@ -129,4 +161,7 @@ func (e *E2ETestFixture) Run() {
 			}
 		}
 	}()
+
+	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+	time.Sleep(1 * time.Second)
 }

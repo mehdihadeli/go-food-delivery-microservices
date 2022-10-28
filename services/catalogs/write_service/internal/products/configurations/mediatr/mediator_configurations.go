@@ -3,7 +3,7 @@ package mediatr
 import (
 	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
 	creatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/commands/v1"
 	creatingProductsDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
 	deletingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/commands/v1"
@@ -17,7 +17,7 @@ import (
 	contracts2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 )
 
-func ConfigProductsMediator(pgRepo contracts.ProductRepository, infra *contracts2.InfrastructureConfigurations, producer producer.Producer) error {
+func ConfigProductsMediator(pgRepo data.ProductRepository, infra *contracts2.InfrastructureConfigurations, producer producer.Producer) error {
 	//https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
 	err := mediatr.RegisterRequestHandler[*creatingProductV1.CreateProduct, *creatingProductsDtos.CreateProductResponseDto](creatingProductV1.NewCreateProductHandler(infra.Log, infra.Cfg, pgRepo, producer))
 	if err != nil {

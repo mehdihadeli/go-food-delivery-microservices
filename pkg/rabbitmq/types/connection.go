@@ -4,7 +4,7 @@ import (
 	"context"
 	"emperror.dev/errors"
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	"github.com/rabbitmq/amqp091-go"

@@ -1,9 +1,11 @@
+//go:build go1.18
+
 package producer
 
 import (
 	"context"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
@@ -11,6 +13,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -31,20 +34,13 @@ func Test_Publish_Message(t *testing.T) {
 			Port:     5672,
 		},
 	})
-	if err != nil {
-		t.Fatal(err)
-		return
-	}
+	require.NoError(t, err)
 
 	rabbitmqProducer, err := NewRabbitMQProducer(conn, nil, defaultLogger.Logger, json.NewJsonEventSerializer())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	err = rabbitmqProducer.PublishMessage(ctx, NewProducerMessage("test"), nil)
-	if err != nil {
-		return
-	}
+	require.NoError(t, err)
 }
 
 type ProducerMessage struct {

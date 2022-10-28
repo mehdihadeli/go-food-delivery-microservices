@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/contracts"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"net/http"
 	"reflect"

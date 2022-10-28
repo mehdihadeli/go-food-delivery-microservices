@@ -11,7 +11,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/events/integration/v1"
 	attribute2 "go.opentelemetry.io/otel/attribute"
@@ -20,11 +20,11 @@ import (
 type UpdateProductHandler struct {
 	log              logger.Logger
 	cfg              *config.Config
-	pgRepo           contracts.ProductRepository
+	pgRepo           data.ProductRepository
 	rabbitmqProducer producer.Producer
 }
 
-func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, rabbitmqProducer producer.Producer) *UpdateProductHandler {
+func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, pgRepo data.ProductRepository, rabbitmqProducer producer.Producer) *UpdateProductHandler {
 	return &UpdateProductHandler{log: log, cfg: cfg, pgRepo: pgRepo, rabbitmqProducer: rabbitmqProducer}
 }
 

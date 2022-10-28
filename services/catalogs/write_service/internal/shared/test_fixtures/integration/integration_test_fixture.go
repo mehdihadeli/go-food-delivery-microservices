@@ -2,81 +2,116 @@ package integration
 
 import (
 	"context"
+	"github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
+	rabbitmqConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer/rabbitmq"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mappings"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	rabbitmq2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/rabbitmq"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/metrics"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/catalogs/rabbitmq"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	contracts2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/workers"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+	"testing"
+	"time"
 )
+
+type IntegrationTestSharedFixture struct {
+	Cfg *config.Config
+	Log logger.Logger
+	suite.Suite
+}
 
 type IntegrationTestFixture struct {
 	*contracts2.InfrastructureConfigurations
-	ProductRepository contracts.ProductRepository
+	ProductRepository data.ProductRepository
 	Bus               bus.Bus
 	CatalogsMetrics   *contracts2.CatalogsMetrics
 	workersRunner     *webWoker.WorkersRunner
 	Ctx               context.Context
 	cancel            context.CancelFunc
-	Cleanup           func()
 }
 
-func NewIntegrationTestFixture() *IntegrationTestFixture {
+func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture {
+	// we could use EmptyLogger if we don't want to log anything
+	log := defaultLogger.Logger
 	cfg, _ := config.InitConfig(constants.Test)
 
+	err := mappings.ConfigureProductsMappings()
+	if err != nil {
+		require.FailNow(t, err.Error())
+	}
+	require.NoError(t, err)
+
+	integration := &IntegrationTestSharedFixture{
+		Cfg: cfg,
+		Log: log,
+	}
+
+	return integration
+}
+
+func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *IntegrationTestFixture {
 	ctx, cancel := context.WithCancel(context.Background())
-	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
-	infrastructures, cleanup, err := c.ConfigInfrastructures(context.Background())
+
+	// we could use EmptyLogger if we don't want to log anything
+	c := infrastructure.NewTestInfrastructureConfigurator(shared.T(), shared.Log, shared.Cfg)
+	infrastructures, cleanup, err := c.ConfigInfrastructures(ctx)
 	if err != nil {
 		cancel()
-		return nil
+		require.FailNow(shared.T(), err.Error())
 	}
 
-	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, cfg, infrastructures.Gorm.DB)
+	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, infrastructures.Cfg, infrastructures.Gorm)
 
-	err = mappings.ConfigureProductsMappings()
+	mqBus, err := rabbitmq.NewRabbitMQTestContainers().Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+		// Products RabbitMQ configuration
+		rabbitmq2.ConfigProductsRabbitMQ(builder)
+	})
 	if err != nil {
 		cancel()
-		return nil
+		require.FailNow(shared.T(), err.Error())
 	}
 
-	mq, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, cfg.RabbitMQ, infrastructures)
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(infrastructures.Cfg, infrastructures.Metrics)
 	if err != nil {
 		cancel()
-		return nil
-	}
-
-	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(cfg, infrastructures.Metrics)
-	if err != nil {
-		cancel()
-		return nil
+		require.FailNow(shared.T(), err.Error())
 	}
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(infrastructures.Log, mq),
+		workers.NewRabbitMQWorker(infrastructures.Log, mqBus),
 	})
 
-	return &IntegrationTestFixture{
-		Cleanup: func() {
-			workersRunner.Stop(ctx)
-			cancel()
-			cleanup()
-		},
+	shared.T().Cleanup(func() {
+		// with Cancel() we send signal to done() channel to stop  grpc, http and workers gracefully
+		//https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
+		//https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
+		mediatr.ClearRequestRegistrations()
+		cancel()
+		cleanup()
+	})
+
+	integration := &IntegrationTestFixture{
 		InfrastructureConfigurations: infrastructures,
-		Bus:                          mq,
+		Bus:                          mqBus,
 		CatalogsMetrics:              catalogsMetrics,
 		ProductRepository:            productRep,
 		workersRunner:                workersRunner,
 		Ctx:                          ctx,
 		cancel:                       cancel,
 	}
+
+	return integration
 }
 
 func (e *IntegrationTestFixture) Run() {
@@ -90,4 +125,7 @@ func (e *IntegrationTestFixture) Run() {
 			}
 		}
 	}()
+
+	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+	time.Sleep(1 * time.Second)
 }
