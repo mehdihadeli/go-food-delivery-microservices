@@ -5,42 +5,32 @@ import (
 	"time"
 )
 
-type MessageConsumeContextBase interface {
+type MessageConsumeContext interface {
 	MessageId() string
 	CorrelationId() string
 	MessageType() string
 	Created() time.Time
 	ContentType() string
 	DeliveryTag() uint64
-	Body() interface{}
 	Metadata() metadata.Metadata
-}
-
-type MessageConsumeContext interface {
-	MessageConsumeContextBase
 	Message() IMessage
 }
 
-type messageConsumeContextBase struct {
+type messageConsumeContext struct {
 	metadata      metadata.Metadata
-	body          interface{}
 	contentType   string
 	messageType   string
 	messageId     string
 	created       time.Time
 	tag           uint64
 	correlationId string
+	message       IMessage
 }
 
-type messageConsumeContext struct {
-	MessageConsumeContextBase
-	message IMessage
-}
-
-func NewMessageContextBase(body interface{}, meta metadata.Metadata, contentType string, messageType string, created time.Time, deliveryTag uint64, messageId string, correlationId string) MessageConsumeContextBase {
-	return &messageConsumeContextBase{
+func NewMessageConsumeContext(message IMessage, meta metadata.Metadata, contentType string, messageType string, created time.Time, deliveryTag uint64, messageId string, correlationId string) MessageConsumeContext {
+	return &messageConsumeContext{
+		message:       message,
 		metadata:      meta,
-		body:          body,
 		contentType:   contentType,
 		messageId:     messageId,
 		tag:           deliveryTag,
@@ -50,45 +40,34 @@ func NewMessageContextBase(body interface{}, meta metadata.Metadata, contentType
 	}
 }
 
-func NewMessageConsumeContext(message IMessage, meta metadata.Metadata, contentType string, messageType string, created time.Time, deliveryTag uint64, messageId string, correlationId string) MessageConsumeContext {
-	return &messageConsumeContext{
-		message:                   message,
-		MessageConsumeContextBase: NewMessageContextBase(message, meta, contentType, messageType, created, deliveryTag, messageId, correlationId),
-	}
-}
-
 func (m *messageConsumeContext) Message() IMessage {
 	return m.message
 }
 
-func (m *messageConsumeContextBase) MessageId() string {
+func (m *messageConsumeContext) MessageId() string {
 	return m.messageId
 }
 
-func (m *messageConsumeContextBase) Body() interface{} {
-	return m.body
-}
-
-func (m *messageConsumeContextBase) CorrelationId() string {
+func (m *messageConsumeContext) CorrelationId() string {
 	return m.correlationId
 }
 
-func (m *messageConsumeContextBase) MessageType() string {
+func (m *messageConsumeContext) MessageType() string {
 	return m.messageType
 }
 
-func (m *messageConsumeContextBase) ContentType() string {
+func (m *messageConsumeContext) ContentType() string {
 	return m.contentType
 }
 
-func (m *messageConsumeContextBase) Metadata() metadata.Metadata {
+func (m *messageConsumeContext) Metadata() metadata.Metadata {
 	return m.metadata
 }
 
-func (m *messageConsumeContextBase) Created() time.Time {
+func (m *messageConsumeContext) Created() time.Time {
 	return m.created
 }
 
-func (m *messageConsumeContextBase) DeliveryTag() uint64 {
+func (m *messageConsumeContext) DeliveryTag() uint64 {
 	return m.tag
 }

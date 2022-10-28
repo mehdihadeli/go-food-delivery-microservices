@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	defaultLogger2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	messageConsumer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/pipeline"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
@@ -16,13 +16,13 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func Test_AddRabbitMQ(t *testing.T) {
 	ctx := context.Background()
 
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler()
 	fakeConsumer2 := consumer.NewRabbitMQFakeTestConsumerHandler()
 	fakeConsumer3 := consumer.NewRabbitMQFakeTestConsumerHandler()
 
@@ -45,38 +45,35 @@ func Test_AddRabbitMQ(t *testing.T) {
 						consumerPipelineBuilder.AddPipeline(NewPipeline1())
 					})
 				})
-		}, json.NewJsonEventSerializer(), defaultLogger.Logger)
-	if err != nil {
-		return
-	}
-
-	err = b.ConnectRabbitMQConsumer(ProducerConsumerMessage{}, func(consumerBuilder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
-		consumerBuilder.WithHandlers(func(handlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
-			handlerBuilder.AddHandler(fakeConsumer)
+		}, json.NewJsonEventSerializer(),
+		defaultLogger2.Logger, func(message types2.IMessage) {
+			t.Logf("message: %v consumed", message)
+		}, func(message types2.IMessage) {
+			t.Logf("message: %v published", message)
 		})
-	})
-	if err != nil {
-		return
-	}
-	b.ConnectConsumerHandler(ProducerConsumerMessage{}, fakeConsumer2)
+	require.NoError(t, err)
 
-	err = b.ConnectConsumer(ProducerConsumerMessage{}, fakeConsumer3)
-	if err != nil {
-		return
-	}
+	//err = b.ConnectRabbitMQConsumer(ProducerConsumerMessage{}, func(consumerBuilder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
+	//	consumerBuilder.WithHandlers(func(handlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
+	//		handlerBuilder.AddHandler(fakeConsumer)
+	//	})
+	//})
+	//require.NoError(t, err)
+
+	err = b.ConnectConsumerHandler(ProducerConsumerMessage{}, fakeConsumer2)
+	require.NoError(t, err)
+
+	err = b.ConnectConsumerHandler(ProducerConsumerMessage{}, fakeConsumer3)
+	require.NoError(t, err)
 
 	err = b.Start(ctx)
-	if err != nil {
-		return
-	}
+	require.NoError(t, err)
 
 	err = b.PublishMessage(context.Background(), &ProducerConsumerMessage{Data: "ssssssssss", Message: types2.NewMessage(uuid.NewV4().String())}, nil)
-	if err != nil {
-		return
-	}
+	require.NoError(t, err)
 
 	err = test.WaitUntilConditionMet(func() bool {
-		return fakeConsumer.IsHandled() && fakeConsumer2.IsHandled() && fakeConsumer3.IsHandled()
+		return fakeConsumer2.IsHandled() && fakeConsumer3.IsHandled()
 	})
 	assert.NoError(t, err)
 

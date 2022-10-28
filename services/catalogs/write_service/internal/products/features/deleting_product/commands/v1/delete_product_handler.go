@@ -10,7 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
 	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/events/integration/v1"
 	attribute2 "go.opentelemetry.io/otel/attribute"
 )
@@ -18,11 +18,11 @@ import (
 type DeleteProductHandler struct {
 	log              logger.Logger
 	cfg              *config.Config
-	pgRepo           contracts.ProductRepository
+	pgRepo           data.ProductRepository
 	rabbitmqProducer producer.Producer
 }
 
-func NewDeleteProductHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository, rabbitmqProducer producer.Producer) *DeleteProductHandler {
+func NewDeleteProductHandler(log logger.Logger, cfg *config.Config, pgRepo data.ProductRepository, rabbitmqProducer producer.Producer) *DeleteProductHandler {
 	return &DeleteProductHandler{log: log, cfg: cfg, pgRepo: pgRepo, rabbitmqProducer: rabbitmqProducer}
 }
 

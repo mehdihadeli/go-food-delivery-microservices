@@ -25,7 +25,7 @@ func Test_Catalogs_Unit_Of_Work(t *testing.T) {
 	gormDB, err := testcontainer.NewGormTestContainers().Start(ctx, t)
 	require.NoError(t, err)
 
-	err = seedAndMigration(ctx, gormDB)
+	err = seedAndMigration(gormDB)
 	require.NoError(t, err)
 	cfg, err := config.InitConfig(constants.Test)
 	require.NoError(t, err)
@@ -116,7 +116,7 @@ func Test_Catalogs_Unit_Of_Work(t *testing.T) {
 	})
 }
 
-func seedAndMigration(ctx context.Context, gormDB *gorm.DB) error {
+func seedAndMigration(gormDB *gorm.DB) error {
 	// migration
 	err := gormDB.AutoMigrate(models.Product{})
 	if err != nil {

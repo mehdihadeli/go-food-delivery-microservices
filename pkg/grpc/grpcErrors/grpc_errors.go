@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"time"

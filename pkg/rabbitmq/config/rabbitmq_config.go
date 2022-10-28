@@ -1,3 +1,5 @@
+//go:build go1.18
+
 package config
 
 import (
@@ -22,5 +24,5 @@ type RabbitMqHostOptions struct {
 }
 
 func (h *RabbitMqHostOptions) EndPoint() string {
-	return fmt.Sprintf("amqp://%s:%d", h.HostName, h.Port)
+	return fmt.Sprintf("amqp://%s:%s@%s:%d", h.UserName, h.Password, h.HostName, h.Port)
 }

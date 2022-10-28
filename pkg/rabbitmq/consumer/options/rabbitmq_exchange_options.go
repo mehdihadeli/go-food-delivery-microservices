@@ -1,3 +1,5 @@
+//go:build go1.18
+
 package options
 
 import "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"

@@ -31,7 +31,7 @@ require (
 	github.com/kamva/mgm/v3 v3.4.1
 	github.com/labstack/echo/v4 v4.9.0
 	github.com/lib/pq v1.10.7
-	github.com/mehdihadeli/go-mediatr v1.1.8
+	github.com/mehdihadeli/go-mediatr v1.1.9
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nolleh/caption_json_formatter v0.0.0-20220315135329-e0b5bf6eda5a
 	github.com/orlangure/gnomock v0.22.0

@@ -15,7 +15,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/labstack/echo/v4 v4.9.0
-	github.com/mehdihadeli/go-mediatr v1.1.8
+	github.com/mehdihadeli/go-mediatr v1.1.9
 	github.com/mehdihadeli/store-golang-microservice-sample v0.0.0-00010101000000-000000000000
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.12.0
@@ -119,6 +119,7 @@ require (
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/solsw/go2linq/v2 v2.3.0 // indirect
+	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	github.com/testcontainers/testcontainers-go v0.14.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect

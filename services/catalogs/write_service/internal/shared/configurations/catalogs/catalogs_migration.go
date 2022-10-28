@@ -1,13 +1,13 @@
 package catalogs
 
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
+	"gorm.io/gorm"
 )
 
-func (c *catalogsServiceConfigurator) migrateCatalogs(gorm *gormPostgres.Gorm) error {
+func (c *catalogsServiceConfigurator) migrateCatalogs(gorm *gorm.DB) error {
 	// or we could use `gorm.Migrate()`
-	err := gorm.DB.AutoMigrate(&models.Product{})
+	err := gorm.AutoMigrate(&models.Product{})
 	if err != nil {
 		return err
 	}

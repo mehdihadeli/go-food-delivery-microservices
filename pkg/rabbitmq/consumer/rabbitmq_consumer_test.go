@@ -1,10 +1,12 @@
+//go:build go1.18
+
 package consumer
 
 import (
 	"context"
 	"fmt"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	defaultLogger2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	messageConsumer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/pipeline"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
@@ -18,7 +20,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
 	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -34,9 +36,8 @@ func Test_Consume_Message(t *testing.T) {
 		JaegerExporterConfig: &otel.JaegerExporterConfig{AgentHost: "localhost", AgentPort: "6831"},
 		ZipkinExporterConfig: &otel.ZipkinExporterConfig{Url: "http://localhost:9411/api/v2/spans"},
 	})
-	if err != nil {
-		return
-	}
+	require.NoError(t, err)
+
 	defer tp.Shutdown(ctx)
 
 	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitMQConfig{
@@ -46,10 +47,7 @@ func Test_Consume_Message(t *testing.T) {
 			HostName: "localhost",
 			Port:     5672,
 		}})
-	if err != nil {
-		return
-	}
-
+	require.NoError(t, err)
 	fakeHandler := consumer.NewRabbitMQFakeTestConsumerHandler()
 	builder := configurations.NewRabbitMQConsumerConfigurationBuilder(ProducerConsumerMessage{})
 	builder.WithHandlers(func(consumerHandlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
@@ -57,7 +55,8 @@ func Test_Consume_Message(t *testing.T) {
 		consumerHandlerBuilder.AddHandler(fakeHandler)
 	})
 
-	rabbitmqConsumer, err := NewRabbitMQConsumer(conn, builder.Build(), json.NewJsonEventSerializer(), defaultLogger.Logger)
+	rabbitmqConsumer, err := NewRabbitMQConsumer(conn, builder.Build(), json.NewJsonEventSerializer(), defaultLogger2.Logger)
+	require.NoError(t, err)
 
 	if rabbitmqConsumer == nil {
 		t.Log("RabbitMQ consumer is nil")
@@ -67,15 +66,15 @@ func Test_Consume_Message(t *testing.T) {
 	if err != nil {
 		rabbitmqConsumer.Stop(ctx)
 	}
+	require.NoError(t, err)
 
 	rabbitmqProducer, err := producer.NewRabbitMQProducer(
 		conn,
 		nil,
-		defaultLogger.Logger,
+		defaultLogger2.Logger,
 		json.NewJsonEventSerializer())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+
 	//time.Sleep(time.Second * 5)
 	//
 	//fmt.Println("closing connection")
@@ -94,7 +93,7 @@ func Test_Consume_Message(t *testing.T) {
 	err = test.WaitUntilConditionMet(func() bool {
 		return fakeHandler.IsHandled()
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	rabbitmqConsumer.Stop(ctx)
 	conn.Close()

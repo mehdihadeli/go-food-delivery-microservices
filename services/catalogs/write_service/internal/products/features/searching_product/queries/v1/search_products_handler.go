@@ -8,7 +8,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/dtos"
 )
@@ -16,10 +16,10 @@ import (
 type SearchProductsHandler struct {
 	log    logger.Logger
 	cfg    *config.Config
-	pgRepo contracts.ProductRepository
+	pgRepo data.ProductRepository
 }
 
-func NewSearchProductsHandler(log logger.Logger, cfg *config.Config, pgRepo contracts.ProductRepository) *SearchProductsHandler {
+func NewSearchProductsHandler(log logger.Logger, cfg *config.Config, pgRepo data.ProductRepository) *SearchProductsHandler {
 	return &SearchProductsHandler{log: log, cfg: cfg, pgRepo: pgRepo}
 }
 

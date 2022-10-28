@@ -191,6 +191,14 @@ func GetTypeFromGeneric[T interface{}]() reflect.Type {
 	return res
 }
 
+func GetBaseType(value interface{}) interface{} {
+	if reflect.ValueOf(value).Kind() == reflect.Pointer {
+		return reflect.ValueOf(value).Elem().Interface()
+	}
+
+	return value
+}
+
 func GetReflectType(value interface{}) reflect.Type {
 	if reflect.TypeOf(value).Kind() == reflect.Pointer && reflect.TypeOf(value).Elem().Kind() == reflect.Interface {
 		return reflect.TypeOf(value).Elem()
@@ -198,14 +206,6 @@ func GetReflectType(value interface{}) reflect.Type {
 
 	res := reflect.TypeOf(value)
 	return res
-}
-
-func GetBaseType(value interface{}) interface{} {
-	if reflect.ValueOf(value).Kind() == reflect.Pointer {
-		return reflect.ValueOf(value).Elem().Interface()
-	}
-
-	return value
 }
 
 func GetBaseReflectType(value interface{}) reflect.Type {

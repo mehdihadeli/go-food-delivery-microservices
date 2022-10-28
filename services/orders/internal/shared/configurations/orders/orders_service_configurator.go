@@ -28,6 +28,7 @@ func (c *ordersServiceConfigurator) ConfigureOrdersService(ctx context.Context) 
 
 	ordersServiceConfigurations.ordersGrpcServer = grpcServer.NewGrpcServer(c.Cfg().GRPC, c.Log(), c.Cfg().ServiceName, c.Metrics())
 	ordersServiceConfigurations.ordersEchoServer = customEcho.NewEchoHttpServer(c.Cfg().Http, c.Log(), c.Cfg().ServiceName, c.Metrics())
+	ordersServiceConfigurations.ordersEchoServer.SetupDefaultMiddlewares()
 
 	ordersServiceConfigurations.ordersEchoServer.RouteBuilder().RegisterRoutes(func(e *echo.Echo) {
 		e.GET("", func(ec echo.Context) error {

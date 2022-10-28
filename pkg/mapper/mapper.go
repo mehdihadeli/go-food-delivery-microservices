@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/ahmetb/go-linq/v3"
 	"github.com/iancoleman/strcase"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
 	"reflect"
 )
@@ -58,6 +58,11 @@ func init() {
 
 func Configure(config *MapperConfig) {
 	mapperConfig = config
+}
+
+func ClearMappings() {
+	profiles = map[string][][2]string{}
+	maps = map[mappingsEntry]interface{}{}
 }
 
 func CreateMap[TSrc any, TDst any]() error {

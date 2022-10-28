@@ -27,6 +27,7 @@ func (c *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Conte
 
 	catalogsServiceConfigurations.CatalogsGrpcServer = grpc.NewGrpcServer(c.Cfg.GRPC, c.Log, c.Cfg.ServiceName, c.Metrics)
 	catalogsServiceConfigurations.CatalogsEchoServer = customEcho.NewEchoHttpServer(c.Cfg.Http, c.Log, c.Cfg.ServiceName, c.Metrics)
+	catalogsServiceConfigurations.CatalogsEchoServer.SetupDefaultMiddlewares()
 
 	catalogsServiceConfigurations.CatalogsEchoServer.RouteBuilder().RegisterRoutes(func(e *echo.Echo) {
 		e.GET("", func(ec echo.Context) error {

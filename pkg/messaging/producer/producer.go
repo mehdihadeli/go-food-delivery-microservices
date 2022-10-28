@@ -9,4 +9,5 @@ import (
 type Producer interface {
 	PublishMessage(ctx context.Context, message types.IMessage, meta metadata.Metadata) error
 	PublishMessageWithTopicName(ctx context.Context, message types.IMessage, meta metadata.Metadata, topicOrExchangeName string) error
+	AddMessageProducedHandler(func(message types.IMessage))
 }

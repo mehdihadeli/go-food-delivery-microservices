@@ -17,7 +17,7 @@ func ConfigProductsEndpoints(ctx context.Context, routeBuilder *customEcho.Route
 }
 
 func configV1Endpoints(ctx context.Context, routeBuilder *customEcho.RouteBuilder, infra *contracts.InfrastructureConfigurations, bus bus.Bus, metrics *contracts.CatalogsMetrics) {
-	routeBuilder.RegisterGroup("/api/v1", func(v1 *echo.Group) {
+	routeBuilder.RegisterGroupFunc("/api/v1", func(v1 *echo.Group) {
 		group := v1.Group("/products")
 		productEndpointBase := delivery.NewProductEndpointBase(infra, group, bus, metrics)
 

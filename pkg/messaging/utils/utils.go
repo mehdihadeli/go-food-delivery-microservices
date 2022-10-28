@@ -22,6 +22,10 @@ func GetMessageNameFromType(message reflect.Type) string {
 	return strcase.ToSnake(message.Name())
 }
 
+func GetMessageBaseReflectTypeFromType(message reflect.Type) reflect.Type {
+	return typeMapper.GetBaseReflectType(message)
+}
+
 func GetMessageBaseReflectType(message interface{}) reflect.Type {
 	return typeMapper.GetBaseReflectType(message)
 }

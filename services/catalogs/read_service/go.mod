@@ -16,7 +16,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/labstack/echo/v4 v4.9.0
-	github.com/mehdihadeli/go-mediatr v1.1.8
+	github.com/mehdihadeli/go-mediatr v1.1.9
 	github.com/mehdihadeli/store-golang-microservice-sample v0.0.0-00010101000000-000000000000
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.12.0

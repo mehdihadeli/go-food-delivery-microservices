@@ -1,3 +1,5 @@
+//go:build go1.18
+
 package consumer
 
 import (
@@ -45,10 +47,11 @@ type rabbitMQConsumer struct {
 	ErrChan                 chan error
 	handlers                []consumer.ConsumerHandler
 	pipelines               []pipeline.ConsumerPipeline
+	messageConsumedHandlers []func(message messagingTypes.IMessage)
 }
 
 // NewRabbitMQConsumer create a new generic RabbitMQ consumer
-func NewRabbitMQConsumer(connection types.IConnection, consumerConfiguration *configurations.RabbitMQConsumerConfiguration, eventSerializer serializer.EventSerializer, logger logger.Logger) (consumer.Consumer, error) {
+func NewRabbitMQConsumer(connection types.IConnection, consumerConfiguration *configurations.RabbitMQConsumerConfiguration, eventSerializer serializer.EventSerializer, logger logger.Logger, messageConsumedHandlers ...func(message messagingTypes.IMessage)) (consumer.Consumer, error) {
 	if consumerConfiguration == nil {
 		return nil, errors.New("consumer configuration is required")
 	}
@@ -69,7 +72,13 @@ func NewRabbitMQConsumer(connection types.IConnection, consumerConfiguration *co
 		pipelines:               consumerConfiguration.Pipelines,
 	}
 
+	cons.messageConsumedHandlers = messageConsumedHandlers
+
 	return cons, nil
+}
+
+func (r *rabbitMQConsumer) AddMessageConsumedHandler(h func(message messagingTypes.IMessage)) {
+	r.messageConsumedHandlers = append(r.messageConsumedHandlers, h)
 }
 
 func (r *rabbitMQConsumer) Start(ctx context.Context) error {
@@ -182,7 +191,7 @@ func (r *rabbitMQConsumer) Start(ctx context.Context) error {
 					return
 				case amqErr := <-chClosedCh:
 					// This case handles the event of closed channel e.g. abnormal shutdown
-					r.logger.Error("AMQP Channel closed due to: %s\n", amqErr)
+					r.logger.Errorf("AMQP Channel closed due to: %s", amqErr)
 
 					// Re-set channel to receive notifications
 					chClosedCh = make(chan *amqp091.Error, 1)
@@ -289,6 +298,13 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 				return
 			}
 			_ = consumeTracing.FinishConsumerSpan(beforeConsumeSpan, nil)
+			if len(r.messageConsumedHandlers) > 0 {
+				for _, handler := range r.messageConsumedHandlers {
+					if handler != nil {
+						handler(consumeContext.Message())
+					}
+				}
+			}
 		}
 
 		nack = func() {
@@ -303,7 +319,7 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 	r.handle(ctx, ack, nack, consumeContext)
 }
 
-func (r *rabbitMQConsumer) handle(ctx context.Context, ack func(), nack func(), messageConsumeContext messagingTypes.MessageConsumeContextBase) {
+func (r *rabbitMQConsumer) handle(ctx context.Context, ack func(), nack func(), messageConsumeContext messagingTypes.MessageConsumeContext) {
 	var err error
 	for _, handler := range r.handlers {
 		err = r.runHandlersWithRetry(ctx, handler, messageConsumeContext)
@@ -322,7 +338,7 @@ func (r *rabbitMQConsumer) handle(ctx context.Context, ack func(), nack func(), 
 	}
 }
 
-func (r *rabbitMQConsumer) runHandlersWithRetry(ctx context.Context, handler consumer.ConsumerHandler, messageConsumeContext messagingTypes.MessageConsumeContextBase) error {
+func (r *rabbitMQConsumer) runHandlersWithRetry(ctx context.Context, handler consumer.ConsumerHandler, messageConsumeContext messagingTypes.MessageConsumeContext) error {
 	err := retry.Do(func() error {
 		var lastHandler pipeline.ConsumerHandlerFunc
 
@@ -330,7 +346,7 @@ func (r *rabbitMQConsumer) runHandlersWithRetry(ctx context.Context, handler con
 			var reversPipes = r.reversOrder(r.pipelines)
 			lastHandler = func() error {
 				handler := handler.(consumer.ConsumerHandler)
-				return handler.Handle(ctx, messageConsumeContext.(messagingTypes.MessageConsumeContext))
+				return handler.Handle(ctx, messageConsumeContext)
 			}
 
 			aggregateResult := linq.From(reversPipes).AggregateWithSeedT(lastHandler, func(next pipeline.ConsumerHandlerFunc, pipe pipeline.ConsumerPipeline) pipeline.ConsumerHandlerFunc {
@@ -366,10 +382,10 @@ func (r *rabbitMQConsumer) runHandlersWithRetry(ctx context.Context, handler con
 	return err
 }
 
-func (r *rabbitMQConsumer) createConsumeContext(delivery amqp091.Delivery) (messagingTypes.MessageConsumeContextBase, error) {
+func (r *rabbitMQConsumer) createConsumeContext(delivery amqp091.Delivery) (messagingTypes.MessageConsumeContext, error) {
 	message := r.deserializeData(delivery.ContentType, delivery.Type, delivery.Body)
 	if reflect.ValueOf(message).IsZero() || reflect.ValueOf(message).IsNil() {
-		return *new(messagingTypes.MessageConsumeContextBase), errors.New("error in deserialization of payload")
+		return *new(messagingTypes.MessageConsumeContext), errors.New("error in deserialization of payload")
 	}
 	m, ok := message.(messagingTypes.IMessage)
 	if !ok || m.IsMessage() == false {

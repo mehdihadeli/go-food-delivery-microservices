@@ -53,7 +53,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	}
 	infrastructure.Gorm = gorm
 
-	pgxConn, err := postgres.NewPgxPoolConn(ic.cfg.Postgresql, zapadapter.NewLogger(zap.L()), pgx.LogLevelInfo)
+	pgxConn, err := postgres.NewPgxPoolConn(ctx, ic.cfg.Postgresql, zapadapter.NewLogger(zap.L()), pgx.LogLevelInfo)
 	if err != nil {
 		return nil, nil, errors.WrapIf(err, "postgresql.NewPgxConn")
 	}
