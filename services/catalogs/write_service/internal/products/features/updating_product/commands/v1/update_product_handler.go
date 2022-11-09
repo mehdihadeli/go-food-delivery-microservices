@@ -3,6 +3,8 @@ package v1
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/mehdihadeli/go-mediatr"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -36,11 +38,7 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduc
 
 	product, err := c.pgRepo.GetProductById(ctx, command.ProductID)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[UpdateProductHandler_Handle.GetProductById] error in fetching product with id %s", command.ProductID)))
-	}
-
-	if product == nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("[UpdateProductHandler_Handle.GetProductById] product with id %s not found", command.ProductID)))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrapWithCode(err, http.StatusNotFound, fmt.Sprintf("[UpdateProductHandler_Handle.GetProductById] product with id %s not found", command.ProductID)))
 	}
 
 	product.Name = command.Name

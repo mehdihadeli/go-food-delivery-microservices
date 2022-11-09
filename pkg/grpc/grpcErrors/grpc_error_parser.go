@@ -21,11 +21,11 @@ func ParseError(err error) GrpcErr {
 
 	if err != nil {
 		switch {
-		case customErrors.IsDomainError(err):
+		case customErrors.IsDomainError(err, customErr.Status()):
 			return NewDomainGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
-		case customErrors.IsApplicationError(err):
+		case customErrors.IsApplicationError(err, customErr.Status()):
 			return NewApplicationGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
-		case customErrors.IsApiError(err):
+		case customErrors.IsApiError(err, customErr.Status()):
 			return NewApiGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
 		case customErrors.IsBadRequestError(err):
 			return NewBadRequestGrpcError(customErr.Error(), stackTrace)

@@ -19,7 +19,7 @@ func Test_Product_Updated_Consumer_Should_Consume_Product_Updated(t *testing.T) 
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler()
+	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandlerWithHypothesis()
 	err := fixture.Bus.ConnectConsumerHandler(ProductUpdatedV1{}, fakeConsumer)
 	assert.NoError(t, err)
 

@@ -13,6 +13,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
 	attribute2 "go.opentelemetry.io/otel/attribute"
+	"net/http"
 )
 
 type GetProductByIdHandler struct {
@@ -33,7 +34,7 @@ func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductByI
 
 	product, err := q.pgRepo.GetProductById(ctx, query.ProductID)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %s in the repository", query.ProductID.String())))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrapWithCode(err, http.StatusNotFound, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %s in the repository", query.ProductID.String())))
 	}
 
 	productDto, err := mapper.Map[*dto.ProductDto](product)

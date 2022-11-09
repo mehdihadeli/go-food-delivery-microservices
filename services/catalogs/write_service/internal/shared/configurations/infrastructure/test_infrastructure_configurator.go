@@ -3,7 +3,6 @@ package infrastructure
 import (
 	"context"
 	"emperror.dev/errors"
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
@@ -11,11 +10,10 @@ import (
 	otelMetrics "github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	gorm2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer/gorm"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/testfixture"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mocks/testData"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
-	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"testing"
 )
@@ -85,36 +83,12 @@ func seedGormAndMigration(gormDB *gorm.DB) error {
 		return errors.Wrap(err, "error in seed database")
 	}
 
-	db, err := gormDB.DB()
 	if err != nil {
 		return errors.Wrap(err, "error in seed database")
 	}
 
-	//https://github.com/go-testfixtures/testfixtures#templating
 	// seed data
-	data := []struct {
-		Name        string
-		ProductId   uuid.UUID
-		Description string
-	}{
-		{
-			Name:        gofakeit.Name(),
-			Description: gofakeit.AdjectiveDescriptive(),
-			ProductId:   uuid.NewV4(),
-		},
-		{
-			Name:        gofakeit.Name(),
-			Description: gofakeit.AdjectiveDescriptive(),
-			ProductId:   uuid.NewV4(),
-		},
-	}
-
-	err = testfixture.RunPostgresFixture(
-		db,
-		[]string{"db/fixtures/products"},
-		map[string]interface{}{
-			"Products": data,
-		})
+	err = gormDB.CreateInBatches(testData.Products, len(testData.Products)).Error
 	if err != nil {
 		return errors.Wrap(err, "error in seed database")
 	}

@@ -1,8 +1,9 @@
 package customErrors
 
 import (
-	"emperror.dev/errors"
 	"net/http"
+
+	"emperror.dev/errors"
 )
 
 func NewApplicationError(message string) error {
@@ -54,11 +55,11 @@ func (a *applicationError) IsApplicationError() bool {
 	return true
 }
 
-func IsApplicationError(err error) bool {
+func IsApplicationError(err error, code int) bool {
 	var applicationError ApplicationError
-	//us, ok := grpc_errors.Cause(err).(ApplicationError)
+	// us, ok := grpc_errors.Cause(err).(ApplicationError)
 	if errors.As(err, &applicationError) {
-		return applicationError.IsApplicationError()
+		return applicationError.IsApplicationError() && applicationError.Status() == code
 	}
 
 	return false

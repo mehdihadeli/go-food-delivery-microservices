@@ -1,4 +1,4 @@
-package test_data
+package testData
 
 import (
 	"github.com/brianvoe/gofakeit/v6"

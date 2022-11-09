@@ -111,6 +111,7 @@ pprof_allocs:
 	go tool pprof -http :8006 http://localhost:6060/debug/pprof/allocs?seconds=10
 
 
+## https://community.chocolatey.org/packages/protoc
 # Proto Catalogs Write Service
 proto_catalogs_write_product_service:
 	@echo Generating product_service client proto
@@ -153,13 +154,13 @@ swagger_orders:
 	swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/main.go  -d ./services/orders/ -o ./api_docs/orders/openapi/
 
 
-## Generate Load Test Client for Catalogs Write Service  # #https://craftbakery.dev/testing-rest-api-using-k6/
+## Generate Load Test Client for Catalogs Write Service  # #https://craftbakery.dev/testing-rest-api-using-k6/ - https://k6.io/blog/load-testing-your-api-with-swagger-openapi-and-k6/
 generate_load_test_client_catalogs_write_service:
 	@echo Generating load test client for catalogs write service
 	docker run --rm -v ${PWD}:/local  openapitools/openapi-generator-cli generate --skip-validate-spec -i  local/api_docs/catalogs/write_service/openapi/swagger.json -g k6 -o local/performance_tests/catalogs/write_service/k6-test/
 
 
-## Generate Load Test Client for Catalogs Read Service  # #https://craftbakery.dev/testing-rest-api-using-k6/
+## Generate Load Test Client for Catalogs Read Service  # #https://craftbakery.dev/testing-rest-api-using-k6/  - https://k6.io/blog/load-testing-your-api-with-swagger-openapi-and-k6/
 generate_load_test_client_catalogs_read_service:
 	@echo Generating load test client for catalogs write service
 	docker run --rm -v ${PWD}:/local  openapitools/openapi-generator-cli generate --skip-validate-spec -i  local/api_docs/catalogs/read_service/openapi/swagger.json -g k6 -o local/performance_tests/catalogs/read_service/k6-test/

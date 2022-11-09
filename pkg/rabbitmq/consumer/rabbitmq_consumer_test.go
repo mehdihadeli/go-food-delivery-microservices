@@ -5,6 +5,8 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	defaultLogger2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	messageConsumer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
@@ -16,16 +18,15 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/utils"
 	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_Consume_Message(t *testing.T) {
-	test.SkipCI(t)
+	utils.SkipCI(t)
 	defer errorUtils.HandlePanic()
 
 	ctx := context.Background()
@@ -46,7 +47,8 @@ func Test_Consume_Message(t *testing.T) {
 			Password: "guest",
 			HostName: "localhost",
 			Port:     5672,
-		}})
+		},
+	})
 	require.NoError(t, err)
 	fakeHandler := consumer.NewRabbitMQFakeTestConsumerHandler()
 	builder := configurations.NewRabbitMQConsumerConfigurationBuilder(ProducerConsumerMessage{})
@@ -90,7 +92,7 @@ func Test_Consume_Message(t *testing.T) {
 		err = rabbitmqProducer.PublishMessage(ctx, NewProducerConsumerMessage("test"), nil)
 	}
 
-	err = test.WaitUntilConditionMet(func() bool {
+	err = utils.WaitUntilConditionMet(func() bool {
 		return fakeHandler.IsHandled()
 	})
 	require.NoError(t, err)
@@ -115,8 +117,7 @@ func NewProducerConsumerMessage(data string) *ProducerConsumerMessage {
 }
 
 // /////////// ConsumerHandlerT
-type TestMessageHandler struct {
-}
+type TestMessageHandler struct{}
 
 func (t *TestMessageHandler) Handle(ctx context.Context, consumeContext types2.MessageConsumeContext) error {
 	message := consumeContext.Message().(*ProducerConsumerMessage)
@@ -129,8 +130,7 @@ func NewTestMessageHandler() *TestMessageHandler {
 	return &TestMessageHandler{}
 }
 
-type TestMessageHandler2 struct {
-}
+type TestMessageHandler2 struct{}
 
 func (t *TestMessageHandler2) Handle(ctx context.Context, consumeContext types2.MessageConsumeContext) error {
 	message := consumeContext.Message()
@@ -144,8 +144,7 @@ func NewTestMessageHandler2() *TestMessageHandler2 {
 }
 
 // /////////////// ConsumerPipeline
-type Pipeline1 struct {
-}
+type Pipeline1 struct{}
 
 func NewPipeline1() pipeline.ConsumerPipeline {
 	return &Pipeline1{}

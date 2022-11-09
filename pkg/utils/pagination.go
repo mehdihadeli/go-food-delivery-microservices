@@ -2,9 +2,12 @@ package utils
 
 import (
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 	"math"
 	"strconv"
+
+	"emperror.dev/errors"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/serializer/jsonSerializer"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 
@@ -77,7 +80,7 @@ func GetListQueryFromCtx(c echo.Context) (*ListQuery, error) {
 	q := &ListQuery{}
 	var page, size, orderBy string
 
-	//https://echo.labstack.com/guide/binding/#fast-binding-with-dedicated-helpers
+	// https://echo.labstack.com/guide/binding/#fast-binding-with-dedicated-helpers
 	err := echo.QueryParamsBinder(c).
 		CustomFunc("filters", func(values []string) []error {
 			for _, v := range values {
@@ -177,6 +180,10 @@ func (q *ListQuery) GetQueryString() string {
 }
 
 func ListResultToListResultDto[TDto any, TModel any](listResult *ListResult[TModel]) (*ListResult[TDto], error) {
+	if listResult == nil {
+		return nil, errors.New("listResult is nil")
+	}
+
 	items, err := mapper.Map[[]TDto](listResult.Items)
 	if err != nil {
 		return nil, err

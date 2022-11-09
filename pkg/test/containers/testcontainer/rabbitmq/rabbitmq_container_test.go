@@ -16,7 +16,7 @@ import (
 
 func Test_RabbitMQ_Container(t *testing.T) {
 	ctx := context.Background()
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler()
+	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandlerWithHypothesis()
 
 	rabbitmq, err := NewRabbitMQTestContainers().Start(ctx, t, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
 		builder.AddConsumer(ProducerConsumerMessage{},

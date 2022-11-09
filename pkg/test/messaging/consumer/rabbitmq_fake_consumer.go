@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/hypothesis"
 )
@@ -11,10 +12,14 @@ type RabbitMQFakeTestConsumerHandler[T any] struct {
 	hypothesis hypothesis.Hypothesis[T]
 }
 
-func NewRabbitMQFakeTestConsumerHandler[T any](hypothesis hypothesis.Hypothesis[T]) *RabbitMQFakeTestConsumerHandler[T] {
+func NewRabbitMQFakeTestConsumerHandlerWithHypothesis[T any](hypothesis hypothesis.Hypothesis[T]) *RabbitMQFakeTestConsumerHandler[T] {
 	return &RabbitMQFakeTestConsumerHandler[T]{
 		hypothesis: hypothesis,
 	}
+}
+
+func NewRabbitMQFakeTestConsumerHandler[T any]() *RabbitMQFakeTestConsumerHandler[T] {
+	return &RabbitMQFakeTestConsumerHandler[T]{}
 }
 
 func (f *RabbitMQFakeTestConsumerHandler[T]) Handle(ctx context.Context, consumeContext types.MessageConsumeContext) error {

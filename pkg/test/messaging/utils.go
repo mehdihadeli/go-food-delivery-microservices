@@ -46,7 +46,7 @@ func ShouldConsume[T types.IMessage](ctx context.Context, bus bus.Bus, condition
 
 func ShouldConsumeNewConsumer[T types.IMessage](ctx context.Context, bus bus.Bus) (hypothesis.Hypothesis[T], error) {
 	hypo := hypothesis.ForT[T](nil)
-	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandler(hypo)
+	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandlerWithHypothesis(hypo)
 	err := bus.ConnectConsumerHandler(typeMapper.GenericInstanceByT[T](), testConsumer)
 	if err != nil {
 		return nil, err

@@ -4,6 +4,8 @@ package producer
 
 import (
 	"context"
+	"testing"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
@@ -11,14 +13,13 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/types"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_Publish_Message(t *testing.T) {
-	test.SkipCI(t)
+	utils.SkipCI(t)
 	ctx := context.Background()
 	tp, err := tracing.AddOtelTracing(&otel.OpenTelemetryConfig{ServiceName: "test", Enabled: true, AlwaysOnSampler: true, JaegerExporterConfig: &otel.JaegerExporterConfig{AgentHost: "localhost", AgentPort: "6831"}})
 	if err != nil {

@@ -2,18 +2,21 @@ package repository
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+	"reflect"
+
+	"emperror.dev/errors"
+
 	"github.com/iancoleman/strcase"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data/specification"
 	gormPostgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
-	"reflect"
 )
 
 // gorm generic repository
@@ -81,7 +84,7 @@ func (r *gormGenericRepository[TDataModel, TEntity]) GetById(ctx context.Context
 		var model TEntity
 		if err := r.db.WithContext(ctx).First(&model, id).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return *new(TEntity), nil
+				return *new(TEntity), customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
 			}
 			return *new(TEntity), errors.WrapIf(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
 		}
@@ -90,7 +93,7 @@ func (r *gormGenericRepository[TDataModel, TEntity]) GetById(ctx context.Context
 		var dataModel TDataModel
 		if err := r.db.WithContext(ctx).First(&dataModel, id).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return *new(TEntity), nil
+				return *new(TEntity), customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
 			}
 			return *new(TEntity), errors.WrapIf(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
 		}
@@ -194,11 +197,11 @@ func (r *gormGenericRepository[TDataModel, TEntity]) GetByFilter(ctx context.Con
 }
 
 func (r *gormGenericRepository[TDataModel, TEntity]) GetByFuncFilter(ctx context.Context, filterFunc func(TEntity) bool) ([]TEntity, error) {
-	return nil, nil
+	return *new([]TEntity), nil
 }
 
-func (m *gormGenericRepository[TDataModel, TEntity]) FirstOrDefault(ctx context.Context, filters map[string]interface{}) (TEntity, error) {
-	return nil, nil
+func (r *gormGenericRepository[TDataModel, TEntity]) FirstOrDefault(ctx context.Context, filters map[string]interface{}) (TEntity, error) {
+	return *new(TEntity), nil
 }
 
 func (r *gormGenericRepository[TDataModel, TEntity]) Update(ctx context.Context, entity TEntity) error {

@@ -26,7 +26,7 @@ func Test_Create_Order_Command_Handler(t *testing.T) {
 		return
 	}
 
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler()
+	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandlerWithHypothesis()
 	err = fixture.Bus.ConnectConsumer(v1.OrderCreatedV1{}, fakeConsumer)
 	if err != nil {
 		return

@@ -2,8 +2,12 @@ package repositories
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	gorm2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/testfixture"
@@ -16,12 +20,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
-	"testing"
-	"time"
 )
 
-//https://brunoscheufler.com/blog/2020-04-12-building-go-test-suites-using-testify
-
+// https://brunoscheufler.com/blog/2020-04-12-building-go-test-suites-using-testify
 var (
 	seedProductId1 = uuid.NewV4()
 	seedProductId2 = uuid.NewV4()
@@ -55,16 +56,16 @@ func (p *ProductPostgresRepositoryTestSuite) Test_Create_Product() {
 	product, err = p.productRepository.GetProductById(ctx, createdProduct.ProductId)
 	require.NoError(p.T(), err)
 
-	assert.NotNil(p.T(), p)
-	assert.Equal(p.T(), product.ProductId, createdProduct.ProductId)
+	p.NotNil(p)
+	p.Equal(product.ProductId, createdProduct.ProductId)
 }
 
 func (p *ProductPostgresRepositoryTestSuite) Test_Update_Product() {
 	ctx := p.ctx
 
 	existingProduct, err := p.productRepository.GetProductById(ctx, seedProductId1)
-	require.NoError(p.T(), err)
-	require.NotNil(p.T(), existingProduct)
+	p.Require().NoError(err)
+	p.Require().NotNil(existingProduct)
 
 	existingProduct.Name = "test_update_product"
 	_, err = p.productRepository.UpdateProduct(ctx, existingProduct)
@@ -78,11 +79,11 @@ func (p *ProductPostgresRepositoryTestSuite) Test_Delete_Product() {
 	ctx := p.ctx
 
 	err := p.productRepository.DeleteProductByID(ctx, seedProductId1)
-	require.NoError(p.T(), err)
+	p.Require().NoError(err)
 
 	product, err := p.productRepository.GetProductById(ctx, seedProductId1)
-	assert.NoError(p.T(), err)
-	assert.Nil(p.T(), product)
+	p.NoError(err)
+	p.Nil(product)
 }
 
 func (p *ProductPostgresRepositoryTestSuite) Test_Get_Product() {
@@ -91,23 +92,25 @@ func (p *ProductPostgresRepositoryTestSuite) Test_Get_Product() {
 	p.Run("Product Not Found", func() {
 		// with subset test a new t will create for subset test
 		res, err := p.productRepository.GetProductById(ctx, uuid.NewV4())
-		require.NoError(p.T(), err)
-		assert.Nil(p.T(), res)
+
+		p.Error(err)
+		p.True(customErrors.IsNotFoundError(err))
+		p.Nil(res)
 	})
 
 	p.Run("Get Product By ID", func() {
 		res, err := p.productRepository.GetProductById(ctx, seedProductId1)
-		require.NoError(p.T(), err)
+		p.Require().NoError(err)
 
-		assert.NotNil(p.T(), res)
-		assert.Equal(p.T(), res.ProductId, seedProductId1)
+		p.NotNil(res)
+		p.Equal(res.ProductId, seedProductId1)
 	})
 
 	p.Run("Get All Products", func() {
 		res, err := p.productRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
-		require.NoError(p.T(), err)
+		p.Require().NoError(err)
 
-		assert.Equal(p.T(), 2, len(res.Items))
+		p.Equal(2, len(res.Items))
 	})
 }
 
@@ -174,7 +177,7 @@ func seedAndMigration(p *ProductPostgresRepositoryTestSuite, gormDB *gorm.DB, pr
 		p.FailNowf("error in seed database", err.Error())
 	}
 
-	//https://github.com/go-testfixtures/testfixtures#templating
+	// https://github.com/go-testfixtures/testfixtures#templating
 	// seed data
 	var data []struct {
 		Name        string
