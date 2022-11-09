@@ -3,14 +3,15 @@ package problemDetails
 import (
 	"context"
 	"database/sql"
+	"net/http"
+	"reflect"
+
 	"emperror.dev/errors"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	typeMapper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/type_mappper"
 	errorUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils/error_utils"
-	"net/http"
-	"reflect"
 )
 
 type ProblemDetailParser struct {
@@ -40,11 +41,11 @@ func ParseError(err error) ProblemDetailErr {
 
 	if err != nil {
 		switch {
-		case customErrors.IsDomainError(err):
+		case customErrors.IsDomainError(err, customErr.Status()):
 			return NewDomainProblemDetail(customErr.Status(), customErr.Error(), stackTrace)
-		case customErrors.IsApplicationError(err):
+		case customErrors.IsApplicationError(err, customErr.Status()):
 			return NewApplicationProblemDetail(customErr.Status(), customErr.Error(), stackTrace)
-		case customErrors.IsApiError(err):
+		case customErrors.IsApiError(err, customErr.Status()):
 			return NewApiProblemDetail(customErr.Status(), customErr.Error(), stackTrace)
 		case customErrors.IsBadRequestError(err):
 			return NewBadRequestProblemDetail(customErr.Error(), stackTrace)

@@ -1,8 +1,9 @@
 package customErrors
 
 import (
-	"emperror.dev/errors"
 	"net/http"
+
+	"emperror.dev/errors"
 )
 
 func NewDomainError(message string) error {
@@ -54,11 +55,11 @@ func (d *domainError) IsDomainError() bool {
 	return true
 }
 
-func IsDomainError(err error) bool {
+func IsDomainError(err error, code int) bool {
 	var domainErr DomainError
-	//us, ok := grpc_errors.Cause(err).(DomainError)
+	// us, ok := grpc_errors.Cause(err).(DomainError)
 	if errors.As(err, &domainErr) {
-		return domainErr.IsDomainError()
+		return domainErr.IsDomainError() && domainErr.Status() == code
 	}
 
 	return false

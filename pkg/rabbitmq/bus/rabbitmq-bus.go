@@ -44,7 +44,7 @@ type rabbitMQBus struct {
 	messagePublishedHandlers []func(message types.IMessage)
 }
 
-func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, serializer serializer.EventSerializer, logger logger.Logger, messageConsumedHandler func(message types.IMessage), messagePublishedHandler func(message types.IMessage)) (RabbitMQBus, error) {
+func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, serializer serializer.EventSerializer, logger logger.Logger) (RabbitMQBus, error) {
 	builder := configurations.NewRabbitMQConfigurationBuilder()
 	if rabbitmqBuilderFunc != nil {
 		rabbitmqBuilderFunc(builder)
@@ -100,14 +100,6 @@ func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBui
 		return *new(RabbitMQBus), err
 	}
 	rabbitBus.producer = p
-
-	if messagePublishedHandler != nil {
-		rabbitBus.messagePublishedHandlers = append(rabbitBus.messagePublishedHandlers, messagePublishedHandler)
-	}
-
-	if messageConsumedHandler != nil {
-		rabbitBus.messageConsumedHandlers = append(rabbitBus.messageConsumedHandlers, messageConsumedHandler)
-	}
 
 	return rabbitBus, err
 }

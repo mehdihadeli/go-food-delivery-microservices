@@ -2,17 +2,20 @@ package repository
 
 import (
 	"context"
+	"log"
+	"testing"
+
+	mongo2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer/mongo"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data/specification"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
-	"testing"
 )
 
 const (
@@ -29,7 +32,7 @@ type Product struct {
 }
 
 type ProductMongo struct {
-	ID          string `json:"id" bson:"_id,omitempty"` //https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/write-operations/insert/#the-_id-field
+	ID          string `json:"id" bson:"_id,omitempty"` // https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/write-operations/insert/#the-_id-field
 	Name        string `json:"name" bson:"name"`
 	Weight      int    `json:"weight" bson:"weight"`
 	IsAvailable bool   `json:"isAvailable" bson:"isAvailable"`
@@ -122,20 +125,41 @@ func Test_Get_By_Id(t *testing.T) {
 		return
 	}
 	p := all.Items[0]
-
 	id, err := uuid.FromString(p.ID)
-	if err != nil {
-		t.Fatal(err)
+
+	testCases := []struct {
+		Name         string
+		ProductId    uuid.UUID
+		ExpectResult *ProductMongo
+	}{
+		{
+			Name:         "ExistingProduct",
+			ProductId:    id,
+			ExpectResult: p,
+		},
+		{
+			Name:         "NonExistingProduct",
+			ProductId:    uuid.NewV4(),
+			ExpectResult: nil,
+		},
 	}
 
-	single, err := repository.GetById(ctx, id)
-	if err != nil {
-		t.Fatal(err)
+	for _, c := range testCases {
+		c := c
+		t.Run(c.Name, func(t *testing.T) {
+			t.Parallel()
+			res, err := repository.GetById(ctx, c.ProductId)
+			if c.ExpectResult == nil {
+				assert.Error(t, err)
+				assert.True(t, customErrors.IsNotFoundError(err))
+				assert.Nil(t, res)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, res)
+				assert.Equal(t, p.ID, res.ID)
+			}
+		})
 	}
-	assert.NotNil(t, single)
-
-	nilResult, err := repository.GetById(ctx, uuid.NewV4())
-	assert.Nil(t, nilResult)
 }
 
 func Test_Get_By_Id_With_Data_Model(t *testing.T) {
@@ -149,21 +173,43 @@ func Test_Get_By_Id_With_Data_Model(t *testing.T) {
 	if err != nil {
 		return
 	}
+
 	p := all.Items[0]
-
 	id, err := uuid.FromString(p.ID)
-	if err != nil {
-		t.Fatal(err)
+
+	testCases := []struct {
+		Name         string
+		ProductId    uuid.UUID
+		ExpectResult *Product
+	}{
+		{
+			Name:         "ExistingProduct",
+			ProductId:    id,
+			ExpectResult: p,
+		},
+		{
+			Name:         "NonExistingProduct",
+			ProductId:    uuid.NewV4(),
+			ExpectResult: nil,
+		},
 	}
 
-	single, err := repository.GetById(ctx, id)
-	if err != nil {
-		t.Fatal(err)
+	for _, c := range testCases {
+		c := c
+		t.Run(c.Name, func(t *testing.T) {
+			t.Parallel()
+			res, err := repository.GetById(ctx, c.ProductId)
+			if c.ExpectResult == nil {
+				assert.Error(t, err)
+				assert.True(t, customErrors.IsNotFoundError(err))
+				assert.Nil(t, res)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, res)
+				assert.Equal(t, p.ID, res.ID)
+			}
+		})
 	}
-	assert.NotNil(t, single)
-
-	nilResult, err := repository.GetById(ctx, uuid.NewV4())
-	assert.Nil(t, nilResult)
 }
 
 func Test_First_Or_Default(t *testing.T) {
@@ -452,7 +498,6 @@ func Test_Skip_Take_With_Data_Model(t *testing.T) {
 func Test_Find(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericMongoRepository(ctx, t)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -467,7 +512,6 @@ func Test_Find(t *testing.T) {
 func Test_Find_With_Data_Model(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericMongoRepositoryWithDataModel(ctx, t)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -480,7 +524,7 @@ func Test_Find_With_Data_Model(t *testing.T) {
 }
 
 func setupGenericMongoRepositoryWithDataModel(ctx context.Context, t *testing.T) (data.GenericRepositoryWithDataModel[*ProductMongo, *Product], error) {
-	db, err := testcontainer.NewMongoTestContainers().Start(ctx, t)
+	db, err := mongo2.NewMongoTestContainers().Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
@@ -494,7 +538,7 @@ func setupGenericMongoRepositoryWithDataModel(ctx context.Context, t *testing.T)
 }
 
 func setupGenericMongoRepository(ctx context.Context, t *testing.T) (data.GenericRepository[*ProductMongo], error) {
-	db, err := testcontainer.NewMongoTestContainers().Start(ctx, t)
+	db, err := mongo2.NewMongoTestContainers().Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
@@ -508,7 +552,7 @@ func setupGenericMongoRepository(ctx context.Context, t *testing.T) (data.Generi
 }
 
 func seedAndMigration(ctx context.Context, db *mongo.Client) error {
-	var seedProducts = []*ProductMongo{
+	seedProducts := []*ProductMongo{
 		{
 			ID:          uuid.NewV4().String(), // we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
 			Name:        "seed_product1",
@@ -523,7 +567,7 @@ func seedAndMigration(ctx context.Context, db *mongo.Client) error {
 		},
 	}
 
-	//https://go.dev/doc/faq#convert_slice_of_interface
+	// https://go.dev/doc/faq#convert_slice_of_interface
 	data := make([]interface{}, len(seedProducts))
 	for i, v := range seedProducts {
 		data[i] = v

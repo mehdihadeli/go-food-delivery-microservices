@@ -2,17 +2,20 @@ package repository
 
 import (
 	"context"
+	"log"
+	"testing"
+
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+
 	_ "github.com/lib/pq" // postgres driver
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data/specification"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer"
+	gorm2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
-	"log"
-	"testing"
 )
 
 // Product is a domain entity
@@ -110,16 +113,19 @@ func Test_Get_By_Id(t *testing.T) {
 	p := all.Items[0]
 
 	testCases := []struct {
-		Name      string
-		ProductId uuid.UUID
+		Name         string
+		ProductId    uuid.UUID
+		ExpectResult *ProductGorm
 	}{
 		{
-			Name:      "ExistingProduct",
-			ProductId: p.ID,
+			Name:         "ExistingProduct",
+			ProductId:    p.ID,
+			ExpectResult: p,
 		},
 		{
-			Name:      "NonExistingProduct",
-			ProductId: uuid.NewV4(),
+			Name:         "NonExistingProduct",
+			ProductId:    uuid.NewV4(),
+			ExpectResult: nil,
 		},
 	}
 
@@ -127,18 +133,15 @@ func Test_Get_By_Id(t *testing.T) {
 		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			t.Parallel()
-			if c.Name == "NonExistingProduct" {
-				nilResult, err := repository.GetById(ctx, c.ProductId)
-				if err != nil {
-					t.Fatal(err)
-				}
-				assert.Nil(t, nilResult)
+			res, err := repository.GetById(ctx, c.ProductId)
+			if c.ExpectResult == nil {
+				assert.Error(t, err)
+				assert.True(t, customErrors.IsNotFoundError(err))
+				assert.Nil(t, res)
 			} else {
-				single, err := repository.GetById(ctx, c.ProductId)
-				if err != nil {
-					t.Fatal(err)
-				}
-				assert.NotNil(t, single)
+				assert.NoError(t, err)
+				assert.NotNil(t, res)
+				assert.Equal(t, p.ID, res.ID)
 			}
 		})
 	}
@@ -158,16 +161,19 @@ func Test_Get_By_Id_With_Data_Model(t *testing.T) {
 	p := all.Items[0]
 
 	testCases := []struct {
-		Name      string
-		ProductId uuid.UUID
+		Name         string
+		ProductId    uuid.UUID
+		ExpectResult *Product
 	}{
 		{
-			Name:      "ExistingProduct",
-			ProductId: p.ID,
+			Name:         "ExistingProduct",
+			ProductId:    p.ID,
+			ExpectResult: p,
 		},
 		{
-			Name:      "NonExistingProduct",
-			ProductId: uuid.NewV4(),
+			Name:         "NonExistingProduct",
+			ProductId:    uuid.NewV4(),
+			ExpectResult: nil,
 		},
 	}
 
@@ -175,18 +181,15 @@ func Test_Get_By_Id_With_Data_Model(t *testing.T) {
 		c := c
 		t.Run(c.Name, func(t *testing.T) {
 			t.Parallel()
-			if c.Name == "NonExistingProduct" {
-				nilResult, err := repository.GetById(ctx, c.ProductId)
-				if err != nil {
-					t.Fatal(err)
-				}
-				assert.Nil(t, nilResult)
+			res, err := repository.GetById(ctx, c.ProductId)
+			if c.ExpectResult == nil {
+				assert.Error(t, err)
+				assert.True(t, customErrors.IsNotFoundError(err))
+				assert.Nil(t, res)
 			} else {
-				single, err := repository.GetById(ctx, c.ProductId)
-				if err != nil {
-					t.Fatal(err)
-				}
-				assert.NotNil(t, single)
+				assert.NoError(t, err)
+				assert.NotNil(t, res)
+				assert.Equal(t, p.ID, res.ID)
 			}
 		})
 	}
@@ -366,7 +369,6 @@ func Test_Delete_With_Data_Model(t *testing.T) {
 func Test_Count(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericGormRepository(ctx, t)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -391,7 +393,6 @@ func Test_Count_With_Data_Model(t *testing.T) {
 func Test_Find(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericGormRepository(ctx, t)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -406,7 +407,6 @@ func Test_Find(t *testing.T) {
 func Test_Find_With_Data_Model(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericGormRepositoryWithDataModel(ctx, t)
-
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -419,7 +419,7 @@ func Test_Find_With_Data_Model(t *testing.T) {
 }
 
 func setupGenericGormRepositoryWithDataModel(ctx context.Context, t *testing.T) (data.GenericRepositoryWithDataModel[*ProductGorm, *Product], error) {
-	db, err := testcontainer.NewGormTestContainers().Start(ctx, t)
+	db, err := gorm2.NewGormTestContainers().Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
@@ -433,7 +433,7 @@ func setupGenericGormRepositoryWithDataModel(ctx context.Context, t *testing.T) 
 }
 
 func setupGenericGormRepository(ctx context.Context, t *testing.T) (data.GenericRepository[*ProductGorm], error) {
-	db, err := testcontainer.NewGormTestContainers().Start(ctx, t)
+	db, err := gorm2.NewGormTestContainers().Start(ctx, t)
 
 	err = seedAndMigration(ctx, db)
 	if err != nil {

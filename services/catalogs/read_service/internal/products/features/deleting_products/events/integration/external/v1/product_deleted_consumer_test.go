@@ -17,7 +17,7 @@ func Test_Product_Deleted_Consumer_Should_Consume_Product_Deleted(t *testing.T) 
 	test.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture()
 
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler()
+	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandlerWithHypothesis()
 	err := fixture.Bus.ConnectConsumerHandler(ProductDeletedV1{}, fakeConsumer)
 	assert.NoError(t, err)
 

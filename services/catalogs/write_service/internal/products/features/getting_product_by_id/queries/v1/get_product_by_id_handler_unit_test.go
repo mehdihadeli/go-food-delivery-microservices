@@ -1,16 +1,20 @@
 package v1
 
 import (
-	"emperror.dev/errors"
 	"fmt"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mocks/test_data"
+	"net/http"
+	"testing"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
+
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mocks/testData"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/unit_test"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type getProductByIdHandlerTest struct {
@@ -19,7 +23,7 @@ type getProductByIdHandlerTest struct {
 	getProductByIdHandler *GetProductByIdHandler
 }
 
-func TestCreateProductUnit(t *testing.T) {
+func TestGetProductByIdUnit(t *testing.T) {
 	suite.Run(t, &getProductByIdHandlerTest{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
 }
 
@@ -27,11 +31,10 @@ func (c *getProductByIdHandlerTest) SetupTest() {
 }
 
 func (c *getProductByIdHandlerTest) BeforeTest(suiteName, testName string) {
-
 }
 
 func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
-	product := test_data.Products[0]
+	product := testData.Products[0]
 	id := uuid.NewV4()
 
 	testCases := []struct {
@@ -56,29 +59,19 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 			RepositoryReturnError:         nil,
 		},
 		{
-			Name:                          "Handle_Should_Return_Nil_For_NotFound_Item",
+			Name:                          "Handle_Should_Return_NotFound_Error_For_NotFound_Item",
 			id:                            id,
-			HandlerError:                  nil,
+			HandlerError:                  customErrors.NewApplicationErrorWithCode(fmt.Sprintf("error in getting product with id %s in the repository", id.String()), http.StatusNotFound),
 			ProductRepositoryNumberOfCall: 1,
 			ExpectedId:                    *new(uuid.UUID),
 			ExpectedName:                  "",
 			RepositoryReturnProduct:       nil,
-			RepositoryReturnError:         nil,
-		},
-		{
-			Name:                          "Handle_Should_Return_Error_For_Error_In_Repository",
-			id:                            id,
-			HandlerError:                  errors.New(fmt.Sprintf("error in getting product with id %s in the repository", id.String())),
-			ProductRepositoryNumberOfCall: 1,
-			ExpectedId:                    *new(uuid.UUID),
-			ExpectedName:                  "",
-			RepositoryReturnProduct:       nil,
-			RepositoryReturnError:         errors.New("error in GetProductById"),
+			RepositoryReturnError:         customErrors.NewNotFoundError("product not found"),
 		},
 		{
 			Name:                          "Handle_Should_Return_Error_For_Error_In_Mapping",
 			id:                            product.ProductId,
-			HandlerError:                  errors.New("error in the mapping product"),
+			HandlerError:                  customErrors.NewApplicationErrorWithCode("error in the mapping product", http.StatusInternalServerError),
 			ProductRepositoryNumberOfCall: 1,
 			ExpectedId:                    *new(uuid.UUID),
 			ExpectedName:                  "",
@@ -113,11 +106,7 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 
 			// assert
 			c.ProductRepository.AssertNumberOfCalls(c.T(), "GetProductById", testCase.ProductRepositoryNumberOfCall)
-			if testCase.HandlerError == nil && testCase.RepositoryReturnProduct == nil {
-				// success path with nil result
-				c.Require().NoError(err)
-				c.Nil(dto.Product)
-			} else if testCase.HandlerError == nil {
+			if testCase.HandlerError == nil {
 				// success path with a valid dto
 				c.Require().NoError(err)
 				c.NotNil(dto.Product)
@@ -127,15 +116,22 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 				// handler error path
 				c.Nil(dto)
 				c.ErrorContains(err, testCase.HandlerError.Error())
-				if testCase.RepositoryReturnError != nil {
-					c.ErrorContains(err, testCase.RepositoryReturnError.Error())
+				if customErrors.IsApplicationError(testCase.HandlerError, http.StatusNotFound) {
+					// not found error
+					c.True(customErrors.IsNotFoundError(err))
+					c.True(customErrors.IsApplicationError(err, http.StatusNotFound))
+					c.ErrorContains(err, testCase.HandlerError.Error())
+				} else {
+					// mapping error
+					c.ErrorContains(err, testCase.HandlerError.Error())
+					c.True(customErrors.IsApplicationError(err, http.StatusInternalServerError))
 				}
 			}
 		})
 	}
 
 	//c.Run("Handle_Should_Get_Product_Successfully", func() {
-	//	//create new mocks or clear mocks before executing
+	//	// create new mocks or clear mocks before executing
 	//	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
 	//	c.getProductByIdHandler = NewGetProductByIdHandler(c.Log, c.Cfg, c.ProductRepository)
 	//
@@ -153,49 +149,34 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 	//	c.Equal(product.Name, dto.Product.Name)
 	//})
 	//
-	//c.Run("Handle_Should_Return_Nil_For_NotFound_Item", func() {
-	//	//create new mocks or clear mocks before executing
+	//c.Run("Handle_Should_Return_NotFound_Error_For_NotFound_Item", func() {
+	//	// create new mocks or clear mocks before executing
 	//	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
 	//	c.getProductByIdHandler = NewGetProductByIdHandler(c.Log, c.Cfg, c.ProductRepository)
 	//
 	//	c.ProductRepository.On("GetProductById", mock.Anything, id).
 	//		Once().
-	//		Return(nil, nil)
-	//
-	//	query := NewGetProductById(id)
-	//
-	//	dto, err := c.getProductByIdHandler.Handle(c.Ctx, query)
-	//	c.Require().NoError(err)
-	//
-	//	c.ProductRepository.AssertNumberOfCalls(c.T(), "GetProductById", 1)
-	//	c.Nil(dto.Product)
-	//})
-	//
-	//c.Run("Handle_Should_Return_Error_For_Error_In_Repository", func() {
-	//	//create new mocks or clear mocks before executing
-	//	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
-	//	c.getProductByIdHandler = NewGetProductByIdHandler(c.Log, c.Cfg, c.ProductRepository)
-	//
-	//	c.ProductRepository.On("GetProductById", mock.Anything, id).
-	//		Once().
-	//		Return(nil, errors.New("error in GetProductById"))
+	//		Return(nil, customErrors.NewNotFoundError("product not found"))
 	//
 	//	query := NewGetProductById(id)
 	//
 	//	dto, err := c.getProductByIdHandler.Handle(c.Ctx, query)
 	//
-	//	c.ProductRepository.AssertNumberOfCalls(c.T(), "GetProductById", 1)
-	//	c.Nil(dto)
-	//	c.ErrorContains(err, "error in GetProductById")
+	//	c.Require().Error(err)
+	//	c.True(customErrors.IsApplicationError(err, http.StatusNotFound))
+	//	c.True(customErrors.IsNotFoundError(err))
 	//	c.ErrorContains(err, fmt.Sprintf("error in getting product with id %s in the repository", id.String()))
+	//	c.Nil(dto)
+	//
+	//	c.ProductRepository.AssertNumberOfCalls(c.T(), "GetProductById", 1)
 	//})
 	//
 	//c.Run("Handle_Should_Return_Error_For_Error_In_Mapping", func() {
-	//	//create new mocks or clear mocks before executing
+	//	// create new mocks or clear mocks before executing
 	//	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
 	//	c.getProductByIdHandler = NewGetProductByIdHandler(c.Log, c.Cfg, c.ProductRepository)
 	//
-	//	product := test_data.Products[0]
+	//	product := testData.Products[0]
 	//	c.ProductRepository.On("GetProductById", mock.Anything, product.ProductId).
 	//		Once().
 	//		Return(product, nil)
@@ -208,6 +189,8 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 	//
 	//	c.ProductRepository.AssertNumberOfCalls(c.T(), "GetProductById", 1)
 	//	c.Nil(dto)
+	//	c.Require().Error(err)
+	//	c.True(customErrors.IsApplicationError(err, http.StatusInternalServerError))
 	//	c.ErrorContains(err, "error in the mapping product")
 	//})
 }

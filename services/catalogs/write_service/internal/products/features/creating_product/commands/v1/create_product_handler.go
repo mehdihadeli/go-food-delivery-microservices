@@ -3,6 +3,8 @@ package v1
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
@@ -45,7 +47,7 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 
 	createdProduct, err := c.repository.CreateProduct(ctx, product)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[CreateProductHandler.CreateProduct] error in creating product in the repository"))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrapWithCode(err, http.StatusConflict, "[CreateProductHandler.CreateProduct] product already exists"))
 	}
 
 	productDto, err := mapper.Map[*dto.ProductDto](createdProduct)

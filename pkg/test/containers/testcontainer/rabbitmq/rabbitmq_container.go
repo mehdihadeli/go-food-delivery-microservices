@@ -91,9 +91,7 @@ func (g *rabbitmqTestContainers) Start(ctx context.Context, t *testing.T, rabbit
 		},
 		rabbitmqBuilderFunc,
 		json.NewJsonEventSerializer(),
-		defaultLogger.Logger,
-		nil,
-		nil)
+		defaultLogger.Logger)
 	if err != nil {
 		return nil, err
 	}

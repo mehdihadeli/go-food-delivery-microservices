@@ -3,6 +3,8 @@ package v1
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/mehdihadeli/go-mediatr"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -33,7 +35,7 @@ func (c *DeleteProductHandler) Handle(ctx context.Context, command *DeleteProduc
 	defer span.End()
 
 	if err := c.pgRepo.DeleteProductByID(ctx, command.ProductID); err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[DeleteProductHandler_Handle.DeleteProductByID] error in deleting product in the repository"))
+		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrapWithCode(err, http.StatusNotFound, "[DeleteProductHandler_Handle.DeleteProductByID] product not found"))
 	}
 
 	productDeleted := v1.NewProductDeletedV1(command.ProductID.String())

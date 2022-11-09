@@ -3,6 +3,8 @@ package repositories
 import (
 	"context"
 	"fmt"
+
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	attribute2 "go.opentelemetry.io/otel/attribute"
@@ -71,7 +73,7 @@ func (p *postgresProductRepository) GetProductById(ctx context.Context, uuid uui
 	var product models.Product
 	if err := p.gorm.First(&product, uuid).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
+			return nil, customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("[postgresProductRepository_GetProductById.First] can't find the product with id %s into the database.", uuid))
 		}
 
 		return nil, tracing.TraceErrFromContext(ctx, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_GetProductById.First] can't find the product with id %s into the database.", uuid)))
@@ -116,7 +118,7 @@ func (p *postgresProductRepository) DeleteProductByID(ctx context.Context, uuid 
 	var product models.Product
 
 	if err := p.gorm.First(&product, uuid).Error; err != nil {
-		return tracing.TraceErrFromContext(ctx, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_DeleteProductByID.First] can't find the product with id %s into the database.", uuid)))
+		return tracing.TraceErrFromContext(ctx, customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("[postgresProductRepository_DeleteProductByID.First] can't find the product with id %s into the database.", uuid)))
 	}
 
 	if err := p.gorm.Delete(&product).Error; err != nil {

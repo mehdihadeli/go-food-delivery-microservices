@@ -106,6 +106,9 @@ Keeping such a split works great with CQRS. It segregates our operations and sli
 ![](./assets/high-level.png)
 
 
+## Formatting
+For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt) in my GoLand. you can do this formatting automatically by [this guide](https://github.com/mvdan/gofumpt#goland).
+
 ## References
 
 - [https://github.com/AleksK1NG/Go-CQRS-Kafka-gRPC-Microservices](https://github.com/AleksK1NG/Go-CQRS-Kafka-gRPC-Microservices)

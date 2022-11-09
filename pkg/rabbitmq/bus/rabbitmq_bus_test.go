@@ -3,6 +3,10 @@ package bus
 import (
 	"context"
 	"fmt"
+	"testing"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/utils"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	defaultLogger2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	messageConsumer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/consumer"
@@ -12,12 +16,10 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	consumerConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
 	producerConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/configurations"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_AddRabbitMQ(t *testing.T) {
@@ -32,7 +34,8 @@ func Test_AddRabbitMQ(t *testing.T) {
 			Password: "guest",
 			HostName: "localhost",
 			Port:     5672,
-		}},
+		},
+	},
 		func(builder configurations.RabbitMQConfigurationBuilder) {
 			builder.AddProducer(ProducerConsumerMessage{}, func(builder producerConfigurations.RabbitMQProducerConfigurationBuilder) {
 			})
@@ -46,11 +49,8 @@ func Test_AddRabbitMQ(t *testing.T) {
 					})
 				})
 		}, json.NewJsonEventSerializer(),
-		defaultLogger2.Logger, func(message types2.IMessage) {
-			t.Logf("message: %v consumed", message)
-		}, func(message types2.IMessage) {
-			t.Logf("message: %v published", message)
-		})
+		defaultLogger2.Logger)
+
 	require.NoError(t, err)
 
 	//err = b.ConnectRabbitMQConsumer(ProducerConsumerMessage{}, func(consumerBuilder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
@@ -72,7 +72,7 @@ func Test_AddRabbitMQ(t *testing.T) {
 	err = b.PublishMessage(context.Background(), &ProducerConsumerMessage{Data: "ssssssssss", Message: types2.NewMessage(uuid.NewV4().String())}, nil)
 	require.NoError(t, err)
 
-	err = test.WaitUntilConditionMet(func() bool {
+	err = utils.WaitUntilConditionMet(func() bool {
 		return fakeConsumer2.IsHandled() && fakeConsumer3.IsHandled()
 	})
 	assert.NoError(t, err)
@@ -93,8 +93,7 @@ func NewProducerConsumerMessage(data string) *ProducerConsumerMessage {
 }
 
 // /////////// ConsumerHandlerT
-type TestMessageHandler struct {
-}
+type TestMessageHandler struct{}
 
 func NewTestMessageHandler() *TestMessageHandler {
 	return &TestMessageHandler{}
@@ -107,8 +106,7 @@ func (t *TestMessageHandler) Handle(ctx context.Context, consumeContext types2.M
 	return nil
 }
 
-type TestMessageHandler2 struct {
-}
+type TestMessageHandler2 struct{}
 
 func (t *TestMessageHandler2) Handle(ctx context.Context, consumeContext types2.MessageConsumeContext) error {
 	message := consumeContext.Message()
@@ -122,8 +120,7 @@ func NewTestMessageHandler2() *TestMessageHandler2 {
 }
 
 // /////////////// ConsumerPipeline
-type Pipeline1 struct {
-}
+type Pipeline1 struct{}
 
 func NewPipeline1() pipeline.ConsumerPipeline {
 	return &Pipeline1{}

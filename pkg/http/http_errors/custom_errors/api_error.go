@@ -35,11 +35,11 @@ func (a *apiError) IsApiError() bool {
 	return true
 }
 
-func IsApiError(err error) bool {
+func IsApiError(err error, code int) bool {
 	var apiError ApiError
-	//us, ok := grpc_errors.Cause(err).(ApiError)
+	// us, ok := grpc_errors.Cause(err).(ApiError)
 	if errors.As(err, &apiError) {
-		return apiError.IsApiError()
+		return apiError.IsApiError() && apiError.Status() == code
 	}
 
 	return false

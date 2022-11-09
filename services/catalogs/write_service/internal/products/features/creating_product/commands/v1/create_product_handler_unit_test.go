@@ -1,37 +1,39 @@
 package v1
 
 import (
+	"net/http"
+	"testing"
+	"time"
+
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+
 	"emperror.dev/errors"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mocks/test_data"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mocks/testData"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/unit_test"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
-// https://github.com/MarkNijhof/Fohjin/
-// https://jeremydmiller.com/2022/10/24/using-context-specification-to-better-express-complicated-tests/
-type createProductHandlerTest struct {
+type createProductHandlerUnitTests struct {
 	*unit_test.UnitTestSharedFixture
 	*unit_test.UnitTestMockFixture
 	createProductHandler *CreateProductHandler
 }
 
 func TestCreateProductUnit(t *testing.T) {
-	suite.Run(t, &createProductHandlerTest{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
+	suite.Run(t, &createProductHandlerUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
 }
 
-func (c *createProductHandlerTest) SetupTest() {
+func (c *createProductHandlerUnitTests) SetupTest() {
 	// create new mocks or clear mocks before executing
 	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
 	c.createProductHandler = NewCreateProductHandler(c.Log, c.Cfg, c.ProductRepository, c.Bus)
 }
 
-func (c *createProductHandlerTest) Test_Handle_Should_Create_New_Product_With_Valid_Data() {
+func (c *createProductHandlerUnitTests) Test_Handle_Should_Create_New_Product_With_Valid_Data() {
 	id := uuid.NewV4()
 
 	createProduct := &CreateProduct{
@@ -42,7 +44,7 @@ func (c *createProductHandlerTest) Test_Handle_Should_Create_New_Product_With_Va
 		Price:       gofakeit.Price(100, 1000),
 	}
 
-	product := test_data.Products[0]
+	product := testData.Products[0]
 
 	c.ProductRepository.On("CreateProduct", mock.Anything, mock.Anything).
 		Once().
@@ -56,7 +58,7 @@ func (c *createProductHandlerTest) Test_Handle_Should_Create_New_Product_With_Va
 	c.Equal(dto.ProductID, id)
 }
 
-func (c *createProductHandlerTest) Test_Handle_Should_Return_Error_For_Error_In_Repository() {
+func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Duplicate_Item() {
 	id := uuid.NewV4()
 
 	createProduct := &CreateProduct{
@@ -69,18 +71,18 @@ func (c *createProductHandlerTest) Test_Handle_Should_Return_Error_For_Error_In_
 
 	c.ProductRepository.On("CreateProduct", mock.Anything, mock.Anything).
 		Once().
-		Return(nil, errors.New("error creating product"))
+		Return(nil, errors.New("error duplicate product"))
 
 	dto, err := c.createProductHandler.Handle(c.Ctx, createProduct)
 
 	c.ProductRepository.AssertNumberOfCalls(c.T(), "CreateProduct", 1)
 	c.Bus.AssertNumberOfCalls(c.T(), "PublishMessage", 0)
-	c.ErrorContains(err, "error creating product")
-	c.ErrorContains(err, "error in creating product in the repository")
+	c.True(customErrors.IsApplicationError(err, http.StatusConflict))
+	c.ErrorContains(err, "product already exists")
 	c.Nil(dto)
 }
 
-func (c *createProductHandlerTest) Test_Handle_Should_Return_Error_For_Error_In_Bus() {
+func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Error_In_Bus() {
 	id := uuid.NewV4()
 
 	createProduct := &CreateProduct{
@@ -91,13 +93,13 @@ func (c *createProductHandlerTest) Test_Handle_Should_Return_Error_For_Error_In_
 		Price:       gofakeit.Price(100, 1000),
 	}
 
-	product := test_data.Products[0]
+	product := testData.Products[0]
 	c.ProductRepository.On("CreateProduct", mock.Anything, mock.Anything).
 		Once().
 		Return(product, nil)
 
 	// override called mock
-	//https://github.com/stretchr/testify/issues/558
+	// https://github.com/stretchr/testify/issues/558
 	c.Bus.Mock.ExpectedCalls = nil
 	c.Bus.On("PublishMessage", mock.Anything, mock.Anything, mock.Anything).Once().Return(errors.New("error in the publish message"))
 
@@ -110,7 +112,7 @@ func (c *createProductHandlerTest) Test_Handle_Should_Return_Error_For_Error_In_
 	c.Nil(dto)
 }
 
-func (c *createProductHandlerTest) Test_Handle_Should_Return_Error_For_Error_In_Mapping() {
+func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Error_In_Mapping() {
 	id := uuid.NewV4()
 
 	createProduct := &CreateProduct{
@@ -121,7 +123,7 @@ func (c *createProductHandlerTest) Test_Handle_Should_Return_Error_For_Error_In_
 		Price:       gofakeit.Price(100, 1000),
 	}
 
-	product := test_data.Products[0]
+	product := testData.Products[0]
 	c.ProductRepository.On("CreateProduct", mock.Anything, mock.Anything).
 		Once().
 		Return(product, nil)
@@ -133,5 +135,6 @@ func (c *createProductHandlerTest) Test_Handle_Should_Return_Error_For_Error_In_
 	c.ProductRepository.AssertNumberOfCalls(c.T(), "CreateProduct", 1)
 	c.Bus.AssertNumberOfCalls(c.T(), "PublishMessage", 0)
 	c.ErrorContains(err, "error in the mapping ProductDto")
+	c.True(customErrors.IsApplicationError(err, http.StatusInternalServerError))
 	c.Nil(dto)
 }

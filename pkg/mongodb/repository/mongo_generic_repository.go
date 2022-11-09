@@ -2,11 +2,14 @@ package repository
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+
+	"emperror.dev/errors"
+
 	"github.com/goccy/go-reflect"
 	"github.com/iancoleman/strcase"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data/specification"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	reflectionHelper "github.com/mehdihadeli/store-golang-microservice-sample/pkg/reflection/reflection_helper"
@@ -19,13 +22,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-//https://github.com/Kamva/mgm
-//https://github.com/mongodb/mongo-go-driver
-//https://blog.logrocket.com/how-to-use-mongodb-with-go/
-//https://www.mongodb.com/docs/drivers/go/current/quick-reference/
-//https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
-//https://www.mongodb.com/docs
-
+// https://github.com/Kamva/mgm
+// https://github.com/mongodb/mongo-go-driver
+// https://blog.logrocket.com/how-to-use-mongodb-with-go/
+// https://www.mongodb.com/docs/drivers/go/current/quick-reference/
+// https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
+// https://www.mongodb.com/docs
 type mongoGenericRepository[TDataModel interface{}, TEntity interface{}] struct {
 	db             *mongo.Client
 	databaseName   string
@@ -98,14 +100,14 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetById(ctx context.Contex
 
 	if modelType == dataModelType {
 		var model TEntity
-		//https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
-		//https://www.mongodb.com/docs/drivers/go/current/quick-reference/
-		//https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
-		//https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.10.3/bson
+		// https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
+		// https://www.mongodb.com/docs/drivers/go/current/quick-reference/
+		// https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
+		// https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.10.3/bson
 		if err := collection.FindOne(ctx, bson.M{"_id": id.String()}).Decode(&model); err != nil {
 			// ErrNoDocuments means that the filter did not match any documents in the collection
 			if err == mongo.ErrNoDocuments {
-				return *new(TEntity), nil
+				return *new(TEntity), customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
 			}
 			return *new(TEntity), errors.WrapIf(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
 		}
@@ -115,7 +117,7 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetById(ctx context.Contex
 		if err := collection.FindOne(ctx, bson.M{"_id": id.String()}).Decode(&dataModel); err != nil {
 			// ErrNoDocuments means that the filter did not match any documents in the collection
 			if err == mongo.ErrNoDocuments {
-				return *new(TEntity), nil
+				return *new(TEntity), customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
 			}
 			return *new(TEntity), errors.WrapIf(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
 		}
@@ -204,7 +206,7 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetByFilter(ctx context.Co
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
-	//we could use also bson.D{} for filtering, it is also a map
+	// we could use also bson.D{} for filtering, it is also a map
 	cursorResult, err := collection.Find(ctx, filters)
 	if err != nil {
 		return nil, err
@@ -254,7 +256,7 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) FirstOrDefault(ctx context
 
 	if modelType == dataModelType {
 		var model TEntity
-		//we could use also bson.D{} for filtering, it is also a map
+		// we could use also bson.D{} for filtering, it is also a map
 		if err := collection.FindOne(ctx, filters).Decode(&model); err != nil {
 			// ErrNoDocuments means that the filter did not match any documents in the collection
 			if err == mongo.ErrNoDocuments {
@@ -301,7 +303,7 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Update(ctx context.Context
 		}
 
 		var updated TEntity
-		//https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
+		// https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
 		if err := collection.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": entity}, ops).Decode(&updated); err != nil {
 			return err
 		}
@@ -319,7 +321,7 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Update(ctx context.Context
 				return errors.New("id field not found")
 			}
 		}
-		//https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
+		// https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
 		if err := collection.FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": dataModel}, ops).Decode(&dataModel); err != nil {
 			return err
 		}
@@ -409,6 +411,6 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Count(ctx context.Context)
 }
 
 func (m *mongoGenericRepository[TDataModel, TEntity]) Find(ctx context.Context, specification specification.Specification) ([]TEntity, error) {
-	//TODO implement me
+	// TODO implement me
 	panic("implement me")
 }
