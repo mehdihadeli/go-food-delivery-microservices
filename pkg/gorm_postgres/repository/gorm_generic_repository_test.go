@@ -18,7 +18,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// Product is a domain entity
+// Product is a domain_events entity
 type Product struct {
 	ID          uuid.UUID
 	Name        string

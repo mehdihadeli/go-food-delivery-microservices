@@ -19,9 +19,9 @@ func Test_Domain_Err(t *testing.T) {
 }
 
 func Test_Application_Err(t *testing.T) {
-	applicationErr := NewApplicationProblemDetail(http.StatusBadRequest, "application error", "stack")
+	applicationErr := NewApplicationProblemDetail(http.StatusBadRequest, "application_exceptions error", "stack")
 
-	assert.Equal(t, "application error", applicationErr.GetDetail())
+	assert.Equal(t, "application_exceptions error", applicationErr.GetDetail())
 	assert.Equal(t, "Application Service Error", applicationErr.GetTitle())
 	assert.Equal(t, "stack", applicationErr.GetStackTrace())
 	assert.Equal(t, "https://httpstatuses.io/400", applicationErr.GetType())

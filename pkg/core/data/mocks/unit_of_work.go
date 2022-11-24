@@ -15,7 +15,7 @@ type UnitOfWork struct {
 }
 
 // SaveWithTx provides a mock function with given fields: ctx, action
-func (_m *UnitOfWork) SaveWithTx(ctx context.Context, action data.UnitOfWorkActionFunc) error {
+func (_m *UnitOfWork) Do(ctx context.Context, action data.UnitOfWorkActionFunc) error {
 	ret := _m.Called(ctx, action)
 
 	var r0 error

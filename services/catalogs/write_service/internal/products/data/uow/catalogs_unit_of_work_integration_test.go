@@ -2,83 +2,97 @@ package uow
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"emperror.dev/errors"
+	data2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
+
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer"
+	gormPostgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
+	defaultLogger2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
+	gorm2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/testfixture"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
-	"testing"
-	"time"
 )
+
+var items []*models.Product
 
 func Test_Catalogs_Unit_Of_Work(t *testing.T) {
 	ctx := context.Background()
-	gormDB, err := testcontainer.NewGormTestContainers().Start(ctx, t)
+	gormDB, err := gorm2.NewGormTestContainers().Start(ctx, t)
 	require.NoError(t, err)
 
 	err = seedAndMigration(gormDB)
 	require.NoError(t, err)
-	cfg, err := config.InitConfig(constants.Test)
-	require.NoError(t, err)
 
-	productRepository := repositories.NewPostgresProductRepository(defaultLogger.Logger, cfg, gormDB)
-	uow := NewCatalogsUnitOfWork(defaultLogger.Logger, gormDB, productRepository)
+	productRepository := repositories.NewPostgresProductRepository(defaultLogger2.Logger, gormDB)
+	uow := NewCatalogsUnitOfWork(defaultLogger2.Logger, gormDB)
 
-	t.Run("Rollback on error", func(t *testing.T) {
-		err = uow.SaveWithTx(ctx, func() error {
-			_, err := uow.Products().CreateProduct(ctx, &models.Product{
-				Name:        gofakeit.Name(),
-				Description: gofakeit.AdjectiveDescriptive(),
-				ProductId:   uuid.NewV4(),
-				Price:       gofakeit.Price(100, 1000),
-				CreatedAt:   time.Now(),
-			})
+	t.Run("Should_Rollback_On_Error", func(t *testing.T) {
+		err := uow.Do(ctx, func(catalogContext data2.CatalogContext) error {
+			_, err := catalogContext.Products().CreateProduct(ctx,
+				&models.Product{
+					Name:        gofakeit.Name(),
+					Description: gofakeit.AdjectiveDescriptive(),
+					ProductId:   uuid.NewV4(),
+					Price:       gofakeit.Price(100, 1000),
+					CreatedAt:   time.Now(),
+				})
 			require.NoError(t, err)
-
 			return errors.New("error rollback")
 		})
+		require.ErrorContains(t, err, "error rollback")
 
-		assert.ErrorContains(t, err, "error rollback")
-		products, err := uow.Products().GetAllProducts(ctx, utils.NewListQuery(10, 1))
+		products, err := productRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
 		require.NoError(t, err)
 
 		assert.Equal(t, 2, len(products.Items))
 	})
 
-	t.Run("Rollback on panic", func(t *testing.T) {
-		err = uow.SaveWithTx(ctx, func() error {
-			_, err := uow.Products().CreateProduct(ctx, &models.Product{
-				Name:        gofakeit.Name(),
-				Description: gofakeit.AdjectiveDescriptive(),
-				ProductId:   uuid.NewV4(),
-				Price:       gofakeit.Price(100, 1000),
-				CreatedAt:   time.Now(),
-			})
+	t.Run("Should_Rollback_On_Panic", func(t *testing.T) {
+		err = uow.Do(ctx, func(catalogContext data2.CatalogContext) error {
+			_, err := catalogContext.Products().CreateProduct(ctx,
+				&models.Product{
+					Name:        gofakeit.Name(),
+					Description: gofakeit.AdjectiveDescriptive(),
+					ProductId:   uuid.NewV4(),
+					Price:       gofakeit.Price(100, 1000),
+					CreatedAt:   time.Now(),
+				})
 			require.NoError(t, err)
 			panic(errors.New("panic rollback"))
 
 			return err
 		})
-		products, err := uow.Products().GetAllProducts(ctx, utils.NewListQuery(10, 1))
+		require.Error(t, err)
+
+		products, err := productRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
 		require.NoError(t, err)
 
 		assert.Equal(t, 2, len(products.Items))
 	})
 
-	t.Run("Rollback on context canceled", func(t *testing.T) {
+	t.Run("Should_Rollback_On_Context_Canceled", func(t *testing.T) {
 		cancelCtx, cancel := context.WithCancel(ctx)
 
-		err = uow.SaveWithTx(cancelCtx, func() error {
-			_, err := uow.Products().CreateProduct(ctx, &models.Product{
+		err = uow.Do(cancelCtx, func(catalogContext data2.CatalogContext) error {
+			_, err := catalogContext.Products().CreateProduct(ctx, &models.Product{
+				Name:        gofakeit.Name(),
+				Description: gofakeit.AdjectiveDescriptive(),
+				ProductId:   uuid.NewV4(),
+				Price:       gofakeit.Price(100, 1000),
+				CreatedAt:   time.Now(),
+			})
+			require.NoError(t, err)
+
+			_, err = catalogContext.Products().CreateProduct(ctx, &models.Product{
 				Name:        gofakeit.Name(),
 				Description: gofakeit.AdjectiveDescriptive(),
 				ProductId:   uuid.NewV4(),
@@ -91,15 +105,15 @@ func Test_Catalogs_Unit_Of_Work(t *testing.T) {
 			return err
 		})
 
-		products, err := uow.Products().GetAllProducts(ctx, utils.NewListQuery(10, 1))
+		products, err := productRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
 		require.NoError(t, err)
 
 		assert.Equal(t, 2, len(products.Items))
 	})
 
-	t.Run("Commit on success", func(t *testing.T) {
-		err = uow.SaveWithTx(ctx, func() error {
-			_, err := uow.Products().CreateProduct(ctx, &models.Product{
+	t.Run("Should_Commit_On_Success", func(t *testing.T) {
+		err = uow.Do(ctx, func(catalogContext data2.CatalogContext) error {
+			_, err := catalogContext.Products().CreateProduct(ctx, &models.Product{
 				Name:        gofakeit.Name(),
 				Description: gofakeit.AdjectiveDescriptive(),
 				ProductId:   uuid.NewV4(),
@@ -109,7 +123,7 @@ func Test_Catalogs_Unit_Of_Work(t *testing.T) {
 			return err
 		})
 		require.NoError(t, err)
-		products, err := uow.Products().GetAllProducts(ctx, utils.NewListQuery(10, 1))
+		products, err := productRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
 		require.NoError(t, err)
 
 		assert.Equal(t, 3, len(products.Items))
@@ -128,7 +142,7 @@ func seedAndMigration(gormDB *gorm.DB) error {
 		return err
 	}
 
-	//https://github.com/go-testfixtures/testfixtures#templating
+	// https://github.com/go-testfixtures/testfixtures#templating
 	// seed data
 	err = testfixture.RunPostgresFixture(
 		db,
@@ -146,6 +160,9 @@ func seedAndMigration(gormDB *gorm.DB) error {
 	if err != nil {
 		return err
 	}
+
+	result, err := gormPostgres.Paginate[*models.Product](context.Background(), utils.NewListQuery(10, 1), gormDB)
+	items = result.Items
 
 	return err
 }

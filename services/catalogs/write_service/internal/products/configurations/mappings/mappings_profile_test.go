@@ -1,15 +1,17 @@
 package mappings
 
 import (
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/unit_test"
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type mappingProfileUnitTests struct {

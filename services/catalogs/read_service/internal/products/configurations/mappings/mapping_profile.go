@@ -6,7 +6,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
 )
 
-func ConfigeProductsMappings() error {
+func ConfigureProductsMappings() error {
 	err := mapper.CreateMap[*models.Product, *dto.ProductDto]()
 	if err != nil {
 		return err

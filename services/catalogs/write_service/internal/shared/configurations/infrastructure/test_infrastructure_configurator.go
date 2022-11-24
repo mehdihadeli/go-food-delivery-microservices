@@ -2,6 +2,8 @@ package infrastructure
 
 import (
 	"context"
+	"testing"
+
 	"emperror.dev/errors"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
@@ -15,7 +17,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 	"gorm.io/gorm"
-	"testing"
 )
 
 type testInfrastructureConfigurator struct {
@@ -79,10 +80,6 @@ func (ic *testInfrastructureConfigurator) ConfigInfrastructures(ctx context.Cont
 func seedGormAndMigration(gormDB *gorm.DB) error {
 	// migration
 	err := gormDB.AutoMigrate(models.Product{})
-	if err != nil {
-		return errors.Wrap(err, "error in seed database")
-	}
-
 	if err != nil {
 		return errors.Wrap(err, "error in seed database")
 	}

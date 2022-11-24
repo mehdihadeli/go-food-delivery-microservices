@@ -2,10 +2,15 @@ package grpc
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+
+	"emperror.dev/errors"
 	"github.com/mehdihadeli/go-mediatr"
-	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	"github.com/satori/go.uuid"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
@@ -13,17 +18,14 @@ import (
 	attribute2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	grpcOrderService "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/proto/service_clients"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
-	creatingOrderCommandV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/commands/v1"
-	orderDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/dtos"
-	gettingOrderByIdDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/dtos"
-	gettingOrderByIdQueryV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/queries/v1"
-	gettingOrdersDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/dtos"
-	gettingOrdersQueryV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/queryies/v1"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos/v1"
+	createOrderCommandV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/v1/commands"
+	createOrderDtosV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/v1/dtos"
+	getOrderByIdDtosV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/v1/dtos"
+	getOrderByIdQueryV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/v1/queries"
+	getOrdersDtosV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/v1/dtos"
+	getOrdersQueryV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/v1/queries"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/contracts"
-	uuid "github.com/satori/go.uuid"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type OrderGrpcServiceServer struct {
@@ -43,20 +45,19 @@ func (o OrderGrpcServiceServer) CreateOrder(ctx context.Context, req *grpcOrderS
 	span.SetAttributes(attribute2.Object("Request", req))
 	o.ordersMetrics.CreateOrderGrpcRequests().Add(ctx, 1, grpcMetricsAttr)
 
-	shopItemsDtos, err := mapper.Map[[]*dtos.ShopItemDto](req.GetShopItems())
+	shopItemsDtos, err := mapper.Map[[]*dtosV1.ShopItemDto](req.GetShopItems())
 	if err != nil {
 		return nil, err
 	}
 
-	command := creatingOrderCommandV1.NewCreateOrder(shopItemsDtos, req.AccountEmail, req.DeliveryAddress, req.DeliveryTime.AsTime())
+	command := createOrderCommandV1.NewCreateOrder(shopItemsDtos, req.AccountEmail, req.DeliveryAddress, req.DeliveryTime.AsTime())
 	if err := o.Validator().StructCtx(ctx, command); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[OrderGrpcServiceServer_CreateOrder.StructCtx] command validation failed")
 		o.Log().Errorf(fmt.Sprintf("[OrderGrpcServiceServer_CreateOrder.StructCtx] err: %v", validationErr))
 		return nil, validationErr
 	}
 
-	result, err := mediatr.Send[*creatingOrderCommandV1.CreateOrder, *orderDtos.CreateOrderResponseDto](ctx, command)
-
+	result, err := mediatr.Send[*createOrderCommandV1.CreateOrder, *createOrderDtosV1.CreateOrderResponseDto](ctx, command)
 	if err != nil {
 		err = errors.WithMessage(err, "[ProductGrpcServiceServer_CreateOrder.Send] error in sending CreateOrder")
 		o.Log().Errorw(fmt.Sprintf("[ProductGrpcServiceServer_CreateOrder.Send] id: {%s}, err: %v", command.OrderId, err), logger.Fields{"Id": command.OrderId})
@@ -78,14 +79,14 @@ func (o OrderGrpcServiceServer) GetOrderByID(ctx context.Context, req *grpcOrder
 		return nil, badRequestErr
 	}
 
-	query := gettingOrderByIdQueryV1.NewGetOrderById(orderIdUUID)
+	query := getOrderByIdQueryV1.NewGetOrderById(orderIdUUID)
 	if err := o.Validator().StructCtx(ctx, query); err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[OrderGrpcServiceServer_GetOrderByID.StructCtx] query validation failed")
 		o.Log().Errorf(fmt.Sprintf("[OrderGrpcServiceServer_GetOrderByID.StructCtx] err: %v", validationErr))
 		return nil, validationErr
 	}
 
-	queryResult, err := mediatr.Send[*gettingOrderByIdQueryV1.GetOrderById, *gettingOrderByIdDtos.GetOrderByIdResponseDto](ctx, query)
+	queryResult, err := mediatr.Send[*getOrderByIdQueryV1.GetOrderById, *getOrderByIdDtosV1.GetOrderByIdResponseDto](ctx, query)
 	if err != nil {
 		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrderByID.Send] error in sending GetOrderById")
 		o.Log().Errorw(fmt.Sprintf("[OrderGrpcServiceServer_GetOrderByID.Send] id: {%s}, err: %v", query.Id, err), logger.Fields{"Id": query.Id})
@@ -115,10 +116,9 @@ func (o OrderGrpcServiceServer) GetOrders(ctx context.Context, req *grpcOrderSer
 	span := trace.SpanFromContext(ctx)
 	span.SetAttributes(attribute2.Object("Request", req))
 
-	query := gettingOrdersQueryV1.NewGetOrders(&utils.ListQuery{Page: int(req.Page), Size: int(req.Size)})
+	query := getOrdersQueryV1.NewGetOrders(&utils.ListQuery{Page: int(req.Page), Size: int(req.Size)})
 
-	queryResult, err := mediatr.Send[*gettingOrdersQueryV1.GetOrders, *gettingOrdersDtos.GetOrdersResponseDto](ctx, query)
-
+	queryResult, err := mediatr.Send[*getOrdersQueryV1.GetOrders, *getOrdersDtosV1.GetOrdersResponseDto](ctx, query)
 	if err != nil {
 		err = errors.WithMessage(err, "[OrderGrpcServiceServer_GetOrders.Send] error in sending GetOrders")
 		o.Log().Error(fmt.Sprintf("[OrderGrpcServiceServer_GetOrders.Send] err: {%v}", err))

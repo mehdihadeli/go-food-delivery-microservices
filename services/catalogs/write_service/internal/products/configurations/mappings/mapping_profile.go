@@ -1,11 +1,12 @@
 package mappings
 
 import (
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	productsService "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func ConfigureProductsMappings() error {

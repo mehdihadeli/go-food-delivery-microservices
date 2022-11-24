@@ -2,10 +2,15 @@ package infrastructure
 
 import (
 	"context"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/redis"
+
+	"emperror.dev/errors"
 	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/serializer/json"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
 	otelMetrics "github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
@@ -49,18 +54,20 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	}
 	infrastructure.Metrics = meter
 
-	mongoClient, err, mongoCleanup := ic.configMongo(ctx)
+	mongo, err := mongodb.NewMongoDB(ctx, ic.cfg.Mongo)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.WrapIf(err, "NewMongoDBConn")
 	}
-	cleanup = append(cleanup, mongoCleanup)
-	infrastructure.MongoClient = mongoClient
+	cleanup = append(cleanup, func() {
+		_ = mongo.Disconnect(context.Background()) // nolint: errcheck
+	})
+	infrastructure.MongoClient = mongo
 
-	redis, err, redisCleanup := ic.configRedis(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-	cleanup = append(cleanup, redisCleanup)
+	redis := redis.NewUniversalRedisClient(ic.cfg.Redis)
+	ic.log.Infof("Redis connected: %+v", redis.PoolStats())
+	cleanup = append(cleanup, func() {
+		_ = redis.Close() // nolint: errcheck
+	})
 	infrastructure.Redis = redis
 
 	infrastructure.EventSerializer = json.NewJsonEventSerializer()

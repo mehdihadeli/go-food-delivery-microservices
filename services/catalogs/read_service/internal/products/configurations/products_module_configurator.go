@@ -33,7 +33,7 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 	endpoints.ConfigProductsEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
 
 	//Config Products Mappings
-	err := mappings.ConfigeProductsMappings()
+	err := mappings.ConfigureProductsMappings()
 	if err != nil {
 		return err
 	}

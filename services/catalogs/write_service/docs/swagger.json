@@ -177,7 +177,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/updating_product.UpdateProductRequestDto"
+                            "$ref": "#/definitions/dtos.UpdateProductRequestDto"
                         }
                     },
                     {
@@ -224,7 +224,7 @@
         }
     },
     "definitions": {
-        "dto.ProductDto": {
+        "dtoV1.ProductDto": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -273,7 +273,7 @@
             "type": "object",
             "properties": {
                 "product": {
-                    "$ref": "#/definitions/dto.ProductDto"
+                    "$ref": "#/definitions/dtoV1.ProductDto"
                 }
             }
         },
@@ -293,7 +293,7 @@
                 }
             }
         },
-        "updating_product.UpdateProductRequestDto": {
+        "dtos.UpdateProductRequestDto": {
             "type": "object",
             "properties": {
                 "description": {

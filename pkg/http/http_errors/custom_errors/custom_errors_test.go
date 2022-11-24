@@ -10,7 +10,7 @@ import (
 )
 
 func Test_BadRequest_Err(t *testing.T) {
-	rootErr2 := NewBadRequestErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
+	rootErr2 := NewBadRequestErrorWrap(nil, fmt.Sprintf("domain_events event already exists in event registry"))
 
 	rootErr := errors.New("handling bad request errorUtils")
 	badErr := NewBadRequestErrorWrap(rootErr, "this is a bad request errorUtils")
@@ -73,10 +73,10 @@ func Test_NotFound_Err(t *testing.T) {
 }
 
 func Test_Domain_Err(t *testing.T) {
-	rootErr2 := NewDomainErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
+	rootErr2 := NewDomainErrorWrap(nil, fmt.Sprintf("domain_events event already exists in event registry"))
 
-	rootErr := errors.New("handling domain errorUtils")
-	domainErr := NewDomainErrorWithCodeWrap(rootErr, 400, "this is a domain errorUtils")
+	rootErr := errors.New("handling domain_events errorUtils")
+	domainErr := NewDomainErrorWithCodeWrap(rootErr, 400, "this is a domain_events errorUtils")
 	err := errors.WithMessage(domainErr, "outer errorUtils wrapper")
 
 	assert.True(t, IsDomainError(err))
@@ -88,8 +88,8 @@ func Test_Domain_Err(t *testing.T) {
 	errors.As(err, &customError)
 
 	assert.Equal(t, 400, customError.Status())
-	assert.Equal(t, "this is a domain errorUtils", customError.Message())
-	assert.Equal(t, "this is a domain errorUtils: handling domain errorUtils", customError.Error())
+	assert.Equal(t, "this is a domain_events errorUtils", customError.Message())
+	assert.Equal(t, "this is a domain_events errorUtils: handling domain_events errorUtils", customError.Error())
 	assert.NotNil(t, customError.Unwrap())
 	assert.NotNil(t, customError.Cause())
 
@@ -104,10 +104,10 @@ func Test_Domain_Err(t *testing.T) {
 }
 
 func Test_Application_Err(t *testing.T) {
-	rootErr2 := NewApplicationErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
+	rootErr2 := NewApplicationErrorWrap(nil, fmt.Sprintf("domain_events event already exists in event registry"))
 
-	rootErr := errors.New("handling application errorUtils")
-	err := NewApplicationErrorWrapWithCode(rootErr, 400, "this is a application errorUtils")
+	rootErr := errors.New("handling application_exceptions errorUtils")
+	err := NewApplicationErrorWrapWithCode(rootErr, 400, "this is a application_exceptions errorUtils")
 	err = errors.WithMessage(err, "outer errorUtils wrapper")
 
 	assert.True(t, IsApplicationError(err))
@@ -119,8 +119,8 @@ func Test_Application_Err(t *testing.T) {
 	errors.As(err, &appErr)
 
 	assert.Equal(t, 400, appErr.Status())
-	assert.Equal(t, "this is a application errorUtils", appErr.Message())
-	assert.Equal(t, "this is a application errorUtils: handling application errorUtils", appErr.Error())
+	assert.Equal(t, "this is a application_exceptions errorUtils", appErr.Message())
+	assert.Equal(t, "this is a application_exceptions errorUtils: handling application_exceptions errorUtils", appErr.Error())
 	assert.NotNil(t, appErr.Unwrap())
 	assert.NotNil(t, appErr.Cause())
 
@@ -162,7 +162,7 @@ func Test_Internal_Server_Error(t *testing.T) {
 }
 
 func Test_Marshaling_Error(t *testing.T) {
-	rootErr2 := NewMarshalingErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
+	rootErr2 := NewMarshalingErrorWrap(nil, fmt.Sprintf("domain_events event already exists in event registry"))
 
 	rootErr := errors.New("handling marshaling errorUtils")
 	marshalErr := NewMarshalingErrorWrap(rootErr, "this is a marshaling errorUtils")
@@ -202,7 +202,7 @@ func Test_Marshaling_Error(t *testing.T) {
 }
 
 func Test_Validation_Error(t *testing.T) {
-	rootErr2 := NewValidationErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
+	rootErr2 := NewValidationErrorWrap(nil, fmt.Sprintf("domain_events event already exists in event registry"))
 
 	rootErr := errors.New("handling validation errorUtils")
 	validationErr := NewValidationErrorWrap(rootErr, "this is a validation errorUtils")
@@ -242,7 +242,7 @@ func Test_Validation_Error(t *testing.T) {
 }
 
 func Test_Conflict_Error(t *testing.T) {
-	rootErr2 := NewConflictErrorWrap(nil, fmt.Sprintf("domain event already exists in event registry"))
+	rootErr2 := NewConflictErrorWrap(nil, fmt.Sprintf("domain_events event already exists in event registry"))
 
 	rootErr := errors.New("handling conflict errorUtils")
 	conflictErr := NewConflictErrorWrap(rootErr, "this is a conflict errorUtils")

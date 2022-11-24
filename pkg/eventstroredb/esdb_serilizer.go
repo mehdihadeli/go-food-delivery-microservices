@@ -46,7 +46,7 @@ func (e *EsdbSerializer) StreamEventToEventData(streamEvent *models.StreamEvent)
 	var contentType esdb.ContentType
 
 	switch eventSerializationResult.ContentType {
-	case "application/json":
+	case "application_exceptions/json":
 		contentType = esdb.JsonContentType
 	default:
 		contentType = esdb.BinaryContentType

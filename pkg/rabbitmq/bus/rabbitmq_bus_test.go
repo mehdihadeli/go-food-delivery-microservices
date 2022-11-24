@@ -72,7 +72,7 @@ func Test_AddRabbitMQ(t *testing.T) {
 	err = b.PublishMessage(context.Background(), &ProducerConsumerMessage{Data: "ssssssssss", Message: types2.NewMessage(uuid.NewV4().String())}, nil)
 	require.NoError(t, err)
 
-	err = utils.WaitUntilConditionMet(func() bool {
+	err = testUtils.WaitUntilConditionMet(func() bool {
 		return fakeConsumer2.IsHandled() && fakeConsumer3.IsHandled()
 	})
 	assert.NoError(t, err)

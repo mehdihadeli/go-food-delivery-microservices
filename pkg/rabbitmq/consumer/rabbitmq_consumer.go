@@ -403,7 +403,7 @@ func (r *rabbitMQConsumer) createConsumeContext(delivery amqp091.Delivery) (mess
 
 func (r *rabbitMQConsumer) deserializeData(contentType string, eventType string, body []byte) interface{} {
 	if contentType == "" {
-		contentType = "application/json"
+		contentType = "application_exceptions/json"
 	}
 
 	if body == nil || len(body) == 0 {
@@ -411,7 +411,7 @@ func (r *rabbitMQConsumer) deserializeData(contentType string, eventType string,
 		return nil
 	}
 
-	if contentType == "application/json" {
+	if contentType == "application_exceptions/json" {
 		// r.rabbitmqConsumerOptions.ConsumerMessageType --> actual type
 		//deserialize, err := r.eventSerializer.DeserializeType(body, r.rabbitmqConsumerOptions.ConsumerMessageType, contentType)
 		deserialize, err := r.eventSerializer.DeserializeMessage(body, eventType, contentType) // or this to explicit type deserialization

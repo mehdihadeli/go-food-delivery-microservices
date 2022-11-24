@@ -23,10 +23,10 @@ const docTemplate = `{
             "get": {
                 "description": "Get all products",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Products"
@@ -63,10 +63,10 @@ const docTemplate = `{
             "get": {
                 "description": "Search products",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Products"
@@ -108,10 +108,10 @@ const docTemplate = `{
             "get": {
                 "description": "Get product by id",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Products"

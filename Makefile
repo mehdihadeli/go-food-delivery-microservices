@@ -140,7 +140,6 @@ swagger_catalogs_write:
 	swag init --parseDependency --parseInternal --parseDepth 1 -g ./cmd/main.go -d ./services/catalogs/write_service/ -o ./services/catalogs/write_service/docs
 	swag init --parseDependency --parseInternal --parseDepth 1 -g ./cmd/main.go -d ./services/catalogs/write_service/ -o ./api_docs/catalogs/write_service/openapi/
 
-
 # Swagger Catalogs Read Service  #https://github.com/swaggo/swag/issues/817
 swagger_catalogs_read:
 	@echo Starting swagger generating

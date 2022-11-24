@@ -23,10 +23,10 @@ const docTemplate = `{
             "get": {
                 "description": "Get all products",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Products"
@@ -61,10 +61,10 @@ const docTemplate = `{
             "post": {
                 "description": "Create new product item",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Products"
@@ -95,10 +95,10 @@ const docTemplate = `{
             "get": {
                 "description": "Search products",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Products"
@@ -140,10 +140,10 @@ const docTemplate = `{
             "get": {
                 "description": "Get product by id",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Products"
@@ -170,10 +170,10 @@ const docTemplate = `{
             "put": {
                 "description": "Update existing product",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Products"
@@ -186,7 +186,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/updating_product.UpdateProductRequestDto"
+                            "$ref": "#/definitions/dtos.UpdateProductRequestDto"
                         }
                     },
                     {
@@ -206,10 +206,10 @@ const docTemplate = `{
             "delete": {
                 "description": "Delete existing product",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Products"
@@ -233,7 +233,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.ProductDto": {
+        "dtoV1.ProductDto": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -282,7 +282,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "product": {
-                    "$ref": "#/definitions/dto.ProductDto"
+                    "$ref": "#/definitions/dtoV1.ProductDto"
                 }
             }
         },
@@ -302,7 +302,7 @@ const docTemplate = `{
                 }
             }
         },
-        "updating_product.UpdateProductRequestDto": {
+        "dtos.UpdateProductRequestDto": {
             "type": "object",
             "properties": {
                 "description": {

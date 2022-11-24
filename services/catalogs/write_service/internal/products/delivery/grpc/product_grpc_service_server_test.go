@@ -1,69 +1,68 @@
 package grpc
 
 import (
-	"context"
 	"fmt"
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
-	productService "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/e2e"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/stretchr/testify/suite"
+
+	productService "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mocks/testData"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/e2e"
 )
 
-type ProductGrpcServiceTests struct {
-	*testing.T
+type productGrpcServiceE2eTests struct {
 	*e2e.E2ETestFixture
-	productService.ProductsServiceClient
+	*e2e.E2ETestSharedFixture
+	productsServiceClient productService.ProductsServiceClient
 }
 
-func TestRunner(t *testing.T) {
-	test.SkipCI(t)
-	fixture := e2e.NewE2ETestFixture()
-
-	//https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
-	t.Run("GRPC", func(t *testing.T) {
-		// Before running the tests
-		productGrpcService := NewProductGrpcService(fixture.InfrastructureConfigurations, fixture.CatalogsMetrics, fixture.Bus)
-		productService.RegisterProductsServiceServer(fixture.GrpcServer.GetCurrentGrpcServer(), productGrpcService)
-
-		ctx := fixture.Ctx
-		fixture.Run()
-
-		productGrpcClient := productService.NewProductsServiceClient(fixture.GrpcClient().GetGrpcConnection())
-
-		productGrpcServiceTests := ProductGrpcServiceTests{
-			T:                     t,
-			E2ETestFixture:        fixture,
-			ProductsServiceClient: productGrpcClient,
-		}
-
-		// Run Tests
-		productGrpcServiceTests.Test_GetProduct_By_Id(ctx)
-		//productGrpcServiceTests.Test_Create_Product(ctx)
-
-		// After running the tests
-		fixture.Cleanup()
-	})
+func TestProductGrpcServiceE2E(t *testing.T) {
+	suite.Run(t, &productGrpcServiceE2eTests{E2ETestSharedFixture: e2e.NewE2ETestSharedFixture(t)})
 }
 
-func (p *ProductGrpcServiceTests) Test_Create_Product(ctx context.Context) {
+func (c *productGrpcServiceE2eTests) Test_Should_Create_Product_With_Valid_Data_In_DB() {
 	request := &productService.CreateProductReq{
 		Price:       gofakeit.Price(100, 1000),
 		Name:        gofakeit.Name(),
 		Description: gofakeit.AdjectiveDescriptive(),
 	}
 
-	res, err := p.CreateProduct(ctx, request)
-	assert.NoError(p.T, err)
-	assert.NotZero(p.T, res.ProductId)
+	res, err := c.productsServiceClient.CreateProduct(c.Ctx, request)
+	c.NoError(err)
+	c.NotEmpty(res.ProductId)
 }
 
-func (p *ProductGrpcServiceTests) Test_GetProduct_By_Id(ctx context.Context) {
-	res, err := p.GetProductById(ctx, &productService.GetProductByIdReq{ProductId: "1b088075-53f0-4376-a491-ca6fe3a7f8fa"})
+func (c *productGrpcServiceE2eTests) Test_Should_Return_Data_With_Valid_Id() {
+	id := testData.Products[0].ProductId.String()
+
+	res, err := c.productsServiceClient.GetProductById(c.Ctx, &productService.GetProductByIdReq{ProductId: id})
+
 	fmt.Println(err)
 	fmt.Println(res)
-	assert.NoError(p.T, err)
-	assert.NotNil(p.T, res.Product)
-	assert.Equal(p.T, res.Product.ProductId, "1b088075-53f0-4376-a491-ca6fe3a7f8fa")
+	c.NoError(err)
+	c.NotNil(res.Product)
+	c.Equal(res.Product.ProductId, id)
+}
+
+func (c *productGrpcServiceE2eTests) SetupTest() {
+	c.T().Log("SetupTest")
+	c.E2ETestFixture = e2e.NewE2ETestFixture(c.E2ETestSharedFixture)
+
+	// Before running the tests
+	productGrpcService := NewProductGrpcService(c.InfrastructureConfigurations, c.CatalogsMetrics, c.Bus)
+	productService.RegisterProductsServiceServer(c.GrpcServer.GetCurrentGrpcServer(), productGrpcService)
+
+	c.E2ETestFixture.Run()
+
+	c.productsServiceClient = productService.NewProductsServiceClient(c.GrpcClient.GetGrpcConnection())
+}
+
+func (c *productGrpcServiceE2eTests) TearDownTest() {
+	c.T().Log("TearDownTest")
+	// cleanup test containers with their hooks
+}
+
+func (c *productGrpcServiceE2eTests) SetupSuite() {
 }

@@ -1,5 +1,5 @@
 definitions:
-  dto.ProductDto:
+  dtoV1.ProductDto:
     properties:
       createdAt:
         type: string
@@ -31,7 +31,7 @@ definitions:
   dtos.GetProductByIdResponseDto:
     properties:
       product:
-        $ref: '#/definitions/dto.ProductDto'
+        $ref: '#/definitions/dtoV1.ProductDto'
     type: object
   dtos.GetProductsResponseDto:
     properties:
@@ -43,7 +43,7 @@ definitions:
       products:
         type: object
     type: object
-  updating_product.UpdateProductRequestDto:
+  dtos.UpdateProductRequestDto:
     properties:
       description:
         type: string
@@ -72,7 +72,7 @@ paths:
   /api/v1/products:
     get:
       consumes:
-      - application/json
+      - application_exceptions/json
       description: Get all products
       parameters:
       - in: query
@@ -85,7 +85,7 @@ paths:
         name: size
         type: integer
       produces:
-      - application/json
+      - application_exceptions/json
       responses:
         "200":
           description: OK
@@ -96,7 +96,7 @@ paths:
       - Products
     post:
       consumes:
-      - application/json
+      - application_exceptions/json
       description: Create new product item
       parameters:
       - description: Product data
@@ -106,7 +106,7 @@ paths:
         schema:
           $ref: '#/definitions/dtos.CreateProductRequestDto'
       produces:
-      - application/json
+      - application_exceptions/json
       responses:
         "201":
           description: Created
@@ -118,7 +118,7 @@ paths:
   /api/v1/products/{id}:
     delete:
       consumes:
-      - application/json
+      - application_exceptions/json
       description: Delete existing product
       parameters:
       - description: Product ID
@@ -127,7 +127,7 @@ paths:
         required: true
         type: string
       produces:
-      - application/json
+      - application_exceptions/json
       responses:
         "204":
           description: ""
@@ -136,7 +136,7 @@ paths:
       - Products
     get:
       consumes:
-      - application/json
+      - application_exceptions/json
       description: Get product by id
       parameters:
       - description: Product ID
@@ -145,7 +145,7 @@ paths:
         required: true
         type: string
       produces:
-      - application/json
+      - application_exceptions/json
       responses:
         "200":
           description: OK
@@ -156,7 +156,7 @@ paths:
       - Products
     put:
       consumes:
-      - application/json
+      - application_exceptions/json
       description: Update existing product
       parameters:
       - description: Product data
@@ -164,14 +164,14 @@ paths:
         name: UpdateProductRequestDto
         required: true
         schema:
-          $ref: '#/definitions/updating_product.UpdateProductRequestDto'
+          $ref: '#/definitions/dtos.UpdateProductRequestDto'
       - description: Product ID
         in: path
         name: id
         required: true
         type: string
       produces:
-      - application/json
+      - application_exceptions/json
       responses:
         "204":
           description: ""
@@ -181,7 +181,7 @@ paths:
   /api/v1/products/search:
     get:
       consumes:
-      - application/json
+      - application_exceptions/json
       description: Search products
       parameters:
       - in: query
@@ -197,7 +197,7 @@ paths:
         name: size
         type: integer
       produces:
-      - application/json
+      - application_exceptions/json
       responses:
         "200":
           description: OK

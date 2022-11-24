@@ -23,10 +23,10 @@ const docTemplate = `{
             "get": {
                 "description": "Get all orders",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Orders"
@@ -61,10 +61,10 @@ const docTemplate = `{
             "post": {
                 "description": "Create new order",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Orders"
@@ -95,10 +95,10 @@ const docTemplate = `{
             "get": {
                 "description": "Get order by id",
                 "consumes": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "application_exceptions/json"
                 ],
                 "tags": [
                     "Orders"

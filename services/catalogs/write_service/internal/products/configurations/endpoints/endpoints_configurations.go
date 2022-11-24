@@ -2,16 +2,18 @@ package endpoints
 
 import (
 	"context"
+
 	"github.com/labstack/echo/v4"
-	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
-	creatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/endpoints/v1"
-	deletingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/endpoints/v1"
-	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/endpoints/v1"
-	gettingProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products/endpoints/v1"
-	searchingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/endpoints/v1"
-	updatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/endpoints/v1"
+	createProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/v1/endpoints"
+	deleteProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/v1/endpoints"
+	getProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/v1/endpoints"
+	getProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_products/v1/endpoints"
+	searchProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/searching_product/v1/endpoints"
+	updateProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/v1/endpoints"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 )
 
@@ -25,27 +27,27 @@ func configV1Endpoints(ctx context.Context, routeBuilder *customEcho.RouteBuilde
 		productEndpointBase := delivery.NewProductEndpointBase(infra, group, bus, metrics)
 
 		// CreateNewProduct
-		createProductEndpoint := creatingProductV1.NewCreteProductEndpoint(productEndpointBase)
+		createProductEndpoint := createProductV1.NewCreteProductEndpoint(productEndpointBase)
 		createProductEndpoint.MapRoute()
 
 		// UpdateProduct
-		updateProductEndpoint := updatingProductV1.NewUpdateProductEndpoint(productEndpointBase)
+		updateProductEndpoint := updateProductsV1.NewUpdateProductEndpoint(productEndpointBase)
 		updateProductEndpoint.MapRoute()
 
 		// GetProducts
-		getProductsEndpoint := gettingProductsV1.NewGetProductsEndpoint(productEndpointBase)
+		getProductsEndpoint := getProductsV1.NewGetProductsEndpoint(productEndpointBase)
 		getProductsEndpoint.MapRoute()
 
 		// SearchProducts
-		searchProducts := searchingProductV1.NewSearchProductsEndpoint(productEndpointBase)
+		searchProducts := searchProductsV1.NewSearchProductsEndpoint(productEndpointBase)
 		searchProducts.MapRoute()
 
 		// GetProductById
-		getProductByIdEndpoint := gettingProductByIdV1.NewGetProductByIdEndpoint(productEndpointBase)
+		getProductByIdEndpoint := getProductByIdV1.NewGetProductByIdEndpoint(productEndpointBase)
 		getProductByIdEndpoint.MapRoute()
 
 		// DeleteProduct
-		deleteProductEndpoint := deletingProductV1.NewDeleteProductEndpoint(productEndpointBase)
+		deleteProductEndpoint := deleteProductV1.NewDeleteProductEndpoint(productEndpointBase)
 		deleteProductEndpoint.MapRoute()
 	},
 	)

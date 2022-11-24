@@ -2,14 +2,16 @@ package mongodb
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+	"time"
+
+	"emperror.dev/errors"
+
 	"github.com/kamva/mgm/v3"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
@@ -23,11 +25,6 @@ const (
 	maxPoolSize     = 300
 )
 
-type MongoDb struct {
-	MongoClient *mongo.Client
-	config      *MongoDbConfig
-}
-
 type MongoDbConfig struct {
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
@@ -38,7 +35,7 @@ type MongoDbConfig struct {
 }
 
 // NewMongoDB Create new MongoDB client
-func NewMongoDB(ctx context.Context, cfg *MongoDbConfig) (*MongoDb, error) {
+func NewMongoDB(ctx context.Context, cfg *MongoDbConfig) (*mongo.Client, error) {
 	uriAddres := fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port)
 	opt := options.Client().ApplyURI(uriAddres).
 		SetConnectTimeout(connectTimeout).
@@ -69,14 +66,10 @@ func NewMongoDB(ctx context.Context, cfg *MongoDbConfig) (*MongoDb, error) {
 		return nil, err
 	}
 
-	return &MongoDb{MongoClient: client}, nil
+	return client, nil
 }
 
-func (m *MongoDb) Close() error {
-	return m.MongoClient.Disconnect(context.Background())
-}
-
-//https://stackoverflow.com/a/23650312/581476
+// https://stackoverflow.com/a/23650312/581476
 
 func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection *mongo.Collection, filter interface{}) (*utils.ListResult[T], error) {
 	ctx, span := tracing.Tracer.Start(ctx, "mongodb.Paginate")

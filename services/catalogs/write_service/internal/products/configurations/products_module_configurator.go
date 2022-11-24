@@ -11,6 +11,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/configurations/mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts"
 	repositoriesImp "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/uow"
 	contracts2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
 )
 
@@ -33,7 +34,8 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 	//cfg Products Endpoints
 	endpoints.ConfigProductsEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
 
-	productRepository := repositoriesImp.NewPostgresProductRepository(c.Log, c.Cfg, c.Gorm)
+	productRepository := repositoriesImp.NewPostgresProductRepository(c.Log, c.Gorm)
+	catalogUnitOfWork := uow.NewCatalogsUnitOfWork(c.Log, c.Gorm)
 
 	//cfg Products Mappings
 	err := mappings.ConfigureProductsMappings()
@@ -42,7 +44,7 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 	}
 
 	//cfg Products Mediators
-	err = mediatr.ConfigProductsMediator(productRepository, c.InfrastructureConfigurations, c.bus)
+	err = mediatr.ConfigProductsMediator(catalogUnitOfWork, productRepository, c.InfrastructureConfigurations, c.bus)
 	if err != nil {
 		return err
 	}

@@ -38,7 +38,7 @@ type AggregateStateProjection interface {
 	fold
 }
 
-// IHaveEventSourcedAggregate this interface should implement by actual aggregate root class in our domain
+// IHaveEventSourcedAggregate this interface should implement by actual aggregate root class in our domain_events
 type IHaveEventSourcedAggregate interface {
 	When
 	NewEmptyAggregate()
@@ -59,7 +59,7 @@ type IEventSourcedAggregateRoot interface {
 	// It should increase for each state transition performed within the scope of the current operation.
 	CurrentVersion() int64
 
-	// AddDomainEvents adds a new domain event to the aggregate's uncommitted events.
+	// AddDomainEvents adds a new domain_events event to the aggregate's uncommitted events.
 	AddDomainEvents(event domain.IDomainEvent) error
 
 	// MarkUncommittedEventAsCommitted Mark all changes (events) as committed, clears uncommitted changes and updates the current version of the aggregate.
@@ -176,7 +176,7 @@ func (a *EventSourcedAggregateRoot) Apply(event domain.IDomainEvent, isNew bool)
 	if isNew {
 		err := a.AddDomainEvents(event)
 		if err != nil {
-			return errors.WrapIf(err, "[EventSourcedAggregateRoot_Apply:AddDomainEvents] error in adding domain event to the domain events list")
+			return errors.WrapIf(err, "[EventSourcedAggregateRoot_Apply:AddDomainEvents] error in adding domain_events event to the domain_events events list")
 		}
 	}
 	err := a.when(event)

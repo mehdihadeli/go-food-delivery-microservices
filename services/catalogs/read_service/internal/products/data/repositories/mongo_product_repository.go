@@ -1,49 +1,45 @@
 package repositories
 
-//https://github.com/Kamva/mgm
-//https://github.com/mongodb/mongo-go-driver
-//https://blog.logrocket.com/how-to-use-mongodb-with-go/
-//https://www.mongodb.com/docs/drivers/go/current/quick-reference/
-//https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
-//https://www.mongodb.com/docs
+// https://github.com/Kamva/mgm
+// https://github.com/mongodb/mongo-go-driver
+// https://blog.logrocket.com/how-to-use-mongodb-with-go/
+// https://www.mongodb.com/docs/drivers/go/current/quick-reference/
+// https://www.mongodb.com/docs/drivers/go/current/fundamentals/bson/
+// https://www.mongodb.com/docs
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
+
+	"emperror.dev/errors"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/models"
 	uuid2 "github.com/satori/go.uuid"
-	"go.mongodb.org/mongo-driver/mongo"
 	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 type mongoProductRepository struct {
-	log               logger.Logger
-	cfg               *config.Config
-	mongoClient       *mongo.Client
-	genericRepository data.GenericRepository[*models.Product]
+	log                    logger.Logger
+	mongoGenericRepository data.GenericRepository[*models.Product]
 }
 
-func NewMongoProductRepository(log logger.Logger, cfg *config.Config, mongoClient *mongo.Client, genericRepository data.GenericRepository[*models.Product]) contracts.ProductRepository {
-	return &mongoProductRepository{log: log, cfg: cfg, mongoClient: mongoClient, genericRepository: genericRepository}
+func NewMongoProductRepository(log logger.Logger, genericRepository data.GenericRepository[*models.Product]) contracts.ProductRepository {
+	return &mongoProductRepository{log: log, mongoGenericRepository: genericRepository}
 }
 
 func (p *mongoProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[*models.Product], error) {
 	ctx, span := tracing.Tracer.Start(ctx, "mongoProductRepository.GetAllProducts")
 	defer span.End()
 
-	//https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
-	result, err := p.genericRepository.GetAll(ctx, listQuery)
-	if err != nil {
-		return nil, err
-	}
+	// https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
+	result, err := p.mongoGenericRepository.GetAll(ctx, listQuery)
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "[mongoProductRepository_GetAllProducts.Paginate] error in the paginate"))
 	}
@@ -60,7 +56,7 @@ func (p *mongoProductRepository) SearchProducts(ctx context.Context, searchText 
 	span.SetAttributes(attribute2.String("SearchText", searchText))
 	defer span.End()
 
-	result, err := p.genericRepository.Search(ctx, searchText, listQuery)
+	result, err := p.mongoGenericRepository.Search(ctx, searchText, listQuery)
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "[mongoProductRepository_SearchProducts.Paginate] error in the paginate"))
 	}
@@ -82,7 +78,7 @@ func (p *mongoProductRepository) GetProductById(ctx context.Context, uuid string
 		return nil, err
 	}
 
-	product, err := p.genericRepository.GetById(ctx, id)
+	product, err := p.mongoGenericRepository.GetById(ctx, id)
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf("[mongoProductRepository_GetProductById.FindOne] can't find the product with id %s into the database.", uuid)))
 	}
@@ -100,7 +96,7 @@ func (p *mongoProductRepository) GetProductByProductId(ctx context.Context, uuid
 	span.SetAttributes(attribute2.String("ProductId", productId))
 	defer span.End()
 
-	product, err := p.genericRepository.FirstOrDefault(ctx, map[string]interface{}{"productId": uuid})
+	product, err := p.mongoGenericRepository.FirstOrDefault(ctx, map[string]interface{}{"productId": uuid})
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf("[mongoProductRepository_GetProductById.FindOne] can't find the product with productId %s into the database.", uuid)))
 	}
@@ -116,7 +112,7 @@ func (p *mongoProductRepository) CreateProduct(ctx context.Context, product *mod
 	ctx, span := tracing.Tracer.Start(ctx, "mongoProductRepository.CreateProduct")
 	defer span.End()
 
-	err := p.genericRepository.Add(ctx, product)
+	err := p.mongoGenericRepository.Add(ctx, product)
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "[mongoProductRepository_CreateProduct.InsertOne] error in the inserting product into the database."))
 	}
@@ -132,8 +128,8 @@ func (p *mongoProductRepository) UpdateProduct(ctx context.Context, updateProduc
 	ctx, span := tracing.Tracer.Start(ctx, "mongoProductRepository.UpdateProduct")
 	defer span.End()
 
-	err := p.genericRepository.Update(ctx, updateProduct)
-	//https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
+	err := p.mongoGenericRepository.Update(ctx, updateProduct)
+	// https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf("[mongoProductRepository_UpdateProduct.FindOneAndUpdate] error in updating product with id %s into the database.", updateProduct.ProductId)))
 	}
@@ -154,10 +150,10 @@ func (p *mongoProductRepository) DeleteProductByID(ctx context.Context, uuid str
 		return err
 	}
 
-	err = p.genericRepository.Delete(ctx, id)
+	err = p.mongoGenericRepository.Delete(ctx, id)
 	if err != nil {
 		return tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf(
-			"[mongoProductRepository_DeleteProductByID.FindOneAndDelete] error in deleting product with id %d from the database.", uuid)))
+			"[mongoProductRepository_DeleteProductByID.FindOneAndDelete] error in deleting product with id %s from the database.", uuid)))
 	}
 
 	p.log.Infow(fmt.Sprintf("[mongoProductRepository.DeleteProductByID] product with id %s deleted", uuid), logger.Fields{"Product": uuid})

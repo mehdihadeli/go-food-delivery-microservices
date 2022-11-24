@@ -54,7 +54,7 @@ func (g *gormDockerTest) Start(ctx context.Context, t *testing.T, options ...*co
 		log.Fatalf("Could not start resource (Postgresql Test Container): %s", err)
 	}
 
-	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application in the container might not be ready to accept connections yet
+	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
 
 	//g.resource = resource
 	//i, _ = strconv.Atoi(resource.GetPort("5432/tcp"))

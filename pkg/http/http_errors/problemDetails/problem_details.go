@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	ContentTypeJSON = "application/problem+json"
+	ContentTypeJSON = "application_exceptions/problem+json"
 )
 
 type ProblemDetailFunc[E error] func(err E) ProblemDetailErr

@@ -2,13 +2,15 @@ package endpoints
 
 import (
 	"context"
+
 	"github.com/labstack/echo/v4"
-	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/delivery"
-	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id/endpoints/v1"
-	gettingProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/getting_products/endpoints/v1"
-	searchingProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products/endpoints/v1"
+	getProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/get_product_by_id/v1/endpoints"
+	getProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/getting_products/v1/endpoints"
+	searchProductsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/features/searching_products/v1/endpoints"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
@@ -22,15 +24,15 @@ func configV1Endpoints(ctx context.Context, routeBuilder *customEcho.RouteBuilde
 		productEndpointBase := delivery.NewProductEndpointBase(infra, group, bus, metrics)
 
 		// GetProducts
-		getProductsEndpoint := gettingProductsV1.NewGetProductsEndpoint(productEndpointBase)
+		getProductsEndpoint := getProductsV1.NewGetProductsEndpoint(productEndpointBase)
 		getProductsEndpoint.MapRoute()
 
 		// SearchProducts
-		searchProductsEndpoint := searchingProductsV1.NewSearchProductsEndpoint(productEndpointBase)
+		searchProductsEndpoint := searchProductsV1.NewSearchProductsEndpoint(productEndpointBase)
 		searchProductsEndpoint.MapRoute()
 
 		// GetProductById
-		getProductByIdEndpoint := gettingProductByIdV1.NewGetProductByIdEndpoint(productEndpointBase)
+		getProductByIdEndpoint := getProductByIdV1.NewGetProductByIdEndpoint(productEndpointBase)
 		getProductByIdEndpoint.MapRoute()
 	})
 }
