@@ -12,7 +12,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.opentelemetry.io/otel/metric"
-	"gorm.io/gorm"
 )
 
 type InfrastructureConfigurations struct {
@@ -20,7 +19,6 @@ type InfrastructureConfigurations struct {
 	Cfg             *config.Config
 	Validator       *validator.Validate
 	PgConn          *pgxpool.Pool
-	Gorm            *gorm.DB
 	Metrics         metric.Meter
 	Esdb            *esdb.Client
 	MongoClient     *mongo.Client

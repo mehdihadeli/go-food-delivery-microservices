@@ -19,7 +19,7 @@ import (
 )
 
 func Test_Publish_Message(t *testing.T) {
-	utils.SkipCI(t)
+	testUtils.SkipCI(t)
 	ctx := context.Background()
 	tp, err := tracing.AddOtelTracing(&otel.OpenTelemetryConfig{ServiceName: "test", Enabled: true, AlwaysOnSampler: true, JaegerExporterConfig: &otel.JaegerExporterConfig{AgentHost: "localhost", AgentPort: "6831"}})
 	if err != nil {

@@ -51,7 +51,7 @@ paths:
   /api/v1/products:
     get:
       consumes:
-      - application/json
+      - application_exceptions/json
       description: Get all products
       parameters:
       - in: query
@@ -64,7 +64,7 @@ paths:
         name: size
         type: integer
       produces:
-      - application/json
+      - application_exceptions/json
       responses:
         "200":
           description: OK
@@ -76,7 +76,7 @@ paths:
   /api/v1/products/{id}:
     get:
       consumes:
-      - application/json
+      - application_exceptions/json
       description: Get product by id
       parameters:
       - description: Product ID
@@ -85,7 +85,7 @@ paths:
         required: true
         type: string
       produces:
-      - application/json
+      - application_exceptions/json
       responses:
         "200":
           description: OK
@@ -97,7 +97,7 @@ paths:
   /api/v1/products/search:
     get:
       consumes:
-      - application/json
+      - application_exceptions/json
       description: Search products
       parameters:
       - in: query
@@ -113,7 +113,7 @@ paths:
         name: size
         type: integer
       produces:
-      - application/json
+      - application_exceptions/json
       responses:
         "200":
           description: OK

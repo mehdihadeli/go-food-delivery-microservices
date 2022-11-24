@@ -1,26 +1,26 @@
 package mappings
 
 import (
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	grpcOrderService "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/proto/service_clients"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos"
+	dtosV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/dtos/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/read_models"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/models/orders/value_objects"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func ConfigureOrdersMappings() error {
-
 	// Order -> OrderDto
-	err := mapper.CreateMap[*aggregate.Order, *dtos.OrderDto]()
+	err := mapper.CreateMap[*aggregate.Order, *dtosV1.OrderDto]()
 	if err != nil {
 		return err
 	}
 
 	// OrderDto -> Order
-	err = mapper.CreateCustomMap[*dtos.OrderDto, *aggregate.Order](func(orderDto *dtos.OrderDto) *aggregate.Order {
+	err = mapper.CreateCustomMap[*dtosV1.OrderDto, *aggregate.Order](func(orderDto *dtosV1.OrderDto) *aggregate.Order {
 		items, err := mapper.Map[[]*value_objects.ShopItem](orderDto.ShopItems)
 		if err != nil {
 			return nil
@@ -43,14 +43,14 @@ func ConfigureOrdersMappings() error {
 	}
 
 	// read_models.OrderReadModel -> dtos.OrderReadDto
-	err = mapper.CreateMap[*read_models.OrderReadModel, *dtos.OrderReadDto]()
+	err = mapper.CreateMap[*read_models.OrderReadModel, *dtosV1.OrderReadDto]()
 	if err != nil {
 		return err
 	}
 
 	// dtos.OrderReadDto -> grpcOrderService.OrderReadModel
 	// custom filed map not support yet like ForMember so we have to create a custom map because of some timestamp fields map to time.Time
-	err = mapper.CreateCustomMap[*dtos.OrderReadDto, *grpcOrderService.OrderReadModel](func(orderReadDto *dtos.OrderReadDto) *grpcOrderService.OrderReadModel {
+	err = mapper.CreateCustomMap[*dtosV1.OrderReadDto, *grpcOrderService.OrderReadModel](func(orderReadDto *dtosV1.OrderReadDto) *grpcOrderService.OrderReadModel {
 		if orderReadDto == nil {
 			return nil
 		}
@@ -82,19 +82,19 @@ func ConfigureOrdersMappings() error {
 	}
 
 	// dtos.ShopItemReadDto -> grpcOrderService.ShopItemReadModel
-	err = mapper.CreateMap[*dtos.ShopItemReadDto, *grpcOrderService.ShopItemReadModel]()
+	err = mapper.CreateMap[*dtosV1.ShopItemReadDto, *grpcOrderService.ShopItemReadModel]()
 	if err != nil {
 		return err
 	}
 
 	// ShopItem -> ShopItemDto
-	err = mapper.CreateMap[*value_objects.ShopItem, *dtos.ShopItemDto]()
+	err = mapper.CreateMap[*value_objects.ShopItem, *dtosV1.ShopItemDto]()
 	if err != nil {
 		return err
 	}
 
 	// ShopItemDto -> ShopItem
-	err = mapper.CreateCustomMap[*dtos.ShopItemDto, *value_objects.ShopItem](func(src *dtos.ShopItemDto) *value_objects.ShopItem {
+	err = mapper.CreateCustomMap[*dtosV1.ShopItemDto, *value_objects.ShopItem](func(src *dtosV1.ShopItemDto) *value_objects.ShopItem {
 		return value_objects.CreateNewShopItem(src.Title, src.Description, src.Quantity, src.Price)
 	})
 	if err != nil {
@@ -102,13 +102,13 @@ func ConfigureOrdersMappings() error {
 	}
 
 	// dtos.ShopItemDto -> read_models.ShopItemReadModel
-	err = mapper.CreateMap[*dtos.ShopItemDto, *read_models.ShopItemReadModel]()
+	err = mapper.CreateMap[*dtosV1.ShopItemDto, *read_models.ShopItemReadModel]()
 	if err != nil {
 		return err
 	}
 
 	// read_models.ShopItemReadModel -> dtos.ShopItemReadDto
-	err = mapper.CreateMap[*read_models.ShopItemReadModel, *dtos.ShopItemReadDto]()
+	err = mapper.CreateMap[*read_models.ShopItemReadModel, *dtosV1.ShopItemReadDto]()
 	if err != nil {
 		return err
 	}
@@ -135,7 +135,7 @@ func ConfigureOrdersMappings() error {
 	}
 
 	// grpcOrderService.ShopItem -> dtos.ShopItemDto
-	err = mapper.CreateMap[*grpcOrderService.ShopItem, *dtos.ShopItemDto]()
+	err = mapper.CreateMap[*grpcOrderService.ShopItem, *dtosV1.ShopItemDto]()
 	if err != nil {
 		return err
 	}
@@ -168,7 +168,7 @@ func ConfigureOrdersMappings() error {
 		return err
 	}
 
-	err = mapper.CreateCustomMap[*utils.ListResult[*dtos.OrderReadDto], *grpcOrderService.GetOrdersRes](func(orders *utils.ListResult[*dtos.OrderReadDto]) *grpcOrderService.GetOrdersRes {
+	err = mapper.CreateCustomMap[*utils.ListResult[*dtosV1.OrderReadDto], *grpcOrderService.GetOrdersRes](func(orders *utils.ListResult[*dtosV1.OrderReadDto]) *grpcOrderService.GetOrdersRes {
 		o, err := mapper.Map[[]*grpcOrderService.OrderReadModel](orders.Items)
 		if err != nil {
 			return nil

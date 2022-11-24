@@ -1,23 +1,53 @@
 package uow
 
+// https://blog.devgenius.io/go-golang-unit-of-work-and-generics-5e9fb00ec996
+// https://learn.microsoft.com/en-us/aspnet/mvc/overview/older-versions/getting-started-with-ef-5-using-mvc-4/implementing-the-repository-and-unit-of-work-patterns-in-an-asp-net-mvc-application
+// https://dev.to/techschoolguru/a-clean-way-to-implement-database-transaction-in-golang-2ba
+
 import (
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres/uow"
+	"context"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres/repository"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	data2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
 	"gorm.io/gorm"
 )
 
-type catalogsUnitOfWork struct {
-	productRepository data2.ProductRepository
-	data.UnitOfWork
-	db *gorm.DB
+type catalogUnitOfWork[TContext data2.CatalogContext] struct {
+	logger logger.Logger
+	db     *gorm.DB
 }
 
-func NewCatalogsUnitOfWork(logger logger.Logger, db *gorm.DB, productRepository data2.ProductRepository) data2.CatalogsUnitOfWorks {
-	return &catalogsUnitOfWork{UnitOfWork: uow.NewGormUnitOfWork(db, logger), productRepository: productRepository}
+func (c *catalogUnitOfWork[TContext]) Do(ctx context.Context, action data2.CatalogUnitOfWorkActionFunc) error {
+	// https://gorm.io/docs/transactions.html#Transaction
+	return c.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		genericRepo := repository.NewGenericGormRepository[*models.Product](tx)
+
+		catalog := &catalogContext{
+			productRepository: repositories.NewPostgresProductRepository(c.logger, genericRepo),
+		}
+
+		defer func() {
+			r := recover()
+			if r != nil {
+				tx.WithContext(ctx).Rollback()
+				err, _ := r.(error)
+				if err != nil {
+					c.logger.Errorf("panic tn the transaction, rolling back transaction with panic err: %+v", err)
+				} else {
+					c.logger.Errorf("panic tn the transaction, rolling back transaction with panic message: %+v", r)
+				}
+			}
+		}()
+
+		return action(catalog)
+	})
 }
 
-func (c *catalogsUnitOfWork) Products() data2.ProductRepository {
-	return c.productRepository
+func NewCatalogsUnitOfWork(logger logger.Logger, db *gorm.DB) data2.CatalogUnitOfWork {
+	return &catalogUnitOfWork[data2.CatalogContext]{logger: logger, db: db}
 }

@@ -31,7 +31,7 @@ type IAggregateRoot interface {
 	// to check if there were no changes made to the aggregate state between load and save for the current operation.
 	OriginalVersion() int64
 
-	// AddDomainEvents adds a new domain event to the aggregate's uncommitted events.
+	// AddDomainEvents adds a new domain_events event to the aggregate's uncommitted events.
 	AddDomainEvents(event IDomainEvent) error
 
 	// MarkUncommittedEventAsCommitted Mark all changes (events) as committed, clears uncommitted changes and updates the current version of the aggregate.
@@ -88,17 +88,17 @@ func (a *AggregateRoot) AddDomainEvents(event IDomainEvent) {
 	a.uncommittedEvents = append(a.uncommittedEvents, event)
 }
 
-// MarkUncommittedEventAsCommitted clear AggregateRoot uncommitted domain events
+// MarkUncommittedEventAsCommitted clear AggregateRoot uncommitted domain_events events
 func (a *AggregateRoot) MarkUncommittedEventAsCommitted() {
 	a.uncommittedEvents = nil
 }
 
-// HasUncommittedEvents returns true if AggregateRoot has uncommitted domain events
+// HasUncommittedEvents returns true if AggregateRoot has uncommitted domain_events events
 func (a *AggregateRoot) HasUncommittedEvents() bool {
 	return len(a.uncommittedEvents) > 0
 }
 
-// GetUncommittedEvents get AggregateRoot uncommitted domain events
+// GetUncommittedEvents get AggregateRoot uncommitted domain_events events
 func (a *AggregateRoot) GetUncommittedEvents() []IDomainEvent {
 	return a.uncommittedEvents
 }

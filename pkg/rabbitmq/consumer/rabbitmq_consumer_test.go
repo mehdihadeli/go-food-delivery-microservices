@@ -26,7 +26,7 @@ import (
 )
 
 func Test_Consume_Message(t *testing.T) {
-	utils.SkipCI(t)
+	testUtils.SkipCI(t)
 	defer errorUtils.HandlePanic()
 
 	ctx := context.Background()
@@ -92,7 +92,7 @@ func Test_Consume_Message(t *testing.T) {
 		err = rabbitmqProducer.PublishMessage(ctx, NewProducerConsumerMessage("test"), nil)
 	}
 
-	err = utils.WaitUntilConditionMet(func() bool {
+	err = testUtils.WaitUntilConditionMet(func() bool {
 		return fakeHandler.IsHandled()
 	})
 	require.NoError(t, err)

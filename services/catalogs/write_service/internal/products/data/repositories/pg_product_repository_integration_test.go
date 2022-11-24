@@ -5,41 +5,40 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres/repository"
+
+	gormPostgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/testfixture"
+
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	gorm2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer/gorm"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/testfixture"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 )
 
 // https://brunoscheufler.com/blog/2020-04-12-building-go-test-suites-using-testify
-var (
-	seedProductId1 = uuid.NewV4()
-	seedProductId2 = uuid.NewV4()
-)
+
+var items []*models.Product
 
 // Define the custom testify suite
-type ProductPostgresRepositoryTestSuite struct {
+type productPostgresRepositoryTestSuite struct {
 	suite.Suite
 	productRepository data.ProductRepository
 	ctx               context.Context
 }
 
 func TestProductPostgresRepositoryTestSuite(t *testing.T) {
-	suite.Run(t, &ProductPostgresRepositoryTestSuite{})
+	suite.Run(t, &productPostgresRepositoryTestSuite{})
 }
 
-func (p *ProductPostgresRepositoryTestSuite) Test_Create_Product() {
+func (p *productPostgresRepositoryTestSuite) Test_Create_Product_Should_Create_New_Product_In_DB() {
 	ctx := p.ctx
 
 	product := &models.Product{
@@ -54,42 +53,48 @@ func (p *ProductPostgresRepositoryTestSuite) Test_Create_Product() {
 	require.NoError(p.T(), err)
 
 	product, err = p.productRepository.GetProductById(ctx, createdProduct.ProductId)
-	require.NoError(p.T(), err)
+	p.NoError(err)
 
 	p.NotNil(p)
 	p.Equal(product.ProductId, createdProduct.ProductId)
 }
 
-func (p *ProductPostgresRepositoryTestSuite) Test_Update_Product() {
+func (p *productPostgresRepositoryTestSuite) Test_Update_Product_Should_Update_Existing_Product_In_DB() {
 	ctx := p.ctx
 
-	existingProduct, err := p.productRepository.GetProductById(ctx, seedProductId1)
+	id := items[0].ProductId
+	existingProduct, err := p.productRepository.GetProductById(ctx, id)
 	p.Require().NoError(err)
 	p.Require().NotNil(existingProduct)
 
 	existingProduct.Name = "test_update_product"
 	_, err = p.productRepository.UpdateProduct(ctx, existingProduct)
-	require.NoError(p.T(), err)
-
-	updatedProduct, err := p.productRepository.GetProductById(ctx, seedProductId1)
-	assert.Equal(p.T(), updatedProduct.Name, "test_update_product")
-}
-
-func (p *ProductPostgresRepositoryTestSuite) Test_Delete_Product() {
-	ctx := p.ctx
-
-	err := p.productRepository.DeleteProductByID(ctx, seedProductId1)
 	p.Require().NoError(err)
 
-	product, err := p.productRepository.GetProductById(ctx, seedProductId1)
-	p.NoError(err)
+	updatedProduct, err := p.productRepository.GetProductById(ctx, id)
+	p.Equal(updatedProduct.Name, "test_update_product")
+}
+
+func (p *productPostgresRepositoryTestSuite) Test_Delete_Product_Should_Delete_Existing_Product_In_DB() {
+	ctx := p.ctx
+
+	id := items[0].ProductId
+
+	err := p.productRepository.DeleteProductByID(ctx, id)
+	p.Require().NoError(err)
+
+	product, err := p.productRepository.GetProductById(ctx, id)
+
+	p.Error(err)
+	p.True(customErrors.IsNotFoundError(err))
 	p.Nil(product)
 }
 
-func (p *ProductPostgresRepositoryTestSuite) Test_Get_Product() {
+func (p *productPostgresRepositoryTestSuite) Test_Get_Product() {
 	ctx := p.ctx
+	id := items[0].ProductId
 
-	p.Run("Product Not Found", func() {
+	p.Run("Should_Return_NotFound_Error_When_Item_DoesNot_Exists", func() {
 		// with subset test a new t will create for subset test
 		res, err := p.productRepository.GetProductById(ctx, uuid.NewV4())
 
@@ -98,15 +103,15 @@ func (p *ProductPostgresRepositoryTestSuite) Test_Get_Product() {
 		p.Nil(res)
 	})
 
-	p.Run("Get Product By ID", func() {
-		res, err := p.productRepository.GetProductById(ctx, seedProductId1)
+	p.Run("Should_Get_Existing_Product_From_DB", func() {
+		res, err := p.productRepository.GetProductById(ctx, id)
 		p.Require().NoError(err)
 
 		p.NotNil(res)
-		p.Equal(res.ProductId, seedProductId1)
+		p.Equal(res.ProductId, id)
 	})
 
-	p.Run("Get All Products", func() {
+	p.Run("Should_Get_All_Existing_Products_From_DB", func() {
 		res, err := p.productRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
 		p.Require().NoError(err)
 
@@ -114,11 +119,11 @@ func (p *ProductPostgresRepositoryTestSuite) Test_Get_Product() {
 	})
 }
 
-func (p *ProductPostgresRepositoryTestSuite) SetupSuite() {
+func (p *productPostgresRepositoryTestSuite) SetupSuite() {
 	p.T().Log("SetupSuite")
 }
 
-func (p *ProductPostgresRepositoryTestSuite) SetupTest() {
+func (p *productPostgresRepositoryTestSuite) SetupTest() {
 	p.ctx = context.Background()
 	p.T().Log("SetupTest")
 
@@ -130,42 +135,39 @@ func (p *ProductPostgresRepositoryTestSuite) SetupTest() {
 	p.productRepository = rep
 }
 
-func (p *ProductPostgresRepositoryTestSuite) BeforeTest(suiteName, testName string) {
+func (p *productPostgresRepositoryTestSuite) BeforeTest(suiteName, testName string) {
 	p.T().Log("BeforeTest")
 }
 
-func (p *ProductPostgresRepositoryTestSuite) AfterTest(suiteName, testName string) {
+func (p *productPostgresRepositoryTestSuite) AfterTest(suiteName, testName string) {
 	p.T().Log("AfterTest")
 }
 
-func (p *ProductPostgresRepositoryTestSuite) TearDownSuite() {
+func (p *productPostgresRepositoryTestSuite) TearDownSuite() {
 	p.T().Log("TearDownSuite")
 }
 
-func (p *ProductPostgresRepositoryTestSuite) TearDownTest() {
+func (p *productPostgresRepositoryTestSuite) TearDownTest() {
 	p.T().Log("TearDownTest")
 	// cleanup test containers
 	p.ctx.Done()
 }
 
-func setupTest(ctx context.Context, p *ProductPostgresRepositoryTestSuite) (data.ProductRepository, error) {
+func setupTest(ctx context.Context, p *productPostgresRepositoryTestSuite) (data.ProductRepository, error) {
 	gormDB, err := gorm2.NewGormTestContainers().Start(ctx, p.T())
 	if err != nil {
 		return nil, err
 	}
 
-	seedAndMigration(p, gormDB, []uuid.UUID{seedProductId1, seedProductId2})
+	seedAndMigration(p, gormDB)
 
-	cfg, err := config.InitConfig(constants.Test)
-	if err != nil {
-		return nil, err
-	}
+	genericRepository := repository.NewGenericGormRepository[*models.Product](gormDB)
+	productRepository := NewPostgresProductRepository(defaultLogger.Logger, genericRepository)
 
-	productRepository := NewPostgresProductRepository(defaultLogger.Logger, cfg, gormDB)
 	return productRepository, nil
 }
 
-func seedAndMigration(p *ProductPostgresRepositoryTestSuite, gormDB *gorm.DB, productIds []uuid.UUID) {
+func seedAndMigration(p *productPostgresRepositoryTestSuite, gormDB *gorm.DB) {
 	// migration
 	err := gormDB.AutoMigrate(models.Product{})
 	if err != nil {
@@ -185,17 +187,16 @@ func seedAndMigration(p *ProductPostgresRepositoryTestSuite, gormDB *gorm.DB, pr
 		Description string
 	}
 
-	for _, id := range productIds {
-		data = append(data, struct {
-			Name        string
-			ProductId   uuid.UUID
-			Description string
-		}{
-			Name:        gofakeit.Name(),
-			Description: gofakeit.AdjectiveDescriptive(),
-			ProductId:   id,
-		})
+	f := []struct {
+		Name        string
+		ProductId   uuid.UUID
+		Description string
+	}{
+		{gofakeit.Name(), uuid.NewV4(), gofakeit.AdjectiveDescriptive()},
+		{gofakeit.Name(), uuid.NewV4(), gofakeit.AdjectiveDescriptive()},
 	}
+
+	data = append(data, f...)
 
 	err = testfixture.RunPostgresFixture(
 		db,
@@ -206,4 +207,7 @@ func seedAndMigration(p *ProductPostgresRepositoryTestSuite, gormDB *gorm.DB, pr
 	if err != nil {
 		p.FailNowf("error in seed database", err.Error())
 	}
+
+	result, err := gormPostgres.Paginate[*models.Product](p.ctx, utils.NewListQuery(10, 1), gormDB)
+	items = result.Items
 }

@@ -23,7 +23,7 @@ const (
 	CollectionName = "products"
 )
 
-// Product is a domain entity
+// Product is a domain_events entity
 type Product struct {
 	ID          string
 	Name        string

@@ -3,6 +3,13 @@ package config
 import (
 	"flag"
 	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
+
 	"github.com/caarlos0/env/v6"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
 	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
@@ -10,13 +17,8 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/metrics"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/config"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
 
 	"emperror.dev/errors"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/elasticsearch"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
@@ -66,8 +68,8 @@ func InitConfig(environment string) (*Config, error) {
 		if configPathFromEnv != "" {
 			configPath = configPathFromEnv
 		} else {
-			//https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
-			//https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
+			// https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
+			// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
 			d, err := dirname()
 			if err != nil {
 				return nil, err
@@ -79,7 +81,7 @@ func InitConfig(environment string) (*Config, error) {
 
 	cfg := &Config{}
 
-	//https://github.com/spf13/viper/issues/390#issuecomment-718756752
+	// https://github.com/spf13/viper/issues/390#issuecomment-718756752
 	viper.SetConfigName(fmt.Sprintf("config.%s", environment))
 	viper.AddConfigPath(configPath)
 	viper.SetConfigType(constants.Json)

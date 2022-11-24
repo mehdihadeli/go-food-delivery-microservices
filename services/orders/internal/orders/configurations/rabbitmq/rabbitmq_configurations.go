@@ -3,7 +3,7 @@ package rabbitmq
 import (
 	rabbitmqConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	producerConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/producer/configurations"
-	v1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/events/integration/v1"
+	createOrderIntegrationEventsV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/v1/events/integration_events"
 )
 
 func ConfigOrdersRabbitMQ(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
@@ -11,7 +11,7 @@ func ConfigOrdersRabbitMQ(builder rabbitmqConfigurations.RabbitMQConfigurationBu
 	//utils.RegisterCustomMessageTypesToRegistrty(map[string]types.IMessage{"orderCreatedV1": &OrderCreatedV1{}})
 
 	builder.AddProducer(
-		v1.OrderCreatedV1{},
+		createOrderIntegrationEventsV1.OrderCreatedV1{},
 		func(builder producerConfigurations.RabbitMQProducerConfigurationBuilder) {
 		})
 }

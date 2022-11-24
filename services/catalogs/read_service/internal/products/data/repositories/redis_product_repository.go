@@ -25,7 +25,7 @@ type redisProductRepository struct {
 	redisClient redis.UniversalClient
 }
 
-func NewRedisRepository(log logger.Logger, cfg *config.Config, redisClient redis.UniversalClient) contracts.ProductCacheRepository {
+func NewRedisProductRepository(log logger.Logger, cfg *config.Config, redisClient redis.UniversalClient) contracts.ProductCacheRepository {
 	return &redisProductRepository{log: log, cfg: cfg, redisClient: redisClient}
 }
 

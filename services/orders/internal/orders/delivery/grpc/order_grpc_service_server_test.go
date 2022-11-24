@@ -2,14 +2,15 @@ package grpc
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/utils"
 	ordersService "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/contracts/proto/service_clients"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/test_fixtures/e2e"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"testing"
-	"time"
 )
 
 type OrderGrpcServiceTests struct {
@@ -19,13 +20,13 @@ type OrderGrpcServiceTests struct {
 }
 
 func TestRunner(t *testing.T) {
-	test.SkipCI(t)
+	testUtils.SkipCI(t)
 	fixture := e2e.NewE2ETestFixture()
 
-	//https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
+	// https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
 	t.Run("GRPC", func(t *testing.T) {
 		// Before running the tests
-		orderGrpcService := NewOrderGrpcService(fixture.InfrastructureConfiguration)
+		orderGrpcService := NewOrderGrpcService(fixture.InfrastructureConfigurations)
 		ordersService.RegisterOrdersServiceServer(fixture.GrpcServer.GetCurrentGrpcServer(), orderGrpcService)
 
 		ctx := fixture.Ctx

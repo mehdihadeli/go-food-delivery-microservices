@@ -2,7 +2,11 @@ package unit_test
 
 import (
 	"context"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
+	"fmt"
+	"testing"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
@@ -14,7 +18,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type UnitTestSharedFixture struct {
@@ -24,7 +27,7 @@ type UnitTestSharedFixture struct {
 }
 
 type UnitTestMockFixture struct {
-	Uow               *mocks2.CatalogsUnitOfWorks
+	Uow               *mocks2.CatalogUnitOfWork
 	ProductRepository *mocks2.ProductRepository
 	Bus               *mocks3.Bus
 	Ctx               context.Context
@@ -50,15 +53,16 @@ func NewUnitTestMockFixture(t *testing.T) *UnitTestMockFixture {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	t.Cleanup(func() {
-		//https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
-		//https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
+		// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
+		// https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
 		cancel()
 	})
 
 	// create new mocks
 	productRepository := &mocks2.ProductRepository{}
 	bus := &mocks3.Bus{}
-	uow := &mocks2.CatalogsUnitOfWorks{}
+	uow := &mocks2.CatalogUnitOfWork{}
+	catalogContext := &mocks2.CatalogContext{}
 
 	//// or just clear the mocks
 	//c.Bus.ExpectedCalls = nil
@@ -69,16 +73,18 @@ func NewUnitTestMockFixture(t *testing.T) *UnitTestMockFixture {
 	//c.ProductRepository.Calls = nil
 
 	uow.On("Products").Return(productRepository)
+	catalogContext.On("Products").Return(productRepository)
 
 	var mockUOW *mock.Call
-	mockUOW = uow.On("SaveWithTx", mock.Anything, mock.Anything).
+	mockUOW = uow.On("Do", mock.Anything, mock.Anything).
 		Run(func(args mock.Arguments) {
-			fn, ok := args.Get(1).(data.UnitOfWorkActionFunc)
+			fn, ok := args.Get(1).(data.CatalogUnitOfWorkActionFunc)
 			if !ok {
 				panic("argument mismatch")
 			}
+			fmt.Println(fn)
 
-			mockUOW.Return(fn())
+			mockUOW.Return(fn(catalogContext))
 		})
 
 	mockUOW.Times(1)

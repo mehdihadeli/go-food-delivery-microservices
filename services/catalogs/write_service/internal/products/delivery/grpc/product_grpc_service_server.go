@@ -2,25 +2,26 @@ package grpc
 
 import (
 	"context"
-	"emperror.dev/errors"
 	"fmt"
+
+	"emperror.dev/errors"
 	"github.com/mehdihadeli/go-mediatr"
-	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	uuid "github.com/satori/go.uuid"
+	attribute2 "go.opentelemetry.io/otel/attribute"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	productsService "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
-	creatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/commands/v1"
-	gettingProductByIdDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/dtos"
-	gettingProductByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/queries/v1"
-	updatingProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/commands/v1"
+	createProductCommandV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/v1/commands"
+	createProductDtosV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/v1/dtos"
+	getProductByIdDtosV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/v1/dtos"
+	getProductByIdQueryV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/v1/queries"
+	updateProductCommandV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/v1/commands"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/contracts"
-	attribute2 "go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
-
-	creatingProductDtos "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/dtos"
-	uuid "github.com/satori/go.uuid"
 )
 
 var grpcMetricsAttr = attribute2.Key("MetricsType").String("Grpc")
@@ -42,15 +43,14 @@ func (s *ProductGrpcServiceServer) CreateProduct(ctx context.Context, req *produ
 	span.SetAttributes(attribute.Object("Request", req))
 	s.catalogsMetrics.CreateProductGrpcRequests.Add(ctx, 1, grpcMetricsAttr)
 
-	command := creatingProductV1.NewCreateProduct(req.GetName(), req.GetDescription(), req.GetPrice())
-
-	if err := s.Validator.StructCtx(ctx, command); err != nil {
+	command, err := createProductCommandV1.NewCreateProduct(req.GetName(), req.GetDescription(), req.GetPrice())
+	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[ProductGrpcServiceServer_CreateProduct.StructCtx] command validation failed")
 		s.Log.Errorf(fmt.Sprintf("[ProductGrpcServiceServer_CreateProduct.StructCtx] err: %v", validationErr))
 		return nil, validationErr
 	}
 
-	result, err := mediatr.Send[*creatingProductV1.CreateProduct, *creatingProductDtos.CreateProductResponseDto](ctx, command)
+	result, err := mediatr.Send[*createProductCommandV1.CreateProduct, *createProductDtosV1.CreateProductResponseDto](ctx, command)
 	if err != nil {
 		err = errors.WithMessage(err, "[ProductGrpcServiceServer_CreateProduct.Send] error in sending CreateProduct")
 		s.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_CreateProduct.Send] id: {%s}, err: %v", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
@@ -72,15 +72,14 @@ func (s *ProductGrpcServiceServer) UpdateProduct(ctx context.Context, req *produ
 		return nil, badRequestErr
 	}
 
-	command := updatingProductV1.NewUpdateProduct(productUUID, req.GetName(), req.GetDescription(), req.GetPrice())
-
-	if err := s.Validator.StructCtx(ctx, command); err != nil {
+	command, err := updateProductCommandV1.NewUpdateProduct(productUUID, req.GetName(), req.GetDescription(), req.GetPrice())
+	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[ProductGrpcServiceServer_UpdateProduct.StructCtx] command validation failed")
 		s.Log.Errorf(fmt.Sprintf("[ProductGrpcServiceServer_UpdateProduct.StructCtx] err: %v", validationErr))
 		return nil, validationErr
 	}
 
-	if _, err = mediatr.Send[*updatingProductV1.UpdateProduct, *mediatr.Unit](ctx, command); err != nil {
+	if _, err = mediatr.Send[*updateProductCommandV1.UpdateProduct, *mediatr.Unit](ctx, command); err != nil {
 		err = errors.WithMessage(err, "[ProductGrpcServiceServer_UpdateProduct.Send] error in sending CreateProduct")
 		s.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_UpdateProduct.Send] id: {%s}, err: %v", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
 		return nil, err
@@ -105,14 +104,14 @@ func (s *ProductGrpcServiceServer) GetProductById(ctx context.Context, req *prod
 		return nil, badRequestErr
 	}
 
-	query := gettingProductByIdV1.NewGetProductById(productUUID)
-	if err := s.Validator.StructCtx(ctx, query); err != nil {
+	query, err := getProductByIdQueryV1.NewGetProductById(productUUID)
+	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(err, "[ProductGrpcServiceServer_GetProductById.StructCtx] query validation failed")
 		s.Log.Errorf(fmt.Sprintf("[ProductGrpcServiceServer_GetProductById.StructCtx] err: %v", validationErr))
 		return nil, validationErr
 	}
 
-	queryResult, err := mediatr.Send[*gettingProductByIdV1.GetProductById, *gettingProductByIdDtos.GetProductByIdResponseDto](ctx, query)
+	queryResult, err := mediatr.Send[*getProductByIdQueryV1.GetProductById, *getProductByIdDtosV1.GetProductByIdResponseDto](ctx, query)
 	if err != nil {
 		err = errors.WithMessage(err, "[ProductGrpcServiceServer_GetProductById.Send] error in sending GetProductById")
 		s.Log.Errorw(fmt.Sprintf("[ProductGrpcServiceServer_GetProductById.Send] id: {%s}, err: %v", query.ProductID, err), logger.Fields{"ProductId": query.ProductID})

@@ -108,5 +108,5 @@ func (s *JsonEventSerializer) DeserializeEvent(data []byte, eventType string, co
 }
 
 func (s *JsonEventSerializer) ContentType() string {
-	return "application/json"
+	return "application_exceptions/json"
 }

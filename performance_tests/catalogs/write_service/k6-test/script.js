@@ -60,7 +60,7 @@ export default function() {
             let url = BASE_URL + `/api/v1/products`;
             // TODO: edit the parameters of the request body.
             let body = {"description": "string", "name": "string", "price": "bigdecimal"};
-            let params = {headers: {"Content-Type": "application/json", "Accept": "application/json"}};
+            let params = {headers: {"Content-Type": "application_exceptions/json", "Accept": "application_exceptions/json"}};
             let request = http.post(url, JSON.stringify(body), params);
 
             check(request, {

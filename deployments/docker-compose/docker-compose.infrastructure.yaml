@@ -206,6 +206,8 @@ services:
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
+      - xpack.monitoring.enabled=true
+      - xpack.watcher.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       memlock:

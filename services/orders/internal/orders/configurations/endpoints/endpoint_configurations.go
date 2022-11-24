@@ -2,13 +2,15 @@ package endpoints
 
 import (
 	"context"
+
 	"github.com/labstack/echo/v4"
-	customEcho "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/custom_echo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/delivery"
-	creatingOrderV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/endpoints/v1"
-	gettingOrderByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/endpoints/v1"
-	gettingOrdersV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/endpoints/v1"
+	createOrderV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/creating_order/v1/endpoints"
+	getOrderByIdV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_order_by_id/v1/endpoints"
+	getOrdersV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/orders/features/getting_orders/v1/endpoints"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/contracts"
 )
 
@@ -23,15 +25,15 @@ func configV1Endpoints(ctx context.Context, routeBuilder *customEcho.RouteBuilde
 		orderEndpointBase := delivery.NewOrderEndpointBase(infra, ordersGroup, bus, metrics)
 
 		// CreateNewOrder
-		createOrderEndpoint := creatingOrderV1.NewCreteOrderEndpoint(orderEndpointBase)
+		createOrderEndpoint := createOrderV1.NewCreteOrderEndpoint(orderEndpointBase)
 		createOrderEndpoint.MapRoute()
 
 		// GetOrderByID
-		getOrderByIdEndpoint := gettingOrderByIdV1.NewGetOrderByIdEndpoint(orderEndpointBase)
+		getOrderByIdEndpoint := getOrderByIdV1.NewGetOrderByIdEndpoint(orderEndpointBase)
 		getOrderByIdEndpoint.MapRoute()
 
 		// GetOrders
-		getOrders := gettingOrdersV1.NewGetOrdersEndpoint(orderEndpointBase)
+		getOrders := getOrdersV1.NewGetOrdersEndpoint(orderEndpointBase)
 		getOrders.MapRoute()
 	})
 }

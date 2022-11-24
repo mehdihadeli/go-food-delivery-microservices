@@ -4,38 +4,33 @@ import (
 	"context"
 	"fmt"
 
-	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	attribute2 "go.opentelemetry.io/otel/attribute"
 
 	"emperror.dev/errors"
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	uuid "github.com/satori/go.uuid"
-	"gorm.io/gorm"
 )
 
 type postgresProductRepository struct {
-	log  logger.Logger
-	cfg  *config.Config
-	db   *pgxpool.Pool
-	gorm *gorm.DB
+	log                   logger.Logger
+	gormGenericRepository data.GenericRepository[*models.Product]
 }
 
-func NewPostgresProductRepository(log logger.Logger, cfg *config.Config, gorm *gorm.DB) *postgresProductRepository {
-	return &postgresProductRepository{log: log, cfg: cfg, gorm: gorm}
+func NewPostgresProductRepository(log logger.Logger, gormGenericRepository data.GenericRepository[*models.Product]) *postgresProductRepository {
+	return &postgresProductRepository{log: log, gormGenericRepository: gormGenericRepository}
 }
 
 func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[*models.Product], error) {
 	ctx, span := tracing.Tracer.Start(ctx, "postgresProductRepository.GetAllProducts")
 	defer span.End()
 
-	result, err := gormPostgres.Paginate[*models.Product](ctx, listQuery, p.gorm)
+	result, err := p.gormGenericRepository.GetAll(ctx, listQuery)
 	if err != nil {
 		return nil, tracing.TraceErrFromContext(ctx, errors.WrapIf(err, "[postgresProductRepository_GetAllProducts.Paginate] error in the paginate"))
 	}
@@ -51,10 +46,7 @@ func (p *postgresProductRepository) SearchProducts(ctx context.Context, searchTe
 	span.SetAttributes(attribute2.String("SearchText", searchText))
 	defer span.End()
 
-	whereQuery := fmt.Sprintf("%s IN (?)", "Name")
-	query := p.gorm.Where(whereQuery, searchText)
-
-	result, err := gormPostgres.Paginate[*models.Product](ctx, listQuery, query)
+	result, err := p.gormGenericRepository.Search(ctx, searchText, listQuery)
 	if err != nil {
 		return nil, tracing.TraceErrFromContext(ctx, errors.WrapIf(err, "[postgresProductRepository_SearchProducts.Paginate] error in the paginate"))
 	}
@@ -70,27 +62,26 @@ func (p *postgresProductRepository) GetProductById(ctx context.Context, uuid uui
 	span.SetAttributes(attribute2.String("ProductId", uuid.String()))
 	defer span.End()
 
-	var product models.Product
-	if err := p.gorm.First(&product, uuid).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("[postgresProductRepository_GetProductById.First] can't find the product with id %s into the database.", uuid))
-		}
-
-		return nil, tracing.TraceErrFromContext(ctx, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_GetProductById.First] can't find the product with id %s into the database.", uuid)))
+	product, err := p.gormGenericRepository.GetById(ctx, uuid)
+	if err != nil {
+		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_GetProductById.First] can't find the product with id %s into the database.", uuid)))
 	}
+
 	span.SetAttributes(attribute.Object("Product", product))
 	p.log.Infow(fmt.Sprintf("[postgresProductRepository.GetProductById] product with id %s laoded", uuid.String()), logger.Fields{"Product": product, "ProductId": uuid})
 
-	return &product, nil
+	return product, nil
 }
 
 func (p *postgresProductRepository) CreateProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
 	ctx, span := tracing.Tracer.Start(ctx, "postgresProductRepository.CreateProduct")
 	defer span.End()
 
-	if err := p.gorm.Create(&product).Error; err != nil {
-		return nil, tracing.TraceErrFromContext(ctx, errors.WrapIf(err, "[postgresProductRepository_CreateProduct.Create] error in the inserting product into the database."))
+	err := p.gormGenericRepository.Add(ctx, product)
+	if err != nil {
+		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "[postgresProductRepository_CreateProduct.Create] error in the inserting product into the database."))
 	}
+
 	span.SetAttributes(attribute.Object("Product", product))
 	p.log.Infow(fmt.Sprintf("[postgresProductRepository.CreateProduct] product with id '%s' created", product.ProductId), logger.Fields{"Product": product, "ProductId": product.ProductId})
 
@@ -101,9 +92,11 @@ func (p *postgresProductRepository) UpdateProduct(ctx context.Context, updatePro
 	ctx, span := tracing.Tracer.Start(ctx, "postgresProductRepository.UpdateProduct")
 	defer span.End()
 
-	if err := p.gorm.Save(updateProduct).Error; err != nil {
-		return nil, tracing.TraceErrFromContext(ctx, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_UpdateProduct.Save] error in updating product with id %s into the database.", updateProduct.ProductId)))
+	err := p.gormGenericRepository.Update(ctx, updateProduct)
+	if err != nil {
+		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_UpdateProduct.Save] error in updating product with id %s into the database.", updateProduct.ProductId)))
 	}
+
 	span.SetAttributes(attribute.Object("Product", updateProduct))
 	p.log.Infow(fmt.Sprintf("[postgresProductRepository.UpdateProduct] product with id '%s' updated", updateProduct.ProductId), logger.Fields{"Product": updateProduct, "ProductId": updateProduct.ProductId})
 
@@ -115,15 +108,12 @@ func (p *postgresProductRepository) DeleteProductByID(ctx context.Context, uuid 
 	span.SetAttributes(attribute2.String("ProductId", uuid.String()))
 	defer span.End()
 
-	var product models.Product
-
-	if err := p.gorm.First(&product, uuid).Error; err != nil {
-		return tracing.TraceErrFromContext(ctx, customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("[postgresProductRepository_DeleteProductByID.First] can't find the product with id %s into the database.", uuid)))
+	err := p.gormGenericRepository.Delete(ctx, uuid)
+	if err != nil {
+		return tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf(
+			"[postgresProductRepository_DeleteProductByID.Delete] error in the deleting product with id %s into the database.", uuid)))
 	}
 
-	if err := p.gorm.Delete(&product).Error; err != nil {
-		return tracing.TraceErrFromContext(ctx, errors.WrapIf(err, fmt.Sprintf("[postgresProductRepository_DeleteProductByID.Delete] error in the deleting product with id %s into the database.", uuid)))
-	}
 	p.log.Infow(fmt.Sprintf("[postgresProductRepository.DeleteProductByID] product with id %s deleted", uuid), logger.Fields{"Product": uuid})
 
 	return nil

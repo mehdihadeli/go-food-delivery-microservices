@@ -3,12 +3,19 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"testing"
+	"time"
+
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres/repository"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
+
 	"github.com/labstack/echo/v4"
 	mediatr2 "github.com/mehdihadeli/go-mediatr"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/uow"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/delivery"
 	"github.com/stretchr/testify/suite"
-	"time"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
@@ -26,8 +33,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/web/workers"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"testing"
 )
 
 type E2ETestSharedFixture struct {
@@ -75,7 +80,9 @@ func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 		return nil
 	}
 
-	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, infrastructures.Cfg, infrastructures.Gorm)
+	genericRepo := repository.NewGenericGormRepository[*models.Product](infrastructures.Gorm)
+	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, genericRepo)
+	catalogUnitOfWork := uow.NewCatalogsUnitOfWork(infrastructures.Log, infrastructures.Gorm)
 
 	mqBus, err := rabbitmq.NewRabbitMQTestContainers().Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
 		// Products RabbitMQ configuration
@@ -92,7 +99,7 @@ func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 		require.FailNow(shared.T(), err.Error())
 	}
 
-	err = mediatr.ConfigProductsMediator(productRep, infrastructures, mqBus)
+	err = mediatr.ConfigProductsMediator(catalogUnitOfWork, productRep, infrastructures, mqBus)
 	if err != nil {
 		cancel()
 		require.FailNow(shared.T(), err.Error())
@@ -121,8 +128,8 @@ func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 
 	shared.T().Cleanup(func() {
 		// with Cancel() we send signal to done() channel to stop grpc, http and workers gracefully
-		//https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
-		//https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
+		// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
+		// https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
 		mediatr2.ClearRequestRegistrations()
 		cancel()
 		cleanup()
@@ -147,7 +154,7 @@ func (e *E2ETestFixture) Run() {
 
 	go func() {
 		if err := e.HttpServer.RunHttpServer(e.Ctx, nil); err != nil {
-			e.Log.Errorf("(s.RunGrpcServer) err: %v", err)
+			e.Log.Errorf("(s.RunHttpServer) err: %v", err)
 		}
 	}()
 

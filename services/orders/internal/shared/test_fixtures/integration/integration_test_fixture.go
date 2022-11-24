@@ -2,10 +2,13 @@ package integration
 
 import (
 	"context"
+	"math"
+	"time"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/es/contracts/store"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/eventstroredb"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	defaultLogger2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
@@ -19,8 +22,6 @@ import (
 	subscriptionAll "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/orders/subscription_all"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/workers"
-	"math"
-	"time"
 )
 
 type IntegrationTestFixture struct {
@@ -41,7 +42,7 @@ func NewIntegrationTestFixture() *IntegrationTestFixture {
 
 	deadline := time.Now().Add(time.Duration(math.MaxInt64))
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
-	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
+	c := infrastructure.NewInfrastructureConfigurator(defaultLogger2.Logger, cfg)
 	infrastructures, cleanup, err := c.ConfigInfrastructures(ctx)
 	if err != nil {
 		cancel()
@@ -111,7 +112,6 @@ func (e *IntegrationTestFixture) Run() {
 				e.cancel()
 				return
 			}
-
 		}
 	}()
 
@@ -121,7 +121,7 @@ func (e *IntegrationTestFixture) Run() {
 			case _ = <-workersErr:
 				e.cancel()
 				return
-				//case <-e.cleanupChan:
+				// case <-e.cleanupChan:
 				//	workersRunner.Stop(e.Ctx)
 				//	return
 			}

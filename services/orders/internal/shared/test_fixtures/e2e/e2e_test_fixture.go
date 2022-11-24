@@ -2,10 +2,12 @@ package e2e
 
 import (
 	"context"
+	"net/http/httptest"
+
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/constants"
 	grpcServer "github.com/mehdihadeli/store-golang-microservice-sample/pkg/grpc"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/defaultLogger"
+	defaultLogger2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/bus"
 	webWoker "github.com/mehdihadeli/store-golang-microservice-sample/pkg/web"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/config"
@@ -17,7 +19,6 @@ import (
 	subscriptionAll "github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/configurations/orders/subscription_all"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/contracts"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/orders/internal/shared/web/workers"
-	"net/http/httptest"
 )
 
 type E2ETestFixture struct {
@@ -42,7 +43,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 	cfg, _ := config.InitConfig(constants.Test)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	c := infrastructure.NewInfrastructureConfigurator(defaultLogger.Logger, cfg)
+	c := infrastructure.NewInfrastructureConfigurator(defaultLogger2.Logger, cfg)
 	infrastructures, cleanup, err := c.ConfigInfrastructures(context.Background())
 	if err != nil {
 		cancel()
@@ -56,7 +57,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 
 	v1Groups := &V1Groups{OrdersGroup: ordersV1}
 
-	// this should not be in integration test because of cyclic dependencies
+	// this should not be in integration_events test because of cyclic dependencies
 	err = mediatr.ConfigOrdersMediator(infrastructures)
 	if err != nil {
 		cancel()
@@ -87,7 +88,7 @@ func NewE2ETestFixture() *E2ETestFixture {
 		return nil
 	}
 
-	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger.Logger, cfg.ServiceName, infrastructures.Metrics())
+	grpcServer := grpcServer.NewGrpcServer(cfg.GRPC, defaultLogger2.Logger, cfg.ServiceName, infrastructures.Metrics())
 	httpServer := httptest.NewServer(echo)
 
 	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{

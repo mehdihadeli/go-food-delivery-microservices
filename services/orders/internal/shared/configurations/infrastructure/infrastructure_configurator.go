@@ -56,11 +56,11 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	if err != nil {
 		return nil, nil, errors.WrapIf(err, "NewMongoDBConn")
 	}
-	ic.log.Infof("(Mongo connected) SessionsInProgress: {%v}", mongo.MongoClient.NumberSessionsInProgress())
+	ic.log.Infof("(Mongo connected) SessionsInProgress: {%v}", mongo.NumberSessionsInProgress())
 	cleanup = append(cleanup, func() {
-		_ = mongo.Close() // nolint: errcheck
+		_ = mongo.Disconnect(ctx) // nolint: errcheck
 	})
-	infrastructure.mongoClient = mongo.MongoClient
+	infrastructure.mongoClient = mongo
 
 	esdb, err := eventstroredb.NewEventStoreDB(ic.cfg.EventStoreConfig)
 	if err != nil {
