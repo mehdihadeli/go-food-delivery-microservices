@@ -25,10 +25,10 @@
 - ✅ Using docker and `docker-compose` for deployment
 
 ## Roadmap
-- 🚧 Add Dependecny Injections with using [uber-go/fx](https://github.com/uber-go/fx)
+- 🚧 Add `Dependecny Injections` with using [uber-go/fx](https://github.com/uber-go/fx)
 - 🚧 Using `Domain Driven Design` in some of services like [Catalogs Write Service](services/catalogs/write_service/) 
 - 🚧 Using `Helm` and `Kubernetes` for deployment
-- 🚧 Add identity management and oauth
+- 🚧 Add `Identity Management` and `OAuth`
 
 ## Technologies - Libraries
 
