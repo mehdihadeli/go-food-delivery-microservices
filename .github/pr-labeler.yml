@@ -1,5 +1,0 @@
-# https://github.com/TimonVS/pr-labeler-action
-feature: ['feature/*', 'feat/*', 'feat:*']
-fix: ['fix/*','fix:*']
-chore :hammer:: chore/*
-misc: '*'
