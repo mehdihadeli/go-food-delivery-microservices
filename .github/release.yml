@@ -1,23 +1,48 @@
 # https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
 # https://github.com/bcoe/conventional-release-labels
 # https://dev.to/github/how-to-automatically-generate-release-notes-for-your-project-2ng8
+# https://www.conventionalcommits.org/en/v1.0.0/
 changelog:
   exclude:
     labels:
       - ignore-for-release
   categories:
-    - title: Features
-      labels:
-        - feature
-    - title: Fixes
-      labels:
-        - bug
-        - fix
-        - enhancement
-    - title: Enhancement
+    - title: ♻️Enhancement
       labels:
         - refactor
         - enhancement
-    - title: Other Changes
-      labels:
-        - "*"
+   - title: 🚀 Features
+     labels:
+       - feature
+       - enhancement
+   - title: 🐛 Bug Fixes
+     labels:
+       - fix
+       - bug
+   - title: ⚠️ Changes
+     labels:
+       - changed
+   - title: ⛔️ Deprecated
+     labels:
+       - deprecated
+   - title: 🗑 Removed
+     labels:
+       - removed
+   - title: 🔐 Security
+     labels:
+       - security
+   - title: 📄 Documentation
+     labels:
+       - docs
+       - documentation
+   - title: 🧩 Dependency Updates
+     labels:
+       - deps
+       - dependencies
+   - title: 🧰 Maintenance
+     label: 'chore'
+   - title: 🧺 Miscell
+     label: misc
+   - title: Other Changes
+    labels:
+      - "*"
