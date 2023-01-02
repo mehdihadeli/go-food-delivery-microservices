@@ -1,0 +1,22 @@
+version: v1
+
+labels:
+  - label: "feat"
+    matcher:
+      title: "^feat: .*"
+      commits: "^feat: .*"
+
+  - label: "fix"
+    matcher:
+      title: "^fix: .*"
+      commits: "^fix: .*"
+
+  - label: "chore"
+    matcher:
+      title: "^chore: .*"
+      commits: "^chore: .*"
+
+  - label: "docs"
+    matcher:
+      title: "^docs: .*"
+      commits: "^docs: .*"
