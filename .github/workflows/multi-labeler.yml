@@ -1,0 +1,16 @@
+name: Multi Labeler
+on:
+  pull_request:
+    types: [ opened, edited, synchronize, ready_for_review ]
+    branches: [ dev, main ]
+
+jobs:
+  labeler:
+    name: Labeler
+    runs-on: ubuntu-latest
+    steps:
+      # follows semantic versioning. Lock to different version: v1, v1.5, v1.5.0 or use a commit hash.
+      - uses: fuxingloh/multi-labeler@v1
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}} # optional, default to '${{ github.token }}'  
+          config-path: .github/multi-labeler.yml # optional, default to '.github/labeler.yml'
