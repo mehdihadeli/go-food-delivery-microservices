@@ -5,8 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres/repository"
-
 	gormPostgres "github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/testfixture"
 
@@ -161,8 +159,7 @@ func setupTest(ctx context.Context, p *productPostgresRepositoryTestSuite) (data
 
 	seedAndMigration(p, gormDB)
 
-	genericRepository := repository.NewGenericGormRepository[*models.Product](gormDB)
-	productRepository := NewPostgresProductRepository(defaultLogger.Logger, genericRepository)
+	productRepository := NewPostgresProductRepository(defaultLogger.Logger, gormDB)
 
 	return productRepository, nil
 }

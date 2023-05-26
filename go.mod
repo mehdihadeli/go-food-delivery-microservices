@@ -1,6 +1,6 @@
 module github.com/mehdihadeli/store-golang-microservice-sample
 
-go 1.19
+go 1.20
 
 require (
 	emperror.dev/errors v0.8.1
@@ -60,10 +60,11 @@ require (
 	go.opentelemetry.io/otel/sdk v1.10.0
 	go.opentelemetry.io/otel/sdk/metric v0.32.1
 	go.opentelemetry.io/otel/trace v1.10.0
-	go.uber.org/zap v1.23.0
+	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.49.0
 	gorm.io/driver/postgres v1.3.7
-	gorm.io/gorm v1.23.6
+	gorm.io/gorm v1.24.2
+	moul.io/zapgorm2 v1.1.3
 )
 
 require (
@@ -142,6 +143,7 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
@@ -155,7 +157,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.opencensus.io v0.23.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d // indirect
 	golang.org/x/exp v0.0.0-20220613132600-b0d781184e0d // indirect

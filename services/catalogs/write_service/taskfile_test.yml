@@ -1,0 +1,21 @@
+#https://taskfile.dev/#/installation
+
+version: "3"
+
+
+tasks:
+  mock:
+    desc: Generate interfaces mocks
+    cmds:
+      - docker run --rm -it -v $(pwd):/src -w /src vektra/mockery --dir services/write_service --all --output mocks/services/write_service
+      - docker run --rm -it -v $(pwd):/src -w /src vektra/mockery --dir services/read_service --all --output mocks/services/read_service
+
+  integration:
+    desc: Run integration tests
+    cmds:
+      - go test -v -tags=integration ./...
+
+  unit:
+    desc: Run unit tests
+    cmds:
+      - go test -v -tags=unit ./...

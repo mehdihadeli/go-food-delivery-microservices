@@ -77,7 +77,7 @@ func (g *mongoTestContainers) Start(ctx context.Context, t *testing.T, options .
 		return nil, err
 	}
 
-	return db.MongoClient, nil
+	return db, nil
 }
 
 func (g *mongoTestContainers) Cleanup(ctx context.Context) error {

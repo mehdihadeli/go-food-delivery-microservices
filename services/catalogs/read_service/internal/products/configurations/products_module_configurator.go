@@ -10,6 +10,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/configurations/mediator"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
+	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/data/repositories"
 	contracts2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/shared/contracts"
 )
 
@@ -38,8 +39,10 @@ func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context
 		return err
 	}
 
+	var cacheRepository = repositories.NewRedisProductRepository(c.Log, c.Cfg, c.Redis)
+	var mongoRepository = repositories.NewMongoProductRepository(c.Log, c.MongoClient)
 	//Config Products Mediators
-	err = mediator.ConfigProductsMediator(c.InfrastructureConfigurations)
+	err = mediator.ConfigProductsMediator(c.InfrastructureConfigurations, mongoRepository, cacheRepository, c.bus)
 	if err != nil {
 		return err
 	}

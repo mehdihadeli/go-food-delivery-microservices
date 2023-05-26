@@ -30,7 +30,7 @@ func NewRabbitMQDockerTest() contracts.RabbitMQContainer {
 			VirtualHost: "",
 			UserName:    "dockertest",
 			Password:    "dockertest",
-			Tag:         "3-management",
+			Tag:         "management",
 			ImageName:   "rabbitmq",
 			Name:        "rabbitmq-dockertest",
 		},

@@ -84,7 +84,7 @@ func (g *mongoDockerTest) Start(ctx context.Context, t *testing.T, options ...*c
 		if err != nil {
 			return err
 		}
-		mongoClient = db.MongoClient
+		mongoClient = db
 		return mongoClient.Ping(context.TODO(), nil)
 	}); err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)

@@ -3,14 +3,19 @@ package gormPostgres
 import (
 	"context"
 	"database/sql"
-	"emperror.dev/errors"
 	"fmt"
+	"strings"
+
+	"go.uber.org/zap"
+	"moul.io/zapgorm2"
+
+	"emperror.dev/errors"
+
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/uptrace/bun/driver/pgdriver"
 	gormPostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"strings"
 )
 
 type GormConfig struct {
@@ -41,8 +46,11 @@ func NewGorm(cfg *GormConfig) (*gorm.DB, error) {
 		cfg.Password,
 	)
 
-	gormDb, err := gorm.Open(gormPostgres.Open(dataSourceName), &gorm.Config{})
+	// https://github.com/moul/zapgorm2
+	logger := zapgorm2.New(zap.L())
+	logger.SetAsDefault() // optional: configure gorm to use this zapgorm.Logger for callbacks
 
+	gormDb, err := gorm.Open(gormPostgres.Open(dataSourceName), &gorm.Config{Logger: logger})
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +71,9 @@ func createDB(cfg *GormConfig) error {
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(datasource)))
 
 	var exists int
-	rows, err := sqldb.Query(fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
+	rows, err := sqldb.Query(
+		fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName),
+	)
 	if err != nil {
 		return err
 	}
@@ -89,9 +99,12 @@ func createDB(cfg *GormConfig) error {
 	return nil
 }
 
-//Ref: https://dev.to/rafaelgfirmino/pagination-using-gorm-scopes-3k5f
-
-func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.DB) (*utils.ListResult[T], error) {
+// Ref: https://dev.to/rafaelgfirmino/pagination-using-gorm-scopes-3k5f
+func Paginate[T any](
+	ctx context.Context,
+	listQuery *utils.ListQuery,
+	db *gorm.DB,
+) (*utils.ListResult[T], error) {
 	ctx, span := tracing.Tracer.Start(ctx, "gorm.Paginate")
 	defer span.End()
 
@@ -100,7 +113,10 @@ func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, db *gorm.D
 	db.Model(items).WithContext(ctx).Count(&totalRows)
 
 	// generate where query
-	query := db.WithContext(ctx).Offset(listQuery.GetOffset()).Limit(listQuery.GetLimit()).Order(listQuery.GetOrderBy())
+	query := db.WithContext(ctx).
+		Offset(listQuery.GetOffset()).
+		Limit(listQuery.GetLimit()).
+		Order(listQuery.GetOrderBy())
 
 	if listQuery.Filters != nil {
 		for _, filter := range listQuery.Filters {

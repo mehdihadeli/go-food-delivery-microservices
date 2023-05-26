@@ -1,6 +1,6 @@
 module github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service
 
-go 1.19
+go 1.20
 
 // https://go.dev/doc/tutorial/call-module-code
 replace github.com/mehdihadeli/store-golang-microservice-sample => ../../../
@@ -28,7 +28,6 @@ require (
 	go.opentelemetry.io/otel/metric v0.32.1
 	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.1
-	gorm.io/gorm v1.23.6
 )
 
 require (
@@ -158,9 +157,9 @@ require (
 	go.opentelemetry.io/otel/sdk v1.10.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v0.32.1 // indirect
 	go.opentelemetry.io/otel/trace v1.10.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	go.uber.org/zap v1.23.0 // indirect
+	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d // indirect
 	golang.org/x/exp v0.0.0-20220613132600-b0d781184e0d // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
@@ -174,5 +173,6 @@ require (
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gorm.io/gorm v1.24.2 // indirect
 	moul.io/http2curl v1.0.1-0.20190925090545-5cd742060b0e // indirect
 )

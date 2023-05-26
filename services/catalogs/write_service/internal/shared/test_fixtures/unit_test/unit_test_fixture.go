@@ -12,7 +12,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	mocks3 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/mocks"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
+	dto "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto/v1"
 	mocks2 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mocks"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/stretchr/testify/mock"

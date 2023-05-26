@@ -53,6 +53,9 @@
 - ✔️ **[`go-gorm/gorm`](https://github.com/go-gorm/gorm)** - The fantastic ORM library for Golang, aims to be developer friendly
 - ✔️ **[`go-playground/validator`](https://github.com/go-playground/validator)** - Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving
 
+## Code Organization
+TODO
+
 ## System Architecture
 
 ![](./assets/system-architecture-diagram.png)
@@ -107,7 +110,10 @@ Keeping such a split works great with CQRS. It segregates our operations and sli
 
 
 ## Formatting
-For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt) in my GoLand. you can do this formatting automatically by [this guide](https://github.com/mvdan/gofumpt#goland).
+For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt), [golines](https://github.com/segmentio/golines) and [golangci-lint](https://golangci-lint.run/usage/integrations/#goland) in my GoLand. you can do this formatting automatically by [this guide](https://github.com/mvdan/gofumpt#goland).
+
+## Live Reloding In Development
+For live reloading in dev mode I use [reflex](https://github.com/cespare/reflex) library
 
 ## References
 

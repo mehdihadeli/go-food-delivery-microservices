@@ -1,5 +1,9 @@
-.PHONY:
+.PHONY: init
+init:
+	@go get -u google.golang.org/protobuf/proto
+	@go install github.com/golang/protobuf/protoc-gen-go@latest
 
+.PHONY:
 run_catalogs_write_service:
 	cd services/catalogs/write_service/ && 	go run ./cmd/main.go
 
@@ -17,7 +21,6 @@ docker-compose_infra_up:
 docker-compose_infra_down:
 	@echo Stoping infrastructure docker-compose
 	docker-compose -f deployments/docker-compose/docker-compose.infrastructure.yaml down
-
 
 # DOCKER TASKS
 FILES := $(shell docker ps -aq)

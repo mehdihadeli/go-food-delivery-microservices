@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 	"reflect"
 
 	"emperror.dev/errors"
@@ -25,14 +26,14 @@ type gormGenericRepository[TDataModel interface{}, TEntity interface{}] struct {
 }
 
 // NewGenericGormRepositoryWithDataModel create new gorm generic repository
-func NewGenericGormRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}](db *gorm.DB) *gormGenericRepository[TDataModel, TEntity] {
+func NewGenericGormRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}](db *gorm.DB) data.GenericRepositoryWithDataModel[TDataModel, TEntity] {
 	return &gormGenericRepository[TDataModel, TEntity]{
 		db: db,
 	}
 }
 
 // NewGenericGormRepository create new gorm generic repository
-func NewGenericGormRepository[TEntity interface{}](db *gorm.DB) *gormGenericRepository[TEntity, TEntity] {
+func NewGenericGormRepository[TEntity interface{}](db *gorm.DB) data.GenericRepository[TEntity] {
 	return &gormGenericRepository[TEntity, TEntity]{
 		db: db,
 	}

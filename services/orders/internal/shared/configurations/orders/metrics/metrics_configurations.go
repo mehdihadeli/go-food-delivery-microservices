@@ -91,16 +91,6 @@ func ConfigOrdersMetrics(cfg *config.Config, meter metric.Meter) (contracts.Orde
 		return nil, err
 	}
 
-	successHttpRequests, err := meter.SyncFloat64().Counter(fmt.Sprintf("%s_success_http_requests_total", cfg.ServiceName), instrument.WithDescription("The total number of success http requests"))
-	if err != nil {
-		return nil, err
-	}
-
-	errorHttpRequests, err := meter.SyncFloat64().Counter(fmt.Sprintf("%s_error_http_requests_total", cfg.ServiceName), instrument.WithDescription("The total number of error http requests"))
-	if err != nil {
-		return nil, err
-	}
-
 	createOrderHttpRequests, err := meter.SyncFloat64().Counter(fmt.Sprintf("%s_create_order_http_requests_total", cfg.ServiceName), instrument.WithDescription("The total number of create order http requests"))
 	if err != nil {
 		return nil, err
@@ -158,8 +148,6 @@ func ConfigOrdersMetrics(cfg *config.Config, meter metric.Meter) (contracts.Orde
 		getOrdersGrpcRequests:       getOrdersGrpcRequests,
 		searchOrderGrpcRequests:     searchOrderGrpcRequests,
 		getOrdersHttpRequests:       getOrdersHttpRequests,
-		successHttpRequests:         successHttpRequests,
-		errorHttpRequests:           errorHttpRequests,
 		updateOrderHttpRequests:     updateOrderHttpRequests,
 		payOrderHttpRequests:        payOrderHttpRequests,
 		submitOrderHttpRequests:     submitOrderHttpRequests,

@@ -7,7 +7,7 @@ import (
 
 	attribute2 "go.opentelemetry.io/otel/attribute"
 
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
@@ -46,7 +46,7 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 		CreatedAt:   command.CreatedAt,
 	}
 
-	var response *dtos.CreateProductResponseDto
+	var createProductResult *dtos.CreateProductResponseDto
 
 	err := c.uow.Do(ctx, func(catalogContext data.CatalogContext) error {
 		createdProduct, err := catalogContext.Products().CreateProduct(ctx, product)
@@ -67,14 +67,14 @@ func (c *CreateProductHandler) Handle(ctx context.Context, command *CreateProduc
 
 		c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] ProductCreated message with messageId `%s` published to the rabbitmq broker", productCreated.MessageId), logger.Fields{"MessageId": productCreated.MessageId})
 
-		response = &dtos.CreateProductResponseDto{ProductID: product.ProductId}
+		createProductResult = &dtos.CreateProductResponseDto{ProductID: product.ProductId}
 
-		span.SetAttributes(attribute.Object("CreateProductResponseDto", response))
+		span.SetAttributes(attribute.Object("CreateProductResultDto", createProductResult))
 
 		c.log.Infow(fmt.Sprintf("[CreateProductHandler.Handle] product with id '%s' created", command.ProductID), logger.Fields{"ProductId": command.ProductID, "MessageId": productCreated.MessageId})
 
 		return nil
 	})
 
-	return response, err
+	return createProductResult, err
 }

@@ -6,8 +6,8 @@ import (
 	types2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
 	rabbitmqConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/configurations"
 	consumerConfigurations "github.com/mehdihadeli/store-golang-microservice-sample/pkg/rabbitmq/consumer/configurations"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/messaging/consumer"
+	testUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -16,7 +16,7 @@ import (
 
 func Test_RabbitMQ_Container(t *testing.T) {
 	ctx := context.Background()
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandlerWithHypothesis()
+	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler()
 
 	rabbitmq, err := NewRabbitMQTestContainers().Start(ctx, t, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
 		builder.AddConsumer(ProducerConsumerMessage{},
@@ -41,7 +41,7 @@ func Test_RabbitMQ_Container(t *testing.T) {
 		return
 	}
 
-	err = test.WaitUntilConditionMet(func() bool {
+	err = testUtils.WaitUntilConditionMet(func() bool {
 		return fakeConsumer.IsHandled()
 	})
 

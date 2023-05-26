@@ -3,6 +3,8 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres/repository"
+	"gorm.io/gorm"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 
@@ -22,8 +24,10 @@ type postgresProductRepository struct {
 	gormGenericRepository data.GenericRepository[*models.Product]
 }
 
-func NewPostgresProductRepository(log logger.Logger, gormGenericRepository data.GenericRepository[*models.Product]) *postgresProductRepository {
-	return &postgresProductRepository{log: log, gormGenericRepository: gormGenericRepository}
+func NewPostgresProductRepository(log logger.Logger, db *gorm.DB) *postgresProductRepository {
+
+	gormRepository := repository.NewGenericGormRepository[*models.Product](db)
+	return &postgresProductRepository{log: log, gormGenericRepository: gormRepository}
 }
 
 func (p *postgresProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[*models.Product], error) {

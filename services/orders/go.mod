@@ -1,6 +1,6 @@
 module github.com/mehdihadeli/store-golang-microservice-sample/services/orders
 
-go 1.19
+go 1.20
 
 // https://go.dev/doc/tutorial/call-module-code
 replace github.com/mehdihadeli/store-golang-microservice-sample => ../../
@@ -123,9 +123,9 @@ require (
 	go.opentelemetry.io/otel/exporters/zipkin v1.10.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.10.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v0.32.1 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	go.uber.org/zap v1.23.0 // indirect
+	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d // indirect
 	golang.org/x/exp v0.0.0-20220613132600-b0d781184e0d // indirect
 	golang.org/x/net v0.0.0-20221014081412-f15817d10f9b // indirect

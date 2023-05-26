@@ -29,7 +29,7 @@ func NewRabbitMQTestContainers() *rabbitmqTestContainers {
 			VirtualHost: "/",
 			UserName:    "guest",
 			Password:    "guest",
-			Tag:         "3-management",
+			Tag:         "management",
 			ImageName:   "rabbitmq",
 			Name:        "rabbitmq-testcontainers",
 		},

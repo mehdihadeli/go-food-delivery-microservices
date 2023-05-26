@@ -2,7 +2,7 @@ package integration_events
 
 import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/types"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
+	dto "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto/v1"
 	uuid "github.com/satori/go.uuid"
 )
 

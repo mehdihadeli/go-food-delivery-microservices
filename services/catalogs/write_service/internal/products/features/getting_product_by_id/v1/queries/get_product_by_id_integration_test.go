@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/utils"
+	testUtils "github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/v1/dtos"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/mocks/testData"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/integration"
@@ -21,10 +21,15 @@ type getProductByIdIntegrationTests struct {
 }
 
 func TestGetProductByIdIntegration(t *testing.T) {
-	suite.Run(t, &getProductByIdIntegrationTests{IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&getProductByIdIntegrationTests{
+			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
+		},
+	)
 }
 
-func (c *getProductByIdIntegrationTests) Test_Should_Delete_Product_From_DB() {
+func (c *getProductByIdIntegrationTests) Test_Should_Returns_Existing_Product_From_DB_With_Correct_Properties() {
 	testUtils.SkipCI(c.T())
 
 	id := testData.Products[0].ProductId
@@ -57,7 +62,9 @@ func (c *getProductByIdIntegrationTests) Test_Should_Returns_NotFound_Error_When
 func (c *getProductByIdIntegrationTests) SetupTest() {
 	c.T().Log("SetupTest")
 	c.IntegrationTestFixture = integration.NewIntegrationTestFixture(c.IntegrationTestSharedFixture)
-	err := mediatr.RegisterRequestHandler[*GetProductById, *dtos.GetProductByIdResponseDto](NewGetProductByIdHandler(c.Log, c.Cfg, c.ProductRepository))
+	err := mediatr.RegisterRequestHandler[*GetProductById, *dtos.GetProductByIdResponseDto](
+		NewGetProductByIdHandler(c.Log, c.Cfg, c.ProductRepository),
+	)
 	c.Require().NoError(err)
 
 	c.IntegrationTestFixture.Run()

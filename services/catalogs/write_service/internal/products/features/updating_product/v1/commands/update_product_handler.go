@@ -8,7 +8,7 @@ import (
 	"github.com/mehdihadeli/go-mediatr"
 	attribute2 "go.opentelemetry.io/otel/attribute"
 
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
@@ -16,7 +16,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
+	dto "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto/v1"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/updating_product/v1/events/integration_events"
 )
 
