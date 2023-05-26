@@ -1,3 +1,5 @@
+# https://github.com/google-github-actions/release-please-action#how-release-please-works
+# https://www.conventionalcommits.org/en/v1.0.0/
 on:
   push:
     branches:

@@ -1,26 +1,26 @@
 package mappings
 
 import (
+	dtoV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
 	productsService "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 )
 
 func ConfigureProductsMappings() error {
-	err := mapper.CreateMap[*models.Product, *dto.ProductDto]()
+	err := mapper.CreateMap[*models.Product, *dtoV1.ProductDto]()
 	if err != nil {
 		return err
 	}
 
-	err = mapper.CreateMap[*dto.ProductDto, *models.Product]()
+	err = mapper.CreateMap[*dtoV1.ProductDto, *models.Product]()
 	if err != nil {
 		return err
 	}
 
-	err = mapper.CreateCustomMap[*dto.ProductDto, *productsService.Product](func(product *dto.ProductDto) *productsService.Product {
+	err = mapper.CreateCustomMap[*dtoV1.ProductDto, *productsService.Product](func(product *dtoV1.ProductDto) *productsService.Product {
 		if product == nil {
 			return nil
 		}

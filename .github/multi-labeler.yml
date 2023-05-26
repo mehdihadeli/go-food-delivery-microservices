@@ -1,0 +1,27 @@
+# https://github.com/fuxingloh/multi-labeler
+version: v1
+
+labels:
+  - label: "feat"
+    matcher:
+      title: "^feat: .*"
+      commits: "^feat: .*"
+      branch: "^feat/.*"
+
+  - label: "fix"
+    matcher:
+      title: "^fix: .*"
+      commits: "^fix: .*"
+      branch: "^fix/.*"
+
+  - label: "chore"
+    matcher:
+      title: "^chore: .*"
+      commits: "^chore: .*"
+      branch: "^chore/.*"
+
+  - label: "docs"
+    matcher:
+      title: "^docs: .*"
+      commits: "^docs: .*"
+      branch: "^docs/.*"

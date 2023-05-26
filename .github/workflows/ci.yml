@@ -21,17 +21,19 @@ jobs:
     - name: Build
       run: go build -v ./...
 
+      # https://go.dev/doc/articles/race_detector
+      # https://dev.to/s0xzwasd/run-tests-with-race-flag-in-goland-512j
     - name: Building-Blocks Tests
-      run: go test -v ./...
+      run: go test -v ./...  -race
     
     - name: Catalogs Write Service Tests
       working-directory: ./services/catalogs/write_service
-      run: go test -v ./...
+      run: go test -v ./...  -race
 
     - name: Catalogs Read Service Tests
       working-directory: ./services/catalogs/read_service
-      run: go test -v ./...
+      run: go test -v ./...  -race
 
     - name: Order Service Tests
       working-directory: ./services/orders
-      run: go test -v ./...
+      run: go test -v ./...  -race

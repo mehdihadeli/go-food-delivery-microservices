@@ -47,7 +47,7 @@ func serveMetrics(ctx context.Context, logger logger.Logger, config *OTelMetrics
 		DisablePrintStack: true,
 		DisableStackAll:   true,
 	}))
-	
+
 	go func() {
 		for {
 			select {

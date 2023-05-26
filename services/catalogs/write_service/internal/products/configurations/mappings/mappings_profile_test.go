@@ -1,6 +1,7 @@
 package mappings
 
 import (
+	dtoV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto/v1"
 	"testing"
 	"time"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mapper"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/dto"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/shared/test_fixtures/unit_test"
 )
@@ -31,7 +31,7 @@ func (m *mappingProfileUnitTests) Test_Mappings() {
 		Price:       gofakeit.Price(100, 1000),
 	}
 
-	productDto := &dto.ProductDto{
+	productDto := &dtoV1.ProductDto{
 		ProductId:   uuid.NewV4(),
 		Name:        gofakeit.Name(),
 		CreatedAt:   time.Now(),
@@ -40,14 +40,14 @@ func (m *mappingProfileUnitTests) Test_Mappings() {
 	}
 
 	m.Run("Should_Map_Product_To_ProductDto", func() {
-		d, err := mapper.Map[*dto.ProductDto](productModel)
+		d, err := mapper.Map[*dtoV1.ProductDto](productModel)
 		m.Require().NoError(err)
 		m.Equal(productModel.ProductId, d.ProductId)
 		m.Equal(productModel.Name, d.Name)
 	})
 
 	m.Run("Should_Map_Nil_Product_To_ProductDto", func() {
-		d, err := mapper.Map[*dto.ProductDto](*new(models.Product))
+		d, err := mapper.Map[*dtoV1.ProductDto](*new(models.Product))
 		m.Require().NoError(err)
 		m.Nil(d)
 	})
@@ -60,7 +60,7 @@ func (m *mappingProfileUnitTests) Test_Mappings() {
 	})
 
 	m.Run("Should_Map_Nil_ProductDto_To_Product", func() {
-		d, err := mapper.Map[*models.Product](*new(dto.ProductDto))
+		d, err := mapper.Map[*models.Product](*new(dtoV1.ProductDto))
 		m.Require().NoError(err)
 		m.Nil(d)
 	})

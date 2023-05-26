@@ -5,7 +5,7 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/messaging/producer"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/contracts/data"
 	createProductCommandV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/v1/commands"
-	createProductsDtosV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/v1/dtos"
+	createProductV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/creating_product/v1/dtos"
 	deleteProductCommandV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/deleting_product/v1/commands"
 	getProductByIdDtosV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/v1/dtos"
 	getProductByIdQueryV1 "github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/features/getting_product_by_id/v1/queries"
@@ -19,7 +19,7 @@ import (
 
 func ConfigProductsMediator(uow data.CatalogUnitOfWork, productRepository data.ProductRepository, infra *contracts.InfrastructureConfigurations, producer producer.Producer) error {
 	// https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
-	err := mediatr.RegisterRequestHandler[*createProductCommandV1.CreateProduct, *createProductsDtosV1.CreateProductResponseDto](createProductCommandV1.NewCreateProductHandler(infra.Log, infra.Cfg, uow, producer))
+	err := mediatr.RegisterRequestHandler[*createProductCommandV1.CreateProduct, *createProductV1.CreateProductResponseDto](createProductCommandV1.NewCreateProductHandler(infra.Log, infra.Cfg, uow, producer))
 	if err != nil {
 		return err
 	}

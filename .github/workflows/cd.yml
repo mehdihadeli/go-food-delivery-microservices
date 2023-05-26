@@ -1,0 +1,30 @@
+# https://www.trywilco.com/post/wilco-ci-cd-github-heroku
+name: Continuous Deployment
+
+# This action works when creating a tag or release
+on:
+ release:
+   types:
+     - "released"
+ push:
+   tags:
+     - "release-*"
+     - "rollback-*"
+
+jobs:
+
+ deploy-production:
+   needs:
+     - ci-checks
+     - lint
+   runs-on: ubuntu-latest
+   timeout-minutes: 15
+   steps:
+     - uses: actions/checkout@v2
+     - uses: akhileshns/heroku-deploy@v3.12.12
+       with:
+         heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+         heroku_app_name: "<your app name here>"
+         heroku_email: "<your email address>"
+         team: "<team name>"
+         dontautocreate: true # do not create the app if it doesn't exist

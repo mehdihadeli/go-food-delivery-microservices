@@ -3,6 +3,8 @@ package customEcho
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/brpaz/echozap"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -13,7 +15,6 @@ import (
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
 	"go.opentelemetry.io/otel/metric"
 	"go.uber.org/zap"
-	"strings"
 )
 
 type echoHttpServer struct {
@@ -36,12 +37,27 @@ type EchoHttpServer interface {
 	ConfigGroup(groupName string, groupFunc func(group *echo.Group))
 }
 
-func NewEchoHttpServer(config *EchoHttpConfig, logger logger.Logger, serviceName string, meter metric.Meter) *echoHttpServer {
+func NewEchoHttpServer(
+	config *EchoHttpConfig,
+	logger logger.Logger,
+	serviceName string,
+	meter metric.Meter,
+) *echoHttpServer {
 	e := echo.New()
-	return &echoHttpServer{echo: e, config: config, log: logger, meter: meter, serviceName: serviceName, routeBuilder: NewRouteBuilder(e)}
+	return &echoHttpServer{
+		echo:         e,
+		config:       config,
+		log:          logger,
+		meter:        meter,
+		serviceName:  serviceName,
+		routeBuilder: NewRouteBuilder(e),
+	}
 }
 
-func (s *echoHttpServer) RunHttpServer(ctx context.Context, configEcho ...func(echo *echo.Echo)) error {
+func (s *echoHttpServer) RunHttpServer(
+	ctx context.Context,
+	configEcho ...func(echo *echo.Echo),
+) error {
 	s.echo.Server.ReadTimeout = constants.ReadTimeout
 	s.echo.Server.WriteTimeout = constants.WriteTimeout
 	s.echo.Server.MaxHeaderBytes = constants.MaxHeaderBytes
@@ -66,7 +82,7 @@ func (s *echoHttpServer) RunHttpServer(ctx context.Context, configEcho ...func(e
 		}
 	}()
 
-	//https://echo.labstack.com/guide/http_server/
+	// https://echo.labstack.com/guide/http_server/
 	return s.echo.Start(s.config.Port)
 }
 
@@ -94,15 +110,16 @@ func (s *echoHttpServer) GracefulShutdown(ctx context.Context) error {
 }
 
 func (s *echoHttpServer) SetupDefaultMiddlewares() {
+	// https://echo.labstack.com/middleware/
+	// https://github.com/avelino/awesome-go#middlewares
 	// handling internal echo middlewares logs with our log provider
 	if s.log.LogType() == logger.Zap {
 		s.log.Configure(func(internalLog interface{}) {
-			//https://github.com/brpaz/echozap
+			// https://github.com/brpaz/echozap
 			s.echo.Use(echozap.ZapLogger(internalLog.(*zap.Logger)))
 		})
 	} else if s.log.LogType() == logger.Logrus {
 		s.log.Configure(func(internalLog interface{}) {
-
 		})
 	}
 
@@ -124,7 +141,10 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 		LogResponseSize:  true,
 		LogURIPath:       true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			s.log.Infow(fmt.Sprintf("[Request Middleware] REQUEST: uri: %v, status: %v\n", v.URI, v.Status), logger.Fields{"URI": v.URI, "Status": v.Status})
+			s.log.Infow(
+				fmt.Sprintf("[Request Middleware] REQUEST: uri: %v, status: %v\n", v.URI, v.Status),
+				logger.Fields{"URI": v.URI, "Status": v.Status},
+			)
 			return nil
 		},
 	}))

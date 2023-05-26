@@ -10,6 +10,8 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb/repository"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 
@@ -30,8 +32,14 @@ type mongoProductRepository struct {
 	mongoGenericRepository data.GenericRepository[*models.Product]
 }
 
-func NewMongoProductRepository(log logger.Logger, genericRepository data.GenericRepository[*models.Product]) contracts.ProductRepository {
-	return &mongoProductRepository{log: log, mongoGenericRepository: genericRepository}
+const (
+	DatabaseName   = "catalogs"
+	CollectionName = "products"
+)
+
+func NewMongoProductRepository(log logger.Logger, db *mongo.Client) contracts.ProductRepository {
+	mongoRepo := repository.NewGenericMongoRepository[*models.Product](db, DatabaseName, CollectionName)
+	return &mongoProductRepository{log: log, mongoGenericRepository: mongoRepo}
 }
 
 func (p *mongoProductRepository) GetAllProducts(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[*models.Product], error) {

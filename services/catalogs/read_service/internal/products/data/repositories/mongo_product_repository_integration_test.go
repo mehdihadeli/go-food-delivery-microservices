@@ -8,7 +8,6 @@ import (
 	customErrors "github.com/mehdihadeli/store-golang-microservice-sample/pkg/http/http_errors/custom_errors"
 	defaultLogger "github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger/default_logger"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb"
-	repository2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/mongodb/repository"
 	mongo2 "github.com/mehdihadeli/store-golang-microservice-sample/pkg/test/containers/testcontainer/mongo"
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/utils"
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/read_service/internal/products/contracts"
@@ -23,11 +22,6 @@ import (
 )
 
 var items []*models.Product
-
-const (
-	DatabaseName   = "catalogs"
-	CollectionName = "products"
-)
 
 // Define the custom testify suite
 type productMongoRepositoryTestSuite struct {
@@ -168,8 +162,7 @@ func setupTest(ctx context.Context, p *productMongoRepositoryTestSuite) (contrac
 		return nil, err
 	}
 
-	genericRepository := repository2.NewGenericMongoRepository[*models.Product](mongoDB, DatabaseName, CollectionName)
-	productRepository := NewMongoProductRepository(defaultLogger.Logger, genericRepository)
+	productRepository := NewMongoProductRepository(defaultLogger.Logger, mongoDB)
 
 	return productRepository, nil
 }

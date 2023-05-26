@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/core/data"
 
 	"emperror.dev/errors"
 
@@ -35,7 +36,7 @@ type mongoGenericRepository[TDataModel interface{}, TEntity interface{}] struct 
 }
 
 // NewGenericMongoRepositoryWithDataModel create new gorm generic repository
-func NewGenericMongoRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}](db *mongo.Client, databaseName string, collectionName string) *mongoGenericRepository[TDataModel, TEntity] {
+func NewGenericMongoRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}](db *mongo.Client, databaseName string, collectionName string) data.GenericRepositoryWithDataModel[TDataModel, TEntity] {
 	return &mongoGenericRepository[TDataModel, TEntity]{
 		db:             db,
 		collectionName: collectionName,
@@ -44,7 +45,7 @@ func NewGenericMongoRepositoryWithDataModel[TDataModel interface{}, TEntity inte
 }
 
 // NewGenericMongoRepository create new gorm generic repository
-func NewGenericMongoRepository[TEntity interface{}](db *mongo.Client, databaseName string, collectionName string) *mongoGenericRepository[TEntity, TEntity] {
+func NewGenericMongoRepository[TEntity interface{}](db *mongo.Client, databaseName string, collectionName string) data.GenericRepository[TEntity] {
 	return &mongoGenericRepository[TEntity, TEntity]{
 		db:             db,
 		collectionName: collectionName,

@@ -7,9 +7,6 @@ package uow
 import (
 	"context"
 
-	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/gorm_postgres/repository"
-	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/models"
-
 	"github.com/mehdihadeli/store-golang-microservice-sample/services/catalogs/write_service/internal/products/data/repositories"
 
 	"github.com/mehdihadeli/store-golang-microservice-sample/pkg/logger"
@@ -25,10 +22,8 @@ type catalogUnitOfWork[TContext data2.CatalogContext] struct {
 func (c *catalogUnitOfWork[TContext]) Do(ctx context.Context, action data2.CatalogUnitOfWorkActionFunc) error {
 	// https://gorm.io/docs/transactions.html#Transaction
 	return c.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		genericRepo := repository.NewGenericGormRepository[*models.Product](tx)
-
 		catalog := &catalogContext{
-			productRepository: repositories.NewPostgresProductRepository(c.logger, genericRepo),
+			productRepository: repositories.NewPostgresProductRepository(c.logger, tx),
 		}
 
 		defer func() {
