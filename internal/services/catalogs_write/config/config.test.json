@@ -1,0 +1,79 @@
+{
+  "serviceName": "catalogs_write_service",
+  "context": {
+    "timeout": 20
+  },
+  "grpc": {
+    "port": ":6003",
+    "host": "localhost",
+    "development": true
+  },
+  "http": {
+    "port": ":7000",
+    "development": true,
+    "timeout": 30,
+    "basePath": "/api/v1",
+    "host": "http://localhost",
+    "productsPath": "products",
+    "debugHeaders": true,
+    "httpClientDebug": true,
+    "debugErrorsResponse": true,
+    "ignoreLogUrls": [
+      "metrics"
+    ]
+  },
+  "logger": {
+    "level": "debug",
+    "logType": 0
+  },
+  "postgres": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "dbName": "catalogs_service",
+    "sslMode": false,
+    "migrations": {
+      "migrationsDir": "migrations",
+      "skipMigration": true
+    }
+  },
+  "gormPostgres": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "dbName": "catalogs_service",
+    "sslMode": false
+  },
+  "rabbitmq": {
+    "rabbitMqHostOptions": {
+      "userName": "guest",
+      "password": "guest",
+      "hostName": "localhost",
+      "port": 5672
+    }
+  },
+  "otel": {
+    "enable": true,
+    "serviceName": "catalogs-write-service",
+    "instrumentationName": "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service",
+    "id": 1,
+    "alwaysOnSampler": true,
+    "jaegerExporterConfig": {
+      "agentHost": "localhost",
+      "agentPort": "6831"
+    },
+    "zipkinExporterConfig": {
+      "url": "http://localhost:9411/api/v2/spans"
+    }
+  },
+  "otelMetrics": {
+    "port": ":2220",
+    "metricsRoutePath": "/metrics",
+    "name": "catalogs-write-service"
+  },
+  "eventStoreConfig": {
+    "connectionString": "esdb://localhost:2113?tls=false"
+  }
+}

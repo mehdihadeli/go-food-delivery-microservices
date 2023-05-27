@@ -1,0 +1,4 @@
+#https://buf.build/
+version: v1
+directories:
+  - api/proto
