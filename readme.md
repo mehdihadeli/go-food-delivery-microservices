@@ -53,8 +53,10 @@
 - ✔️ **[`go-gorm/gorm`](https://github.com/go-gorm/gorm)** - The fantastic ORM library for Golang, aims to be developer friendly
 - ✔️ **[`go-playground/validator`](https://github.com/go-playground/validator)** - Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving
 
-## Code Organization
-TODO
+## Project Layout and Structure
+
+Each microservices are based on these projects structure:
+- [Standard Go Project Layout](https://github.com/golang-standards/project-layout)
 
 ## System Architecture
 

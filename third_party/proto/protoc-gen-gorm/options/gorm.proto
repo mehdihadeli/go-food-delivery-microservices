@@ -1,0 +1,143 @@
+syntax = "proto2";
+
+package gorm;
+
+option go_package = "github.com/infobloxopen/protoc-gen-gorm/options;gorm";
+
+import "google/protobuf/descriptor.proto";
+
+// TODO: The option number 52119 lies within the internally reserved extension
+// range. I believe a publicly unique number should be requested.
+
+// Currently no file options
+extend google.protobuf.FileOptions {
+    optional GormFileOptions file_opts = 52119;
+}
+
+message GormFileOptions {
+}
+
+// Validation rules applied at the message level
+extend google.protobuf.MessageOptions {
+    // ormable will cause orm code to be generated for this message/object
+    optional GormMessageOptions opts = 52119;
+}
+
+message GormMessageOptions {
+    required bool ormable = 1;
+    repeated ExtraField include = 2;
+    optional string table = 3;
+    optional bool multi_account = 4;
+}
+
+message ExtraField {
+    required string type = 1;
+    required string name = 2;
+    optional GormTag tag = 3;
+    optional string package = 4;
+}
+
+// Field level specifications
+extend google.protobuf.FieldOptions {
+    optional GormFieldOptions field = 52119;
+}
+
+message GormFieldOptions {
+    optional GormTag tag = 1;
+    optional bool drop = 2;
+    oneof association {
+        HasOneOptions has_one = 3;
+        BelongsToOptions belongs_to = 4;
+        HasManyOptions has_many = 5;
+        ManyToManyOptions many_to_many = 6;
+    }
+    optional string reference_of = 7;
+}
+
+message GormTag {
+    optional string column = 1;
+    optional string type = 2;
+    optional int32 size = 3;
+    optional int32 precision = 4;
+    optional bool primary_key = 5;
+    optional bool unique = 6;
+    optional string default = 7;
+    optional bool not_null = 8;
+    optional bool auto_increment = 9;
+    optional string index = 10;
+    optional string unique_index = 11;
+    optional bool embedded = 12;
+    optional string embedded_prefix = 13;
+    optional bool ignore = 14;
+    optional string foreignkey = 15;
+    optional string association_foreignkey = 16;
+    optional string many_to_many = 17;
+    optional string jointable_foreignkey = 18;
+    optional string association_jointable_foreignkey = 19;
+    optional bool association_autoupdate = 20;
+    optional bool association_autocreate = 21;
+    optional bool association_save_reference = 22;
+    optional bool preload = 23;
+}
+
+message HasOneOptions {
+    optional string foreignkey = 1;
+    optional GormTag foreignkey_tag = 2;
+    optional string association_foreignkey = 3;
+    optional bool association_autoupdate = 4;
+    optional bool association_autocreate = 5;
+    optional bool association_save_reference = 6;
+    optional bool preload = 7;
+}
+
+message BelongsToOptions {
+    optional string foreignkey = 1;
+    optional GormTag foreignkey_tag = 2;
+    optional string association_foreignkey = 3;
+    optional bool association_autoupdate = 4;
+    optional bool association_autocreate = 5;
+    optional bool association_save_reference = 6;
+    optional bool preload = 7;
+}
+
+message HasManyOptions {
+    optional string foreignkey = 1;
+    optional GormTag foreignkey_tag = 2;
+    optional string association_foreignkey = 3;
+    optional string position_field = 4;
+    optional GormTag position_field_tag = 5;
+    optional bool association_autoupdate = 6;
+    optional bool association_autocreate = 7;
+    optional bool association_save_reference = 8;
+    optional bool preload = 9;
+}
+
+message ManyToManyOptions {
+    optional string jointable = 1;
+    optional string foreignkey = 2;
+    optional string jointable_foreignkey = 3;
+    optional string association_foreignkey = 4;
+    optional string association_jointable_foreignkey = 5;
+    optional bool association_autoupdate = 6;
+    optional bool association_autocreate = 7;
+    optional bool association_save_reference = 8;
+    optional bool preload = 9;
+}
+
+// To be used in (leiu of) the interceptor
+extend google.protobuf.ServiceOptions {
+    optional AutoServerOptions server = 52119;
+}
+
+message AutoServerOptions {
+    optional bool autogen = 1;
+    optional bool txn_middleware = 2;
+}
+
+extend google.protobuf.MethodOptions {
+    optional MethodOptions method = 52119;
+}
+
+message MethodOptions {
+    optional string object_type = 1;
+}
