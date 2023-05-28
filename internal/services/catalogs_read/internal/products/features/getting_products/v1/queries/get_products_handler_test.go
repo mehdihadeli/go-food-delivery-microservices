@@ -1,3 +1,6 @@
+//go:build.sh integration
+// +build.sh integration
+
 package queries
 
 import (
@@ -17,7 +20,9 @@ func Test_Get_Products_Query_Handler(t *testing.T) {
 	testUtils.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture(integration.NewIntegrationTestSharedFixture(t))
 
-	err := mediatr.RegisterRequestHandler[*GetProducts, *dtos.GetProductsResponseDto](NewGetProductsHandler(fixture.Log, fixture.Cfg, fixture.MongoProductRepository))
+	err := mediatr.RegisterRequestHandler[*GetProducts, *dtos.GetProductsResponseDto](
+		NewGetProductsHandler(fixture.Log, fixture.Cfg, fixture.MongoProductRepository),
+	)
 	assert.NoError(t, err)
 
 	fixture.Run()

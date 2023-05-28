@@ -19,7 +19,7 @@
     // You can edit these settings after create using File > Preferences > Settings > Remote.
     "settings": {
         "go.gopath": "/go",
-        // https://github.com/golang/tools/blob/master/gopls/doc/vscode.md#vscode 
+        // https://github.com/golang/tools/blob/master/gopls/doc/vscode.md#vscode
         "go.useLanguageServer": true,
         "[go]": {
             "editor.formatOnSave": true,
@@ -40,15 +40,15 @@
         },
         // There are handly utility scripts within /scripts that we invoke via go run.
         // These scripts (and its dependencies) should never be consumed by the actual server directly
-        // Thus they are flagged to require the "scripts" build tag.
-        // We only inform gopls and the vscode go compiler here, that it has to set this build tag if it sees such a file.
+        // Thus they are flagged to require the "scripts" build.sh tag.
+        // We only inform gopls and the vscode go compiler here, that it has to set this build.sh tag if it sees such a file.
         "go.buildTags": "scripts,migrate",
         "gopls": {
             // Add parameter placeholders when completing a function.
             "usePlaceholders": true,
             // If true, enable additional analyses with staticcheck.
             // Warning: This will significantly increase memory usage.
-            // DISABLED, done via 
+            // DISABLED, done via
             "staticcheck": false
         },
         "gopls.env": {

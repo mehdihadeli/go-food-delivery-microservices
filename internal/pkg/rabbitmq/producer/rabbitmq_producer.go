@@ -1,4 +1,4 @@
-//go:build go1.18
+//go:build.sh go1.18
 
 package producer
 
@@ -34,7 +34,13 @@ type rabbitMQProducer struct {
 	messageProducedHandlers []func(message types2.IMessage)
 }
 
-func NewRabbitMQProducer(connection types.IConnection, rabbitmqProducersConfiguration map[string]*configurations.RabbitMQProducerConfiguration, logger logger.Logger, eventSerializer serializer.EventSerializer, messageProducedHandlers ...func(message types2.IMessage)) (producer.Producer, error) {
+func NewRabbitMQProducer(
+	connection types.IConnection,
+	rabbitmqProducersConfiguration map[string]*configurations.RabbitMQProducerConfiguration,
+	logger logger.Logger,
+	eventSerializer serializer.EventSerializer,
+	messageProducedHandlers ...func(message types2.IMessage),
+) (producer.Producer, error) {
 	p := &rabbitMQProducer{
 		logger:                  logger,
 		connection:              connection,
@@ -51,18 +57,34 @@ func (r *rabbitMQProducer) AddMessageProducedHandler(h func(message types2.IMess
 	r.messageProducedHandlers = append(r.messageProducedHandlers, h)
 }
 
-func (r *rabbitMQProducer) PublishMessage(ctx context.Context, message types2.IMessage, meta metadata.Metadata) error {
+func (r *rabbitMQProducer) PublishMessage(
+	ctx context.Context,
+	message types2.IMessage,
+	meta metadata.Metadata,
+) error {
 	return r.PublishMessageWithTopicName(ctx, message, meta, "")
 }
 
-func (r *rabbitMQProducer) getProducerConfigurationByMessage(message types2.IMessage) *configurations.RabbitMQProducerConfiguration {
+func (r *rabbitMQProducer) getProducerConfigurationByMessage(
+	message types2.IMessage,
+) *configurations.RabbitMQProducerConfiguration {
 	messageType := utils.GetMessageBaseReflectType(message)
 	return r.producersConfigurations[messageType.String()]
 }
 
-func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, message types2.IMessage, meta metadata.Metadata, topicOrExchangeName string) error {
+func (r *rabbitMQProducer) PublishMessageWithTopicName(
+	ctx context.Context,
+	message types2.IMessage,
+	meta metadata.Metadata,
+	topicOrExchangeName string,
+) error {
 	if message.IsMessage() == false {
-		return errors.New(fmt.Sprintf("message %s is not a message type or message property is nil", utils.GetMessageBaseReflectType(message)))
+		return errors.New(
+			fmt.Sprintf(
+				"message %s is not a message type or message property is nil",
+				utils.GetMessageBaseReflectType(message),
+			),
+		)
 	}
 
 	producerConfiguration := r.getProducerConfigurationByMessage(message)
@@ -104,7 +126,13 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, mess
 		return err
 	}
 
-	ctx, beforeProduceSpan := producer2.StartProducerSpan(ctx, message, &meta, string(serializedObj.Data), producerOptions)
+	ctx, beforeProduceSpan := producer2.StartProducerSpan(
+		ctx,
+		message,
+		&meta,
+		string(serializedObj.Data),
+		producerOptions,
+	)
 
 	//https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/go/publisher_confirms.go
 	if r.connection == nil {
@@ -112,7 +140,10 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, mess
 	}
 
 	if r.connection.IsClosed() {
-		return producer2.FinishProducerSpan(beforeProduceSpan, errors.New("connection is closed, wait for connection alive"))
+		return producer2.FinishProducerSpan(
+			beforeProduceSpan,
+			errors.New("connection is closed, wait for connection alive"),
+		)
 	}
 
 	// create a unique channel on the connection and in the end close the channel
@@ -177,11 +208,16 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(ctx context.Context, mess
 	return producer2.FinishProducerSpan(beforeProduceSpan, err)
 }
 
-func (r *rabbitMQProducer) getMetadata(message types2.IMessage, meta metadata.Metadata) metadata.Metadata {
+func (r *rabbitMQProducer) getMetadata(
+	message types2.IMessage,
+	meta metadata.Metadata,
+) metadata.Metadata {
 	meta = metadata.FromMetadata(meta)
 
 	if message.GetEventTypeName() == "" {
-		message.SetEventTypeName(typeMapper.GetTypeName(message)) // just message type name not full type name because in other side package name for type could be different)
+		message.SetEventTypeName(
+			typeMapper.GetTypeName(message),
+		) // just message type name not full type name because in other side package name for type could be different)
 	}
 	messageHeader.SetMessageType(meta, message.GetEventTypeName())
 	messageHeader.SetMessageContentType(meta, r.eventSerializer.ContentType())
@@ -203,7 +239,11 @@ func (r *rabbitMQProducer) getMetadata(message types2.IMessage, meta metadata.Me
 	return meta
 }
 
-func (r *rabbitMQProducer) ensureExchange(producersConfigurations *configurations.RabbitMQProducerConfiguration, channel *amqp091.Channel, exchangeName string) error {
+func (r *rabbitMQProducer) ensureExchange(
+	producersConfigurations *configurations.RabbitMQProducerConfiguration,
+	channel *amqp091.Channel,
+	exchangeName string,
+) error {
 	err := channel.ExchangeDeclare(
 		exchangeName,
 		string(producersConfigurations.ExchangeOptions.Type),

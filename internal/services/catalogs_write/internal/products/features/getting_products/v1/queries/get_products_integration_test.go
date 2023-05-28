@@ -1,3 +1,6 @@
+//go:build.sh integration
+// +build.sh integration
+
 package queries
 
 import (

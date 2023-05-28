@@ -34,8 +34,8 @@ buf check ls-breaking-checkers
 
 ```bash
 # check
-buf image build -o /dev/null
-buf image build -o image.bin
+buf image build.sh -o /dev/null
+buf image build.sh -o image.bin
 ```
 
 ### Lint
@@ -66,14 +66,14 @@ make proto
 
 ```bash
 # To use Buf-produced FileDescriptorSets with grpcurl on the fly:
-grpcurl -protoset <(buf image build -o -) ...
+grpcurl -protoset <(buf image build.sh -o -) ...
 ```
 
 ### ghz
 
 ```bash
 # To use Buf-produced FileDescriptorSets with ghz on the fly:
-ghz --protoset <(buf image build -o -) ...
+ghz --protoset <(buf image build.sh -o -) ...
 ```
 
 ## Reference

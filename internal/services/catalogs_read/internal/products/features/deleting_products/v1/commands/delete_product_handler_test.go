@@ -1,3 +1,6 @@
+//go:build.sh integration
+// +build.sh integration
+
 package commands
 
 import (
@@ -16,7 +19,14 @@ func Test_Delete_Product_Command_Handler(t *testing.T) {
 	testUtils.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture(integration.NewIntegrationTestSharedFixture(t))
 
-	err := mediatr.RegisterRequestHandler[*DeleteProduct, *mediatr.Unit](NewDeleteProductHandler(fixture.Log, fixture.Cfg, fixture.MongoProductRepository, fixture.RedisProductRepository))
+	err := mediatr.RegisterRequestHandler[*DeleteProduct, *mediatr.Unit](
+		NewDeleteProductHandler(
+			fixture.Log,
+			fixture.Cfg,
+			fixture.MongoProductRepository,
+			fixture.RedisProductRepository,
+		),
+	)
 	assert.NoError(t, err)
 
 	fixture.Run()

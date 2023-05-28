@@ -1,16 +1,16 @@
-//go:build go1.18
+//go:build.sh go1.18
 
 package configurations
 
 import (
-    "reflect"
+	"reflect"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/pipeline"
-    types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/utils"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/options"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/pipeline"
+	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/options"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 )
 
 type RabbitMQConsumerConfiguration struct {
@@ -29,16 +29,27 @@ type RabbitMQConsumerConfiguration struct {
 	ExchangeOptions *options.RabbitMQExchangeOptions
 }
 
-func NewDefaultRabbitMQConsumerConfiguration(messageType types2.IMessage) *RabbitMQConsumerConfiguration {
+func NewDefaultRabbitMQConsumerConfiguration(
+	messageType types2.IMessage,
+) *RabbitMQConsumerConfiguration {
 	return &RabbitMQConsumerConfiguration{
-		ConsumerOptions:     &consumer.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
-		ConcurrencyLimit:    1,
-		PrefetchCount:       4, //how many messages we can handle at once
-		NoLocal:             false,
-		NoWait:              true,
-		BindingOptions:      &options.RabbitMQBindingOptions{RoutingKey: utils.GetRoutingKey(messageType)},
-		ExchangeOptions:     &options.RabbitMQExchangeOptions{Durable: true, Type: types.ExchangeTopic, Name: utils.GetTopicOrExchangeName(messageType)},
-		QueueOptions:        &options.RabbitMQQueueOptions{Durable: true, Name: utils.GetQueueName(messageType)},
+		ConsumerOptions:  &consumer.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
+		ConcurrencyLimit: 1,
+		PrefetchCount:    4, //how many messages we can handle at once
+		NoLocal:          false,
+		NoWait:           true,
+		BindingOptions: &options.RabbitMQBindingOptions{
+			RoutingKey: utils.GetRoutingKey(messageType),
+		},
+		ExchangeOptions: &options.RabbitMQExchangeOptions{
+			Durable: true,
+			Type:    types.ExchangeTopic,
+			Name:    utils.GetTopicOrExchangeName(messageType),
+		},
+		QueueOptions: &options.RabbitMQQueueOptions{
+			Durable: true,
+			Name:    utils.GetQueueName(messageType),
+		},
 		ConsumerMessageType: utils.GetMessageBaseReflectType(messageType),
 	}
 }

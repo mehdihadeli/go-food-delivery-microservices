@@ -1,4 +1,4 @@
-//go:build go1.18
+//go:build.sh go1.18
 
 package bus
 
@@ -46,7 +46,13 @@ type rabbitMQBus struct {
 	messagePublishedHandlers []func(message types.IMessage)
 }
 
-func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, serializer serializer.EventSerializer, logger logger.Logger) (RabbitMQBus, error) {
+func NewRabbitMQBus(
+	ctx context.Context,
+	cfg *config.RabbitMQConfig,
+	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
+	serializer serializer.EventSerializer,
+	logger logger.Logger,
+) (RabbitMQBus, error) {
 	builder := configurations.NewRabbitMQConfigurationBuilder()
 	if rabbitmqBuilderFunc != nil {
 		rabbitmqBuilderFunc(builder)
@@ -59,13 +65,19 @@ func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBui
 		return *new(RabbitMQBus), err
 	}
 
-	producersConfiguration := go2linq.ToMapMust(go2linq.NewEnSlice(rabbitmqConfiguration.ProducersConfigurations...), func(source *producerConfigurations.RabbitMQProducerConfiguration) string {
-		return source.ProducerMessageType.String()
-	})
+	producersConfiguration := go2linq.ToMapMust(
+		go2linq.NewEnSlice(rabbitmqConfiguration.ProducersConfigurations...),
+		func(source *producerConfigurations.RabbitMQProducerConfiguration) string {
+			return source.ProducerMessageType.String()
+		},
+	)
 
-	consumersConfiguration := go2linq.ToMapMust(go2linq.NewEnSlice(rabbitmqConfiguration.ConsumersConfigurations...), func(source *consumerConfigurations.RabbitMQConsumerConfiguration) string {
-		return source.ConsumerMessageType.String()
-	})
+	consumersConfiguration := go2linq.ToMapMust(
+		go2linq.NewEnSlice(rabbitmqConfiguration.ConsumersConfigurations...),
+		func(source *consumerConfigurations.RabbitMQConsumerConfiguration) string {
+			return source.ConsumerMessageType.String()
+		},
+	)
 
 	rabbitBus := &rabbitMQBus{
 		logger:                logger,
@@ -77,13 +89,19 @@ func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBui
 
 	var consumers = map[reflect.Type]consumer.Consumer{}
 	for _, consumerConfiguration := range consumersConfiguration {
-		c, err := consumer2.NewRabbitMQConsumer(conn, consumerConfiguration, serializer, logger, func(message types.IMessage) {
-			if rabbitBus.messageConsumedHandlers != nil {
-				for _, handler := range rabbitBus.messageConsumedHandlers {
-					handler(message)
+		c, err := consumer2.NewRabbitMQConsumer(
+			conn,
+			consumerConfiguration,
+			serializer,
+			logger,
+			func(message types.IMessage) {
+				if rabbitBus.messageConsumedHandlers != nil {
+					for _, handler := range rabbitBus.messageConsumedHandlers {
+						handler(message)
+					}
 				}
-			}
-		})
+			},
+		)
 		if err != nil {
 			return *new(RabbitMQBus), err
 		}
@@ -91,13 +109,19 @@ func NewRabbitMQBus(ctx context.Context, cfg *config.RabbitMQConfig, rabbitmqBui
 	}
 	rabbitBus.consumers = consumers
 
-	p, err := producer2.NewRabbitMQProducer(conn, producersConfiguration, logger, serializer, func(message types.IMessage) {
-		if rabbitBus.messagePublishedHandlers != nil {
-			for _, handler := range rabbitBus.messagePublishedHandlers {
-				handler(message)
+	p, err := producer2.NewRabbitMQProducer(
+		conn,
+		producersConfiguration,
+		logger,
+		serializer,
+		func(message types.IMessage) {
+			if rabbitBus.messagePublishedHandlers != nil {
+				for _, handler := range rabbitBus.messagePublishedHandlers {
+					handler(message)
+				}
 			}
-		}
-	})
+		},
+	)
 	if err != nil {
 		return *new(RabbitMQBus), err
 	}
@@ -114,7 +138,10 @@ func (r *rabbitMQBus) AddMessageProducedHandler(h func(message types.IMessage)) 
 	r.messagePublishedHandlers = append(r.messagePublishedHandlers, h)
 }
 
-func (r *rabbitMQBus) ConnectConsumer(messageType types.IMessage, consumer consumer.Consumer) error {
+func (r *rabbitMQBus) ConnectConsumer(
+	messageType types.IMessage,
+	consumer consumer.Consumer,
+) error {
 	c := r.consumers[utils.GetMessageBaseReflectType(messageType)]
 	if c == nil {
 		r.consumers[utils.GetMessageBaseReflectType(messageType)] = consumer
@@ -125,7 +152,10 @@ func (r *rabbitMQBus) ConnectConsumer(messageType types.IMessage, consumer consu
 	return nil
 }
 
-func (r *rabbitMQBus) ConnectRabbitMQConsumer(messageType types.IMessage, consumerBuilderFunc consumerConfigurations.RabbitMQConsumerConfigurationBuilderFuc) error {
+func (r *rabbitMQBus) ConnectRabbitMQConsumer(
+	messageType types.IMessage,
+	consumerBuilderFunc consumerConfigurations.RabbitMQConsumerConfigurationBuilderFuc,
+) error {
 	c := r.consumers[utils.GetMessageBaseReflectType(messageType)]
 	if c == nil {
 		builder := consumerConfigurations.NewRabbitMQConsumerConfigurationBuilder(messageType)
@@ -133,15 +163,21 @@ func (r *rabbitMQBus) ConnectRabbitMQConsumer(messageType types.IMessage, consum
 			consumerBuilderFunc(builder)
 		}
 		consumerConfig := builder.Build()
-		mqConsumer, err := consumer2.NewRabbitMQConsumer(r.rabbitmqConnection, consumerConfig, r.serializer, r.logger, func(message types.IMessage) {
-			if len(r.messageConsumedHandlers) > 0 {
-				for _, handler := range r.messageConsumedHandlers {
-					if handler != nil {
-						handler(message)
+		mqConsumer, err := consumer2.NewRabbitMQConsumer(
+			r.rabbitmqConnection,
+			consumerConfig,
+			r.serializer,
+			r.logger,
+			func(message types.IMessage) {
+				if len(r.messageConsumedHandlers) > 0 {
+					for _, handler := range r.messageConsumedHandlers {
+						if handler != nil {
+							handler(message)
+						}
 					}
 				}
-			}
-		})
+			},
+		)
 		if err != nil {
 			return err
 		}
@@ -153,7 +189,10 @@ func (r *rabbitMQBus) ConnectRabbitMQConsumer(messageType types.IMessage, consum
 	return nil
 }
 
-func (r *rabbitMQBus) ConnectConsumerHandler(messageType types.IMessage, consumerHandler consumer.ConsumerHandler) error {
+func (r *rabbitMQBus) ConnectConsumerHandler(
+	messageType types.IMessage,
+	consumerHandler consumer.ConsumerHandler,
+) error {
 	c := r.consumers[utils.GetMessageBaseReflectType(messageType)]
 	if c != nil {
 		c.ConnectHandler(consumerHandler)
@@ -217,10 +256,19 @@ func (r *rabbitMQBus) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (r *rabbitMQBus) PublishMessage(ctx context.Context, message types.IMessage, meta metadata.Metadata) error {
+func (r *rabbitMQBus) PublishMessage(
+	ctx context.Context,
+	message types.IMessage,
+	meta metadata.Metadata,
+) error {
 	return r.producer.PublishMessage(ctx, message, meta)
 }
 
-func (r *rabbitMQBus) PublishMessageWithTopicName(ctx context.Context, message types.IMessage, meta metadata.Metadata, topicOrExchangeName string) error {
+func (r *rabbitMQBus) PublishMessageWithTopicName(
+	ctx context.Context,
+	message types.IMessage,
+	meta metadata.Metadata,
+	topicOrExchangeName string,
+) error {
 	return r.producer.PublishMessageWithTopicName(ctx, message, meta, topicOrExchangeName)
 }

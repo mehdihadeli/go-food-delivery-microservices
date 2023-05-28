@@ -1,3 +1,6 @@
+//go:build.sh unit
+// +build.sh unit
+
 package getProductByIdQuery
 
 import (
@@ -15,7 +18,10 @@ type getProductByIdUnitTests struct {
 }
 
 func TestGetProductByIdUnit(t *testing.T) {
-	suite.Run(t, &getProductByIdUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&getProductByIdUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)},
+	)
 }
 
 func (c *getProductByIdUnitTests) SetupTest() {

@@ -1,4 +1,4 @@
-//go:build go1.18
+//go:build.sh go1.18
 
 package options
 

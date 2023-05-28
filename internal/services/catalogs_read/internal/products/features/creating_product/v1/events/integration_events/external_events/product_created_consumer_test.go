@@ -1,21 +1,22 @@
+//go:build.sh integration
+// +build.sh integration
+
 package externalEvents
 
 import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/commands"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/dtos"
-
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/mehdihadeli/go-mediatr"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
-
+	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/commands"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/test_fixture/integration"
 )
@@ -30,7 +31,11 @@ func Test_Product_Created_Consumer_Should_Consume_Product_Created(t *testing.T) 
 
 	fixture.Run()
 
-	err = fixture.Bus.PublishMessage(fixture.Ctx, &ProductCreatedV1{Message: types.NewMessage(uuid.NewV4().String())}, nil)
+	err = fixture.Bus.PublishMessage(
+		fixture.Ctx,
+		&ProductCreatedV1{Message: types.NewMessage(uuid.NewV4().String())},
+		nil,
+	)
 	assert.NoError(t, err)
 
 	// ensuring message published to the rabbitmq broker
@@ -43,7 +48,14 @@ func Test_Product_Created_Consumer(t *testing.T) {
 	testUtils.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture(integration.NewIntegrationTestSharedFixture(t))
 
-	err := mediatr.RegisterRequestHandler[*commands.CreateProduct, *dtos.CreateProductResponseDto](commands.NewCreateProductHandler(fixture.Log, fixture.Cfg, fixture.MongoProductRepository, fixture.RedisProductRepository))
+	err := mediatr.RegisterRequestHandler[*commands.CreateProduct, *dtos.CreateProductResponseDto](
+		commands.NewCreateProductHandler(
+			fixture.Log,
+			fixture.Cfg,
+			fixture.MongoProductRepository,
+			fixture.RedisProductRepository,
+		),
+	)
 	assert.NoError(t, err)
 
 	cons := NewProductCreatedConsumer(fixture.InfrastructureConfigurations)

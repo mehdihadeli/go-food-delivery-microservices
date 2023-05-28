@@ -1,20 +1,15 @@
 GOPATH:=$(shell go env GOPATH)
 
-.PHONY: init
-init:
-	@go get -u google.golang.org/protobuf/proto
-	@go install github.com/golang/protobuf/protoc-gen-go@latest
-
-.PHONY: run_catalogs_service
-run_catalogs_service:
+.PHONY: run
+run:
 	go run ./cmd/main.go
 
-.PHONY: build_catalogs_service
-build_catalogs_service:
+.PHONY: build
+build:
 	go build ./cmd/main.go
 
-.PHONY: test_catalogs_service
-test_catalogs_service:
+.PHONY: test
+test:
 	go test -cover ./...
 
 .PHONY: update

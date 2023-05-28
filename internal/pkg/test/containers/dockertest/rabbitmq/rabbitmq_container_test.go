@@ -20,7 +20,7 @@ func Test_RabbitMQ_Container(t *testing.T) {
 	ctx := context.Background()
 	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler()
 
-	rabbitmq, err := NewRabbitMQTestContainers().Start(ctx, t, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+	rabbitmq, err := NewRabbitMQDockerTest().Start(ctx, t, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
 		builder.AddConsumer(ProducerConsumerMessage{},
 			func(consumerBuilder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
 				consumerBuilder.WithHandlers(func(handlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {

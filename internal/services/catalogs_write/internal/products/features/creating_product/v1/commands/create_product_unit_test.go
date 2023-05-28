@@ -1,3 +1,6 @@
+//go:build.sh unit
+// +build.sh unit
+
 package createProductCommand
 
 import (
@@ -15,7 +18,10 @@ type createProductUnitTests struct {
 }
 
 func TestCreateProductUnit(t *testing.T) {
-	suite.Run(t, &createProductUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&createProductUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)},
+	)
 }
 
 func (c *createProductUnitTests) SetupTest() {

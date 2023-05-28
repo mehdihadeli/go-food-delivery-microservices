@@ -1,0 +1,3 @@
+# https://skaffold.dev
+apiVersion: skaffold/v2beta27
+kind: Config

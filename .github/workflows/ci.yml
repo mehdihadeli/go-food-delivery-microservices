@@ -18,12 +18,13 @@ jobs:
       with:
         go-version: 1.19
 
+      # https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
+      # https://pkg.go.dev/cmd/go#hdr-Package_lists_and_patterns
     - name: Build
-      run: go build -v ./...
+      run: go build.sh -v ./...
 
       # https://go.dev/doc/articles/race_detector
       # https://dev.to/s0xzwasd/run-tests-with-race-flag-in-goland-512j
-      # https://pkg.go.dev/cmd/go#hdr-Package_lists_and_patterns
     - name: Building-Blocks Tests
       run: go test -v ./...  -race
 
