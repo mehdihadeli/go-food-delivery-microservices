@@ -1,4 +1,4 @@
-//go:build go1.18
+//go:build.sh go1.18
 
 package configurations
 
@@ -27,65 +27,94 @@ type rabbitMQProducerConfigurationBuilder struct {
 	rabbitmqProducerOptions *RabbitMQProducerConfiguration
 }
 
-func NewRabbitMQProducerConfigurationBuilder(messageType types2.IMessage) RabbitMQProducerConfigurationBuilder {
-	return &rabbitMQProducerConfigurationBuilder{rabbitmqProducerOptions: NewDefaultRabbitMQProducerConfiguration(messageType)}
+func NewRabbitMQProducerConfigurationBuilder(
+	messageType types2.IMessage,
+) RabbitMQProducerConfigurationBuilder {
+	return &rabbitMQProducerConfigurationBuilder{
+		rabbitmqProducerOptions: NewDefaultRabbitMQProducerConfiguration(messageType),
+	}
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithDurable(durable bool) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithDurable(
+	durable bool,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.ExchangeOptions.Durable = durable
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithAutoDeleteExchange(autoDelete bool) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithAutoDeleteExchange(
+	autoDelete bool,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.ExchangeOptions.AutoDelete = autoDelete
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithExchangeType(exchangeType types.ExchangeType) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithExchangeType(
+	exchangeType types.ExchangeType,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.ExchangeOptions.Type = exchangeType
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithRoutingKey(routingKey string) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithRoutingKey(
+	routingKey string,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.RoutingKey = routingKey
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithExchangeName(exchangeName string) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithExchangeName(
+	exchangeName string,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.ExchangeOptions.Name = exchangeName
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithExchangeArgs(args map[string]any) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithExchangeArgs(
+	args map[string]any,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.ExchangeOptions.Args = args
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithDeliveryMode(deliveryMode uint8) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithDeliveryMode(
+	deliveryMode uint8,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.DeliveryMode = deliveryMode
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithPriority(priority uint8) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithPriority(
+	priority uint8,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.Priority = priority
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithAppId(appId string) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithAppId(
+	appId string,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.AppId = appId
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithExpiration(expiration string) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithExpiration(
+	expiration string,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.Expiration = expiration
 	return b
 }
 
-func (b *rabbitMQProducerConfigurationBuilder) WithReplyTo(replyTo string) RabbitMQProducerConfigurationBuilder {
+func (b *rabbitMQProducerConfigurationBuilder) WithReplyTo(
+	replyTo string,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.ReplyTo = replyTo
 	return b
 }
-func (b *rabbitMQProducerConfigurationBuilder) WithContentEncoding(contentEncoding string) RabbitMQProducerConfigurationBuilder {
+
+func (b *rabbitMQProducerConfigurationBuilder) WithContentEncoding(
+	contentEncoding string,
+) RabbitMQProducerConfigurationBuilder {
 	b.rabbitmqProducerOptions.ContentEncoding = contentEncoding
 	return b
 }

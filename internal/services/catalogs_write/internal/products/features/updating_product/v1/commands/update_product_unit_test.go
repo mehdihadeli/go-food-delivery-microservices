@@ -1,3 +1,6 @@
+//go:build.sh unit
+// +build.sh unit
+
 package commands
 
 import (
@@ -6,8 +9,9 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/test_fixtures/unit_test"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/test_fixtures/unit_test"
 )
 
 type updateProductUnitTests struct {
@@ -16,7 +20,10 @@ type updateProductUnitTests struct {
 }
 
 func TestUpdateProductUnit(t *testing.T) {
-	suite.Run(t, &updateProductUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&updateProductUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)},
+	)
 }
 
 func (c *updateProductUnitTests) SetupTest() {

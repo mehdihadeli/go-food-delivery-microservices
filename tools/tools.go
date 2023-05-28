@@ -1,5 +1,5 @@
-//go:build tools
-// +build tools
+//go:build.sh tools
+// +build.sh tools
 
 // https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
 // https://marcofranssen.nl/manage-go-tools-via-go-modules

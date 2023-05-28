@@ -1,3 +1,6 @@
+//go:build.sh integration
+// +build.sh integration
+
 package queries
 
 import (
@@ -16,7 +19,14 @@ func Test_Get_Product_By_Id_Query_Handler(t *testing.T) {
 	testUtils.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture(integration.NewIntegrationTestSharedFixture(t))
 
-	err := mediatr.RegisterRequestHandler[*GetProductById, *dtos.GetProductByIdResponseDto](NewGetProductByIdHandler(fixture.Log, fixture.Cfg, fixture.MongoProductRepository, fixture.RedisProductRepository))
+	err := mediatr.RegisterRequestHandler[*GetProductById, *dtos.GetProductByIdResponseDto](
+		NewGetProductByIdHandler(
+			fixture.Log,
+			fixture.Cfg,
+			fixture.MongoProductRepository,
+			fixture.RedisProductRepository,
+		),
+	)
 	assert.NoError(t, err)
 
 	fixture.Run()
@@ -25,7 +35,10 @@ func Test_Get_Product_By_Id_Query_Handler(t *testing.T) {
 	assert.NoError(t, err)
 
 	query := NewGetProductById(id)
-	result, err := mediatr.Send[*GetProductById, *dtos.GetProductByIdResponseDto](fixture.Ctx, query)
+	result, err := mediatr.Send[*GetProductById, *dtos.GetProductByIdResponseDto](
+		fixture.Ctx,
+		query,
+	)
 
 	assert.NotNil(t, result.Product)
 	assert.Equal(t, result.Product.Id, id.String())

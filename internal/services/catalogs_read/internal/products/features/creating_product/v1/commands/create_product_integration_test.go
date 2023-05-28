@@ -1,3 +1,6 @@
+//go:build.sh integration
+// +build.sh integration
+
 package commands
 
 import (
@@ -9,8 +12,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/suite"
 
-    testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/dtos"
+	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/test_fixture/integration"
 )
 
@@ -20,13 +23,24 @@ type createProductIntegrationTests struct {
 }
 
 func TestCreateProductIntegration(t *testing.T) {
-	suite.Run(t, &createProductIntegrationTests{IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&createProductIntegrationTests{
+			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
+		},
+	)
 }
 
 func (c *createProductIntegrationTests) Test_Should_Create_New_Product_To_DB() {
 	testUtils.SkipCI(c.T())
 
-	command, err := NewCreateProduct(uuid.NewV4().String(), gofakeit.Name(), gofakeit.AdjectiveDescriptive(), gofakeit.Price(150, 6000), time.Now())
+	command, err := NewCreateProduct(
+		uuid.NewV4().String(),
+		gofakeit.Name(),
+		gofakeit.AdjectiveDescriptive(),
+		gofakeit.Price(150, 6000),
+		time.Now(),
+	)
 	c.Require().NoError(err)
 
 	result, err := mediatr.Send[*CreateProduct, *dtos.CreateProductResponseDto](c.Ctx, command)
@@ -35,7 +49,10 @@ func (c *createProductIntegrationTests) Test_Should_Create_New_Product_To_DB() {
 	c.Assert().NotNil(result)
 	c.Assert().Equal(command.Id, result.Id)
 
-	createdProduct, err := c.IntegrationTestFixture.MongoProductRepository.GetProductById(c.Ctx, result.Id)
+	createdProduct, err := c.IntegrationTestFixture.MongoProductRepository.GetProductById(
+		c.Ctx,
+		result.Id,
+	)
 	c.Require().NoError(err)
 	c.Assert().NotNil(createdProduct)
 }

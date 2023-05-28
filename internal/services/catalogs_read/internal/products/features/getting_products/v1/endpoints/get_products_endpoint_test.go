@@ -1,3 +1,6 @@
+//go:build.sh e2e
+// +build.sh e2e
+
 package endpoints
 
 import (
@@ -16,7 +19,14 @@ func Test_Get_All_Products_E2E(t *testing.T) {
 	testUtils.SkipCI(t)
 	fixture := e2e.NewE2ETestFixture(e2e.NewE2ETestSharedFixture(t))
 
-	e := NewGetProductsEndpoint(delivery.NewProductEndpointBase(fixture.InfrastructureConfigurations, fixture.ProductsGroup, fixture.Bus, fixture.CatalogsMetrics))
+	e := NewGetProductsEndpoint(
+		delivery.NewProductEndpointBase(
+			fixture.InfrastructureConfigurations,
+			fixture.ProductsGroup,
+			fixture.Bus,
+			fixture.CatalogsMetrics,
+		),
+	)
 	e.MapRoute()
 
 	fixture.Run()

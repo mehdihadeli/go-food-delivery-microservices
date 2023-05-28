@@ -1,8 +1,8 @@
 # https://buf.build/
 version: v1
-name: buf.build/mehdihadeli/store-golang-microservices
+name: buf.build.sh/mehdihadeli/store-golang-microservices
 deps:
-  - buf.build/googleapis/googleapis
+  - buf.build.sh/googleapis/googleapis
 lint:
   use:
     - DEFAULT

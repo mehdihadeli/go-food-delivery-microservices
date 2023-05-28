@@ -1,3 +1,6 @@
+//go:build.sh unit
+// +build.sh unit
+
 package commands
 
 import (
@@ -25,7 +28,12 @@ type updateProductHandlerUnitTests struct {
 }
 
 func TestUpdateProductHandlerUnit(t *testing.T) {
-	suite.Run(t, &updateProductHandlerUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&updateProductHandlerUnitTests{
+			UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t),
+		},
+	)
 }
 
 func (c *updateProductHandlerUnitTests) SetupTest() {
@@ -37,7 +45,12 @@ func (c *updateProductHandlerUnitTests) SetupTest() {
 func (c *updateProductHandlerUnitTests) Test_Handle_Should_Update_Product_With_Valid_Data() {
 	existing := testData.Products[0]
 
-	updateProductCommand, err := NewUpdateProduct(existing.ProductId, gofakeit.Name(), gofakeit.EmojiDescription(), existing.Price)
+	updateProductCommand, err := NewUpdateProduct(
+		existing.ProductId,
+		gofakeit.Name(),
+		gofakeit.EmojiDescription(),
+		existing.Price,
+	)
 	c.Require().NoError(err)
 
 	updated := &models.Product{
@@ -69,7 +82,12 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Update_Product_With_V
 func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_NotFound_Item() {
 	id := uuid.NewV4()
 
-	command, err := NewUpdateProduct(id, gofakeit.Name(), gofakeit.EmojiDescription(), gofakeit.Price(150, 6000))
+	command, err := NewUpdateProduct(
+		id,
+		gofakeit.Name(),
+		gofakeit.EmojiDescription(),
+		gofakeit.Price(150, 6000),
+	)
 	c.Require().NoError(err)
 
 	c.ProductRepository.On("GetProductById", mock.Anything, mock.Anything).
@@ -90,7 +108,12 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_NotF
 func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Error_In_Bus() {
 	existing := testData.Products[0]
 
-	updateProductCommand, err := NewUpdateProduct(existing.ProductId, gofakeit.Name(), gofakeit.EmojiDescription(), existing.Price)
+	updateProductCommand, err := NewUpdateProduct(
+		existing.ProductId,
+		gofakeit.Name(),
+		gofakeit.EmojiDescription(),
+		existing.Price,
+	)
 	c.Require().NoError(err)
 
 	updated := &models.Product{
@@ -113,7 +136,9 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 	// override called mock
 	// https://github.com/stretchr/testify/issues/558
 	c.Bus.Mock.ExpectedCalls = nil
-	c.Bus.On("PublishMessage", mock.Anything, mock.Anything, mock.Anything).Once().Return(errors.New("error in the publish message"))
+	c.Bus.On("PublishMessage", mock.Anything, mock.Anything, mock.Anything).
+		Once().
+		Return(errors.New("error in the publish message"))
 
 	dto, err := c.updateProductHandler.Handle(c.Ctx, updateProductCommand)
 
@@ -129,7 +154,12 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Error_In_Mapping() {
 	existing := testData.Products[0]
 
-	updateProductCommand, err := NewUpdateProduct(existing.ProductId, gofakeit.Name(), gofakeit.EmojiDescription(), existing.Price)
+	updateProductCommand, err := NewUpdateProduct(
+		existing.ProductId,
+		gofakeit.Name(),
+		gofakeit.EmojiDescription(),
+		existing.Price,
+	)
 	c.Require().NoError(err)
 
 	updated := &models.Product{

@@ -1,3 +1,6 @@
+//go:build.sh integration
+// +build.sh integration
+
 package commands
 
 import (
@@ -16,7 +19,14 @@ func Test_Update_Product_Command_Handler(t *testing.T) {
 	testUtils.SkipCI(t)
 	fixture := integration.NewIntegrationTestFixture(integration.NewIntegrationTestSharedFixture(t))
 
-	err := mediatr.RegisterRequestHandler[*UpdateProduct, *mediatr.Unit](NewUpdateProductHandler(fixture.Log, fixture.Cfg, fixture.MongoProductRepository, fixture.RedisProductRepository))
+	err := mediatr.RegisterRequestHandler[*UpdateProduct, *mediatr.Unit](
+		NewUpdateProductHandler(
+			fixture.Log,
+			fixture.Cfg,
+			fixture.MongoProductRepository,
+			fixture.RedisProductRepository,
+		),
+	)
 	assert.NoError(t, err)
 
 	fixture.Run()
@@ -24,7 +34,12 @@ func Test_Update_Product_Command_Handler(t *testing.T) {
 	productId, err := uuid.FromString("34dac034-ad17-427d-9bc1-3d7dc07c40f0")
 	assert.NoError(t, err)
 
-	command := NewUpdateProduct(productId, gofakeit.Name(), gofakeit.AdjectiveDescriptive(), gofakeit.Price(150, 6000))
+	command := NewUpdateProduct(
+		productId,
+		gofakeit.Name(),
+		gofakeit.AdjectiveDescriptive(),
+		gofakeit.Price(150, 6000),
+	)
 	result, err := mediatr.Send[*UpdateProduct, *mediatr.Unit](fixture.Ctx, command)
 	assert.NoError(t, err)
 

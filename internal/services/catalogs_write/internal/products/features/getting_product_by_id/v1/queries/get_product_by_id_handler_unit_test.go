@@ -1,3 +1,6 @@
+//go:build.sh unit
+// +build.sh unit
+
 package getProductByIdQuery
 
 import (
@@ -24,7 +27,10 @@ type getProductByIdHandlerTest struct {
 }
 
 func TestGetProductByIdHandlerUnit(t *testing.T) {
-	suite.Run(t, &getProductByIdHandlerTest{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&getProductByIdHandlerTest{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)},
+	)
 }
 
 func (c *getProductByIdHandlerTest) SetupTest() {
@@ -59,9 +65,12 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 			RepositoryReturnError:         nil,
 		},
 		{
-			Name:                          "Handle_Should_Return_NotFound_Error_For_NotFound_Item",
-			id:                            id,
-			HandlerError:                  customErrors.NewApplicationErrorWithCode(fmt.Sprintf("error in getting product with id %s in the repository", id.String()), http.StatusNotFound),
+			Name: "Handle_Should_Return_NotFound_Error_For_NotFound_Item",
+			id:   id,
+			HandlerError: customErrors.NewApplicationErrorWithCode(
+				fmt.Sprintf("error in getting product with id %s in the repository", id.String()),
+				http.StatusNotFound,
+			),
 			ProductRepositoryNumberOfCall: 1,
 			ExpectedId:                    *new(uuid.UUID),
 			ExpectedName:                  "",
@@ -69,9 +78,12 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 			RepositoryReturnError:         customErrors.NewNotFoundError("product not found"),
 		},
 		{
-			Name:                          "Handle_Should_Return_Error_For_Error_In_Mapping",
-			id:                            product.ProductId,
-			HandlerError:                  customErrors.NewApplicationErrorWithCode("error in the mapping product", http.StatusInternalServerError),
+			Name: "Handle_Should_Return_Error_For_Error_In_Mapping",
+			id:   product.ProductId,
+			HandlerError: customErrors.NewApplicationErrorWithCode(
+				"error in the mapping product",
+				http.StatusInternalServerError,
+			),
 			ProductRepositoryNumberOfCall: 1,
 			ExpectedId:                    *new(uuid.UUID),
 			ExpectedName:                  "",
@@ -106,7 +118,11 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 			dto, err := c.getProductByIdHandler.Handle(c.Ctx, query)
 
 			// assert
-			c.ProductRepository.AssertNumberOfCalls(c.T(), "GetProductById", testCase.ProductRepositoryNumberOfCall)
+			c.ProductRepository.AssertNumberOfCalls(
+				c.T(),
+				"GetProductById",
+				testCase.ProductRepositoryNumberOfCall,
+			)
 			if testCase.HandlerError == nil {
 				// success path with a valid dto
 				c.Require().NoError(err)

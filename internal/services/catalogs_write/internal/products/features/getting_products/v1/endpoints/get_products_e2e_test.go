@@ -1,3 +1,6 @@
+//go:build.sh e2e
+// +build.sh e2e
+
 package endpoints
 
 import (

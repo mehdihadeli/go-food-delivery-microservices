@@ -1,3 +1,6 @@
+//go:build.sh unit
+// +build.sh unit
+
 package createProductCommand
 
 import (
@@ -25,7 +28,12 @@ type createProductHandlerUnitTests struct {
 }
 
 func TestCreateProductHandlerUnit(t *testing.T) {
-	suite.Run(t, &createProductHandlerUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&createProductHandlerUnitTests{
+			UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t),
+		},
+	)
 }
 
 func (c *createProductHandlerUnitTests) SetupTest() {
@@ -104,7 +112,9 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 	// override called mock
 	// https://github.com/stretchr/testify/issues/558
 	c.Bus.Mock.ExpectedCalls = nil
-	c.Bus.On("PublishMessage", mock.Anything, mock.Anything, mock.Anything).Once().Return(errors.New("error in the publish message"))
+	c.Bus.On("PublishMessage", mock.Anything, mock.Anything, mock.Anything).
+		Once().
+		Return(errors.New("error in the publish message"))
 
 	dto, err := c.createProductHandler.Handle(c.Ctx, createProduct)
 

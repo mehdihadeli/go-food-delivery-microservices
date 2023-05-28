@@ -1,4 +1,4 @@
-//go:build go1.18
+//go:build.sh go1.18
 
 package configurations
 
@@ -9,5 +9,8 @@ import (
 
 type RabbitMQConsumerConnector interface {
 	consumer.ConsumerConnector
-	ConnectRabbitMQConsumer(messageType types.IMessage, consumerBuilderFunc RabbitMQConsumerConfigurationBuilderFuc) error
+	ConnectRabbitMQConsumer(
+		messageType types.IMessage,
+		consumerBuilderFunc RabbitMQConsumerConfigurationBuilderFuc,
+	) error
 }

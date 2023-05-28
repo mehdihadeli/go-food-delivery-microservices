@@ -1,3 +1,6 @@
+//go:build.sh unit
+// +build.sh unit
+
 package commands
 
 import (
@@ -15,7 +18,10 @@ type deleteProductUnitTests struct {
 }
 
 func TestDeleteProductByIdUnit(t *testing.T) {
-	suite.Run(t, &deleteProductUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&deleteProductUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)},
+	)
 }
 
 func (c *deleteProductUnitTests) SetupTest() {

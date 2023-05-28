@@ -21,7 +21,7 @@ RUN make proto tidy
 
 # Skaffold passes in debug-oriented compiler flags
 ARG SKAFFOLD_GO_GCFLAGS
-RUN go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -o /services/catalogs_write/catalogs_read .
+RUN go build.sh -gcflags="${SKAFFOLD_GO_GCFLAGS}" -o /services/catalogs_write/catalogs_read .
 
 # Deployment container
 FROM scratch

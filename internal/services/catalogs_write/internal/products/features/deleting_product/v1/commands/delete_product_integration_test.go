@@ -1,3 +1,6 @@
+//go:build.sh integration
+// +build.sh integration
+
 package commands
 
 import (
@@ -9,12 +12,12 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/suite"
 
-    customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
-    testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 
-    integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/deleting_product/v1/events/integration_events"
+	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/deleting_product/v1/events/integration_events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/test_fixtures/integration"
 )
@@ -25,7 +28,12 @@ type deleteProductIntegrationTests struct {
 }
 
 func TestDeleteProductIntegration(t *testing.T) {
-	suite.Run(t, &deleteProductIntegrationTests{IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&deleteProductIntegrationTests{
+			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
+		},
+	)
 }
 
 func (c *deleteProductIntegrationTests) Test_Should_Delete_Product_From_DB() {
@@ -62,7 +70,11 @@ func (c *deleteProductIntegrationTests) Test_Should_Returns_NotFound_Error_When_
 func (c *deleteProductIntegrationTests) Test_Should_Publish_Product_Created_To_Broker() {
 	testUtils.SkipCI(c.T())
 
-	shouldPublish := messaging.ShouldProduced[*integrationEvents.ProductDeletedV1](c.Ctx, c.Bus, nil)
+	shouldPublish := messaging.ShouldProduced[*integrationEvents.ProductDeletedV1](
+		c.Ctx,
+		c.Bus,
+		nil,
+	)
 
 	id := testData.Products[0].ProductId
 	command, err := NewDeleteProduct(id)
@@ -78,10 +90,14 @@ func (c *deleteProductIntegrationTests) Test_Should_Publish_Product_Created_To_B
 func (c *deleteProductIntegrationTests) SetupTest() {
 	c.T().Log("SetupTest")
 	c.IntegrationTestFixture = integration.NewIntegrationTestFixture(c.IntegrationTestSharedFixture)
-	err := mediatr.RegisterRequestHandler[*DeleteProduct, *mediatr.Unit](NewDeleteProductHandler(c.Log, c.Cfg, c.CatalogUnitOfWorks, c.Bus))
+	err := mediatr.RegisterRequestHandler[*DeleteProduct, *mediatr.Unit](
+		NewDeleteProductHandler(c.Log, c.Cfg, c.CatalogUnitOfWorks, c.Bus),
+	)
 	c.Require().NoError(err)
 
-	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandlerWithHypothesis[*integrationEvents.ProductDeletedV1](nil)
+	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandlerWithHypothesis[*integrationEvents.ProductDeletedV1](
+		nil,
+	)
 	err = c.Bus.ConnectConsumerHandler(&integrationEvents.ProductDeletedV1{}, testConsumer)
 	c.Require().NoError(err)
 

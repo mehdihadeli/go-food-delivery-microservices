@@ -1,3 +1,6 @@
+//go:build.sh e2e
+// +build.sh e2e
+
 package endpoints
 
 import (
@@ -8,8 +11,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/suite"
 
-    testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/mocks/testData"
+	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/test_fixtures/e2e"
 )
 

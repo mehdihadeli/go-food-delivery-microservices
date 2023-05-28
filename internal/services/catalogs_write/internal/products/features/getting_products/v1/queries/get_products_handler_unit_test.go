@@ -1,3 +1,6 @@
+//go:build.sh unit
+// +build.sh unit
+
 package queries
 
 import (
@@ -23,7 +26,10 @@ type getProductsHandlerUnitTests struct {
 }
 
 func TestGetProductsUnit(t *testing.T) {
-	suite.Run(t, &getProductsHandlerUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)})
+	suite.Run(
+		t,
+		&getProductsHandlerUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)},
+	)
 }
 
 func (c *getProductsHandlerUnitTests) SetupTest() {
@@ -36,7 +42,12 @@ func (c *getProductsHandlerUnitTests) Test_Handle_Should_Return_Products_Success
 	query, err := NewGetProducts(utils.NewListQuery(10, 1))
 	c.Require().NoError(err)
 
-	items := utils.NewListResult[*models.Product](testData.Products, 10, 1, int64(len(testData.Products)))
+	items := utils.NewListResult[*models.Product](
+		testData.Products,
+		10,
+		1,
+		int64(len(testData.Products)),
+	)
 	c.ProductRepository.On("GetAllProducts", mock.Anything, mock.Anything).
 		Once().
 		Return(items, nil)

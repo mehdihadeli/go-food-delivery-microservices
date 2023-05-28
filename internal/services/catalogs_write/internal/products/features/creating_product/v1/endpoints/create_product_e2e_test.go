@@ -1,3 +1,6 @@
+//go:build.sh integration
+// +build.sh integration
+
 package endpoints
 
 import (
@@ -8,8 +11,8 @@ import (
 	"github.com/gavv/httpexpect/v2"
 	"github.com/stretchr/testify/suite"
 
-    testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/dtos"
+	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/test_fixtures/e2e"
 )
 
