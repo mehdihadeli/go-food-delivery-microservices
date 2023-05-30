@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/go-playground/validator"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -22,16 +23,26 @@ import (
 
 type testInfrastructureConfigurator struct {
 	log logger.Logger
-	cfg *config.Config
+	cfg *config.AppConfig
 	t   *testing.T
 }
 
-func NewTestInfrastructureConfigurator(t *testing.T, log logger.Logger, cfg *config.Config) contracts.InfrastructureConfigurator {
+func NewTestInfrastructureConfigurator(
+	t *testing.T,
+	log logger.Logger,
+	cfg *config.AppConfig,
+) contracts.InfrastructureConfigurator {
 	return &testInfrastructureConfigurator{log: log, cfg: cfg, t: t}
 }
 
-func (ic *testInfrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*contracts.InfrastructureConfigurations, func(), error) {
-	infrastructure := &contracts.InfrastructureConfigurations{Cfg: ic.cfg, Log: ic.log, Validator: validator.New()}
+func (ic *testInfrastructureConfigurator) ConfigInfrastructures(
+	ctx context.Context,
+) (*contracts.InfrastructureConfigurations, func(), error) {
+	infrastructure := &contracts.InfrastructureConfigurations{
+		Cfg:       ic.cfg,
+		Log:       ic.log,
+		Validator: validator.New(),
+	}
 
 	meter, err := otelMetrics.AddOtelMetrics(ctx, ic.cfg.OTelMetricsConfig, ic.log)
 	if err != nil {

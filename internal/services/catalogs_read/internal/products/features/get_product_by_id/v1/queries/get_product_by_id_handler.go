@@ -21,16 +21,29 @@ import (
 
 type GetProductByIdHandler struct {
 	log             logger.Logger
-	cfg             *config.Config
+	cfg             *config.AppConfig
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
-func NewGetProductByIdHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *GetProductByIdHandler {
-	return &GetProductByIdHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
+func NewGetProductByIdHandler(
+	log logger.Logger,
+	cfg *config.AppConfig,
+	mongoRepository contracts.ProductRepository,
+	redisRepository contracts.ProductCacheRepository,
+) *GetProductByIdHandler {
+	return &GetProductByIdHandler{
+		log:             log,
+		cfg:             cfg,
+		mongoRepository: mongoRepository,
+		redisRepository: redisRepository,
+	}
 }
 
-func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductById) (*dtos.GetProductByIdResponseDto, error) {
+func (q *GetProductByIdHandler) Handle(
+	ctx context.Context,
+	query *GetProductById,
+) (*dtos.GetProductByIdResponseDto, error) {
 	ctx, span := tracing.Tracer.Start(ctx, "getProductByIdHandler.Handle")
 	span.SetAttributes(attribute.Object("Query", query))
 	span.SetAttributes(attribute2.String("Id", query.Id.String()))
@@ -39,7 +52,16 @@ func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductByI
 	var product *models.Product
 	redisProduct, err := q.redisRepository.GetProductById(ctx, query.Id.String())
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %d in the redis repository", query.Id)))
+		return nil, tracing.TraceErrFromSpan(
+			span,
+			customErrors.NewApplicationErrorWrap(
+				err,
+				fmt.Sprintf(
+					"[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %d in the redis repository",
+					query.Id,
+				),
+			),
+		)
 	}
 
 	if redisProduct != nil {
@@ -66,10 +88,19 @@ func (q *GetProductByIdHandler) Handle(ctx context.Context, query *GetProductByI
 
 	productDto, err := mapper.Map[*dto.ProductDto](product)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[GetProductByIdHandler_Handle.Map] error in the mapping product"))
+		return nil, tracing.TraceErrFromSpan(
+			span,
+			customErrors.NewApplicationErrorWrap(
+				err,
+				"[GetProductByIdHandler_Handle.Map] error in the mapping product",
+			),
+		)
 	}
 
-	q.log.Infow(fmt.Sprintf("[GetProductByIdHandler.Handle] product with id: {%s} fetched", query.Id), logger.Fields{"ProductId": product.ProductId, "Id": product.Id})
+	q.log.Infow(
+		fmt.Sprintf("[GetProductByIdHandler.Handle] product with id: {%s} fetched", query.Id),
+		logger.Fields{"ProductId": product.ProductId, "Id": product.Id},
+	)
 
 	return &dtos.GetProductByIdResponseDto{Product: productDto}, nil
 }

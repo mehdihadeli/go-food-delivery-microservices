@@ -23,7 +23,6 @@ type echoHttpServer struct {
 	config       *EchoHttpConfig
 	log          logger.Logger
 	meter        metric.Meter
-	serviceName  string
 	routeBuilder *RouteBuilder
 }
 
@@ -32,6 +31,8 @@ type EchoHttpServer interface {
 	GracefulShutdown(ctx context.Context) error
 	ApplyVersioningFromHeader()
 	GetEchoInstance() *echo.Echo
+	Logger() logger.Logger
+	Cfg() *EchoHttpConfig
 	SetupDefaultMiddlewares()
 	RouteBuilder() *RouteBuilder
 	AddMiddlewares(middlewares ...echo.MiddlewareFunc)
@@ -41,16 +42,16 @@ type EchoHttpServer interface {
 func NewEchoHttpServer(
 	config *EchoHttpConfig,
 	logger logger.Logger,
-	serviceName string,
 	meter metric.Meter,
 ) EchoHttpServer {
 	e := echo.New()
+	e.HideBanner = false
+
 	return &echoHttpServer{
 		echo:         e,
 		config:       config,
 		log:          logger,
 		meter:        meter,
-		serviceName:  serviceName,
 		routeBuilder: NewRouteBuilder(e),
 	}
 }
@@ -70,21 +71,16 @@ func (s *echoHttpServer) RunHttpServer(
 		}
 	}
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				s.log.Infof("%s is shutting down Http PORT: {%s}", s.serviceName, s.config.Port)
-				if err := s.GracefulShutdown(ctx); err != nil {
-					s.log.Errorf("(Shutdown) err: {%v}", err)
-				}
-				return
-			}
-		}
-	}()
-
 	// https://echo.labstack.com/guide/http_server/
 	return s.echo.Start(s.config.Port)
+}
+
+func (s *echoHttpServer) Logger() logger.Logger {
+	return s.log
+}
+
+func (s *echoHttpServer) Cfg() *EchoHttpConfig {
+	return s.config
 }
 
 func (s *echoHttpServer) RouteBuilder() *RouteBuilder {
@@ -127,9 +123,9 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 	s.echo.HideBanner = false
 	s.echo.HTTPErrorHandler = customHadnlers.ProblemHandler
 
-	s.echo.Use(otelTracer.Middleware(s.serviceName))
+	s.echo.Use(otelTracer.Middleware(s.config.Name))
 	if s.meter != nil {
-		s.echo.Use(otelMetrics.Middleware(s.meter, s.serviceName))
+		s.echo.Use(otelMetrics.Middleware(s.meter, s.config.Name))
 	}
 
 	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{

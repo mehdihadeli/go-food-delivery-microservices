@@ -2,18 +2,17 @@ package main
 
 import (
 	"flag"
-	"log"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
+	"go.uber.org/fx"
+
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/server"
+	appconfig "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 )
 
-//https://github.com/swaggo/swag#how-to-use-it-with-gin
+// https://github.com/swaggo/swag#how-to-use-it-with-gin
 
 // @contact.name Mehdi Hadeli
 // @contact.url https://github.com/mehdihadeli
@@ -23,17 +22,27 @@ import (
 func main() {
 	flag.Parse()
 
-	//https://stackoverflow.com/questions/52103182/how-to-get-the-stacktrace-of-a-panic-and-store-as-a-variable
+	// https://stackoverflow.com/questions/52103182/how-to-get-the-stacktrace-of-a-panic-and-store-as-a-variable
 	defer errorUtils.HandlePanic()
 
-	env := core.ConfigAppEnv(constants.Dev)
+	app := fx.New(
+		// infrastructure setup
+		config.Module,
+		zap.Module,
 
-	cfg, err := config.InitConfig(env)
-	if err != nil {
-		log.Fatal(err)
-	}
+		// application setup
+		customEcho.Module,
+		appconfig.Module,
+	)
 
-	appLogger := zap.NewZapLogger(cfg.Logger)
-	appLogger.WithName(cfg.GetMicroserviceName())
-	appLogger.Fatal(server.NewServer(appLogger, cfg).Run())
+	app.Run()
+
+	//cfg, err := serviceconfig.InitConfig(env)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//appLogger := zap.NewZapLogger(cfg.Logger)
+	//appLogger.WithName(cfg.GetMicroserviceName())
+	//appLogger.Fatal(server.NewServer(appLogger, cfg).Run())
 }

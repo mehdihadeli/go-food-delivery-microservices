@@ -9,7 +9,7 @@ require (
 	emperror.dev/errors v0.8.1
 	github.com/EventStore/EventStore-Client-Go v1.0.2
 	github.com/brianvoe/gofakeit/v6 v6.19.0
-	github.com/caarlos0/env/v6 v6.9.3
+	github.com/caarlos0/env/v6 v6.10.1
 	github.com/elastic/go-elasticsearch/v8 v8.8.0
 	github.com/gavv/httpexpect/v2 v2.3.1
 	github.com/go-playground/validator v9.31.0+incompatible
@@ -158,6 +158,8 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v0.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
+	go.uber.org/dig v1.16.1 // indirect
+	go.uber.org/fx v1.19.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect

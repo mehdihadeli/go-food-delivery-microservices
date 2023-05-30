@@ -7,6 +7,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-playground/validator"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -20,15 +21,24 @@ import (
 
 type infrastructureConfigurator struct {
 	log logger.Logger
-	cfg *config.Config
+	cfg *config.AppConfig
 }
 
-func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config) contracts.InfrastructureConfigurator {
+func NewInfrastructureConfigurator(
+	log logger.Logger,
+	cfg *config.AppConfig,
+) contracts.InfrastructureConfigurator {
 	return &infrastructureConfigurator{log: log, cfg: cfg}
 }
 
-func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*contracts.InfrastructureConfigurations, func(), error) {
-	infrastructure := &contracts.InfrastructureConfigurations{Cfg: ic.cfg, Log: ic.log, Validator: validator.New()}
+func (ic *infrastructureConfigurator) ConfigInfrastructures(
+	ctx context.Context,
+) (*contracts.InfrastructureConfigurations, func(), error) {
+	infrastructure := &contracts.InfrastructureConfigurations{
+		Cfg:       ic.cfg,
+		Log:       ic.log,
+		Validator: validator.New(),
+	}
 
 	cleanup := []func(){}
 

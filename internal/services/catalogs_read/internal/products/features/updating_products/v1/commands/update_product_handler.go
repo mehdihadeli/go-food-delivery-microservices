@@ -18,16 +18,29 @@ import (
 
 type UpdateProductHandler struct {
 	log             logger.Logger
-	cfg             *config.Config
+	cfg             *config.AppConfig
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
-func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository, redisRepository contracts.ProductCacheRepository) *UpdateProductHandler {
-	return &UpdateProductHandler{log: log, cfg: cfg, mongoRepository: mongoRepository, redisRepository: redisRepository}
+func NewUpdateProductHandler(
+	log logger.Logger,
+	cfg *config.AppConfig,
+	mongoRepository contracts.ProductRepository,
+	redisRepository contracts.ProductCacheRepository,
+) *UpdateProductHandler {
+	return &UpdateProductHandler{
+		log:             log,
+		cfg:             cfg,
+		mongoRepository: mongoRepository,
+		redisRepository: redisRepository,
+	}
 }
 
-func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduct) (*mediatr.Unit, error) {
+func (c *UpdateProductHandler) Handle(
+	ctx context.Context,
+	command *UpdateProduct,
+) (*mediatr.Unit, error) {
 	ctx, span := tracing.Tracer.Start(ctx, "UpdateProductHandler.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductId.String()))
 	span.SetAttributes(attribute.Object("Command", command))
@@ -35,11 +48,29 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduc
 
 	product, err := c.mongoRepository.GetProductByProductId(ctx, command.ProductId.String())
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[UpdateProductHandler_Handle.GetProductById] error in fetching product with productId %s in the mongo repository", command.ProductId)))
+		return nil, tracing.TraceErrFromSpan(
+			span,
+			customErrors.NewApplicationErrorWrap(
+				err,
+				fmt.Sprintf(
+					"[UpdateProductHandler_Handle.GetProductById] error in fetching product with productId %s in the mongo repository",
+					command.ProductId,
+				),
+			),
+		)
 	}
 
 	if product == nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("[UpdateProductHandler_Handle.GetProductById] product with productId %s not found", command.ProductId)))
+		return nil, tracing.TraceErrFromSpan(
+			span,
+			customErrors.NewNotFoundErrorWrap(
+				err,
+				fmt.Sprintf(
+					"[UpdateProductHandler_Handle.GetProductById] product with productId %s not found",
+					command.ProductId,
+				),
+			),
+		)
 	}
 
 	product.Price = command.Price
@@ -49,15 +80,30 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduc
 
 	_, err = c.mongoRepository.UpdateProduct(ctx, product)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[UpdateProductHandler_Handle.UpdateProduct] error in updating product in the mongo repository"))
+		return nil, tracing.TraceErrFromSpan(
+			span,
+			customErrors.NewApplicationErrorWrap(
+				err,
+				"[UpdateProductHandler_Handle.UpdateProduct] error in updating product in the mongo repository",
+			),
+		)
 	}
 
 	err = c.redisRepository.PutProduct(ctx, product.Id, product)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[UpdateProductHandler_Handle.PutProduct] error in updating product in the redis repository"))
+		return nil, tracing.TraceErrFromSpan(
+			span,
+			customErrors.NewApplicationErrorWrap(
+				err,
+				"[UpdateProductHandler_Handle.PutProduct] error in updating product in the redis repository",
+			),
+		)
 	}
 
-	c.log.Infow(fmt.Sprintf("[UpdateProductHandler.Handle] product with id: {%s} updated", product.Id), logger.Fields{"ProductId": command.ProductId, "Id": product.Id})
+	c.log.Infow(
+		fmt.Sprintf("[UpdateProductHandler.Handle] product with id: {%s} updated", product.Id),
+		logger.Fields{"ProductId": command.ProductId, "Id": product.Id},
+	)
 
 	return &mediatr.Unit{}, nil
 }

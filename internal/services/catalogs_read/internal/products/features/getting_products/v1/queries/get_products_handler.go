@@ -17,27 +17,46 @@ import (
 
 type GetProductsHandler struct {
 	log             logger.Logger
-	cfg             *config.Config
+	cfg             *config.AppConfig
 	mongoRepository contracts.ProductRepository
 }
 
-func NewGetProductsHandler(log logger.Logger, cfg *config.Config, mongoRepository contracts.ProductRepository) *GetProductsHandler {
+func NewGetProductsHandler(
+	log logger.Logger,
+	cfg *config.AppConfig,
+	mongoRepository contracts.ProductRepository,
+) *GetProductsHandler {
 	return &GetProductsHandler{log: log, cfg: cfg, mongoRepository: mongoRepository}
 }
 
-func (c *GetProductsHandler) Handle(ctx context.Context, query *GetProducts) (*dtos.GetProductsResponseDto, error) {
+func (c *GetProductsHandler) Handle(
+	ctx context.Context,
+	query *GetProducts,
+) (*dtos.GetProductsResponseDto, error) {
 	ctx, span := tracing.Tracer.Start(ctx, "GetProductsHandler.Handle")
 	span.SetAttributes(attribute.Object("Query", query))
 	defer span.End()
 
 	products, err := c.mongoRepository.GetAllProducts(ctx, query.ListQuery)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsHandler_Handle.GetAllProducts] error in getting products in the repository"))
+		return nil, tracing.TraceErrFromSpan(
+			span,
+			customErrors.NewApplicationErrorWrap(
+				err,
+				"[GetProductsHandler_Handle.GetAllProducts] error in getting products in the repository",
+			),
+		)
 	}
 
 	listResultDto, err := utils.ListResultToListResultDto[*dto.ProductDto](products)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[GetProductsHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto"))
+		return nil, tracing.TraceErrFromSpan(
+			span,
+			customErrors.NewApplicationErrorWrap(
+				err,
+				"[GetProductsHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto",
+			),
+		)
 	}
 
 	c.log.Info("[GetProductsHandler.Handle] products fetched")

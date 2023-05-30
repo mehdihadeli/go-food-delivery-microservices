@@ -1,32 +1,32 @@
 package integration
 
 import (
-    "context"
-    "testing"
-    "time"
+	"context"
+	"testing"
+	"time"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/rabbitmq"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/rabbitmq"
 
-    "github.com/mehdihadeli/go-mediatr"
-    "github.com/stretchr/testify/require"
-    "github.com/stretchr/testify/suite"
+	"github.com/mehdihadeli/go-mediatr"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-    defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-    rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
-    rabbitmqTestContainer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
-    webWorker "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
+	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
+	rabbitmqTestContainer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
+	webWorker "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/mappings"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/data/repositories"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/catalogs/metrics"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/infrastructure"
-    sharedContracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/contracts"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/web/workers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/mappings"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/data/repositories"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/catalogs/metrics"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/infrastructure"
+	sharedContracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/web/workers"
 )
 
 const (
@@ -35,7 +35,7 @@ const (
 )
 
 type IntegrationTestSharedFixture struct {
-	Cfg *config.Config
+	Cfg *config.AppConfig
 	Log logger.Logger
 	suite.Suite
 }
@@ -81,19 +81,30 @@ func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *Integratio
 		require.FailNow(shared.T(), err.Error())
 	}
 
-	productRep := repositories.NewMongoProductRepository(infrastructures.Log, infrastructures.MongoClient)
-	redisRepository := repositories.NewRedisProductRepository(infrastructures.Log, infrastructures.Cfg, infrastructures.Redis)
+	productRep := repositories.NewMongoProductRepository(
+		infrastructures.Log,
+		infrastructures.MongoClient,
+	)
+	redisRepository := repositories.NewRedisProductRepository(
+		infrastructures.Log,
+		infrastructures.Cfg,
+		infrastructures.Redis,
+	)
 
-	mqBus, err := rabbitmqTestContainer.NewRabbitMQTestContainers().Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
-		// Products RabbitMQ configuration
-		rabbitmq.ConfigProductsRabbitMQ(builder, infrastructures)
-	})
+	mqBus, err := rabbitmqTestContainer.NewRabbitMQTestContainers().
+		Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+			// Products RabbitMQ configuration
+			rabbitmq.ConfigProductsRabbitMQ(builder, infrastructures)
+		})
 	if err != nil {
 		cancel()
 		require.FailNow(shared.T(), err.Error())
 	}
 
-	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(infrastructures.Cfg, infrastructures.Metrics)
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(
+		infrastructures.Cfg,
+		infrastructures.Metrics,
+	)
 	if err != nil {
 		cancel()
 		require.FailNow(shared.T(), err.Error())

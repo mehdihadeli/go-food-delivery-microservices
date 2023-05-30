@@ -1,15 +1,15 @@
 package zap
 
 import (
-    "os"
-    "time"
+	"os"
+	"time"
 
-    "go.uber.org/zap"
-    "go.uber.org/zap/zapcore"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 )
 
 type zapLogger struct {
@@ -20,6 +20,7 @@ type zapLogger struct {
 
 type ZapLogger interface {
 	logger.Logger
+	InternalLogger() *zap.Logger
 	DPanic(args ...interface{})
 	DPanicf(template string, args ...interface{})
 	Sync() error
@@ -36,11 +37,15 @@ var loggerLevelMap = map[string]zapcore.Level{
 }
 
 // NewZapLogger create new zap logger
-func NewZapLogger(cfg *logger.LogConfig) ZapLogger {
+func NewZapLogger(cfg *logger.LogConfig, env config.Environment) ZapLogger {
 	zapLogger := &zapLogger{level: cfg.LogLevel}
-	zapLogger.initLogger()
+	zapLogger.initLogger(env)
 
 	return zapLogger
+}
+
+func (l *zapLogger) InternalLogger() *zap.Logger {
+	return l.logger
 }
 
 func (l *zapLogger) getLoggerLevel() zapcore.Level {
@@ -53,7 +58,7 @@ func (l *zapLogger) getLoggerLevel() zapcore.Level {
 }
 
 // InitLogger Init logger
-func (l *zapLogger) initLogger() {
+func (l *zapLogger) initLogger(env config.Environment) {
 	logLevel := l.getLoggerLevel()
 
 	logWriter := zapcore.AddSync(os.Stdout)
@@ -61,7 +66,7 @@ func (l *zapLogger) initLogger() {
 	var encoderCfg zapcore.EncoderConfig
 	var encoder zapcore.Encoder
 
-	if core.IsProduction() {
+	if env.IsProduction() {
 		encoderCfg = zap.NewProductionEncoderConfig()
 		encoderCfg.NameKey = "[SERVICE]"
 		encoderCfg.TimeKey = "[TIME]"
@@ -226,7 +231,12 @@ func (l *zapLogger) Sync() error {
 	return l.sugarLogger.Sync()
 }
 
-func (l *zapLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration, metaData map[string][]string, err error) {
+func (l *zapLogger) GrpcMiddlewareAccessLogger(
+	method string,
+	time time.Duration,
+	metaData map[string][]string,
+	err error,
+) {
 	l.Info(
 		constants.GRPC,
 		zap.String(constants.METHOD, method),
@@ -236,7 +246,13 @@ func (l *zapLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration
 	)
 }
 
-func (l *zapLogger) GrpcClientInterceptorLogger(method string, req, reply interface{}, time time.Duration, metaData map[string][]string, err error) {
+func (l *zapLogger) GrpcClientInterceptorLogger(
+	method string,
+	req, reply interface{},
+	time time.Duration,
+	metaData map[string][]string,
+	err error,
+) {
 	l.Info(
 		constants.GRPC,
 		zap.String(constants.METHOD, method),

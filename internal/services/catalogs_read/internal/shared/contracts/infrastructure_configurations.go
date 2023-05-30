@@ -6,18 +6,19 @@ import (
 	"github.com/go-playground/validator"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.opentelemetry.io/otel/metric"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.opentelemetry.io/otel/metric"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 )
 
 type InfrastructureConfigurations struct {
 	Log             logger.Logger
-	Cfg             *config.Config
+	Cfg             *config.AppConfig
 	Validator       *validator.Validate
 	PgConn          *pgxpool.Pool
 	Metrics         metric.Meter

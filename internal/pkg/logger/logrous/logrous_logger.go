@@ -1,15 +1,15 @@
 package logrous
 
 import (
-    "os"
-    "time"
+	"os"
+	"time"
 
-    "github.com/nolleh/caption_json_formatter"
-    "github.com/sirupsen/logrus"
+	"github.com/nolleh/caption_json_formatter"
+	"github.com/sirupsen/logrus"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 )
 
 type logrusLogger struct {
@@ -28,25 +28,16 @@ var loggerLevelMap = map[string]logrus.Level{
 	"fatal": logrus.FatalLevel,
 }
 
-func (l *logrusLogger) GetLoggerLevel() logrus.Level {
-	level, exist := loggerLevelMap[l.level]
-	if !exist {
-		return logrus.DebugLevel
-	}
-
-	return level
-}
-
 // NewLogrusLogger creates a new logrus logger
-func NewLogrusLogger(cfg *logger.LogConfig) logger.Logger {
+func NewLogrusLogger(cfg *logger.LogConfig, env config.Environment) logger.Logger {
 	logrusLogger := &logrusLogger{level: cfg.LogLevel}
-	logrusLogger.initLogger()
+	logrusLogger.initLogger(env)
 
 	return logrusLogger
 }
 
 // InitLogger Init logger
-func (l *logrusLogger) initLogger() {
+func (l *logrusLogger) initLogger(env config.Environment) {
 	logLevel := l.GetLoggerLevel()
 
 	// Create a new instance of the logger. You can have any number of instances.
@@ -58,7 +49,7 @@ func (l *logrusLogger) initLogger() {
 	// Can be any io.Writer, see below for File example
 	logrusLogger.SetOutput(os.Stdout)
 
-	if core.IsDevelopment() {
+	if env.IsDevelopment() {
 		logrusLogger.SetReportCaller(false)
 		logrusLogger.SetFormatter(&logrus.TextFormatter{
 			DisableColors: false,
@@ -67,11 +58,20 @@ func (l *logrusLogger) initLogger() {
 		})
 	} else {
 		logrusLogger.SetReportCaller(false)
-		//https://github.com/nolleh/caption_json_formatter
+		// https://github.com/nolleh/caption_json_formatter
 		logrusLogger.SetFormatter(&caption_json_formatter.Formatter{PrettyPrint: true})
 	}
 
 	l.logger = logrusLogger
+}
+
+func (l *logrusLogger) GetLoggerLevel() logrus.Level {
+	level, exist := loggerLevelMap[l.level]
+	if !exist {
+		return logrus.DebugLevel
+	}
+
+	return level
 }
 
 func (l *logrusLogger) LogType() logger.LogType {
@@ -153,7 +153,12 @@ func (l *logrusLogger) WithName(name string) {
 	l.logger.WithField(constants.NAME, name)
 }
 
-func (l *logrusLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration, metaData map[string][]string, err error) {
+func (l *logrusLogger) GrpcMiddlewareAccessLogger(
+	method string,
+	time time.Duration,
+	metaData map[string][]string,
+	err error,
+) {
 	l.Info(
 		constants.GRPC,
 		logrus.WithField(constants.METHOD, method),
@@ -163,7 +168,14 @@ func (l *logrusLogger) GrpcMiddlewareAccessLogger(method string, time time.Durat
 	)
 }
 
-func (l *logrusLogger) GrpcClientInterceptorLogger(method string, req interface{}, reply interface{}, time time.Duration, metaData map[string][]string, err error) {
+func (l *logrusLogger) GrpcClientInterceptorLogger(
+	method string,
+	req interface{},
+	reply interface{},
+	time time.Duration,
+	metaData map[string][]string,
+	err error,
+) {
 	l.Info(
 		constants.GRPC,
 		logrus.WithField(constants.METHOD, method),

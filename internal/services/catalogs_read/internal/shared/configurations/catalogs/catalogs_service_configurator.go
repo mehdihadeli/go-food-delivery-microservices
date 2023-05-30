@@ -7,6 +7,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/labstack/echo/v4"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 
@@ -20,22 +21,39 @@ type catalogsServiceConfigurator struct {
 	*contracts.InfrastructureConfigurations
 }
 
-func NewCatalogsServiceConfigurator(infra *contracts.InfrastructureConfigurations) contracts.CatalogsServiceConfigurator {
+func NewCatalogsServiceConfigurator(
+	infra *contracts.InfrastructureConfigurations,
+) contracts.CatalogsServiceConfigurator {
 	return &catalogsServiceConfigurator{InfrastructureConfigurations: infra}
 }
 
-func (ic *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Context) (*contracts.CatalogsServiceConfigurations, error) {
+func (ic *catalogsServiceConfigurator) ConfigureCatalogsService(
+	ctx context.Context,
+) (*contracts.CatalogsServiceConfigurations, error) {
 	catalogsServiceConfigurations := &contracts.CatalogsServiceConfigurations{}
 
-	catalogsServiceConfigurations.CatalogsGrpcServer = grpc.NewGrpcServer(ic.Cfg.GRPC, ic.Log, ic.Cfg.ServiceName, ic.Metrics)
-	catalogsServiceConfigurations.CatalogsEchoServer = customEcho.NewEchoHttpServer(ic.Cfg.Http, ic.Log, ic.Cfg.ServiceName, ic.Metrics)
+	catalogsServiceConfigurations.CatalogsGrpcServer = grpc.NewGrpcServer(
+		ic.Cfg.GRPC,
+		ic.Log,
+		ic.Cfg.ServiceName,
+		ic.Metrics,
+	)
+	catalogsServiceConfigurations.CatalogsEchoServer = customEcho.NewEchoHttpServer(
+		ic.Cfg.Http,
+		ic.Log,
+		ic.Metrics,
+	)
 	catalogsServiceConfigurations.CatalogsEchoServer.SetupDefaultMiddlewares()
 
-	catalogsServiceConfigurations.CatalogsEchoServer.RouteBuilder().RegisterRoutes(func(e *echo.Echo) {
-		e.GET("", func(ec echo.Context) error {
-			return ec.String(http.StatusOK, fmt.Sprintf("%s is running...", ic.Cfg.GetMicroserviceNameUpper()))
+	catalogsServiceConfigurations.CatalogsEchoServer.RouteBuilder().
+		RegisterRoutes(func(e *echo.Echo) {
+			e.GET("", func(ec echo.Context) error {
+				return ec.String(
+					http.StatusOK,
+					fmt.Sprintf("%s is running...", ic.Cfg.GetMicroserviceNameUpper()),
+				)
+			})
 		})
-	})
 
 	// Catalogs Swagger Configs
 	ic.configSwagger(catalogsServiceConfigurations.CatalogsEchoServer.RouteBuilder())
@@ -48,17 +66,30 @@ func (ic *catalogsServiceConfigurator) ConfigureCatalogsService(ctx context.Cont
 	catalogsServiceConfigurations.CatalogsMetrics = catalogsMetrics
 
 	// Catalogs RabbitMQ Configs
-	bus, err := rabbitmq.ConfigCatalogsRabbitMQ(ctx, ic.Cfg.RabbitMQ, ic.InfrastructureConfigurations)
+	bus, err := rabbitmq.ConfigCatalogsRabbitMQ(
+		ctx,
+		ic.Cfg.RabbitMQ,
+		ic.InfrastructureConfigurations,
+	)
 	if err != nil {
 		return nil, err
 	}
 	catalogsServiceConfigurations.CatalogsBus = bus
 
 	// Catalogs Product Module Configs
-	pc := configurations.NewProductsModuleConfigurator(ic.InfrastructureConfigurations, catalogsMetrics, bus, catalogsServiceConfigurations.CatalogsEchoServer.RouteBuilder(), catalogsServiceConfigurations.CatalogsGrpcServer.GrpcServiceBuilder())
+	pc := configurations.NewProductsModuleConfigurator(
+		ic.InfrastructureConfigurations,
+		catalogsMetrics,
+		bus,
+		catalogsServiceConfigurations.CatalogsEchoServer.RouteBuilder(),
+		catalogsServiceConfigurations.CatalogsGrpcServer.GrpcServiceBuilder(),
+	)
 	err = pc.ConfigureProductsModule(ctx)
 	if err != nil {
-		return nil, errors.WithMessage(err, "[CatalogsServiceConfigurator_ConfigureCatalogsService.ConfigureProductsModule] error in product module configurator")
+		return nil, errors.WithMessage(
+			err,
+			"[CatalogsServiceConfigurator_ConfigureCatalogsService.ConfigureProductsModule] error in product module configurator",
+		)
 	}
 
 	return catalogsServiceConfigurations, nil

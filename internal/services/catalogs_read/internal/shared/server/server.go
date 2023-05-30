@@ -19,16 +19,21 @@ import (
 
 type Server struct {
 	log    logger.Logger
-	cfg    *config.Config
+	cfg    *config.AppConfig
 	doneCh chan struct{}
 }
 
-func NewServer(log logger.Logger, cfg *config.Config) *Server {
+func NewServer(log logger.Logger, cfg *config.AppConfig) *Server {
 	return &Server{log: log, cfg: cfg, doneCh: make(chan struct{})}
 }
 
 func (s *Server) Run() error {
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	ctx, cancel := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+		syscall.SIGINT,
+	)
 	defer cancel()
 
 	ic := infrastructure.NewInfrastructureConfigurator(s.log, s.cfg)
@@ -53,7 +58,11 @@ func (s *Server) Run() error {
 			cancel()
 		}
 	}()
-	s.log.Infof("%s is listening on Http PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.Http.Port)
+	s.log.Infof(
+		"%s is listening on Http PORT: {%s}",
+		s.cfg.GetMicroserviceNameUpper(),
+		s.cfg.Http.Port,
+	)
 
 	go func() {
 		if err := catalogConfigurations.CatalogsGrpcServer.RunGrpcServer(ctx, nil); err != nil {
@@ -62,7 +71,11 @@ func (s *Server) Run() error {
 			cancel()
 		}
 	}()
-	s.log.Infof("%s is listening on Grpc PORT: {%s}", s.cfg.GetMicroserviceNameUpper(), s.cfg.GRPC.Port)
+	s.log.Infof(
+		"%s is listening on Grpc PORT: {%s}",
+		s.cfg.GetMicroserviceNameUpper(),
+		s.cfg.GRPC.Port,
+	)
 
 	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
 		workers.NewRabbitMQWorker(s.log, catalogConfigurations.CatalogsBus),

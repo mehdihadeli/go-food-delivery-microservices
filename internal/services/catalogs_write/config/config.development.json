@@ -9,6 +9,7 @@
     "development": true
   },
   "http": {
+    "name": "catalogs_write_service",
     "port": ":7000",
     "development": true,
     "timeout": 30,
