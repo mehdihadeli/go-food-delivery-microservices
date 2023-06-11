@@ -7,7 +7,7 @@ import (
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 )
 
-// Module provided to fx
+// Module provided to fxlog
 // https://uber-go.github.io/fx/modules.html
 var Module = fx.Module("httpfx",
 	// - order is not important in provide

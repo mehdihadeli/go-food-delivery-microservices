@@ -1,9 +1,10 @@
 package models
 
-//https://www.eventstore.com/blog/what-is-event-sourcing
-//https://www.eventstore.com/blog/event-sourcing-and-cqrs
+// https://www.eventstore.com/blog/what-is-event-sourcing
+// https://www.eventstore.com/blog/event-sourcing-and-cqrs
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"emperror.dev/errors"
@@ -14,7 +15,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	errors2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/errors"
 	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/serializer/jsonSerializer"
 )
 
 type WhenFunc func(event domain.IDomainEvent) error
@@ -93,7 +93,11 @@ type EventSourcedAggregateRootDataModel struct {
 	OriginalVersion int64 `json:"originalVersion" bson:"originalVersion"`
 }
 
-func NewEventSourcedAggregateRootWithId(id uuid.UUID, aggregateType string, when WhenFunc) *EventSourcedAggregateRoot {
+func NewEventSourcedAggregateRootWithId(
+	id uuid.UUID,
+	aggregateType string,
+	when WhenFunc,
+) *EventSourcedAggregateRoot {
 	if when == nil {
 		return nil
 	}
@@ -163,11 +167,17 @@ func (a *EventSourcedAggregateRoot) UncommittedEvents() []domain.IDomainEvent {
 	return a.uncommittedEvents
 }
 
-func (a *EventSourcedAggregateRoot) LoadFromHistory(events []domain.IDomainEvent, metadata metadata.Metadata) error {
+func (a *EventSourcedAggregateRoot) LoadFromHistory(
+	events []domain.IDomainEvent,
+	metadata metadata.Metadata,
+) error {
 	for _, event := range events {
 		err := a.fold(event, metadata)
 		if err != nil {
-			return errors.WrapIf(err, "[EventSourcedAggregateRoot_LoadFromHistory:fold] error in loading event from history")
+			return errors.WrapIf(
+				err,
+				"[EventSourcedAggregateRoot_LoadFromHistory:fold] error in loading event from history",
+			)
 		}
 	}
 
@@ -178,7 +188,10 @@ func (a *EventSourcedAggregateRoot) Apply(event domain.IDomainEvent, isNew bool)
 	if isNew {
 		err := a.AddDomainEvents(event)
 		if err != nil {
-			return errors.WrapIf(err, "[EventSourcedAggregateRoot_Apply:AddDomainEvents] error in adding domain_events event to the domain_events events list")
+			return errors.WrapIf(
+				err,
+				"[EventSourcedAggregateRoot_Apply:AddDomainEvents] error in adding domain_events event to the domain_events events list",
+			)
 		}
 	}
 	err := a.when(event)
@@ -190,10 +203,16 @@ func (a *EventSourcedAggregateRoot) Apply(event domain.IDomainEvent, isNew bool)
 	return nil
 }
 
-func (a *EventSourcedAggregateRoot) fold(event domain.IDomainEvent, metadata metadata.Metadata) error {
+func (a *EventSourcedAggregateRoot) fold(
+	event domain.IDomainEvent,
+	metadata metadata.Metadata,
+) error {
 	err := a.when(event)
 	if err != nil {
-		return errors.WrapIf(err, "[EventSourcedAggregateRoot_fold:when] error in the applying whenFunc")
+		return errors.WrapIf(
+			err,
+			"[EventSourcedAggregateRoot_fold:when] error in the applying whenFunc",
+		)
 	}
 	a.originalVersion++
 	a.currentVersion++
@@ -202,5 +221,6 @@ func (a *EventSourcedAggregateRoot) fold(event domain.IDomainEvent, metadata met
 }
 
 func (a *EventSourcedAggregateRoot) String() string {
-	return fmt.Sprintf("Aggregate json is: %s", jsonSerializer.ColoredPrettyPrint(a))
+	j, _ := json.Marshal(a)
+	return fmt.Sprintf("Aggregate json: %s", string(j))
 }

@@ -1,14 +1,15 @@
 {
-  "serviceName": "catalogs_read_service",
-  "context": {
-    "timeout": 20
+  "appOptions": {
+    "serviceName": "catalogs_read_service",
+    "deliveryType": "http"
   },
-  "grpc": {
+  "grpcOptions": {
+    "name": "catalogs_read_service",
     "port": ":6004",
     "host": "localhost",
     "development": true
   },
-  "http": {
+  "echoHttpOptions": {
     "name": "catalogs_read_service",
     "port": ":7001",
     "development": true,
@@ -23,26 +24,27 @@
       "metrics"
     ]
   },
-  "logger": {
+  "logOptions": {
     "level": "debug",
-    "logType": 0
+    "logType": 0,
+    "callerEnabled": false
   },
-  "rabbitmq": {
-    "rabbitMqHostOptions": {
+  "rabbitmqOptions": {
+    "rabbitmqHostOptions": {
       "userName": "guest",
       "password": "guest",
       "hostName": "localhost",
       "port": 5672
     }
   },
-  "redis": {
+  "redisOptions": {
     "host": "localhost",
     "port": 6379,
     "password": "",
     "database": 0,
     "poolSize": 300
   },
-  "mongo": {
+  "mongoDbOptions": {
     "host": "localhost",
     "port": 27017,
     "user": "admin",
@@ -54,7 +56,7 @@
     "products": "products",
     "categories": "categories"
   },
-  "otel": {
+  "OpenTelemetryOptions": {
     "enable": true,
     "serviceName": "catalogs-read-service",
     "instrumentationName": "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service",
@@ -66,12 +68,12 @@
     },
     "zipkinExporterConfig": {
       "url": "http://localhost:9411/api/v2/spans"
+    },
+    "otelMetricsOptions": {
+      "port": ":2221",
+      "metricsRoutePath": "/metrics",
+      "name": "catalogs-read-service"
     }
-  },
-  "otelMetrics": {
-    "port": ":2221",
-    "metricsRoutePath": "/metrics",
-    "name": "catalogs-read-service"
   },
   "elastic": {
     "url": "http://localhost:9200",

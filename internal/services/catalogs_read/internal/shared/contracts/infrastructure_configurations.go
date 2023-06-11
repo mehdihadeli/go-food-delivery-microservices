@@ -18,7 +18,7 @@ import (
 
 type InfrastructureConfigurations struct {
 	Log             logger.Logger
-	Cfg             *config.AppConfig
+	Cfg             *config.AppOptions
 	Validator       *validator.Validate
 	PgConn          *pgxpool.Pool
 	Metrics         metric.Meter

@@ -2,6 +2,7 @@ package tracing
 
 import (
 	"context"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -14,7 +15,11 @@ type customTracer struct {
 	trace.Tracer
 }
 
-func (c *customTracer) Start(ctx context.Context, spanName string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+func (c *customTracer) Start(
+	ctx context.Context,
+	spanName string,
+	opts ...trace.SpanStartOption,
+) (context.Context, trace.Span) {
 	parentSpan := trace.SpanFromContext(ctx)
 	if parentSpan != nil {
 		ContextWithParentSpan(ctx, parentSpan)
@@ -24,7 +29,7 @@ func (c *customTracer) Start(ctx context.Context, spanName string, opts ...trace
 }
 
 func NewCustomTracer(name string, options ...trace.TracerOption) CustomTracer {
-	// without registering `AddOtelTracing` it uses global empty (NoopTracer) TraceProvider but after using `AddOtelTracing`, global TraceProvider will be replaced
+	// without registering `NewOtelTracing` it uses global empty (NoopTracer) TraceProvider but after using `NewOtelTracing`, global TraceProvider will be replaced
 	tracer := otel.Tracer(name, options...)
 	return &customTracer{Tracer: tracer}
 }

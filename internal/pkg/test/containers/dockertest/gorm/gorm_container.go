@@ -11,7 +11,6 @@ import (
 	"github.com/phayes/freeport"
 	"gorm.io/gorm"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
@@ -35,7 +34,11 @@ func NewGormDockerTest() contracts.GormContainer {
 	}
 }
 
-func (g *gormDockerTest) Start(ctx context.Context, t *testing.T, options ...*contracts.PostgresContainerOptions) (*gorm.DB, error) {
+func (g *gormDockerTest) Start(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.PostgresContainerOptions,
+) (*gorm.DB, error) {
 	//https://github.com/ory/dockertest/blob/v3/examples/PostgreSQL.md
 	//https://github.com/bozd4g/fb.testcontainers
 	pool, err := dockertest.NewPool("")
@@ -56,7 +59,9 @@ func (g *gormDockerTest) Start(ctx context.Context, t *testing.T, options ...*co
 		log.Fatalf("Could not start resource (Postgresql Test Container): %s", err)
 	}
 
-	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
+	resource.Expire(
+		120,
+	) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
 
 	//g.resource = resource
 	//i, _ = strconv.Atoi(resource.GetPort("5432/tcp"))
@@ -77,7 +82,7 @@ func (g *gormDockerTest) Start(ctx context.Context, t *testing.T, options ...*co
 	var db *gorm.DB
 
 	if err = pool.Retry(func() error {
-		gormDb, err := gormPostgres.NewGorm(&gormPostgres.GormConfig{
+		gormDb, err := gormPostgres.NewGorm(&gormPostgres.GormOptions{
 			Port:     g.defaultOptions.HostPort,
 			Host:     g.defaultOptions.Host,
 			Password: g.defaultOptions.Password,
@@ -104,7 +109,9 @@ func (g *gormDockerTest) Cleanup(ctx context.Context) error {
 	return g.resource.Close()
 }
 
-func (g *gormDockerTest) getRunOptions(opts ...*contracts.PostgresContainerOptions) *dockertest.RunOptions {
+func (g *gormDockerTest) getRunOptions(
+	opts ...*contracts.PostgresContainerOptions,
+) *dockertest.RunOptions {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {
@@ -145,7 +152,9 @@ func (g *gormDockerTest) getRunOptions(opts ...*contracts.PostgresContainerOptio
 		Hostname:     g.defaultOptions.Host,
 		ExposedPorts: []string{g.defaultOptions.Port},
 		PortBindings: map[docker.Port][]docker.PortBinding{
-			docker.Port(g.defaultOptions.Port): {{HostIP: "0.0.0.0", HostPort: strconv.Itoa(g.defaultOptions.HostPort)}},
+			docker.Port(g.defaultOptions.Port): {
+				{HostIP: "0.0.0.0", HostPort: strconv.Itoa(g.defaultOptions.HostPort)},
+			},
 		},
 	}
 

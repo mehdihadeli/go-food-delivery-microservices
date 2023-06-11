@@ -18,10 +18,12 @@ import (
 var HttpTracer trace.Tracer
 
 func init() {
-	HttpTracer = tracing.NewCustomTracer("github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo") //instrumentation name
+	HttpTracer = tracing.NewCustomTracer(
+		"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo",
+	) //instrumentation name
 }
 
-// SpanFromContext get current context span from existing echo otel trace middleware instrument
+// SpanFromContext get current context span from existing echolog otel trace middleware instrument
 func SpanFromContext(c echo.Context) (span trace.Span) {
 	ctx := c.Request().Context()
 	span = trace.SpanFromContext(ctx)
@@ -29,8 +31,11 @@ func SpanFromContext(c echo.Context) (span trace.Span) {
 	return span
 }
 
-// StartHttpTraceSpan uses when echo otel middleware is off and create a span on 'http-echo' tracer
-func StartHttpTraceSpan(c echo.Context, operationName string) (ctx context.Context, span trace.Span, deferSpan func()) {
+// StartHttpTraceSpan uses when echolog otel middleware is off and create a span on 'http-echolog' tracer
+func StartHttpTraceSpan(
+	c echo.Context,
+	operationName string,
+) (ctx context.Context, span trace.Span, deferSpan func()) {
 	request := c.Request()
 	ctx = request.Context()
 
@@ -42,7 +47,8 @@ func StartHttpTraceSpan(c echo.Context, operationName string) (ctx context.Conte
 	opts := []trace.SpanStartOption{
 		trace.WithAttributes(semconv.NetAttributesFromHTTPRequest("tcp", request)...),
 		trace.WithAttributes(semconv.EndUserAttributesFromHTTPRequest(request)...),
-		trace.WithAttributes(semconv.HTTPServerAttributesFromHTTPRequest(c.Request().Host, c.Path(), request)...),
+		trace.WithAttributes(
+			semconv.HTTPServerAttributesFromHTTPRequest(c.Request().Host, c.Path(), request)...),
 		trace.WithSpanKind(trace.SpanKindServer),
 	}
 
@@ -53,7 +59,10 @@ func StartHttpTraceSpan(c echo.Context, operationName string) (ctx context.Conte
 
 	return ctx, span, func() {
 		attrs := semconv.HTTPAttributesFromHTTPStatusCode(c.Response().Status)
-		spanStatus, spanMessage := semconv.SpanStatusFromHTTPStatusCodeAndSpanKind(c.Response().Status, trace.SpanKindServer)
+		spanStatus, spanMessage := semconv.SpanStatusFromHTTPStatusCodeAndSpanKind(
+			c.Response().Status,
+			trace.SpanKindServer,
+		)
 		span.SetAttributes(attrs...)
 		span.SetStatus(spanStatus, spanMessage)
 

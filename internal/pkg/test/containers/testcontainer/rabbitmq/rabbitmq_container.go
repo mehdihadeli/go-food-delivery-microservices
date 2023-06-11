@@ -38,7 +38,12 @@ func NewRabbitMQTestContainers() contracts.RabbitMQContainer {
 	}
 }
 
-func (g *rabbitmqTestContainers) Start(ctx context.Context, t *testing.T, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, options ...*contracts.RabbitMQContainerOptions) (bus.Bus, error) {
+func (g *rabbitmqTestContainers) Start(
+	ctx context.Context,
+	t *testing.T,
+	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
+	options ...*contracts.RabbitMQContainerOptions,
+) (bus.Bus, error) {
 	//https://github.com/testcontainers/testcontainers-go
 	//https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
 	containerReq := g.getRunOptions(options...)
@@ -80,10 +85,10 @@ func (g *rabbitmqTestContainers) Start(ctx context.Context, t *testing.T, rabbit
 		_ = dbContainer.Terminate(ctx)
 	})
 
-	mqBus, err := bus2.NewRabbitMQBus(
+	mqBus, err := bus2.NewRabbitmqBus(
 		ctx,
-		&config.RabbitMQConfig{
-			RabbitMqHostOptions: &config.RabbitMqHostOptions{
+		&config.RabbitmqOptions{
+			RabbitmqHostOptions: &config.rabbitmqHostOptions{
 				UserName:    g.defaultOptions.UserName,
 				Password:    g.defaultOptions.Password,
 				HostName:    host,
@@ -92,7 +97,7 @@ func (g *rabbitmqTestContainers) Start(ctx context.Context, t *testing.T, rabbit
 			},
 		},
 		rabbitmqBuilderFunc,
-		json.NewJsonEventSerializer(),
+		json.NewEventSerializer(),
 		defaultLogger.Logger)
 	if err != nil {
 		return nil, err
@@ -105,7 +110,9 @@ func (g *rabbitmqTestContainers) Cleanup(ctx context.Context) error {
 	return g.container.Terminate(ctx)
 }
 
-func (g *rabbitmqTestContainers) getRunOptions(opts ...*contracts.RabbitMQContainerOptions) testcontainers.ContainerRequest {
+func (g *rabbitmqTestContainers) getRunOptions(
+	opts ...*contracts.RabbitMQContainerOptions,
+) testcontainers.ContainerRequest {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {

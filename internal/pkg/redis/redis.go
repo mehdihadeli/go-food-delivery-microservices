@@ -2,17 +2,10 @@ package redis
 
 import (
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"time"
-)
 
-type RedisConfig struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	Password string `mapstructure:"password"`
-	Database int    `mapstructure:"database"`
-	PoolSize int    `mapstructure:"poolSize"`
-}
+	"github.com/go-redis/redis/v8"
+)
 
 const (
 	maxRetries      = 5
@@ -26,7 +19,7 @@ const (
 	idleTimeout     = 12 * time.Second
 )
 
-func NewUniversalRedisClient(cfg *RedisConfig) redis.UniversalClient {
+func NewUniversalRedisClient(cfg *RedisOptions) redis.UniversalClient {
 	universalClient := redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs:           []string{fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)},
 		Password:        cfg.Password, // no password set

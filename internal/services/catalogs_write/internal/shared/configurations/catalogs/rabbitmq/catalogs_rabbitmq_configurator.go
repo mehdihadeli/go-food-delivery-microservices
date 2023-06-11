@@ -12,8 +12,12 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
 )
 
-func ConfigCatalogsRabbitMQ(ctx context.Context, mqConfig *config2.RabbitMQConfig, infra *contracts.InfrastructureConfigurations) (bus.Bus, error) {
-	return rabbitmqBus.NewRabbitMQBus(
+func ConfigCatalogsRabbitMQ(
+	ctx context.Context,
+	mqConfig *config2.RabbitmqOptions,
+	infra *contracts.InfrastructureConfigurations,
+) (bus.Bus, error) {
+	return rabbitmqBus.NewRabbitmqBus(
 		ctx,
 		mqConfig,
 		func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {

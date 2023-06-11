@@ -10,12 +10,15 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 )
 
 type zapLogger struct {
 	level       string
 	sugarLogger *zap.SugaredLogger
 	logger      *zap.Logger
+	logOptions  *config2.LogOptions
 }
 
 type ZapLogger interface {
@@ -37,10 +40,9 @@ var loggerLevelMap = map[string]zapcore.Level{
 }
 
 // NewZapLogger create new zap logger
-func NewZapLogger(cfg *logger.LogConfig, env config.Environment) ZapLogger {
-	zapLogger := &zapLogger{level: cfg.LogLevel}
+func NewZapLogger(cfg *config2.LogOptions, env config.Environment) ZapLogger {
+	zapLogger := &zapLogger{level: cfg.LogLevel, logOptions: cfg}
 	zapLogger.initLogger(env)
-
 	return zapLogger
 }
 
@@ -53,7 +55,6 @@ func (l *zapLogger) getLoggerLevel() zapcore.Level {
 	if !exist {
 		return zapcore.DebugLevel
 	}
-
 	return level
 }
 
@@ -98,7 +99,15 @@ func (l *zapLogger) initLogger(env config.Environment) {
 	}
 
 	core := zapcore.NewCore(encoder, logWriter, zap.NewAtomicLevelAt(logLevel))
-	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+
+	var options []zap.Option
+
+	if l.logOptions.CallerEnabled {
+		options = append(options, zap.AddCaller())
+		options = append(options, zap.AddCallerSkip(1))
+	}
+
+	logger := zap.New(core, options...)
 
 	l.logger = logger
 	l.sugarLogger = logger.Sugar()
@@ -108,8 +117,8 @@ func (l *zapLogger) Configure(cfg func(internalLog interface{})) {
 	cfg(l.logger)
 }
 
-func (l *zapLogger) LogType() logger.LogType {
-	return logger.Zap
+func (l *zapLogger) LogType() models.LogType {
+	return models.Zap
 }
 
 // WithName add logger microservice name

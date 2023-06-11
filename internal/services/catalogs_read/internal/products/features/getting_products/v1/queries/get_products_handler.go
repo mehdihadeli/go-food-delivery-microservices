@@ -17,13 +17,13 @@ import (
 
 type GetProductsHandler struct {
 	log             logger.Logger
-	cfg             *config.AppConfig
+	cfg             *config.AppOptions
 	mongoRepository contracts.ProductRepository
 }
 
 func NewGetProductsHandler(
 	log logger.Logger,
-	cfg *config.AppConfig,
+	cfg *config.AppOptions,
 	mongoRepository contracts.ProductRepository,
 ) *GetProductsHandler {
 	return &GetProductsHandler{log: log, cfg: cfg, mongoRepository: mongoRepository}

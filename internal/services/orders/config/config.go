@@ -1,24 +1,25 @@
 package config
 
 import (
-    "flag"
-    "fmt"
-    "os"
-    "path/filepath"
-    "runtime"
-    "strings"
+	"flag"
+	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 
-    "emperror.dev/errors"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
-    customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-    "github.com/spf13/viper"
+	"emperror.dev/errors"
+	"github.com/spf13/viper"
+
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 )
 
 var configPath string
@@ -30,16 +31,16 @@ func init() {
 type Config struct {
 	DeliveryType      string                          `mapstructure:"deliveryType"`
 	ServiceName       string                          `mapstructure:"serviceName"`
-	Logger            *logger.LogConfig               `mapstructure:"logger"`
-	GRPC              *grpc.GrpcConfig                `mapstructure:"grpc"`
-	Http              *customEcho.EchoHttpConfig      `mapstructure:"http"`
+	Logger            *logger.LogOptions              `mapstructure:"logger"`
+	GRPC              *grpc.GrpcOptions               `mapstructure:"grpc"`
+	Http              *customEcho.EchoHttpOptions     `mapstructure:"http"`
 	Context           Context                         `mapstructure:"context"`
-	OTel              *otel.OpenTelemetryConfig       `mapstructure:"otel" envPrefix:"OTel_"`
-	OTelMetricsConfig *metrics.OTelMetricsConfig      `mapstructure:"otelMetrics" envPrefix:"OTelMetrics_"`
-	RabbitMQ          *config.RabbitMQConfig          `mapstructure:"rabbitmq" envPrefix:"RabbitMQ_"`
+	OTel              *otel.OpenTelemetryOptions      `mapstructure:"otel"             envPrefix:"OTel_"`
+	OTelMetricsConfig *metrics.OTelMetricsOptions     `mapstructure:"otelMetrics"      envPrefix:"OTelMetrics_"`
+	RabbitMQ          *config.RabbitmqOptions         `mapstructure:"rabbitmq"         envPrefix:"RabbitMQ_"`
 	EventStoreConfig  *eventstroredb.EventStoreConfig `mapstructure:"eventStoreConfig"`
 	Subscriptions     *Subscriptions                  `mapstructure:"subscriptions"`
-	Mongo             *mongodb.MongoDbConfig          `mapstructure:"mongo" envPrefix:"Mongo_"`
+	Mongo             *mongodb.MongoDbOptions         `mapstructure:"mongo"            envPrefix:"Mongo_"`
 	MongoCollections  MongoCollections                `mapstructure:"mongoCollections" envPrefix:"MongoCollections_"`
 }
 
@@ -56,7 +57,7 @@ type Subscriptions struct {
 }
 
 type Subscription struct {
-	Prefix         []string `mapstructure:"prefix" validate:"required"`
+	Prefix         []string `mapstructure:"prefix"         validate:"required"`
 	SubscriptionId string   `mapstructure:"subscriptionId" validate:"required"`
 }
 
@@ -98,12 +99,12 @@ func InitConfig(env string) (*Config, error) {
 
 	jaegerPort := os.Getenv(constants.JaegerPort)
 	if jaegerPort != "" {
-		cfg.OTel.JaegerExporterConfig.AgentPort = jaegerPort
+		cfg.OTel.JaegerExporterOptions.AgentPort = jaegerPort
 	}
 
 	jaegerHost := os.Getenv(constants.JaegerHost)
 	if jaegerHost != "" {
-		cfg.OTel.JaegerExporterConfig.AgentHost = jaegerHost
+		cfg.OTel.JaegerExporterOptions.AgentHost = jaegerHost
 	}
 
 	return cfg, nil

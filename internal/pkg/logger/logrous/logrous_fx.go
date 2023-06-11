@@ -3,11 +3,11 @@ package logrous
 import (
 	"go.uber.org/fx"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
 )
 
-// Module provided to fx
+// Module provided to fxlog
 // https://uber-go.github.io/fx/modules.html
 var Module = fx.Module("logrousfx",
 	// - order is not important in provide
@@ -18,10 +18,5 @@ var Module = fx.Module("logrousfx",
 			NewLogrusLogger,
 			fx.As(new(logger.Logger)),
 		),
-
-		provideLogConfig,
+		config.ProvideLogConfig,
 	))
-
-func provideLogConfig() (*logger.LogConfig, error) {
-	return config.BindConfigKey[*logger.LogConfig]("logger")
-}

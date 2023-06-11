@@ -11,7 +11,7 @@ import (
 )
 
 func ConfigCatalogsMetrics(
-	cfg *config.AppConfig,
+	cfg *config.AppOptions,
 	meter metric.Meter,
 ) (*contracts.CatalogsMetrics, error) {
 	createProductGrpcRequests, err := meter.Float64Counter(

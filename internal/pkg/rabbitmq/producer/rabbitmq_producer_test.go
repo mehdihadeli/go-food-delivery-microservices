@@ -21,12 +21,12 @@ import (
 func Test_Publish_Message(t *testing.T) {
 	testUtils.SkipCI(t)
 	ctx := context.Background()
-	tp, err := tracing.AddOtelTracing(
-		&otel.OpenTelemetryConfig{
+	tp, err := tracing.NewOtelTracing(
+		&otel.OpenTelemetryOptions{
 			ServiceName:     "test",
 			Enabled:         true,
 			AlwaysOnSampler: true,
-			JaegerExporterConfig: &otel.JaegerExporterConfig{
+			JaegerExporterOptions: &otel.JaegerExporterOptions{
 				AgentHost: "localhost",
 				AgentPort: "6831",
 			},
@@ -37,8 +37,8 @@ func Test_Publish_Message(t *testing.T) {
 	}
 	defer tp.Shutdown(ctx)
 
-	conn, err := types.NewRabbitMQConnection(ctx, &config.RabbitMQConfig{
-		RabbitMqHostOptions: &config.RabbitMqHostOptions{
+	conn, err := types.NewRabbitMQConnection(ctx, &config.RabbitmqOptions{
+		RabbitmqHostOptions: &config.rabbitmqHostOptions{
 			UserName: "guest",
 			Password: "guest",
 			HostName: "localhost",
@@ -51,7 +51,7 @@ func Test_Publish_Message(t *testing.T) {
 		conn,
 		nil,
 		defaultLogger.Logger,
-		json.NewJsonEventSerializer(),
+		json.NewEventSerializer(),
 	)
 	require.NoError(t, err)
 

@@ -6,10 +6,10 @@ import (
 	"strconv"
 
 	"emperror.dev/errors"
+	"github.com/goccy/go-json"
 	"github.com/labstack/echo/v4"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/serializer/jsonSerializer"
 )
 
 const (
@@ -18,11 +18,11 @@ const (
 )
 
 type ListResult[T any] struct {
-	Size       int   `json:"size,omitempty" bson:"size"`
-	Page       int   `json:"page,omitempty" bson:"page"`
+	Size       int   `json:"size,omitempty"       bson:"size"`
+	Page       int   `json:"page,omitempty"       bson:"page"`
 	TotalItems int64 `json:"totalItems,omitempty" bson:"totalItems"`
-	TotalPage  int   `json:"totalPage,omitempty" bson:"totalPage"`
-	Items      []T   `json:"items,omitempty" bson:"items"`
+	TotalPage  int   `json:"totalPage,omitempty"  bson:"totalPage"`
+	Items      []T   `json:"items,omitempty"      bson:"items"`
 }
 
 func NewListResult[T any](items []T, size int, page int, totalItems int64) *ListResult[T] {
@@ -34,7 +34,8 @@ func NewListResult[T any](items []T, size int, page int, totalItems int64) *List
 }
 
 func (p *ListResult[T]) String() string {
-	return jsonSerializer.PrettyPrint(p)
+	j, _ := json.Marshal(p)
+	return string(j)
 }
 
 // GetTotalPages Get total pages int
@@ -44,14 +45,14 @@ func getTotalPages(totalCount int64, size int) int {
 }
 
 type FilterModel struct {
-	Field      string `query:"field" json:"field"`
-	Value      string `query:"value" json:"value"`
+	Field      string `query:"field"      json:"field"`
+	Value      string `query:"value"      json:"value"`
 	Comparison string `query:"comparison" json:"comparison"`
 }
 
 type ListQuery struct {
-	Size    int            `query:"size" json:"size,omitempty"`
-	Page    int            `query:"page" json:"page,omitempty"`
+	Size    int            `query:"size"    json:"size,omitempty"`
+	Page    int            `query:"page"    json:"page,omitempty"`
 	OrderBy string         `query:"orderBy" json:"orderBy,omitempty"`
 	Filters []*FilterModel `query:"filters" json:"filters,omitempty"`
 }
@@ -177,7 +178,9 @@ func (q *ListQuery) GetQueryString() string {
 	return fmt.Sprintf("page=%v&size=%v&orderBy=%s", q.GetPage(), q.GetSize(), q.GetOrderBy())
 }
 
-func ListResultToListResultDto[TDto any, TModel any](listResult *ListResult[TModel]) (*ListResult[TDto], error) {
+func ListResultToListResultDto[TDto any, TModel any](
+	listResult *ListResult[TModel],
+) (*ListResult[TDto], error) {
 	if listResult == nil {
 		return nil, errors.New("listResult is nil")
 	}

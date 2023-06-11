@@ -8,22 +8,20 @@ import (
 	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	webWoker "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/catalogs"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/constants"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/web/workers"
 )
 
 type Server struct {
 	log    logger.Logger
-	cfg    *config.AppConfig
+	cfg    *config.AppOptions
 	doneCh chan struct{}
 }
 
-func NewServer(log logger.Logger, cfg *config.AppConfig) *Server {
+func NewServer(log logger.Logger, cfg *config.AppOptions) *Server {
 	return &Server{log: log, cfg: cfg, doneCh: make(chan struct{})}
 }
 
@@ -76,10 +74,6 @@ func (s *Server) Run() error {
 		s.cfg.GetMicroserviceNameUpper(),
 		s.cfg.GRPC.Port,
 	)
-
-	backgroundWorkers := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(s.log, catalogConfigurations.CatalogsBus),
-	})
 
 	workersErr := backgroundWorkers.Start(ctx)
 	go func() {

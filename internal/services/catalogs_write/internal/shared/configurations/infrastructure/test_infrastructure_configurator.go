@@ -6,13 +6,14 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/go-playground/validator"
+	"gorm.io/gorm"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	gorm2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
-	"gorm.io/gorm"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/mocks/testData"
@@ -26,14 +27,24 @@ type testInfrastructureConfigurator struct {
 	t   *testing.T
 }
 
-func NewTestInfrastructureConfigurator(t *testing.T, log logger.Logger, cfg *config.Config) contracts.InfrastructureConfigurator {
+func NewTestInfrastructureConfigurator(
+	t *testing.T,
+	log logger.Logger,
+	cfg *config.Config,
+) contracts.InfrastructureConfigurator {
 	return &testInfrastructureConfigurator{log: log, cfg: cfg, t: t}
 }
 
-func (ic *testInfrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*contracts.InfrastructureConfigurations, func(), error) {
-	infrastructure := &contracts.InfrastructureConfigurations{Cfg: ic.cfg, Log: ic.log, Validator: validator.New()}
+func (ic *testInfrastructureConfigurator) ConfigInfrastructures(
+	ctx context.Context,
+) (*contracts.InfrastructureConfigurations, func(), error) {
+	infrastructure := &contracts.InfrastructureConfigurations{
+		Cfg:       ic.cfg,
+		Log:       ic.log,
+		Validator: validator.New(),
+	}
 
-	meter, err := otelMetrics.AddOtelMetrics(ctx, ic.cfg.OTelMetricsConfig, ic.log)
+	meter, err := otelMetrics.NewOtelMetrics(ctx, ic.cfg.OTelMetricsConfig, ic.log)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -61,7 +72,7 @@ func (ic *testInfrastructureConfigurator) ConfigInfrastructures(ctx context.Cont
 		return nil, nil, err
 	}
 
-	traceProvider, err := tracing.AddOtelTracing(ic.cfg.OTel)
+	traceProvider, err := tracing.NewOtelTracing(ic.cfg.OTel)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -69,7 +80,7 @@ func (ic *testInfrastructureConfigurator) ConfigInfrastructures(ctx context.Cont
 		_ = traceProvider.Shutdown(ctx)
 	})
 
-	infrastructure.EventSerializer = json.NewJsonEventSerializer()
+	infrastructure.EventSerializer = json.NewEventSerializer()
 
 	return infrastructure, func() {
 		for _, c := range cleanup {

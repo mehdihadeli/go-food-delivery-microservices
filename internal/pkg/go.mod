@@ -31,7 +31,6 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/kamva/mgm/v3 v3.5.0
 	github.com/labstack/echo/v4 v4.10.2
-	github.com/labstack/gommon v0.4.0
 	github.com/lib/pq v1.10.9
 	github.com/mehdihadeli/go-mediatr v1.1.10
 	github.com/mitchellh/mapstructure v1.5.0
@@ -67,7 +66,6 @@ require (
 	google.golang.org/grpc v1.55.0
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gorm v1.25.1
-	moul.io/zapgorm2 v1.3.0
 )
 
 require (
@@ -121,6 +119,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
+	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect

@@ -6,13 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/labstack/gommon/log"
 	"go.uber.org/fx"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 )
 
-// Module provided to fx
+// Module provided to fxlog
 // https://uber-go.github.io/fx/modules.html
 var Module = fx.Module(
 	"customechofx",
@@ -20,25 +19,25 @@ var Module = fx.Module(
 	// - provide can have parameter and will resolve if registered
 	// - execute its func only if it requested
 	fx.Provide(
-		provideConfig,
-		fx.Annotate(
-			NewEchoHttpServer,
-			fx.ParamTags(``, ``, `name:"meter" optional:"true"`),
-		),
+		config.ProvideConfig,
+		//// https://uber-go.github.io/fx/value-groups/consume.html#with-annotated-functions
+		//// https://uber-go.github.io/fx/annotate.html
+		//fxlog.Annotate(
+		//	NewEchoHttpServer,
+		//	fxlog.ParamTags(``, ``, `name:"meter" optional:"true"`),
+		//),
+		// https://uber-go.github.io/fx/parameter-objects.html#using-parameter-objects
+		NewEchoHttpServer,
 	),
 	// - execute after registering all of our provided
 	// - they execute by their orders
 	// - invokes always execute its func compare to provides that only run when we request for them.
 	// - return value will be discarded and can not be provided
-	fx.Invoke(invokeHttp),
+	fx.Invoke(registerHooks),
 )
 
-func provideConfig() (*EchoHttpConfig, error) {
-	return config.BindConfigKey[*EchoHttpConfig]("http")
-}
-
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`
-func invokeHttp(lc fx.Lifecycle, echoServer EchoHttpServer) {
+func registerHooks(lc fx.Lifecycle, echoServer EchoHttpServer) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			// Start server in a separate goroutine, this way when the server is shutdown "s.e.Start" will
@@ -52,7 +51,7 @@ func invokeHttp(lc fx.Lifecycle, echoServer EchoHttpServer) {
 					http.ErrServerClosed,
 				) {
 					echoServer.Logger().
-						Fatalf("(s.RunHttpServer) error in running server: {%v}", err)
+						Fatalf("(EchoHttpServer.RunHttpServer) error in running server: {%v}", err)
 				}
 			}()
 			echoServer.Logger().Infof(
@@ -68,9 +67,9 @@ func invokeHttp(lc fx.Lifecycle, echoServer EchoHttpServer) {
 			ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 			defer cancel()
 			if err := echoServer.GracefulShutdown(ctx); err != nil {
-				log.Errorf("error shutting down server: %v", err)
+				echoServer.Logger().Errorf("error shutting down server: %v", err)
 			} else {
-				log.Info("server shutdown gracefully")
+				echoServer.Logger().Info("server shutdown gracefully")
 			}
 			return nil
 		},

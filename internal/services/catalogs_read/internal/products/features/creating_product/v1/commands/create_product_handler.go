@@ -19,14 +19,14 @@ import (
 
 type CreateProductHandler struct {
 	log             logger.Logger
-	cfg             *config.AppConfig
+	cfg             *config.AppOptions
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
 func NewCreateProductHandler(
 	log logger.Logger,
-	cfg *config.AppConfig,
+	cfg *config.AppOptions,
 	mongoRepository contracts.ProductRepository,
 	redisRepository contracts.ProductCacheRepository,
 ) *CreateProductHandler {

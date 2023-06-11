@@ -1,9 +1,9 @@
 package metadata
 
 import (
-    "time"
+	"time"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/serializer/jsonSerializer"
+	"github.com/goccy/go-json"
 )
 
 func (m Metadata) GetString(key string) string {
@@ -25,7 +25,7 @@ func (m Metadata) GetTime(key string) time.Time {
 }
 
 func (m Metadata) ToJson() string {
-	marshal, err := jsonSerializer.Marshal(m)
+	marshal, err := json.Marshal(m)
 	if err != nil {
 		return ""
 	}

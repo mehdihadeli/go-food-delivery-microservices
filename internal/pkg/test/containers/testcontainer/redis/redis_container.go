@@ -33,7 +33,11 @@ func NewRedisTestContainers() contracts.RedisContainer {
 	}
 }
 
-func (g *redisTestContainers) Start(ctx context.Context, t *testing.T, options ...*contracts.RedisContainerOptions) (redis.UniversalClient, error) {
+func (g *redisTestContainers) Start(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.RedisContainerOptions,
+) (redis.UniversalClient, error) {
 	//https://github.com/testcontainers/testcontainers-go
 	//https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
 	containerReq := g.getRunOptions(options...)
@@ -66,7 +70,7 @@ func (g *redisTestContainers) Start(ctx context.Context, t *testing.T, options .
 	// Clean up the container after the test is complete
 	t.Cleanup(func() { _ = dbContainer.Terminate(ctx) })
 
-	db := redis2.NewUniversalRedisClient(&redis2.RedisConfig{
+	db := redis2.NewUniversalRedisClient(&redis2.RedisOptions{
 		Database: g.defaultOptions.Database,
 		Host:     host,
 		Port:     g.defaultOptions.HostPort,
@@ -83,7 +87,9 @@ func (g *redisTestContainers) Cleanup(ctx context.Context) error {
 	return g.container.Terminate(ctx)
 }
 
-func (g *redisTestContainers) getRunOptions(opts ...*contracts.RedisContainerOptions) testcontainers.ContainerRequest {
+func (g *redisTestContainers) getRunOptions(
+	opts ...*contracts.RedisContainerOptions,
+) testcontainers.ContainerRequest {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {

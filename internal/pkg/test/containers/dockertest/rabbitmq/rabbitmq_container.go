@@ -10,6 +10,7 @@ import (
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
@@ -39,7 +40,12 @@ func NewRabbitMQDockerTest() contracts.RabbitMQContainer {
 	}
 }
 
-func (g *rabbitmqDockerTest) Start(ctx context.Context, t *testing.T, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, options ...*contracts.RabbitMQContainerOptions) (bus.Bus, error) {
+func (g *rabbitmqDockerTest) Start(
+	ctx context.Context,
+	t *testing.T,
+	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
+	options ...*contracts.RabbitMQContainerOptions,
+) (bus.Bus, error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
@@ -59,10 +65,14 @@ func (g *rabbitmqDockerTest) Start(ctx context.Context, t *testing.T, rabbitmqBu
 		log.Fatalf("Could not start resource (RabbitMQ Container): %s", err)
 	}
 
-	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
+	resource.Expire(
+		120,
+	) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
 
 	g.resource = resource
-	i, err := strconv.Atoi(resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Ports[0]))) //5672
+	i, err := strconv.Atoi(
+		resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Ports[0])),
+	) // 5672
 	g.defaultOptions.HostPort = i
 
 	t.Cleanup(func() { _ = resource.Close() })
@@ -79,10 +89,10 @@ func (g *rabbitmqDockerTest) Start(ctx context.Context, t *testing.T, rabbitmqBu
 
 	var mqBus bus.Bus
 	if err = pool.Retry(func() error {
-		mqBus, err = bus2.NewRabbitMQBus(
+		mqBus, err = bus2.NewRabbitmqBus(
 			ctx,
-			&config.RabbitMQConfig{
-				RabbitMqHostOptions: &config.RabbitMqHostOptions{
+			&config.RabbitmqOptions{
+				RabbitmqHostOptions: &config.rabbitmqHostOptions{
 					UserName:    g.defaultOptions.UserName,
 					Password:    g.defaultOptions.Password,
 					HostName:    g.defaultOptions.Host,
@@ -91,7 +101,7 @@ func (g *rabbitmqDockerTest) Start(ctx context.Context, t *testing.T, rabbitmqBu
 				},
 			},
 			rabbitmqBuilderFunc,
-			json.NewJsonEventSerializer(),
+			serializer.NewDefaultEventSerializer(json.NewJsonSerializer()),
 			defaultLogger.Logger)
 		if err != nil {
 			return err
@@ -110,7 +120,9 @@ func (g *rabbitmqDockerTest) Cleanup(ctx context.Context) error {
 	return g.resource.Close()
 }
 
-func (g *rabbitmqDockerTest) getRunOptions(opts ...*contracts.RabbitMQContainerOptions) *dockertest.RunOptions {
+func (g *rabbitmqDockerTest) getRunOptions(
+	opts ...*contracts.RabbitMQContainerOptions,
+) *dockertest.RunOptions {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {

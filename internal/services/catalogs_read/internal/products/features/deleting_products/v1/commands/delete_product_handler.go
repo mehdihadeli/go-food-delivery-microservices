@@ -18,14 +18,14 @@ import (
 
 type DeleteProductCommand struct {
 	log             logger.Logger
-	cfg             *config.AppConfig
+	cfg             *config.AppOptions
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
 func NewDeleteProductHandler(
 	log logger.Logger,
-	cfg *config.AppConfig,
+	cfg *config.AppOptions,
 	repository contracts.ProductRepository,
 	redisRepository contracts.ProductCacheRepository,
 ) *DeleteProductCommand {

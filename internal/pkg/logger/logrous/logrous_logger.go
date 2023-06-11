@@ -10,12 +10,15 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 )
 
 type logrusLogger struct {
-	level    string
-	encoding string
-	logger   *logrus.Logger
+	level      string
+	encoding   string
+	logger     *logrus.Logger
+	logOptions *config2.LogOptions
 }
 
 // For mapping config logger
@@ -29,8 +32,8 @@ var loggerLevelMap = map[string]logrus.Level{
 }
 
 // NewLogrusLogger creates a new logrus logger
-func NewLogrusLogger(cfg *logger.LogConfig, env config.Environment) logger.Logger {
-	logrusLogger := &logrusLogger{level: cfg.LogLevel}
+func NewLogrusLogger(cfg *config2.LogOptions, env config.Environment) logger.Logger {
+	logrusLogger := &logrusLogger{level: cfg.LogLevel, logOptions: cfg}
 	logrusLogger.initLogger(env)
 
 	return logrusLogger
@@ -74,8 +77,8 @@ func (l *logrusLogger) GetLoggerLevel() logrus.Level {
 	return level
 }
 
-func (l *logrusLogger) LogType() logger.LogType {
-	return logger.Logrus
+func (l *logrusLogger) LogType() models.LogType {
+	return models.Logrus
 }
 
 func (l *logrusLogger) Configure(cfg func(internalLog interface{})) {

@@ -17,7 +17,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	rabbitmqTestContainer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
-	webWorker "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/mappings"
@@ -26,7 +25,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/catalogs/metrics"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	sharedContracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/contracts"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/web/workers"
 )
 
 const (
@@ -35,7 +33,7 @@ const (
 )
 
 type IntegrationTestSharedFixture struct {
-	Cfg *config.AppConfig
+	Cfg *config.AppOptions
 	Log logger.Logger
 	suite.Suite
 }
@@ -46,7 +44,6 @@ type IntegrationTestFixture struct {
 	MongoProductRepository contracts.ProductRepository
 	Bus                    bus.Bus
 	CatalogsMetrics        *sharedContracts.CatalogsMetrics
-	workersRunner          *webWorker.WorkersRunner
 	Ctx                    context.Context
 	cancel                 context.CancelFunc
 }
@@ -54,7 +51,7 @@ type IntegrationTestFixture struct {
 func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture {
 	// we could use EmptyLogger if we don't want to log anything
 	log := defaultLogger.Logger
-	cfg, _ := config.InitConfig(constants.Test)
+	cfg, _ := config.NewAppConfig(constants.Test)
 
 	err := mappings.ConfigureProductsMappings()
 	if err != nil {
@@ -110,10 +107,6 @@ func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *Integratio
 		require.FailNow(shared.T(), err.Error())
 	}
 
-	workersRunner := webWorker.NewWorkersRunner([]webWorker.Worker{
-		workers.NewRabbitMQWorker(infrastructures.Log, mqBus),
-	})
-
 	shared.T().Cleanup(func() {
 		// with Cancel() we send signal to done() channel to stop  grpc, http and workers gracefully
 		// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
@@ -129,7 +122,6 @@ func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *Integratio
 		CatalogsMetrics:              catalogsMetrics,
 		MongoProductRepository:       productRep,
 		RedisProductRepository:       redisRepository,
-		workersRunner:                workersRunner,
 		Ctx:                          ctx,
 		cancel:                       cancel,
 	}
@@ -138,17 +130,6 @@ func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *Integratio
 }
 
 func (e *IntegrationTestFixture) Run() {
-	workersErr := e.workersRunner.Start(e.Ctx)
-	go func() {
-		for {
-			select {
-			case _ = <-workersErr:
-				e.cancel()
-				return
-			}
-		}
-	}()
-
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(1 * time.Second)
 }

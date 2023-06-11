@@ -21,14 +21,14 @@ import (
 
 type GetProductByIdHandler struct {
 	log             logger.Logger
-	cfg             *config.AppConfig
+	cfg             *config.AppOptions
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
 func NewGetProductByIdHandler(
 	log logger.Logger,
-	cfg *config.AppConfig,
+	cfg *config.AppOptions,
 	mongoRepository contracts.ProductRepository,
 	redisRepository contracts.ProductCacheRepository,
 ) *GetProductByIdHandler {

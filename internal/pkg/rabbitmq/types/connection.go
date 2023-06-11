@@ -13,7 +13,7 @@ import (
 )
 
 type internalConnection struct {
-	cfg *config.RabbitMQConfig
+	cfg *config.RabbitmqOptions
 	*amqp091.Connection
 	isConnected       bool
 	errConnectionChan chan error
@@ -34,9 +34,9 @@ type IConnection interface {
 	ReconnectedChannel() chan struct{}
 }
 
-func NewRabbitMQConnection(ctx context.Context, cfg *config.RabbitMQConfig) (IConnection, error) {
+func NewRabbitMQConnection(ctx context.Context, cfg *config.RabbitmqOptions) (IConnection, error) {
 	//https://levelup.gitconnected.com/connecting-a-service-in-golang-to-a-rabbitmq-server-835294d8c914
-	if cfg.RabbitMqHostOptions == nil {
+	if cfg.RabbitmqHostOptions == nil {
 		return nil, errors.New("rabbitmq host options is nil")
 	}
 
@@ -97,9 +97,15 @@ func (c *internalConnection) Channel() (*amqp091.Channel, error) {
 }
 
 func (c *internalConnection) connect() error {
-	conn, err := amqp091.Dial(c.cfg.RabbitMqHostOptions.EndPoint())
+	conn, err := amqp091.Dial(c.cfg.RabbitmqHostOptions.EndPoint())
 	if err != nil {
-		return errors.WrapIf(err, fmt.Sprintf("Error in creating rabbitmq connection with %s", c.cfg.RabbitMqHostOptions.EndPoint()))
+		return errors.WrapIf(
+			err,
+			fmt.Sprintf(
+				"Error in creating rabbitmq connection with %s",
+				c.cfg.RabbitmqHostOptions.EndPoint(),
+			),
+		)
 	}
 
 	c.Connection = conn

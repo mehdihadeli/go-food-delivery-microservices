@@ -34,12 +34,16 @@ func NewMongoTestContainers() contracts.MongoContainer {
 	}
 }
 
-func (g *mongoTestContainers) Start(ctx context.Context, t *testing.T, options ...*contracts.MongoContainerOptions) (*mongo.Client, error) {
-	//https://github.com/testcontainers/testcontainers-go
-	//https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
+func (g *mongoTestContainers) Start(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.MongoContainerOptions,
+) (*mongo.Client, error) {
+	// https://github.com/testcontainers/testcontainers-go
+	// https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
 	containerReq := g.getRunOptions(options...)
 
-	//TODO: Using Parallel Container
+	// TODO: Using Parallel Container
 	dbContainer, err := testcontainers.GenericContainer(
 		ctx,
 		testcontainers.GenericContainerRequest{
@@ -67,7 +71,7 @@ func (g *mongoTestContainers) Start(ctx context.Context, t *testing.T, options .
 	// Clean up the container after the test is complete
 	t.Cleanup(func() { _ = dbContainer.Terminate(ctx) })
 
-	db, err := mongodb.NewMongoDB(ctx, &mongodb.MongoDbConfig{
+	db, err := mongodb.NewMongoDB(&mongodb.MongoDbOptions{
 		User:     g.defaultOptions.UserName,
 		Password: g.defaultOptions.Password,
 		UseAuth:  false,
@@ -86,7 +90,9 @@ func (g *mongoTestContainers) Cleanup(ctx context.Context) error {
 	return g.container.Terminate(ctx)
 }
 
-func (g *mongoTestContainers) getRunOptions(opts ...*contracts.MongoContainerOptions) testcontainers.ContainerRequest {
+func (g *mongoTestContainers) getRunOptions(
+	opts ...*contracts.MongoContainerOptions,
+) testcontainers.ContainerRequest {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {

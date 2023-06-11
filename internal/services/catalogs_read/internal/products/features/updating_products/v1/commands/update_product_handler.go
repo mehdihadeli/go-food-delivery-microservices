@@ -18,14 +18,14 @@ import (
 
 type UpdateProductHandler struct {
 	log             logger.Logger
-	cfg             *config.AppConfig
+	cfg             *config.AppOptions
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
 func NewUpdateProductHandler(
 	log logger.Logger,
-	cfg *config.AppConfig,
+	cfg *config.AppOptions,
 	mongoRepository contracts.ProductRepository,
 	redisRepository contracts.ProductCacheRepository,
 ) *UpdateProductHandler {

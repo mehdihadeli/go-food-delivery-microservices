@@ -9,18 +9,21 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.opentelemetry.io/otel/metric"
+	"go.uber.org/fx"
 	"go.uber.org/zap"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	customHadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
 	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
 	otelTracer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_tracer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 )
 
 type echoHttpServer struct {
 	echo         *echo.Echo
-	config       *EchoHttpConfig
+	config       *config.EchoHttpOptions
 	log          logger.Logger
 	meter        metric.Meter
 	routeBuilder *RouteBuilder
@@ -32,26 +35,56 @@ type EchoHttpServer interface {
 	ApplyVersioningFromHeader()
 	GetEchoInstance() *echo.Echo
 	Logger() logger.Logger
-	Cfg() *EchoHttpConfig
+	Cfg() *config.EchoHttpOptions
 	SetupDefaultMiddlewares()
 	RouteBuilder() *RouteBuilder
 	AddMiddlewares(middlewares ...echo.MiddlewareFunc)
 	ConfigGroup(groupName string, groupFunc func(group *echo.Group))
 }
 
+// https://uber-go.github.io/fx/value-groups/consume.html#with-annotated-functions
+// https://uber-go.github.io/fx/annotate.html
+
+//func NewEchoHttpServer(
+//	config *EchoHttpOptions,
+//	logger logger.Logger,
+//	meter metric.Meter,
+//) EchoHttpServer {
+//	e := echolog.New()
+//	e.HideBanner = false
+//
+//	return &echoHttpServer{
+//		echolog:         e,
+//		config:       config,
+//		log:          logger,
+//		meter:        meter,
+//		routeBuilder: NewRouteBuilder(e),
+//	}
+//}
+
+// https://uber-go.github.io/fx/parameter-objects.html#using-parameter-objects
+
+// https://uber-go.github.io/fx/parameter-objects.html#using-parameter-objects
+
+type EchoHttpServerParams struct {
+	fx.In
+	// dependencies should be exported fields
+	Config *config.EchoHttpOptions
+	Logger logger.Logger
+	Meter  metric.Meter `optional:"true"`
+}
+
 func NewEchoHttpServer(
-	config *EchoHttpConfig,
-	logger logger.Logger,
-	meter metric.Meter,
+	p EchoHttpServerParams,
 ) EchoHttpServer {
 	e := echo.New()
 	e.HideBanner = false
 
 	return &echoHttpServer{
 		echo:         e,
-		config:       config,
-		log:          logger,
-		meter:        meter,
+		config:       p.Config,
+		log:          p.Logger,
+		meter:        p.Meter,
 		routeBuilder: NewRouteBuilder(e),
 	}
 }
@@ -79,7 +112,7 @@ func (s *echoHttpServer) Logger() logger.Logger {
 	return s.log
 }
 
-func (s *echoHttpServer) Cfg() *EchoHttpConfig {
+func (s *echoHttpServer) Cfg() *config.EchoHttpOptions {
 	return s.config
 }
 
@@ -109,13 +142,13 @@ func (s *echoHttpServer) GracefulShutdown(ctx context.Context) error {
 func (s *echoHttpServer) SetupDefaultMiddlewares() {
 	// https://echo.labstack.com/middleware/
 	// https://github.com/avelino/awesome-go#middlewares
-	// handling internal echo middlewares logs with our log provider
-	if s.log.LogType() == logger.Zap {
+	// handling internal echolog middlewares logs with our log provider
+	if s.log.LogType() == models.Zap {
 		s.log.Configure(func(internalLog interface{}) {
 			// https://github.com/brpaz/echozap
 			s.echo.Use(echozap.ZapLogger(internalLog.(*zap.Logger)))
 		})
-	} else if s.log.LogType() == logger.Logrus {
+	} else if s.log.LogType() == models.Logrus {
 		s.log.Configure(func(internalLog interface{}) {
 		})
 	}

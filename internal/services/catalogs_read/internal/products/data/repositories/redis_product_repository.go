@@ -24,13 +24,13 @@ const (
 
 type redisProductRepository struct {
 	log         logger.Logger
-	cfg         *config.AppConfig
+	cfg         *config.AppOptions
 	redisClient redis.UniversalClient
 }
 
 func NewRedisProductRepository(
 	log logger.Logger,
-	cfg *config.AppConfig,
+	cfg *config.AppOptions,
 	redisClient redis.UniversalClient,
 ) contracts.ProductCacheRepository {
 	return &redisProductRepository{log: log, cfg: cfg, redisClient: redisClient}

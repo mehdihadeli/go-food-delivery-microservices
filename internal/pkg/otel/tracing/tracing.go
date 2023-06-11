@@ -20,7 +20,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	otel2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 )
 
 // https://opentelemetry.io/docs/reference/specification/
@@ -33,7 +33,7 @@ import (
 // https://trstringer.com/otel-part5-propagation/
 // https://github.com/tedsuo/otel-go-basics/blob/main/server.go
 type openTelemetry struct {
-	config         *otel2.OpenTelemetryConfig
+	config         *config2.OpenTelemetryOptions
 	tracerProvider *tracesdk.TracerProvider
 	jaegerExporter tracesdk.SpanExporter
 	zipkinExporter tracesdk.SpanExporter
@@ -52,8 +52,8 @@ func init() {
 	Tracer = NewCustomTracer("app-tracer") // instrumentation name
 }
 
-func AddOtelTracing(
-	config *otel2.OpenTelemetryConfig,
+func NewOtelTracing(
+	config *config2.OpenTelemetryOptions,
 	environment config.Environment,
 ) (*tracesdk.TracerProvider, error) {
 	openTel := &openTelemetry{config: config, environment: environment}
@@ -132,11 +132,11 @@ func (o *openTelemetry) configTracerProvider() error {
 func (o *openTelemetry) configExporters() error {
 	logger := log.New(os.Stderr, "otel_log", log.Ldate|log.Ltime|log.Llongfile)
 
-	if o.config.JaegerExporterConfig != nil {
+	if o.config.JaegerExporterOptions != nil {
 		// Create the Jaeger exporter
 		jaegerExporter, err := jaeger.New(jaeger.WithAgentEndpoint(
-			jaeger.WithAgentHost(o.config.JaegerExporterConfig.AgentHost),
-			jaeger.WithAgentPort(o.config.JaegerExporterConfig.AgentPort),
+			jaeger.WithAgentHost(o.config.JaegerExporterOptions.AgentHost),
+			jaeger.WithAgentPort(o.config.JaegerExporterOptions.AgentPort),
 			jaeger.WithLogger(logger),
 		))
 		if err != nil {
@@ -144,9 +144,9 @@ func (o *openTelemetry) configExporters() error {
 		}
 		o.jaegerExporter = jaegerExporter
 	}
-	if o.config.ZipkinExporterConfig != nil {
+	if o.config.ZipkinExporterOptions != nil {
 		zipkinExporter, err := zipkin.New(
-			o.config.ZipkinExporterConfig.Url,
+			o.config.ZipkinExporterOptions.Url,
 		)
 		if err != nil {
 			return err

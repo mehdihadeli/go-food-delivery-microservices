@@ -23,14 +23,23 @@ type infrastructureConfigurator struct {
 	cfg *config.Config
 }
 
-func NewInfrastructureConfigurator(log logger.Logger, cfg *config.Config) contracts.InfrastructureConfigurator {
+func NewInfrastructureConfigurator(
+	log logger.Logger,
+	cfg *config.Config,
+) contracts.InfrastructureConfigurator {
 	return &infrastructureConfigurator{log: log, cfg: cfg}
 }
 
-func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context) (*contracts.InfrastructureConfigurations, func(), error) {
-	infrastructure := &contracts.InfrastructureConfigurations{Cfg: ic.cfg, Log: ic.log, Validator: validator.New()}
+func (ic *infrastructureConfigurator) ConfigInfrastructures(
+	ctx context.Context,
+) (*contracts.InfrastructureConfigurations, func(), error) {
+	infrastructure := &contracts.InfrastructureConfigurations{
+		Cfg:       ic.cfg,
+		Log:       ic.log,
+		Validator: validator.New(),
+	}
 
-	meter, err := otelMetrics.AddOtelMetrics(ctx, ic.cfg.OTelMetricsConfig, ic.log)
+	meter, err := otelMetrics.NewOtelMetrics(ctx, ic.cfg.OTelMetricsConfig, ic.log)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,7 +47,7 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 
 	cleanup := []func(){}
 
-	traceProvider, err := tracing.AddOtelTracing(ic.cfg.OTel)
+	traceProvider, err := tracing.NewOtelTracing(ic.cfg.OTel)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -69,15 +78,22 @@ func (ic *infrastructureConfigurator) ConfigInfrastructures(ctx context.Context)
 	if err != nil {
 		return nil, nil, err
 	}
-	esdbSerializer := eventstroredb.NewEsdbSerializer(json.NewJsonMetadataSerializer(), json.NewJsonEventSerializer())
-	subscriptionRepository := eventstroredb.NewEsdbSubscriptionCheckpointRepository(esdb, ic.log, esdbSerializer)
+	esdbSerializer := eventstroredb.NewEsdbSerializer(
+		json.NewDefaultMetadataSerializer(),
+		json.NewEventSerializer(),
+	)
+	subscriptionRepository := eventstroredb.NewEsdbSubscriptionCheckpointRepository(
+		esdb,
+		ic.log,
+		esdbSerializer,
+	)
 	cleanup = append(cleanup, func() {
 		_ = esdb.Close() // nolint: errcheck
 	})
 	infrastructure.Esdb = esdb
 	infrastructure.CheckpointRepository = subscriptionRepository
 	infrastructure.EsdbSerializer = esdbSerializer
-	infrastructure.EventSerializer = json.NewJsonEventSerializer()
+	infrastructure.EventSerializer = json.NewEventSerializer()
 
 	if err != nil {
 		return nil, nil, err

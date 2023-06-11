@@ -7,19 +7,23 @@ import (
 	"testing"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"github.com/labstack/echo/v4"
 	"github.com/mehdihadeli/go-mediatr"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	grpcServer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
+	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	config4 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 	rabbitmqTestContainer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
-	webWorker "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/mappings"
@@ -29,7 +33,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/delivery"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/catalogs/metrics"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/infrastructure"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/web/workers"
 )
 
 const (
@@ -38,7 +41,7 @@ const (
 )
 
 type E2ETestSharedFixture struct {
-	Cfg *config.AppConfig
+	Cfg *config.AppOptions
 	Log logger.Logger
 	suite.Suite
 }
@@ -47,15 +50,14 @@ type E2ETestFixture struct {
 	GrpcServer grpcServer.GrpcServer
 	HttpServer customEcho.EchoHttpServer
 	*delivery.ProductEndpointBase
-	workersRunner *webWorker.WorkersRunner
-	Ctx           context.Context
-	cancel        context.CancelFunc
+	Ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func NewE2ETestSharedFixture(t *testing.T) *E2ETestSharedFixture {
 	// we could use EmptyLogger if we don't want to log anything
 	log := defaultLogger.Logger
-	cfg, _ := config.InitConfig(constants.Test)
+	cfg, _ := config.NewAppConfig(constants.Test)
 
 	err := mappings.ConfigureProductsMappings()
 	if err != nil {
@@ -116,17 +118,26 @@ func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 		require.FailNow(shared.T(), err.Error())
 	}
 
+	grpcOptions, _ := config2.BindConfigKey[*config3.GrpcOptions](
+		strcase.ToLowerCamel(typeMapper.GetTypeNameByT[config3.GrpcOptions]()),
+		constants.Test,
+	)
+
+	echoOptions, _ := config2.BindConfigKey[*config4.EchoHttpOptions](
+		strcase.ToLowerCamel(typeMapper.GetTypeNameByT[config4.EchoHttpOptions]()),
+		constants.Test,
+	)
+
 	grpcServer := grpcServer.NewGrpcServer(
-		infrastructures.Cfg.GRPC,
+		grpcOptions,
 		defaultLogger.Logger,
-		infrastructures.Cfg.ServiceName,
 		infrastructures.Metrics,
 	)
-	httpServer := customEcho.NewEchoHttpServer(
-		infrastructures.Cfg.Http,
-		defaultLogger.Logger,
-		infrastructures.Cfg.ServiceName,
-		infrastructures.Metrics,
+	httpServer := customEcho.NewEchoHttpServer(customEcho.EchoHttpServerParams{
+		Logger: defaultLogger.Logger,
+		Config: echoOptions,
+		Meter:  infrastructures.Metrics,
+	},
 	)
 	httpServer.SetupDefaultMiddlewares()
 
@@ -151,10 +162,6 @@ func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 		})
 	})
 
-	workersRunner := webWorker.NewWorkersRunner([]webWorker.Worker{
-		workers.NewRabbitMQWorker(infrastructures.Log, mqBus),
-	})
-
 	shared.T().Cleanup(func() {
 		// with Cancel() we send signal to done() channel to stop grpc, http and workers gracefully
 		// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
@@ -168,7 +175,6 @@ func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 		GrpcServer:          grpcServer,
 		HttpServer:          httpServer,
 		ProductEndpointBase: productEndpointBase,
-		workersRunner:       workersRunner,
 		Ctx:                 ctx,
 		cancel:              cancel,
 	}
@@ -184,17 +190,6 @@ func (e *E2ETestFixture) Run() {
 	go func() {
 		if err := e.HttpServer.RunHttpServer(e.Ctx, nil); err != nil {
 			e.Log.Errorf("(s.RunHttpServer) err: %v", err)
-		}
-	}()
-
-	workersErr := e.workersRunner.Start(e.Ctx)
-	go func() {
-		for {
-			select {
-			case _ = <-workersErr:
-				e.cancel()
-				return
-			}
 		}
 	}()
 

@@ -30,19 +30,24 @@ func Test_Consume_Message(t *testing.T) {
 	defer errorUtils.HandlePanic()
 
 	ctx := context.Background()
-	tp, err := tracing.AddOtelTracing(&otel.OpenTelemetryConfig{
-		ServiceName:          "test",
-		Enabled:              true,
-		AlwaysOnSampler:      true,
-		JaegerExporterConfig: &otel.JaegerExporterConfig{AgentHost: "localhost", AgentPort: "6831"},
-		ZipkinExporterConfig: &otel.ZipkinExporterConfig{Url: "http://localhost:9411/api/v2/spans"},
+	tp, err := tracing.NewOtelTracing(&otel.OpenTelemetryOptions{
+		ServiceName:     "test",
+		Enabled:         true,
+		AlwaysOnSampler: true,
+		JaegerExporterOptions: &otel.JaegerExporterOptions{
+			AgentHost: "localhost",
+			AgentPort: "6831",
+		},
+		ZipkinExporterOptions: &otel.ZipkinExporterOptions{
+			Url: "http://localhost:9411/api/v2/spans",
+		},
 	})
 	require.NoError(t, err)
 
 	defer tp.Shutdown(ctx)
 
-	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitMQConfig{
-		RabbitMqHostOptions: &config.RabbitMqHostOptions{
+	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitmqOptions{
+		RabbitmqHostOptions: &config.rabbitmqHostOptions{
 			UserName: "guest",
 			Password: "guest",
 			HostName: "localhost",
@@ -62,7 +67,7 @@ func Test_Consume_Message(t *testing.T) {
 	rabbitmqConsumer, err := NewRabbitMQConsumer(
 		conn,
 		builder.Build(),
-		json.NewJsonEventSerializer(),
+		json.NewEventSerializer(),
 		defaultLogger2.Logger,
 	)
 	require.NoError(t, err)
@@ -81,7 +86,7 @@ func Test_Consume_Message(t *testing.T) {
 		conn,
 		nil,
 		defaultLogger2.Logger,
-		json.NewJsonEventSerializer())
+		json.NewEventSerializer())
 	require.NoError(t, err)
 
 	//time.Sleep(time.Second * 5)

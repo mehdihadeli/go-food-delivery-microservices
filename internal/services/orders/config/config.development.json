@@ -84,11 +84,9 @@
     "metricsRoutePath": "/metrics",
     "name": "orders-service"
   },
-  "eventStoreConfig": {
-    "connectionString": "esdb://localhost:2113?tls=false"
-  },
-  "subscriptions": {
-    "orderSubscription": {
+  "eventStoreDbOptions": {
+    "connectionString": "esdb://localhost:2113?tls=false",
+    "subscription": {
       "subscriptionId": "orders-subscription",
       "prefix": ["order-"]
     }

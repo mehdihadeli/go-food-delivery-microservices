@@ -35,7 +35,11 @@ func NewMongoDockerTest() contracts.MongoContainer {
 	}
 }
 
-func (g *mongoDockerTest) Start(ctx context.Context, t *testing.T, options ...*contracts.MongoContainerOptions) (*mongo.Client, error) {
+func (g *mongoDockerTest) Start(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.MongoContainerOptions,
+) (*mongo.Client, error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
@@ -55,7 +59,9 @@ func (g *mongoDockerTest) Start(ctx context.Context, t *testing.T, options ...*c
 		log.Fatalf("Could not start resource (Mongo Container): %s", err)
 	}
 
-	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
+	resource.Expire(
+		120,
+	) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
 
 	g.resource = resource
 	i, _ := strconv.Atoi(resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Port)))
@@ -75,7 +81,7 @@ func (g *mongoDockerTest) Start(ctx context.Context, t *testing.T, options ...*c
 
 	var mongoClient *mongo.Client
 	if err = pool.Retry(func() error {
-		db, err := mongodb.NewMongoDB(ctx, &mongodb.MongoDbConfig{
+		db, err := mongodb.NewMongoDB(ctx, &mongodb.MongoDbOptions{
 			User:     g.defaultOptions.UserName,
 			Password: g.defaultOptions.Password,
 			UseAuth:  false,
@@ -100,7 +106,9 @@ func (g *mongoDockerTest) Cleanup(ctx context.Context) error {
 	return g.resource.Close()
 }
 
-func (g *mongoDockerTest) getRunOptions(opts ...*contracts.MongoContainerOptions) *dockertest.RunOptions {
+func (g *mongoDockerTest) getRunOptions(
+	opts ...*contracts.MongoContainerOptions,
+) *dockertest.RunOptions {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {
