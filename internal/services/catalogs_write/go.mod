@@ -7,25 +7,23 @@ replace github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg => ../../
 
 require (
 	emperror.dev/errors v0.8.1
-	github.com/EventStore/EventStore-Client-Go v1.0.2
 	github.com/brianvoe/gofakeit/v6 v6.18.0
-	github.com/caarlos0/env/v6 v6.9.3
-	github.com/elastic/go-elasticsearch/v8 v8.8.0
 	github.com/gavv/httpexpect/v2 v2.3.1
 	github.com/go-playground/validator v9.31.0+incompatible
-	github.com/jackc/pgx/v4 v4.18.1
+	github.com/goccy/go-json v0.10.2
+	github.com/iancoleman/strcase v0.2.0
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg v0.0.0-00010101000000-000000000000
 	github.com/mehdihadeli/go-mediatr v1.1.10
 	github.com/satori/go.uuid v1.2.0
-	github.com/spf13/viper v1.12.0
+	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.3
 	github.com/swaggo/echo-swagger v1.3.3
 	github.com/swaggo/swag v1.8.3
 	go.opentelemetry.io/otel v1.16.0
 	go.opentelemetry.io/otel/metric v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
-	go.uber.org/zap v1.24.0
+	go.uber.org/fx v1.19.3
 	google.golang.org/grpc v1.55.0
 	gorm.io/gorm v1.25.1
 )
@@ -45,6 +43,7 @@ require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/brpaz/echozap v1.1.3 // indirect
+	github.com/caarlos0/env/v6 v6.10.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/containerd/containerd v1.6.19 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
@@ -55,7 +54,6 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/doug-martin/goqu/v9 v9.18.0 // indirect
-	github.com/elastic/elastic-transport-go/v8 v8.2.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structs v1.0.0 // indirect
 	github.com/go-faster/city v1.0.1 // indirect
@@ -70,19 +68,17 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/go-testfixtures/testfixtures/v3 v3.9.0 // indirect
-	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
-	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang/mock v1.6.0 // indirect
+	github.com/golang-migrate/migrate/v4 v4.15.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
-	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/imkira/go-interpol v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -90,12 +86,14 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgtype v1.14.0 // indirect
+	github.com/jackc/pgx/v4 v4.18.1 // indirect
 	github.com/jackc/pgx/v5 v5.3.1 // indirect
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
+	github.com/kamva/mgm/v3 v3.5.0 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
@@ -127,6 +125,7 @@ require (
 	github.com/solsw/collate v0.1.0 // indirect
 	github.com/solsw/generichelper v0.4.0 // indirect
 	github.com/solsw/go2linq/v2 v2.5.3 // indirect
+	github.com/spf13/viper v1.7.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	github.com/testcontainers/testcontainers-go v0.20.1 // indirect
@@ -158,7 +157,9 @@ require (
 	go.opentelemetry.io/otel/sdk v1.16.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v0.39.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
+	go.uber.org/dig v1.17.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
+	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0 // indirect
 	golang.org/x/mod v0.9.0 // indirect
@@ -170,7 +171,6 @@ require (
 	gorm.io/driver/postgres v1.5.2 // indirect
 	mellium.im/sasl v0.3.1 // indirect
 	moul.io/http2curl v1.0.1-0.20190925090545-5cd742060b0e // indirect
-	moul.io/zapgorm2 v1.3.0 // indirect
 )
 
 require (
@@ -184,7 +184,6 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
-	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/prometheus/client_golang v1.15.1 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect

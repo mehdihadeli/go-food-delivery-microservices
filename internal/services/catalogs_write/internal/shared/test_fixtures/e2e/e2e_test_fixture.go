@@ -1,39 +1,41 @@
 package e2e
 
 import (
-    "context"
-    "fmt"
-    "net/http"
-    "testing"
-    "time"
+	"context"
+	"fmt"
+	"net/http"
+	"testing"
+	"time"
 
-    "github.com/labstack/echo/v4"
-    mediatr2 "github.com/mehdihadeli/go-mediatr"
-    "github.com/stretchr/testify/suite"
+	"github.com/iancoleman/strcase"
+	"github.com/labstack/echo/v4"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
+	config4 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/validator"
+	mediatr2 "github.com/mehdihadeli/go-mediatr"
+	"github.com/stretchr/testify/suite"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/uow"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/delivery"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/uow"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/delivery"
 
-    "github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    grpcServer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
-    customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
-    defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-    rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
-    webWoker "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	grpcServer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mappings"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mediatr"
-    rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/rabbitmq"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/repositories"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/configurations/catalogs/metrics"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/configurations/infrastructure"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/web/workers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mappings"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mediatr"
+	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/rabbitmq"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/repositories"
 )
 
 type E2ETestSharedFixture struct {
@@ -46,9 +48,8 @@ type E2ETestFixture struct {
 	GrpcServer grpcServer.GrpcServer
 	HttpServer customEcho.EchoHttpServer
 	*delivery.ProductEndpointBase
-	workersRunner *webWoker.WorkersRunner
-	Ctx           context.Context
-	cancel        context.CancelFunc
+	Ctx    context.Context
+	cancel context.CancelFunc
 }
 
 func NewE2ETestSharedFixture(t *testing.T) *E2ETestSharedFixture {
@@ -81,19 +82,26 @@ func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 		return nil
 	}
 
-	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, infrastructures.Gorm)
+	productRep := repositories.NewPostgresProductRepository(
+		infrastructures.Log,
+		infrastructures.Gorm,
+	)
 	catalogUnitOfWork := uow.NewCatalogsUnitOfWork(infrastructures.Log, infrastructures.Gorm)
 
-	mqBus, err := rabbitmq.NewRabbitMQTestContainers().Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
-		// Products RabbitMQ configuration
-		rabbitmq2.ConfigProductsRabbitMQ(builder)
-	})
+	mqBus, err := rabbitmq.NewRabbitMQTestContainers().
+		Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+			// Products RabbitMQ configuration
+			rabbitmq2.ConfigProductsRabbitMQ(builder)
+		})
 	if err != nil {
 		cancel()
 		require.FailNow(shared.T(), err.Error())
 	}
 
-	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(infrastructures.Cfg, infrastructures.Metrics)
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(
+		infrastructures.Cfg,
+		infrastructures.Metrics,
+	)
 	if err != nil {
 		cancel()
 		require.FailNow(shared.T(), err.Error())
@@ -105,25 +113,51 @@ func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 		require.FailNow(shared.T(), err.Error())
 	}
 
-	grpcServer := grpcServer.NewGrpcServer(infrastructures.Cfg.GRPC, defaultLogger.Logger, infrastructures.Cfg.ServiceName, infrastructures.Metrics)
-	httpServer := customEcho.NewEchoHttpServer(infrastructures.Cfg.Http, defaultLogger.Logger, infrastructures.Cfg.ServiceName, infrastructures.Metrics)
+	grpcOptions, _ := config2.BindConfigKey[*config3.GrpcOptions](
+		strcase.ToLowerCamel(typeMapper.GetTypeNameByT[config3.GrpcOptions]()),
+		constants.Test,
+	)
+
+	echoOptions, _ := config2.BindConfigKey[*config4.EchoHttpOptions](
+		strcase.ToLowerCamel(typeMapper.GetTypeNameByT[config4.EchoHttpOptions]()),
+		constants.Test,
+	)
+
+	grpcServer := grpcServer.NewGrpcServer(
+		grpcOptions.GRPC,
+		defaultLogger.Logger,
+		grpcOptions.ServiceName,
+		infrastructures.Metrics,
+	)
+	httpServer := customEcho.NewEchoHttpServer(
+		echoOptions.Http,
+		defaultLogger.Logger,
+		echoOptions.ServiceName,
+		infrastructures.Metrics,
+	)
+
 	httpServer.SetupDefaultMiddlewares()
 
 	var productEndpointBase *delivery.ProductEndpointBase
 
 	httpServer.RouteBuilder().RegisterGroupFunc("/api/v1", func(v1 *echo.Group) {
 		group := v1.Group("/products")
-		productEndpointBase = delivery.NewProductEndpointBase(infrastructures, group, mqBus, catalogsMetrics)
+		productEndpointBase = delivery.NewProductEndpointBase(
+			shared.Log,
+			validator.New(),
+			group,
+			mqBus,
+			catalogsMetrics,
+		)
 	})
 
 	httpServer.RouteBuilder().RegisterRoutes(func(e *echo.Echo) {
 		e.GET("", func(ec echo.Context) error {
-			return ec.String(http.StatusOK, fmt.Sprintf("%s is running...", infrastructures.Cfg.GetMicroserviceNameUpper()))
+			return ec.String(
+				http.StatusOK,
+				fmt.Sprintf("%s is running...", infrastructures.Cfg.GetMicroserviceNameUpper()),
+			)
 		})
-	})
-
-	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(infrastructures.Log, mqBus),
 	})
 
 	shared.T().Cleanup(func() {
@@ -139,7 +173,6 @@ func NewE2ETestFixture(shared *E2ETestSharedFixture) *E2ETestFixture {
 		GrpcServer:          grpcServer,
 		HttpServer:          httpServer,
 		ProductEndpointBase: productEndpointBase,
-		workersRunner:       workersRunner,
 		Ctx:                 ctx,
 		cancel:              cancel,
 	}
@@ -155,17 +188,6 @@ func (e *E2ETestFixture) Run() {
 	go func() {
 		if err := e.HttpServer.RunHttpServer(e.Ctx, nil); err != nil {
 			e.Log.Errorf("(s.RunHttpServer) err: %v", err)
-		}
-	}()
-
-	workersErr := e.workersRunner.Start(e.Ctx)
-	go func() {
-		for {
-			select {
-			case _ = <-workersErr:
-				e.cancel()
-				return
-			}
 		}
 	}()
 

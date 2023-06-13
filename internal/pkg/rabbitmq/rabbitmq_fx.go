@@ -8,6 +8,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 )
@@ -31,6 +32,11 @@ var Module = func(rabbitMQConfigurationConstructor interface{}) fx.Option {
 			bus.NewRabbitmqBus,
 			fx.ParamTags(``, ``, ``, `optional:"true"`),
 			fx.As(new(bus2.Bus)),
+		)),
+		fx.Provide(fx.Annotate(
+			bus.NewRabbitmqBus,
+			fx.ParamTags(``, ``, ``, `optional:"true"`),
+			fx.As(new(producer.Producer)),
 		)),
 		fx.Provide(rabbitMQConfigurationConstructor),
 		//// without return type

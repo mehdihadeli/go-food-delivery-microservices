@@ -20,7 +20,9 @@ type getProductByIdEndpoint struct {
 	*delivery.ProductEndpointBase
 }
 
-func NewGetProductByIdEndpoint(productEndpointBase *delivery.ProductEndpointBase) *getProductByIdEndpoint {
+func NewGetProductByIdEndpoint(
+	productEndpointBase *delivery.ProductEndpointBase,
+) *getProductByIdEndpoint {
 	return &getProductByIdEndpoint{productEndpointBase}
 }
 
@@ -44,22 +46,43 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 
 		request := &dtos.GetProductByIdRequestDto{}
 		if err := c.Bind(request); err != nil {
-			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductByIdEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", badRequestErr))
+			badRequestErr := customErrors.NewBadRequestErrorWrap(
+				err,
+				"[getProductByIdEndpoint_handler.Bind] error in the binding request",
+			)
+			ep.Logger.Errorf(
+				fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", badRequestErr),
+			)
 			return badRequestErr
 		}
 
 		query, err := getProductByIdQuery.NewGetProductById(request.ProductId)
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(err, "[getProductByIdEndpoint_handler.StructCtx]  query validation failed")
-			ep.Log.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", validationErr)
+			validationErr := customErrors.NewValidationErrorWrap(
+				err,
+				"[getProductByIdEndpoint_handler.StructCtx]  query validation failed",
+			)
+			ep.Logger.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", validationErr)
 			return validationErr
 		}
 
-		queryResult, err := mediatr.Send[*getProductByIdQuery.GetProductById, *dtos.GetProductByIdResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*getProductByIdQuery.GetProductById, *dtos.GetProductByIdResponseDto](
+			ctx,
+			query,
+		)
 		if err != nil {
-			err = errors.WithMessage(err, "[getProductByIdEndpoint_handler.Send] error in sending GetProductById")
-			ep.Log.Errorw(fmt.Sprintf("[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}", query.ProductID, err), logger.Fields{"ProductId": query.ProductID})
+			err = errors.WithMessage(
+				err,
+				"[getProductByIdEndpoint_handler.Send] error in sending GetProductById",
+			)
+			ep.Logger.Errorw(
+				fmt.Sprintf(
+					"[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}",
+					query.ProductID,
+					err,
+				),
+				logger.Fields{"ProductId": query.ProductID},
+			)
 			return err
 		}
 

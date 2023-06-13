@@ -6,7 +6,6 @@ import (
 
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/delivery"
 	getProductByIdV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/get_product_by_id/v1/endpoints"
 	getProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/getting_products/v1/endpoints"
@@ -16,17 +15,15 @@ import (
 
 func ConfigProductsEndpoints(
 	routeBuilder *customEcho.RouteBuilder,
-	bus bus.Bus,
 	metrics *contracts.CatalogsMetrics,
 	validator *validator.Validate,
 	logger logger.Logger,
 ) {
-	configV1Endpoints(routeBuilder, bus, metrics, validator, logger)
+	configV1Endpoints(routeBuilder, metrics, validator, logger)
 }
 
 func configV1Endpoints(
 	routeBuilder *customEcho.RouteBuilder,
-	bus bus.Bus,
 	metrics *contracts.CatalogsMetrics,
 	validator *validator.Validate,
 	logger logger.Logger,
@@ -37,7 +34,6 @@ func configV1Endpoints(
 			logger,
 			validator,
 			group,
-			bus,
 			metrics,
 		)
 

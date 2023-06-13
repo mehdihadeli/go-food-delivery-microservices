@@ -7,14 +7,11 @@ replace github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg => ../../
 
 require (
 	emperror.dev/errors v0.8.1
-	github.com/EventStore/EventStore-Client-Go v1.0.2
 	github.com/brianvoe/gofakeit/v6 v6.19.0
-	github.com/elastic/go-elasticsearch/v8 v8.8.0
 	github.com/gavv/httpexpect/v2 v2.3.1
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/iancoleman/strcase v0.2.0
-	github.com/jackc/pgx/v4 v4.18.1
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg v0.0.0-00010101000000-000000000000
 	github.com/mehdihadeli/go-mediatr v1.1.10

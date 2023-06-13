@@ -75,7 +75,7 @@
       "name": "catalogs-read-service"
     }
   },
-  "elastic": {
+  "elasticOptions": {
     "url": "http://localhost:9200",
     "sniff": false,
     "gzip": true,
@@ -87,7 +87,7 @@
   "elasticIndexes": {
     "products": "products"
   },
-  "eventStoreConfig": {
+  "eventStoreDbOptions": {
     "connectionString": "esdb://localhost:2113?tls=false"
   }
 }

@@ -20,7 +20,9 @@ type updateProductEndpoint struct {
 	*delivery.ProductEndpointBase
 }
 
-func NewUpdateProductEndpoint(productEndpointBase *delivery.ProductEndpointBase) *updateProductEndpoint {
+func NewUpdateProductEndpoint(
+	productEndpointBase *delivery.ProductEndpointBase,
+) *updateProductEndpoint {
 	return &updateProductEndpoint{productEndpointBase}
 }
 
@@ -45,22 +47,47 @@ func (ep *updateProductEndpoint) handler() echo.HandlerFunc {
 
 		request := &dtos.UpdateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
-			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[updateProductEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[updateProductEndpoint_handler.Bind] err: %v", badRequestErr))
+			badRequestErr := customErrors.NewBadRequestErrorWrap(
+				err,
+				"[updateProductEndpoint_handler.Bind] error in the binding request",
+			)
+			ep.Logger.Errorf(
+				fmt.Sprintf("[updateProductEndpoint_handler.Bind] err: %v", badRequestErr),
+			)
 			return badRequestErr
 		}
 
-		command, err := commands.NewUpdateProduct(request.ProductID, request.Name, request.Description, request.Price)
+		command, err := commands.NewUpdateProduct(
+			request.ProductID,
+			request.Name,
+			request.Description,
+			request.Price,
+		)
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(err, "[updateProductEndpoint_handler.StructCtx] command validation failed")
-			ep.Log.Errorf(fmt.Sprintf("[updateProductEndpoint_handler.StructCtx] err: {%v}", validationErr))
+			validationErr := customErrors.NewValidationErrorWrap(
+				err,
+				"[updateProductEndpoint_handler.StructCtx] command validation failed",
+			)
+			ep.Logger.Errorf(
+				fmt.Sprintf("[updateProductEndpoint_handler.StructCtx] err: {%v}", validationErr),
+			)
 			return validationErr
 		}
 
 		_, err = mediatr.Send[*commands.UpdateProduct, *mediatr.Unit](ctx, command)
 		if err != nil {
-			err = errors.WithMessage(err, "[updateProductEndpoint_handler.Send] error in sending UpdateProduct")
-			ep.Log.Errorw(fmt.Sprintf("[updateProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
+			err = errors.WithMessage(
+				err,
+				"[updateProductEndpoint_handler.Send] error in sending UpdateProduct",
+			)
+			ep.Logger.Errorw(
+				fmt.Sprintf(
+					"[updateProductEndpoint_handler.Send] id: {%s}, err: {%v}",
+					command.ProductID,
+					err,
+				),
+				logger.Fields{"ProductId": command.ProductID},
+			)
 			return err
 		}
 

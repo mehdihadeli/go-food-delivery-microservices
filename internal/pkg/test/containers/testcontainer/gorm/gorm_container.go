@@ -10,6 +10,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	"gorm.io/gorm"
 
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 

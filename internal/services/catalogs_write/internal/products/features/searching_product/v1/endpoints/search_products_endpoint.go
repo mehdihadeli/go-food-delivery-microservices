@@ -20,7 +20,9 @@ type searchProductsEndpoint struct {
 	*delivery.ProductEndpointBase
 }
 
-func NewSearchProductsEndpoint(productEndpointBase *delivery.ProductEndpointBase) *searchProductsEndpoint {
+func NewSearchProductsEndpoint(
+	productEndpointBase *delivery.ProductEndpointBase,
+) *searchProductsEndpoint {
 	return &searchProductsEndpoint{productEndpointBase}
 }
 
@@ -44,29 +46,51 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 		if err != nil {
-			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[searchProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string")
-			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.GetListQueryFromCtx] err: %v", badRequestErr))
+			badRequestErr := customErrors.NewBadRequestErrorWrap(
+				err,
+				"[searchProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string",
+			)
+			ep.Logger.Errorf(
+				fmt.Sprintf(
+					"[searchProductsEndpoint_handler.GetListQueryFromCtx] err: %v",
+					badRequestErr,
+				),
+			)
 			return err
 		}
 
 		request := &dtos.SearchProductsRequestDto{ListQuery: listQuery}
 		if err := c.Bind(request); err != nil {
-			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[searchProductsEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[searchProductsEndpoint_handler.Bind] err: %v", badRequestErr))
+			badRequestErr := customErrors.NewBadRequestErrorWrap(
+				err,
+				"[searchProductsEndpoint_handler.Bind] error in the binding request",
+			)
+			ep.Logger.Errorf(
+				fmt.Sprintf("[searchProductsEndpoint_handler.Bind] err: %v", badRequestErr),
+			)
 			return badRequestErr
 		}
 
 		query, err := queries.NewSearchProducts(request.SearchText, request.ListQuery)
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(err, "[searchProductsEndpoint_handler.StructCtx]  query validation failed")
-			ep.Log.Errorf("[searchProductsEndpoint_handler.StructCtx] err: {%v}", validationErr)
+			validationErr := customErrors.NewValidationErrorWrap(
+				err,
+				"[searchProductsEndpoint_handler.StructCtx]  query validation failed",
+			)
+			ep.Logger.Errorf("[searchProductsEndpoint_handler.StructCtx] err: {%v}", validationErr)
 			return validationErr
 		}
 
-		queryResult, err := mediatr.Send[*queries.SearchProducts, *dtos.SearchProductsResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*queries.SearchProducts, *dtos.SearchProductsResponseDto](
+			ctx,
+			query,
+		)
 		if err != nil {
-			err = errors.WithMessage(err, "[searchProductsEndpoint_handler.Send] error in sending SearchProducts")
-			ep.Log.Error(fmt.Sprintf("[searchProductsEndpoint_handler.Send] err: {%v}", err))
+			err = errors.WithMessage(
+				err,
+				"[searchProductsEndpoint_handler.Send] error in sending SearchProducts",
+			)
+			ep.Logger.Error(fmt.Sprintf("[searchProductsEndpoint_handler.Send] err: {%v}", err))
 			return err
 		}
 

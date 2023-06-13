@@ -20,7 +20,9 @@ type deleteProductEndpoint struct {
 	*delivery.ProductEndpointBase
 }
 
-func NewDeleteProductEndpoint(productEndpointBase *delivery.ProductEndpointBase) *deleteProductEndpoint {
+func NewDeleteProductEndpoint(
+	productEndpointBase *delivery.ProductEndpointBase,
+) *deleteProductEndpoint {
 	return &deleteProductEndpoint{productEndpointBase}
 }
 
@@ -44,23 +46,43 @@ func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 
 		request := &dtos.DeleteProductRequestDto{}
 		if err := c.Bind(request); err != nil {
-			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[deleteProductEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.Bind] err: %v", badRequestErr))
+			badRequestErr := customErrors.NewBadRequestErrorWrap(
+				err,
+				"[deleteProductEndpoint_handler.Bind] error in the binding request",
+			)
+			ep.Logger.Errorf(
+				fmt.Sprintf("[deleteProductEndpoint_handler.Bind] err: %v", badRequestErr),
+			)
 			return badRequestErr
 		}
 
 		command, err := commands.NewDeleteProduct(request.ProductID)
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(err, "[deleteProductEndpoint_handler.StructCtx] command validation failed")
-			ep.Log.Errorf(fmt.Sprintf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", validationErr))
+			validationErr := customErrors.NewValidationErrorWrap(
+				err,
+				"[deleteProductEndpoint_handler.StructCtx] command validation failed",
+			)
+			ep.Logger.Errorf(
+				fmt.Sprintf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", validationErr),
+			)
 			return validationErr
 		}
 
 		_, err = mediatr.Send[*commands.DeleteProduct, *mediatr.Unit](ctx, command)
 
 		if err != nil {
-			err = errors.WithMessage(err, "[deleteProductEndpoint_handler.Send] error in sending DeleteProduct")
-			ep.Log.Errorw(fmt.Sprintf("[deleteProductEndpoint_handler.Send] id: {%s}, err: {%v}", command.ProductID, err), logger.Fields{"ProductId": command.ProductID})
+			err = errors.WithMessage(
+				err,
+				"[deleteProductEndpoint_handler.Send] error in sending DeleteProduct",
+			)
+			ep.Logger.Errorw(
+				fmt.Sprintf(
+					"[deleteProductEndpoint_handler.Send] id: {%s}, err: {%v}",
+					command.ProductID,
+					err,
+				),
+				logger.Fields{"ProductId": command.ProductID},
+			)
 			return err
 		}
 

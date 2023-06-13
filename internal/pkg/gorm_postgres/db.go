@@ -10,11 +10,11 @@ import (
 	gormPostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/gromlog"
 )
 
-func NewGorm(cfg *GormOptions, logger logger.Logger) (*gorm.DB, error) {
+func NewGorm(cfg *GormOptions) (*gorm.DB, error) {
 	if cfg.DBName == "" {
 		return nil, errors.New("DBName is required in the config.")
 	}
@@ -35,7 +35,7 @@ func NewGorm(cfg *GormOptions, logger logger.Logger) (*gorm.DB, error) {
 
 	gormDb, err := gorm.Open(
 		gormPostgres.Open(dataSourceName),
-		&gorm.Config{Logger: gromlog.NewGormCustomLogger(logger)},
+		&gorm.Config{Logger: gromlog.NewGormCustomLogger(defaultLogger.Logger)},
 	)
 	if err != nil {
 		return nil, err

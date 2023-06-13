@@ -30,9 +30,9 @@ func CreateFxApp(
 		zap.Module,
 		config.Module,
 		fxlog.FxLogger,
+		fx.ErrorHook(NewFxErrorHandler()),
 
 		AppModule,
 	)
-
 	return fxApp
 }

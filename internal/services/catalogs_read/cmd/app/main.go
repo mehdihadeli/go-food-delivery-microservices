@@ -12,19 +12,19 @@ import (
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/app/application"
+	application "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/app"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/catalogs"
 )
 
 const version = "1.0.0"
 
 var rootCmd = &cobra.Command{
-	Use:     "ecommerce-microservices",
+	Use:     "catalogs-read-service",
 	Version: version,
-	Short:   "ecommerce-microservices",
+	Short:   "catalogs-read-service",
 	Run: func(cmd *cobra.Command, args []string) {
 		// configure dependencies
-		appBuilder := application.NewCatalogReadApplicationBuilder()
+		appBuilder := application.NewCatalogsReadApplicationBuilder()
 		appBuilder.ProvideModule(catalogs.Module)
 
 		app := appBuilder.Build()
@@ -39,6 +39,7 @@ var rootCmd = &cobra.Command{
 					return nil
 				},
 				OnStop: func(ctx context.Context) error {
+					// some cleanup if exists
 					return nil
 				},
 			})

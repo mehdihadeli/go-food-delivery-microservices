@@ -1,17 +1,60 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"log"
+	"fmt"
+	"os"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
+	"github.com/spf13/cobra"
+	"go.uber.org/fx"
+
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/server"
+	application "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/app"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/configurations/catalogs"
 )
+
+const version = "1.0.0"
+
+var rootCmd = &cobra.Command{
+	Version: version,
+	Use:     "catalogs-write-service",
+	Short:   "catalogs-write-service",
+	Run: func(cmd *cobra.Command, args []string) {
+		// configure dependencies
+		appBuilder := application.NewCatalogsWriteApplicationBuilder()
+		appBuilder.ProvideModule(catalogs.Module)
+
+		app := appBuilder.Build()
+
+		app.ResolveFunc(func(echo customEcho.EchoHttpServer) {
+			fmt.Print(echo)
+		})
+
+		app.RegisterHook(func(lifecycle fx.Lifecycle) {
+			lifecycle.Append(fx.Hook{
+				OnStart: func(ctx context.Context) error {
+					return nil
+				},
+				OnStop: func(ctx context.Context) error {
+					// some cleanup if exists
+					return nil
+				},
+			})
+		})
+
+		// configure application
+		app.ConfigureCatalogs()
+
+		app.MapCatalogsEndpoints()
+
+		app.Run()
+	},
+}
+
+// https://github.com/swaggo/swag#how-to-use-it-with-gin
 
 // @contact.name Mehdi Hadeli
 // @contact.url https://github.com/mehdihadeli
@@ -20,18 +63,10 @@ import (
 // @description Catalogs Write-Service Api.
 func main() {
 	flag.Parse()
-
-	// https://stackoverflow.com/questions/52103182/how-to-get-the-stacktrace-of-a-panic-and-store-as-a-variable
 	defer errorUtils.HandlePanic()
 
-	env := core.ConfigAppEnv(constants.Dev)
-
-	cfg, err := config.InitConfig(env)
-	if err != nil {
-		log.Fatal(err)
+	if err := rootCmd.Execute(); err != nil {
+		defaultLogger.Logger.Fatal(err)
+		os.Exit(1)
 	}
-
-	appLogger := zap.NewZapLogger(cfg.Logger)
-	appLogger.WithName(cfg.GetMicroserviceName())
-	appLogger.Fatal(server.NewServer(appLogger, cfg).Run())
 }

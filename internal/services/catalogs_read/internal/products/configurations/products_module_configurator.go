@@ -6,7 +6,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	logger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
+	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/endpoints"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/mediator"
@@ -28,9 +28,9 @@ func NewProductsModuleConfigurator(
 
 func (c *ProductsModuleConfigurator) ConfigureProductsModule() {
 	c.ResolveFunc(
-		func(logger logger2.Logger, mongoRepository contracts2.ProductRepository, cacheRepository contracts2.ProductCacheRepository) error {
+		func(logger logger2.Logger, mongoRepository contracts2.ProductRepository, cacheRepository contracts2.ProductCacheRepository, bus bus2.Bus) error {
 			// Config Products Mediators
-			err := mediator.ConfigProductsMediator(logger, mongoRepository, cacheRepository)
+			err := mediator.ConfigProductsMediator(logger, mongoRepository, cacheRepository, bus)
 			if err != nil {
 				return err
 			}
@@ -48,10 +48,9 @@ func (c *ProductsModuleConfigurator) ConfigureProductsModule() {
 func (c *ProductsModuleConfigurator) MapProductsEndpoints() {
 	c.ResolveFunc(
 		// Config Products Endpoints
-		func(bus bus.Bus, logger logger2.Logger, validator *validator.Validate, catalogsMetrics *contracts.CatalogsMetrics, catalogsServer customEcho.EchoHttpServer) error {
+		func(logger logger2.Logger, validator *validator.Validate, catalogsMetrics *contracts.CatalogsMetrics, catalogsServer customEcho.EchoHttpServer) error {
 			endpoints.ConfigProductsEndpoints(
 				catalogsServer.RouteBuilder(),
-				bus,
 				catalogsMetrics,
 				validator,
 				logger,

@@ -1,33 +1,29 @@
 package integration
 
 import (
-    "context"
-    "testing"
-    "time"
+	"context"
+	"testing"
+	"time"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/uow"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/uow"
 
-    "github.com/mehdihadeli/go-mediatr"
-    "github.com/stretchr/testify/require"
-    "github.com/stretchr/testify/suite"
+	"github.com/mehdihadeli/go-mediatr"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-    defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-    rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
-    webWoker "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
+	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mappings"
-    rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/rabbitmq"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/repositories"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/configurations/catalogs/metrics"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/configurations/infrastructure"
-    contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/web/workers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mappings"
+	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/rabbitmq"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/repositories"
+	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
 )
 
 type IntegrationTestSharedFixture struct {
@@ -42,7 +38,6 @@ type IntegrationTestFixture struct {
 	CatalogUnitOfWorks data.CatalogUnitOfWork
 	Bus                bus.Bus
 	CatalogsMetrics    *contracts2.CatalogsMetrics
-	workersRunner      *webWoker.WorkersRunner
 	Ctx                context.Context
 	cancel             context.CancelFunc
 }
@@ -77,27 +72,30 @@ func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *Integratio
 		require.FailNow(shared.T(), err.Error())
 	}
 
-	productRep := repositories.NewPostgresProductRepository(infrastructures.Log, infrastructures.Gorm)
+	productRep := repositories.NewPostgresProductRepository(
+		infrastructures.Log,
+		infrastructures.Gorm,
+	)
 	catalogUnitOfWork := uow.NewCatalogsUnitOfWork(infrastructures.Log, infrastructures.Gorm)
 
-	mqBus, err := rabbitmq.NewRabbitMQTestContainers().Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
-		// Products RabbitMQ configuration
-		rabbitmq2.ConfigProductsRabbitMQ(builder)
-	})
+	mqBus, err := rabbitmq.NewRabbitMQTestContainers().
+		Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+			// Products RabbitMQ configuration
+			rabbitmq2.ConfigProductsRabbitMQ(builder)
+		})
 	if err != nil {
 		cancel()
 		require.FailNow(shared.T(), err.Error())
 	}
 
-	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(infrastructures.Cfg, infrastructures.Metrics)
+	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(
+		infrastructures.Cfg,
+		infrastructures.Metrics,
+	)
 	if err != nil {
 		cancel()
 		require.FailNow(shared.T(), err.Error())
 	}
-
-	workersRunner := webWoker.NewWorkersRunner([]webWoker.Worker{
-		workers.NewRabbitMQWorker(infrastructures.Log, mqBus),
-	})
 
 	shared.T().Cleanup(func() {
 		// with Cancel() we send signal to done() channel to stop  grpc, http and workers gracefully
@@ -114,7 +112,6 @@ func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *Integratio
 		CatalogsMetrics:              catalogsMetrics,
 		ProductRepository:            productRep,
 		CatalogUnitOfWorks:           catalogUnitOfWork,
-		workersRunner:                workersRunner,
 		Ctx:                          ctx,
 		cancel:                       cancel,
 	}
@@ -123,17 +120,6 @@ func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *Integratio
 }
 
 func (e *IntegrationTestFixture) Run() {
-	workersErr := e.workersRunner.Start(e.Ctx)
-	go func() {
-		for {
-			select {
-			case _ = <-workersErr:
-				e.cancel()
-				return
-			}
-		}
-	}()
-
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(1 * time.Second)
 }

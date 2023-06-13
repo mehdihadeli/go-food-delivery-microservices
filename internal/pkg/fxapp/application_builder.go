@@ -17,7 +17,7 @@ func (a *ApplicationBuilder) ProvideModule(module fx.Option) {
 	a.Options = append(a.Options, module)
 }
 
-func (a *ApplicationBuilder) ProvideFunc(constructors ...interface{}) {
+func (a *ApplicationBuilder) Provide(constructors ...interface{}) {
 	a.Providers = append(a.Providers, constructors...)
 }
 

@@ -5,6 +5,7 @@ import (
 	"github.com/mehdihadeli/go-mediatr"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
 	createProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/commands"
 	createProductDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/dtos"
@@ -22,6 +23,7 @@ func ConfigProductsMediator(
 	logger logger.Logger,
 	mongoProductRepository contracts2.ProductRepository,
 	cacheProductRepository contracts2.ProductCacheRepository,
+	bus bus2.Bus,
 ) error {
 	err := mediatr.RegisterRequestHandler[*createProductCommandV1.CreateProduct, *createProductDtosV1.CreateProductResponseDto](
 		createProductCommandV1.NewCreateProductHandler(

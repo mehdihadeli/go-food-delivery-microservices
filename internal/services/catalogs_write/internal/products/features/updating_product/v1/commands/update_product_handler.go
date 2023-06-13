@@ -15,7 +15,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
 	dto "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/dto/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/updating_product/v1/events/integration_events"
@@ -23,16 +22,22 @@ import (
 
 type UpdateProductHandler struct {
 	log              logger.Logger
-	cfg              *config.Config
 	uow              data.CatalogUnitOfWork
 	rabbitmqProducer producer.Producer
 }
 
-func NewUpdateProductHandler(log logger.Logger, cfg *config.Config, uow data.CatalogUnitOfWork, rabbitmqProducer producer.Producer) *UpdateProductHandler {
-	return &UpdateProductHandler{log: log, cfg: cfg, uow: uow, rabbitmqProducer: rabbitmqProducer}
+func NewUpdateProductHandler(
+	log logger.Logger,
+	uow data.CatalogUnitOfWork,
+	rabbitmqProducer producer.Producer,
+) *UpdateProductHandler {
+	return &UpdateProductHandler{log: log, uow: uow, rabbitmqProducer: rabbitmqProducer}
 }
 
-func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduct) (*mediatr.Unit, error) {
+func (c *UpdateProductHandler) Handle(
+	ctx context.Context,
+	command *UpdateProduct,
+) (*mediatr.Unit, error) {
 	ctx, span := tracing.Tracer.Start(ctx, "UpdateProductHandler.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductID.String()))
 	span.SetAttributes(attribute.Object("Command", command))
@@ -41,7 +46,17 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduc
 	err := c.uow.Do(ctx, func(catalogContext data.CatalogContext) error {
 		product, err := catalogContext.Products().GetProductById(ctx, command.ProductID)
 		if err != nil {
-			return tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrapWithCode(err, http.StatusNotFound, fmt.Sprintf("[UpdateProductHandler_Handle.GetProductById] product with id %s not found", command.ProductID)))
+			return tracing.TraceErrFromSpan(
+				span,
+				customErrors.NewApplicationErrorWrapWithCode(
+					err,
+					http.StatusNotFound,
+					fmt.Sprintf(
+						"[UpdateProductHandler_Handle.GetProductById] product with id %s not found",
+						command.ProductID,
+					),
+				),
+			)
 		}
 
 		product.Name = command.Name
@@ -51,24 +66,54 @@ func (c *UpdateProductHandler) Handle(ctx context.Context, command *UpdateProduc
 
 		updatedProduct, err := catalogContext.Products().UpdateProduct(ctx, product)
 		if err != nil {
-			return tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[UpdateProductHandler_Handle.UpdateProduct] error in updating product in the repository"))
+			return tracing.TraceErrFromSpan(
+				span,
+				customErrors.NewApplicationErrorWrap(
+					err,
+					"[UpdateProductHandler_Handle.UpdateProduct] error in updating product in the repository",
+				),
+			)
 		}
 
 		productDto, err := mapper.Map[*dto.ProductDto](updatedProduct)
 		if err != nil {
-			return tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[UpdateProductHandler_Handle.Map] error in the mapping ProductDto"))
+			return tracing.TraceErrFromSpan(
+				span,
+				customErrors.NewApplicationErrorWrap(
+					err,
+					"[UpdateProductHandler_Handle.Map] error in the mapping ProductDto",
+				),
+			)
 		}
 
 		productUpdated := integration_events.NewProductUpdatedV1(productDto)
 
 		err = c.rabbitmqProducer.PublishMessage(ctx, productUpdated, nil)
 		if err != nil {
-			return tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, "[UpdateProductHandler_Handle.PublishMessage] error in publishing 'ProductUpdated' message"))
+			return tracing.TraceErrFromSpan(
+				span,
+				customErrors.NewApplicationErrorWrap(
+					err,
+					"[UpdateProductHandler_Handle.PublishMessage] error in publishing 'ProductUpdated' message",
+				),
+			)
 		}
 
-		c.log.Infow(fmt.Sprintf("[UpdateProductHandler.Handle] product with id '%s' updated", command.ProductID), logger.Fields{"ProductId": command.ProductID})
+		c.log.Infow(
+			fmt.Sprintf(
+				"[UpdateProductHandler.Handle] product with id '%s' updated",
+				command.ProductID,
+			),
+			logger.Fields{"ProductId": command.ProductID},
+		)
 
-		c.log.Infow(fmt.Sprintf("[DeleteProductHandler.Handle] ProductUpdated message with messageId `%s` published to the rabbitmq broker", productUpdated.MessageId), logger.Fields{"MessageId": productUpdated.MessageId})
+		c.log.Infow(
+			fmt.Sprintf(
+				"[DeleteProductHandler.Handle] ProductUpdated message with messageId `%s` published to the rabbitmq broker",
+				productUpdated.MessageId,
+			),
+			logger.Fields{"MessageId": productUpdated.MessageId},
+		)
 
 		return nil
 	})

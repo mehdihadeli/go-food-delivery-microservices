@@ -1,8 +1,10 @@
 package mediatr
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	"github.com/mehdihadeli/go-mediatr"
+
+	logger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
 	createProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/commands"
@@ -15,37 +17,53 @@ import (
 	searchProductsDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/searching_product/v1/dtos"
 	searchProductsQueryV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/searching_product/v1/queries"
 	updateProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/updating_product/v1/commands"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
 )
 
-func ConfigProductsMediator(uow data.CatalogUnitOfWork, productRepository data.ProductRepository, infra *contracts.InfrastructureConfigurations, producer producer.Producer) error {
+func ConfigProductsMediator(
+	logger logger2.Logger,
+	uow data.CatalogUnitOfWork,
+	productRepository data.ProductRepository,
+	producer producer.Producer,
+) error {
 	// https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
-	err := mediatr.RegisterRequestHandler[*createProductCommandV1.CreateProduct, *createProductV1.CreateProductResponseDto](createProductCommandV1.NewCreateProductHandler(infra.Log, infra.Cfg, uow, producer))
+	err := mediatr.RegisterRequestHandler[*createProductCommandV1.CreateProduct, *createProductV1.CreateProductResponseDto](
+		createProductCommandV1.NewCreateProductHandler(logger, uow, producer),
+	)
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*getProductsQueryV1.GetProducts, *getProductsDtosV1.GetProductsResponseDto](getProductsQueryV1.NewGetProductsHandler(infra.Log, infra.Cfg, productRepository))
+	err = mediatr.RegisterRequestHandler[*getProductsQueryV1.GetProducts, *getProductsDtosV1.GetProductsResponseDto](
+		getProductsQueryV1.NewGetProductsHandler(logger, productRepository),
+	)
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*searchProductsQueryV1.SearchProducts, *searchProductsDtosV1.SearchProductsResponseDto](searchProductsQueryV1.NewSearchProductsHandler(infra.Log, infra.Cfg, productRepository))
+	err = mediatr.RegisterRequestHandler[*searchProductsQueryV1.SearchProducts, *searchProductsDtosV1.SearchProductsResponseDto](
+		searchProductsQueryV1.NewSearchProductsHandler(logger, productRepository),
+	)
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*updateProductCommandV1.UpdateProduct, *mediatr.Unit](updateProductCommandV1.NewUpdateProductHandler(infra.Log, infra.Cfg, uow, producer))
+	err = mediatr.RegisterRequestHandler[*updateProductCommandV1.UpdateProduct, *mediatr.Unit](
+		updateProductCommandV1.NewUpdateProductHandler(logger, uow, producer),
+	)
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*deleteProductCommandV1.DeleteProduct, *mediatr.Unit](deleteProductCommandV1.NewDeleteProductHandler(infra.Log, infra.Cfg, uow, producer))
+	err = mediatr.RegisterRequestHandler[*deleteProductCommandV1.DeleteProduct, *mediatr.Unit](
+		deleteProductCommandV1.NewDeleteProductHandler(logger, uow, producer),
+	)
 	if err != nil {
 		return err
 	}
 
-	err = mediatr.RegisterRequestHandler[*getProductByIdQueryV1.GetProductById, *getProductByIdDtosV1.GetProductByIdResponseDto](getProductByIdQueryV1.NewGetProductByIdHandler(infra.Log, infra.Cfg, productRepository))
+	err = mediatr.RegisterRequestHandler[*getProductByIdQueryV1.GetProductById, *getProductByIdDtosV1.GetProductByIdResponseDto](
+		getProductByIdQueryV1.NewGetProductByIdHandler(logger, productRepository),
+	)
 	if err != nil {
 		return err
 	}

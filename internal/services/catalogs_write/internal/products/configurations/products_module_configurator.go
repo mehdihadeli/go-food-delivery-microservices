@@ -1,55 +1,73 @@
 package configurations
 
 import (
-	"context"
+	"github.com/go-playground/validator"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
 	grpcServer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/endpoints"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/grpc"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mediatr"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts"
-	repositoriesImp "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/repositories"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/uow"
-	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
 )
 
-type productsModuleConfigurator struct {
-	*contracts2.InfrastructureConfigurations
-	routeBuilder       *customEcho.RouteBuilder
-	grpcServiceBuilder *grpcServer.GrpcServiceBuilder
-	bus                bus.Bus
-	catalogsMetrics    *contracts2.CatalogsMetrics
+type ProductsModuleConfigurator struct {
+	*fxapp.Application
 }
 
-func NewProductsModuleConfigurator(infrastructure *contracts2.InfrastructureConfigurations, catalogsMetrics *contracts2.CatalogsMetrics, bus bus.Bus, routeBuilder *customEcho.RouteBuilder, grpcServiceBuilder *grpcServer.GrpcServiceBuilder) contracts.ProductsModuleConfigurator {
-	return &productsModuleConfigurator{InfrastructureConfigurations: infrastructure, routeBuilder: routeBuilder, grpcServiceBuilder: grpcServiceBuilder, bus: bus, catalogsMetrics: catalogsMetrics}
+func NewProductsModuleConfigurator(
+	fxapp *fxapp.Application,
+) *ProductsModuleConfigurator {
+	return &ProductsModuleConfigurator{
+		Application: fxapp,
+	}
 }
 
-func (c *productsModuleConfigurator) ConfigureProductsModule(ctx context.Context) error {
-	//cfg Products Grpc
-	grpc.ConfigProductsGrpc(ctx, c.grpcServiceBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
+func (c *ProductsModuleConfigurator) ConfigureProductsModule() {
+	c.ResolveFunc(
+		func(logger logger.Logger, uow data.CatalogUnitOfWork, productRepository data.ProductRepository, producer producer.Producer) error {
+			// Config Products Mediators
+			err := mediatr.ConfigProductsMediator(logger, uow, productRepository, producer)
+			if err != nil {
+				return err
+			}
 
-	//cfg Products Endpoints
-	endpoints.ConfigProductsEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations, c.bus, c.catalogsMetrics)
+			// cfg Products Mappings
+			err = mappings.ConfigureProductsMappings()
+			if err != nil {
+				return err
+			}
 
-	productRepository := repositoriesImp.NewPostgresProductRepository(c.Log, c.Gorm)
-	catalogUnitOfWork := uow.NewCatalogsUnitOfWork(c.Log, c.Gorm)
+			return nil
+		},
+	)
+}
 
-	//cfg Products Mappings
-	err := mappings.ConfigureProductsMappings()
-	if err != nil {
-		return err
-	}
+func (c *ProductsModuleConfigurator) MapProductsEndpoints() {
+	c.ResolveFunc(
+		// Config Products Endpoints
+		func(logger logger.Logger, validator *validator.Validate, catalogsMetrics *contracts.CatalogsMetrics, catalogsServer customEcho.EchoHttpServer, catalogsGrpcServer grpcServer.GrpcServer) error {
+			// Config Http endpoints
+			endpoints.ConfigProductsEndpoints(
+				catalogsServer.RouteBuilder(),
+				catalogsMetrics,
+				validator,
+				logger,
+			)
 
-	//cfg Products Mediators
-	err = mediatr.ConfigProductsMediator(catalogUnitOfWork, productRepository, c.InfrastructureConfigurations, c.bus)
-	if err != nil {
-		return err
-	}
+			// Config Products gRPC endpoints
+			grpc.ConfigProductsGrpc(
+				catalogsGrpcServer.GrpcServiceBuilder(),
+				logger,
+				catalogsMetrics,
+			)
 
-	return nil
+			return nil
+		},
+	)
 }
