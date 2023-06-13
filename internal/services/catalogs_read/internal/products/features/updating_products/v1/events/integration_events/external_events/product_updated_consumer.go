@@ -5,29 +5,37 @@ import (
 	"fmt"
 
 	"emperror.dev/errors"
+	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/go-mediatr"
 	uuid "github.com/satori/go.uuid"
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
 	messageTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/updating_products/v1/commands"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/contracts"
 )
 
 type productUpdatedConsumer struct {
-	*contracts.InfrastructureConfigurations
+	logger    logger.Logger
+	validator *validator.Validate
 }
 
-func NewProductUpdatedConsumer(infra *contracts.InfrastructureConfigurations) *productUpdatedConsumer {
-	return &productUpdatedConsumer{InfrastructureConfigurations: infra}
+func NewProductUpdatedConsumer(
+	logger logger.Logger,
+	validator *validator.Validate,
+) consumer.ConsumerHandler {
+	return &productUpdatedConsumer{logger: logger, validator: validator}
 }
 
-func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext types.MessageConsumeContext) error {
+func (c *productUpdatedConsumer) Handle(
+	ctx context.Context,
+	consumeContext types.MessageConsumeContext,
+) error {
 	message, ok := consumeContext.Message().(*ProductUpdatedV1)
 	if !ok {
 		return errors.New("error in casting message to ProductUpdatedV1")
@@ -39,23 +47,54 @@ func (c *productUpdatedConsumer) Handle(ctx context.Context, consumeContext type
 
 	productUUID, err := uuid.FromString(message.ProductId)
 	if err != nil {
-		c.Log.WarnMsg("uuid.FromString", err)
-		badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[updateProductConsumer_Consume.uuid.FromString] error in the converting uuid")
-		c.Log.Errorf(fmt.Sprintf("[updateProductConsumer_Consume.uuid.FromString] err: %v", messageTracing.TraceMessagingErrFromSpan(span, badRequestErr)))
+		c.logger.WarnMsg("uuid.FromString", err)
+		badRequestErr := customErrors.NewBadRequestErrorWrap(
+			err,
+			"[updateProductConsumer_Consume.uuid.FromString] error in the converting uuid",
+		)
+		c.logger.Errorf(
+			fmt.Sprintf(
+				"[updateProductConsumer_Consume.uuid.FromString] err: %v",
+				messageTracing.TraceMessagingErrFromSpan(span, badRequestErr),
+			),
+		)
 		return err
 	}
 
-	command := commands.NewUpdateProduct(productUUID, message.Name, message.Description, message.Price)
-	if err := c.Validator.StructCtx(ctx, command); err != nil {
-		validationErr := customErrors.NewValidationErrorWrap(err, "[updateProductConsumer_Consume.StructCtx] command validation failed")
-		c.Log.Errorf(fmt.Sprintf("[updateProductConsumer_Consume.StructCtx] err: {%v}", messageTracing.TraceMessagingErrFromSpan(span, validationErr)))
+	command := commands.NewUpdateProduct(
+		productUUID,
+		message.Name,
+		message.Description,
+		message.Price,
+	)
+	if err := c.validator.StructCtx(ctx, command); err != nil {
+		validationErr := customErrors.NewValidationErrorWrap(
+			err,
+			"[updateProductConsumer_Consume.StructCtx] command validation failed",
+		)
+		c.logger.Errorf(
+			fmt.Sprintf(
+				"[updateProductConsumer_Consume.StructCtx] err: {%v}",
+				messageTracing.TraceMessagingErrFromSpan(span, validationErr),
+			),
+		)
 		return err
 	}
 
 	_, err = mediatr.Send[*commands.UpdateProduct, *mediatr.Unit](ctx, command)
 	if err != nil {
-		err = errors.WithMessage(err, "[updateProductConsumer_Consume.Send] error in sending UpdateProduct")
-		c.Log.Errorw(fmt.Sprintf("[updateProductConsumer_Consume.Send] id: {%s}, err: {%v}", command.ProductId, messageTracing.TraceMessagingErrFromSpan(span, err)), logger.Fields{"Id": command.ProductId})
+		err = errors.WithMessage(
+			err,
+			"[updateProductConsumer_Consume.Send] error in sending UpdateProduct",
+		)
+		c.logger.Errorw(
+			fmt.Sprintf(
+				"[updateProductConsumer_Consume.Send] id: {%s}, err: {%v}",
+				command.ProductId,
+				messageTracing.TraceMessagingErrFromSpan(span, err),
+			),
+			logger.Fields{"Id": command.ProductId},
+		)
 		return err
 	}
 

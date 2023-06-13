@@ -7,14 +7,14 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 )
 
 // Module provided to fxlog
 // https://uber-go.github.io/fx/modules.html
-var Module = func(builder configurations.RabbitMQConfigurationBuilderFuc) fx.Option {
+var Module = func(rabbitMQConfigurationConstructor interface{}) fx.Option {
 	return fx.Module(
 		"rabbitmqfx",
 		// - order is not important in provide
@@ -22,21 +22,29 @@ var Module = func(builder configurations.RabbitMQConfigurationBuilderFuc) fx.Opt
 		// - execute its func only if it requested
 		fx.Provide(
 			config.ProvideConfig,
-			bus.NewRabbitmqBus,
 		),
-		fx.Supply(builder),
+		fx.Provide(fx.Annotate(
+			bus.NewRabbitmqBus,
+			fx.ParamTags(``, ``, ``, `optional:"true"`),
+		)),
+		fx.Provide(fx.Annotate(
+			bus.NewRabbitmqBus,
+			fx.ParamTags(``, ``, ``, `optional:"true"`),
+			fx.As(new(bus2.Bus)),
+		)),
+		fx.Provide(rabbitMQConfigurationConstructor),
 		//// without return type
 		//// fxlog.Invoke(rabbitmqBuilderFunc),
 		//// https://github.com/uber-go/fx/pull/833
 		//// https://pkg.go.dev/go.uber.org/fx#Decorate
-		//fx.Decorate(
+		//fxapp.Decorate(
 		//	json.NewJsonSerializer,
 		//	serializer.NewDefaultEventSerializer,
 		//	serializer.NewDefaultMetadataSerializer,
 		//),
 		//// https://github.com/uber-go/fx/pull/837
 		//// https://pkg.go.dev/go.uber.org/fx#Replace
-		//fx.Replace(zap.Module),
+		//fxapp.Replace(zap.Module),
 
 		// - execute after registering all of our provided
 		// - they execute by their orders

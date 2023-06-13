@@ -11,7 +11,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
@@ -19,20 +18,17 @@ import (
 
 type CreateProductHandler struct {
 	log             logger.Logger
-	cfg             *config.AppOptions
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
 func NewCreateProductHandler(
 	log logger.Logger,
-	cfg *config.AppOptions,
 	mongoRepository contracts.ProductRepository,
 	redisRepository contracts.ProductCacheRepository,
 ) *CreateProductHandler {
 	return &CreateProductHandler{
 		log:             log,
-		cfg:             cfg,
 		mongoRepository: mongoRepository,
 		redisRepository: redisRepository,
 	}

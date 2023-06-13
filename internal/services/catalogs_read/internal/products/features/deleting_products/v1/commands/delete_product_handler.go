@@ -12,26 +12,22 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
 )
 
 type DeleteProductCommand struct {
 	log             logger.Logger
-	cfg             *config.AppOptions
 	mongoRepository contracts.ProductRepository
 	redisRepository contracts.ProductCacheRepository
 }
 
 func NewDeleteProductHandler(
 	log logger.Logger,
-	cfg *config.AppOptions,
 	repository contracts.ProductRepository,
 	redisRepository contracts.ProductCacheRepository,
 ) *DeleteProductCommand {
 	return &DeleteProductCommand{
 		log:             log,
-		cfg:             cfg,
 		mongoRepository: repository,
 		redisRepository: redisRepository,
 	}

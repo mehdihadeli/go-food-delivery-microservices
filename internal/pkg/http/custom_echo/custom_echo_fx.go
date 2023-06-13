@@ -24,7 +24,7 @@ var Module = fx.Module(
 		//// https://uber-go.github.io/fx/annotate.html
 		//fxlog.Annotate(
 		//	NewEchoHttpServer,
-		//	fxlog.ParamTags(``, ``, `name:"meter" optional:"true"`),
+		//	fxlog.ParamTags(``, ``, `optional:"true"`),
 		//),
 		// https://uber-go.github.io/fx/parameter-objects.html#using-parameter-objects
 		NewEchoHttpServer,

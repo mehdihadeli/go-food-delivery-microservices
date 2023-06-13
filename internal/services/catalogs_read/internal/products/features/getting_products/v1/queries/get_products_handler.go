@@ -9,7 +9,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/dto"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/getting_products/v1/dtos"
@@ -17,16 +16,14 @@ import (
 
 type GetProductsHandler struct {
 	log             logger.Logger
-	cfg             *config.AppOptions
 	mongoRepository contracts.ProductRepository
 }
 
 func NewGetProductsHandler(
 	log logger.Logger,
-	cfg *config.AppOptions,
 	mongoRepository contracts.ProductRepository,
 ) *GetProductsHandler {
-	return &GetProductsHandler{log: log, cfg: cfg, mongoRepository: mongoRepository}
+	return &GetProductsHandler{log: log, mongoRepository: mongoRepository}
 }
 
 func (c *GetProductsHandler) Handle(

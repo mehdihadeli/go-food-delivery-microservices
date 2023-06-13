@@ -20,7 +20,9 @@ type getProductsEndpoint struct {
 	*delivery.ProductEndpointBase
 }
 
-func NewGetProductsEndpoint(productEndpointBase *delivery.ProductEndpointBase) *getProductsEndpoint {
+func NewGetProductsEndpoint(
+	productEndpointBase *delivery.ProductEndpointBase,
+) *getProductsEndpoint {
 	return &getProductsEndpoint{productEndpointBase}
 }
 
@@ -44,23 +46,42 @@ func (ep *getProductsEndpoint) handler() echo.HandlerFunc {
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 		if err != nil {
-			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string")
-			ep.Log.Errorf(fmt.Sprintf("[getProductsEndpoint_handler.GetListQueryFromCtx] err: %v", badRequestErr))
+			badRequestErr := customErrors.NewBadRequestErrorWrap(
+				err,
+				"[getProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string",
+			)
+			ep.Logger.Errorf(
+				fmt.Sprintf(
+					"[getProductsEndpoint_handler.GetListQueryFromCtx] err: %v",
+					badRequestErr,
+				),
+			)
 			return err
 		}
 
 		request := queries.NewGetProducts(listQuery)
 		if err := c.Bind(request); err != nil {
-			badRequestErr := customErrors.NewBadRequestErrorWrap(err, "[getProductsEndpoint_handler.Bind] error in the binding request")
-			ep.Log.Errorf(fmt.Sprintf("[getProductsEndpoint_handler.Bind] err: %v", badRequestErr))
+			badRequestErr := customErrors.NewBadRequestErrorWrap(
+				err,
+				"[getProductsEndpoint_handler.Bind] error in the binding request",
+			)
+			ep.Logger.Errorf(
+				fmt.Sprintf("[getProductsEndpoint_handler.Bind] err: %v", badRequestErr),
+			)
 			return badRequestErr
 		}
 		query := &queries.GetProducts{ListQuery: request.ListQuery}
 
-		queryResult, err := mediatr.Send[*queries.GetProducts, *dtos.GetProductsResponseDto](ctx, query)
+		queryResult, err := mediatr.Send[*queries.GetProducts, *dtos.GetProductsResponseDto](
+			ctx,
+			query,
+		)
 		if err != nil {
-			err = errors.WithMessage(err, "[getProductsEndpoint_handler.Send] error in sending GetProducts")
-			ep.Log.Error(fmt.Sprintf("[getProductsEndpoint_handler.Send] err: {%v}", err))
+			err = errors.WithMessage(
+				err,
+				"[getProductsEndpoint_handler.Send] error in sending GetProducts",
+			)
+			ep.Logger.Error(fmt.Sprintf("[getProductsEndpoint_handler.Send] err: {%v}", err))
 			return err
 		}
 

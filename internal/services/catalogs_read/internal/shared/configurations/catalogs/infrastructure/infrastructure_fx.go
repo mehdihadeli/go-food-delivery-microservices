@@ -1,16 +1,52 @@
-package metrics
+package infrastructure
 
 import (
 	"fmt"
 
+	"github.com/go-playground/validator"
 	"go.opentelemetry.io/otel/metric"
 	api "go.opentelemetry.io/otel/metric"
+	"go.uber.org/fx"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
+	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/contracts"
 )
 
-func ConfigCatalogsMetrics(
+var Module = fx.Module(
+	"infrastructurefx",
+	// Modules
+	core.Module,
+	customEcho.Module,
+	grpc.Module,
+	gormPostgres.Module,
+	mongodb.Module,
+	otel.Module,
+	redis.Module,
+	rabbitmq.Module(
+		func(v *validator.Validate, l logger.Logger) configurations.RabbitMQConfigurationBuilderFuc {
+			return func(builder configurations.RabbitMQConfigurationBuilder) {
+				rabbitmq2.ConfigProductsRabbitMQ(builder, l, nil)
+			}
+		},
+	),
+
+	// Other provides
+	fx.Provide(validator.New),
+	fx.Provide(provideCatalogsMetrics),
+)
+
+func provideCatalogsMetrics(
 	cfg *config.AppOptions,
 	meter metric.Meter,
 ) (*contracts.CatalogsMetrics, error) {

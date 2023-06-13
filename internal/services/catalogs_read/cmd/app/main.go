@@ -1,36 +1,55 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/fx"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/fxlog"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/app"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/app/application"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/catalogs"
 )
 
-const version = "2.0.0"
+const version = "1.0.0"
 
 var rootCmd = &cobra.Command{
 	Use:     "ecommerce-microservices",
 	Version: version,
 	Short:   "ecommerce-microservices",
 	Run: func(cmd *cobra.Command, args []string) {
-		// https://stackoverflow.com/questions/52103182/how-to-get-the-stacktrace-of-a-panic-and-store-as-a-variable
-		fxApp := fx.New( // setup fxlog logger
-			zap.Module,
-			config.Module,
-			fxlog.FxLogger,
+		// configure dependencies
+		appBuilder := application.NewCatalogReadApplicationBuilder()
+		appBuilder.ProvideModule(catalogs.Module)
 
-			app.Module)
+		app := appBuilder.Build()
 
-		fxApp.Run()
+		app.ResolveFunc(func(echo customEcho.EchoHttpServer) {
+			fmt.Print(echo)
+		})
+
+		app.RegisterHook(func(lifecycle fx.Lifecycle) {
+			lifecycle.Append(fx.Hook{
+				OnStart: func(ctx context.Context) error {
+					return nil
+				},
+				OnStop: func(ctx context.Context) error {
+					return nil
+				},
+			})
+		})
+
+		// configure application
+		app.ConfigureCatalogs()
+
+		app.MapCatalogsEndpoints()
+
+		app.Run()
 	},
 }
 
@@ -49,8 +68,4 @@ func main() {
 		defaultLogger.Logger.Fatal(err)
 		os.Exit(1)
 	}
-
-	// appLogger := zap.NewZapLogger(cfg.Logger)
-	// appLogger.WithName(cfg.GetMicroserviceName())
-	// appLogger.Fatal(server.NewServer(appLogger, cfg).Run())
 }

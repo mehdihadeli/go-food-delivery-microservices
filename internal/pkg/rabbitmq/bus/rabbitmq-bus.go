@@ -39,6 +39,7 @@ type rabbitmqBus struct {
 	producer                 producer.Producer
 	rabbitmqConfiguration    *configurations.RabbitMQConfiguration
 	rabbitmqConfig           *config.RabbitmqOptions
+	rabbitmqConfigBuilder    configurations.RabbitMQConfigurationBuilder
 	logger                   logger.Logger
 	serializer               serializer.EventSerializer
 	rabbitmqConnection       types2.IConnection
@@ -48,9 +49,9 @@ type rabbitmqBus struct {
 
 func NewRabbitmqBus(
 	cfg *config.RabbitmqOptions,
-	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
 	serializer serializer.EventSerializer,
 	logger logger.Logger,
+	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
 ) (RabbitmqBus, error) {
 	builder := configurations.NewRabbitMQConfigurationBuilder()
 	if rabbitmqBuilderFunc != nil {
@@ -64,6 +65,7 @@ func NewRabbitmqBus(
 		serializer:            serializer,
 		rabbitmqConfiguration: rabbitmqConfiguration,
 		rabbitmqConfig:        cfg,
+		rabbitmqConfigBuilder: builder,
 	}
 
 	return rabbitBus, nil

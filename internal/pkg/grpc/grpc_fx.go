@@ -22,7 +22,7 @@ var Module = fx.Module("grpcfx",
 		// https://uber-go.github.io/fx/annotate.html
 		fx.Annotate(
 			NewGrpcServer,
-			fx.ParamTags(``, ``, `name:"meter" optional:"true"`),
+			fx.ParamTags(``, ``, `optional:"true"`),
 		),
 		NewGrpcClient,
 	),

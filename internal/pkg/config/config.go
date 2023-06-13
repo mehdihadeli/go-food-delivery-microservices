@@ -13,14 +13,14 @@ import (
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
-func BindConfig[T any](environments ...string) (T, error) {
+func BindConfig[T any](environments ...Environment) (T, error) {
 	return BindConfigKey[T]("", environments...)
 }
 
-func BindConfigKey[T any](configKey string, environments ...string) (T, error) {
+func BindConfigKey[T any](configKey string, environments ...Environment) (T, error) {
 	var configPath string
 
-	environment := ""
+	environment := Environment("")
 	if len(environments) > 0 {
 		environment = environments[0]
 	} else {

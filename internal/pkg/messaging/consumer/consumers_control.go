@@ -1,9 +1,9 @@
 package consumer
 
 import (
-    "context"
+	"context"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 )
 
 type BusControl interface {

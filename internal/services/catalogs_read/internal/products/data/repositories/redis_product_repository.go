@@ -13,7 +13,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
 )
@@ -24,16 +23,14 @@ const (
 
 type redisProductRepository struct {
 	log         logger.Logger
-	cfg         *config.AppOptions
 	redisClient redis.UniversalClient
 }
 
 func NewRedisProductRepository(
 	log logger.Logger,
-	cfg *config.AppOptions,
 	redisClient redis.UniversalClient,
 ) contracts.ProductCacheRepository {
-	return &redisProductRepository{log: log, cfg: cfg, redisClient: redisClient}
+	return &redisProductRepository{log: log, redisClient: redisClient}
 }
 
 func (r *redisProductRepository) PutProduct(
