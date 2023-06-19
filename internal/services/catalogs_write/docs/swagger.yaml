@@ -72,7 +72,7 @@ paths:
   /api/v1/products:
     get:
       consumes:
-      - application_exceptions/json
+      - application/json
       description: Get all products
       parameters:
       - in: query
@@ -85,7 +85,7 @@ paths:
         name: size
         type: integer
       produces:
-      - application_exceptions/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -96,7 +96,7 @@ paths:
       - Products
     post:
       consumes:
-      - application_exceptions/json
+      - application/json
       description: Create new product item
       parameters:
       - description: Product data
@@ -106,7 +106,7 @@ paths:
         schema:
           $ref: '#/definitions/dtos.CreateProductRequestDto'
       produces:
-      - application_exceptions/json
+      - application/json
       responses:
         "201":
           description: Created
@@ -118,7 +118,7 @@ paths:
   /api/v1/products/{id}:
     delete:
       consumes:
-      - application_exceptions/json
+      - application/json
       description: Delete existing product
       parameters:
       - description: Product ID
@@ -127,7 +127,7 @@ paths:
         required: true
         type: string
       produces:
-      - application_exceptions/json
+      - application/json
       responses:
         "204":
           description: ""
@@ -136,7 +136,7 @@ paths:
       - Products
     get:
       consumes:
-      - application_exceptions/json
+      - application/json
       description: Get product by id
       parameters:
       - description: Product ID
@@ -145,7 +145,7 @@ paths:
         required: true
         type: string
       produces:
-      - application_exceptions/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -156,7 +156,7 @@ paths:
       - Products
     put:
       consumes:
-      - application_exceptions/json
+      - application/json
       description: Update existing product
       parameters:
       - description: Product data
@@ -171,7 +171,7 @@ paths:
         required: true
         type: string
       produces:
-      - application_exceptions/json
+      - application/json
       responses:
         "204":
           description: ""
@@ -181,7 +181,7 @@ paths:
   /api/v1/products/search:
     get:
       consumes:
-      - application_exceptions/json
+      - application/json
       description: Search products
       parameters:
       - in: query
@@ -197,7 +197,7 @@ paths:
         name: size
         type: integer
       produces:
-      - application_exceptions/json
+      - application/json
       responses:
         "200":
           description: OK

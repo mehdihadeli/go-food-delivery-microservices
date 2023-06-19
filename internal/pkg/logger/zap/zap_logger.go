@@ -138,7 +138,7 @@ func (l *zapLogger) Debugf(template string, args ...interface{}) {
 }
 
 func (l *zapLogger) Debugw(msg string, fields logger.Fields) {
-	zapFields := mapToFields(fields)
+	zapFields := mapToZapFields(fields)
 	l.logger.Debug(msg, zapFields...)
 }
 
@@ -154,7 +154,7 @@ func (l *zapLogger) Infof(template string, args ...interface{}) {
 
 // Infow logs a message with some additional context.
 func (l *zapLogger) Infow(msg string, fields logger.Fields) {
-	zapFields := mapToFields(fields)
+	zapFields := mapToZapFields(fields)
 	l.logger.Info(msg, zapFields...)
 }
 
@@ -185,7 +185,7 @@ func (l *zapLogger) Error(args ...interface{}) {
 
 // Errorw logs a message with some additional context.
 func (l *zapLogger) Errorw(msg string, fields logger.Fields) {
-	zapFields := mapToFields(fields)
+	zapFields := mapToZapFields(fields)
 	l.logger.Error(msg, zapFields...)
 }
 
@@ -273,11 +273,34 @@ func (l *zapLogger) GrpcClientInterceptorLogger(
 	)
 }
 
-func mapToFields(fields map[string]interface{}) []zap.Field {
-	var zapFields []zap.Field
-	for k, v := range fields {
-		zapFields = append(zapFields, zap.Any(k, v))
+func mapToZapFields(data map[string]interface{}) []zap.Field {
+	fields := make([]zap.Field, 0, len(data))
+
+	for key, value := range data {
+		field := zap.Field{
+			Key:       key,
+			Type:      getFieldType(value),
+			Interface: value,
+		}
+		fields = append(fields, field)
 	}
 
-	return zapFields
+	return fields
+}
+
+func getFieldType(value interface{}) zapcore.FieldType {
+	switch value.(type) {
+	case string:
+		return zapcore.StringType
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return zapcore.Int64Type
+	case bool:
+		return zapcore.BoolType
+	case float32, float64:
+		return zapcore.Float64Type
+	case error:
+		return zapcore.ErrorType
+	default:
+		return zapcore.StringerType
+	}
 }

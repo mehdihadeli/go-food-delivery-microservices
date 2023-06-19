@@ -10,23 +10,24 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/params"
 	getProductByIdQuery "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/getting_product_by_id/v1/queries"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/getting_product_by_id/v1/dtos"
 )
 
 type getProductByIdEndpoint struct {
-	*delivery.ProductEndpointBase
+	params.ProductRouteParams
 }
 
 func NewGetProductByIdEndpoint(
-	productEndpointBase *delivery.ProductEndpointBase,
-) *getProductByIdEndpoint {
-	return &getProductByIdEndpoint{productEndpointBase}
+	params params.ProductRouteParams,
+) route.Endpoint {
+	return &getProductByIdEndpoint{ProductRouteParams: params}
 }
 
-func (ep *getProductByIdEndpoint) MapRoute() {
+func (ep *getProductByIdEndpoint) MapEndpoint() {
 	ep.ProductsGroup.GET("/:id", ep.handler())
 }
 

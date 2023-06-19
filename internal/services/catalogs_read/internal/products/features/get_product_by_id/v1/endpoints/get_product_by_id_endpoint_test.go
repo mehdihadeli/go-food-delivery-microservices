@@ -11,7 +11,7 @@ import (
 	"github.com/gavv/httpexpect/v2"
 
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/delivery"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/test_fixture/e2e"
 )
 

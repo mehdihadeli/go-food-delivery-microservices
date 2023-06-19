@@ -21,20 +21,22 @@ import (
 type GetProductByIdHandler struct {
 	log    logger.Logger
 	pgRepo data.ProductRepository
+	tracer tracing.AppTracer
 }
 
 func NewGetProductByIdHandler(
 	log logger.Logger,
 	pgRepo data.ProductRepository,
+	tracer tracing.AppTracer,
 ) *GetProductByIdHandler {
-	return &GetProductByIdHandler{log: log, pgRepo: pgRepo}
+	return &GetProductByIdHandler{log: log, pgRepo: pgRepo, tracer: tracer}
 }
 
 func (q *GetProductByIdHandler) Handle(
 	ctx context.Context,
 	query *GetProductById,
 ) (*dtos.GetProductByIdResponseDto, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "GetProductByIdHandler.Handle")
+	ctx, span := q.tracer.Start(ctx, "GetProductByIdHandler.Handle")
 	span.SetAttributes(attribute.Object("Query", query))
 	span.SetAttributes(attribute2.String("ProductId", query.ProductID.String()))
 	defer span.End()

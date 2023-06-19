@@ -15,7 +15,7 @@ type DefaultMetadataSerializer struct {
 	serializer Serializer
 }
 
-func NewDefaultMetadataSerializer(serializer Serializer) *DefaultMetadataSerializer {
+func NewDefaultMetadataSerializer(serializer Serializer) MetadataSerializer {
 	return &DefaultMetadataSerializer{serializer: serializer}
 }
 

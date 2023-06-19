@@ -25,21 +25,28 @@ type CreateProductHandler struct {
 	log              logger.Logger
 	uow              data.CatalogUnitOfWork
 	rabbitmqProducer producer.Producer
+	tracer           tracing.AppTracer
 }
 
 func NewCreateProductHandler(
 	log logger.Logger,
 	uow data.CatalogUnitOfWork,
 	rabbitmqProducer producer.Producer,
+	tracer tracing.AppTracer,
 ) *CreateProductHandler {
-	return &CreateProductHandler{log: log, uow: uow, rabbitmqProducer: rabbitmqProducer}
+	return &CreateProductHandler{
+		log:              log,
+		uow:              uow,
+		rabbitmqProducer: rabbitmqProducer,
+		tracer:           tracer,
+	}
 }
 
 func (c *CreateProductHandler) Handle(
 	ctx context.Context,
 	command *CreateProduct,
 ) (*dtos.CreateProductResponseDto, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "CreateProductHandler.Handle")
+	ctx, span := c.tracer.Start(ctx, "CreateProductHandler.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductID.String()))
 	span.SetAttributes(attribute.Object("Command", command))
 	defer span.End()

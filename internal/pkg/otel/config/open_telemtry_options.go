@@ -12,7 +12,7 @@ var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[OpenTelemetryOpt
 type OpenTelemetryOptions struct {
 	Enabled               bool                   `mapstructure:"enabled"`
 	ServiceName           string                 `mapstructure:"serviceName"`
-	InstrumetationName    string                 `mapstructure:"instrumetationName"`
+	InstrumentationName   string                 `mapstructure:"instrumentationName"`
 	Id                    int64                  `mapstructure:"id"`
 	AlwaysOnSampler       bool                   `mapstructure:"alwaysOnSampler"`
 	JaegerExporterOptions *JaegerExporterOptions `mapstructure:"jaegerExporterOptions"`

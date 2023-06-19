@@ -5,20 +5,17 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/brpaz/echozap"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.opentelemetry.io/otel/metric"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	customHadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/log"
 	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
 	otelTracer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_tracer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 )
 
 type echoHttpServer struct {
@@ -30,7 +27,7 @@ type echoHttpServer struct {
 }
 
 type EchoHttpServer interface {
-	RunHttpServer(ctx context.Context, configEcho ...func(echo *echo.Echo)) error
+	RunHttpServer(configEcho ...func(echo *echo.Echo)) error
 	GracefulShutdown(ctx context.Context) error
 	ApplyVersioningFromHeader()
 	GetEchoInstance() *echo.Echo
@@ -42,55 +39,24 @@ type EchoHttpServer interface {
 	ConfigGroup(groupName string, groupFunc func(group *echo.Group))
 }
 
-// https://uber-go.github.io/fx/value-groups/consume.html#with-annotated-functions
-// https://uber-go.github.io/fx/annotate.html
-
-//func NewEchoHttpServer(
-//	config *EchoHttpOptions,
-//	logger logger.Logger,
-//	meter metric.Meter,
-//) EchoHttpServer {
-//	e := echolog.New()
-//	e.HideBanner = false
-//
-//	return &echoHttpServer{
-//		echolog:         e,
-//		config:       config,
-//		log:          logger,
-//		meter:        meter,
-//		routeBuilder: NewRouteBuilder(e),
-//	}
-//}
-
-// https://uber-go.github.io/fx/parameter-objects.html#using-parameter-objects
-
-// https://uber-go.github.io/fx/parameter-objects.html#using-parameter-objects
-
-type EchoHttpServerParams struct {
-	fx.In
-	// dependencies should be exported fields
-	Config *config.EchoHttpOptions
-	Logger logger.Logger
-	Meter  metric.Meter `optional:"true"`
-}
-
 func NewEchoHttpServer(
-	p EchoHttpServerParams,
+	config *config.EchoHttpOptions,
+	logger logger.Logger,
+	meter metric.Meter,
 ) EchoHttpServer {
 	e := echo.New()
 	e.HideBanner = false
 
 	return &echoHttpServer{
 		echo:         e,
-		config:       p.Config,
-		log:          p.Logger,
-		meter:        p.Meter,
+		config:       config,
+		log:          logger,
+		meter:        meter,
 		routeBuilder: NewRouteBuilder(e),
 	}
 }
 
 func (s *echoHttpServer) RunHttpServer(
-	ctx context.Context,
 	configEcho ...func(echo *echo.Echo),
 ) error {
 	s.echo.Server.ReadTimeout = constants.ReadTimeout
@@ -140,23 +106,15 @@ func (s *echoHttpServer) GracefulShutdown(ctx context.Context) error {
 }
 
 func (s *echoHttpServer) SetupDefaultMiddlewares() {
-	// https://echo.labstack.com/middleware/
-	// https://github.com/avelino/awesome-go#middlewares
-	// handling internal echolog middlewares logs with our log provider
-	if s.log.LogType() == models.Zap {
-		s.log.Configure(func(internalLog interface{}) {
-			// https://github.com/brpaz/echozap
-			s.echo.Use(echozap.ZapLogger(internalLog.(*zap.Logger)))
-		})
-	} else if s.log.LogType() == models.Logrus {
-		s.log.Configure(func(internalLog interface{}) {
-		})
+	// set error handler
+	s.echo.HTTPErrorHandler = func(err error, c echo.Context) {
+		customHadnlers.ProblemHandlerFunc(err, c, s.log)
 	}
 
-	s.echo.HideBanner = false
-	s.echo.HTTPErrorHandler = customHadnlers.ProblemHandler
-
+	// log errors and informations
+	s.echo.Use(log.EchoLogger(s.log))
 	s.echo.Use(otelTracer.Middleware(s.config.Name))
+	// Because we use metrics server middleware, if it is not available, our echo will not work.
 	if s.meter != nil {
 		s.echo.Use(otelMetrics.Middleware(s.meter, s.config.Name))
 	}

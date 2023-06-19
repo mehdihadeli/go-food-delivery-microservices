@@ -22,21 +22,28 @@ type DeleteProductHandler struct {
 	log              logger.Logger
 	uow              data.CatalogUnitOfWork
 	rabbitmqProducer producer.Producer
+	tracer           tracing.AppTracer
 }
 
 func NewDeleteProductHandler(
 	log logger.Logger,
 	uow data.CatalogUnitOfWork,
 	rabbitmqProducer producer.Producer,
+	tracer tracing.AppTracer,
 ) *DeleteProductHandler {
-	return &DeleteProductHandler{log: log, uow: uow, rabbitmqProducer: rabbitmqProducer}
+	return &DeleteProductHandler{
+		log:              log,
+		uow:              uow,
+		rabbitmqProducer: rabbitmqProducer,
+		tracer:           tracer,
+	}
 }
 
 func (c *DeleteProductHandler) Handle(
 	ctx context.Context,
 	command *DeleteProduct,
 ) (*mediatr.Unit, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "deleteProductHandler.Handle")
+	ctx, span := c.tracer.Start(ctx, "deleteProductHandler.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductID.String()))
 	span.SetAttributes(attribute.Object("Command", command))
 	defer span.End()

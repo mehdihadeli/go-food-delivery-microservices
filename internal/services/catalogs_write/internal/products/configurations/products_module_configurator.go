@@ -1,18 +1,19 @@
 package configurations
 
 import (
-	"github.com/go-playground/validator"
+	googleGrpc "google.golang.org/grpc"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
 	grpcServer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
-	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/endpoints"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/grpc"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mediatr"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/params"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/grpc"
+	productsservice "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/grpc/proto/service_clients"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
 )
 
@@ -30,9 +31,9 @@ func NewProductsModuleConfigurator(
 
 func (c *ProductsModuleConfigurator) ConfigureProductsModule() {
 	c.ResolveFunc(
-		func(logger logger.Logger, uow data.CatalogUnitOfWork, productRepository data.ProductRepository, producer producer.Producer) error {
+		func(logger logger.Logger, uow data.CatalogUnitOfWork, productRepository data.ProductRepository, producer producer.Producer, tracer tracing.AppTracer) error {
 			// Config Products Mediators
-			err := mediatr.ConfigProductsMediator(logger, uow, productRepository, producer)
+			err := mediatr.ConfigProductsMediator(logger, uow, productRepository, producer, tracer)
 			if err != nil {
 				return err
 			}
@@ -49,23 +50,20 @@ func (c *ProductsModuleConfigurator) ConfigureProductsModule() {
 }
 
 func (c *ProductsModuleConfigurator) MapProductsEndpoints() {
-	c.ResolveFunc(
-		// Config Products Endpoints
-		func(logger logger.Logger, validator *validator.Validate, catalogsMetrics *contracts.CatalogsMetrics, catalogsServer customEcho.EchoHttpServer, catalogsGrpcServer grpcServer.GrpcServer) error {
-			// Config Http endpoints
-			endpoints.ConfigProductsEndpoints(
-				catalogsServer.RouteBuilder(),
-				catalogsMetrics,
-				validator,
-				logger,
-			)
+	// Config Products Http Endpoints
+	c.ResolveFunc(func(endpointParams params.ProductsEndpointsParams) {
+		for _, endpoint := range endpointParams.Endpoints {
+			endpoint.MapEndpoint()
+		}
+	})
 
-			// Config Products gRPC endpoints
-			grpc.ConfigProductsGrpc(
-				catalogsGrpcServer.GrpcServiceBuilder(),
-				logger,
-				catalogsMetrics,
-			)
+	// Config Products Grpc Endpoints
+	c.ResolveFunc(
+		func(catalogsGrpcServer grpcServer.GrpcServer, catalogsMetrics *contracts.CatalogsMetrics, logger logger.Logger) error {
+			productGrpcService := grpc.NewProductGrpcService(catalogsMetrics, logger)
+			catalogsGrpcServer.GrpcServiceBuilder().RegisterRoutes(func(server *googleGrpc.Server) {
+				productsservice.RegisterProductsServiceServer(server, productGrpcService)
+			})
 
 			return nil
 		},

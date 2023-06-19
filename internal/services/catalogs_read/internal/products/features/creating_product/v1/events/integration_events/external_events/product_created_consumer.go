@@ -23,13 +23,15 @@ import (
 type productCreatedConsumer struct {
 	logger    logger.Logger
 	validator *validator.Validate
+	tracer    tracing.AppTracer
 }
 
 func NewProductCreatedConsumer(
 	logger logger.Logger,
 	validator *validator.Validate,
+	tracer tracing.AppTracer,
 ) consumer.ConsumerHandler {
-	return &productCreatedConsumer{logger: logger, validator: validator}
+	return &productCreatedConsumer{logger: logger, validator: validator, tracer: tracer}
 }
 
 func (c *productCreatedConsumer) Handle(
@@ -41,7 +43,7 @@ func (c *productCreatedConsumer) Handle(
 		return errors.New("error in casting message to ProductCreatedV1")
 	}
 
-	ctx, span := tracing.Tracer.Start(ctx, "productCreatedConsumer.Handle")
+	ctx, span := c.tracer.Start(ctx, "productCreatedConsumer.Handle")
 	span.SetAttributes(attribute.Object("Message", consumeContext.Message()))
 	defer span.End()
 

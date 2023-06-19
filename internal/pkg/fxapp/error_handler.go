@@ -1,13 +1,17 @@
 package fxapp
 
-import "fmt"
+import (
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+)
 
-type FxErrorHandler struct{}
+type FxErrorHandler struct {
+	logger logger.Logger
+}
 
-func NewFxErrorHandler() *FxErrorHandler {
-	return &FxErrorHandler{}
+func NewFxErrorHandler(logger logger.Logger) *FxErrorHandler {
+	return &FxErrorHandler{logger: logger}
 }
 
 func (h *FxErrorHandler) HandleError(e error) {
-	fmt.Println(e.Error())
+	h.logger.Error(e)
 }

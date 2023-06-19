@@ -24,21 +24,28 @@ type UpdateProductHandler struct {
 	log              logger.Logger
 	uow              data.CatalogUnitOfWork
 	rabbitmqProducer producer.Producer
+	tracer           tracing.AppTracer
 }
 
 func NewUpdateProductHandler(
 	log logger.Logger,
 	uow data.CatalogUnitOfWork,
 	rabbitmqProducer producer.Producer,
+	tracer tracing.AppTracer,
 ) *UpdateProductHandler {
-	return &UpdateProductHandler{log: log, uow: uow, rabbitmqProducer: rabbitmqProducer}
+	return &UpdateProductHandler{
+		log:              log,
+		uow:              uow,
+		rabbitmqProducer: rabbitmqProducer,
+		tracer:           tracer,
+	}
 }
 
 func (c *UpdateProductHandler) Handle(
 	ctx context.Context,
 	command *UpdateProduct,
 ) (*mediatr.Unit, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "UpdateProductHandler.Handle")
+	ctx, span := c.tracer.Start(ctx, "UpdateProductHandler.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductID.String()))
 	span.SetAttributes(attribute.Object("Command", command))
 	defer span.End()

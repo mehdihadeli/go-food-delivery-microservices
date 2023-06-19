@@ -16,14 +16,13 @@ require (
 	github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg v0.0.0-00010101000000-000000000000
 	github.com/mehdihadeli/go-mediatr v1.1.10
 	github.com/satori/go.uuid v1.2.0
-	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.3
 	github.com/swaggo/echo-swagger v1.3.3
 	github.com/swaggo/swag v1.8.3
 	go.opentelemetry.io/otel v1.16.0
 	go.opentelemetry.io/otel/metric v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0
-	go.uber.org/fx v1.19.3
+	go.uber.org/fx v1.20.0
 	google.golang.org/grpc v1.55.0
 	gorm.io/gorm v1.25.1
 )
@@ -43,7 +42,7 @@ require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/brpaz/echozap v1.1.3 // indirect
-	github.com/caarlos0/env/v6 v6.10.1 // indirect
+	github.com/caarlos0/env/v8 v8.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/containerd/containerd v1.6.19 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
@@ -71,14 +70,12 @@ require (
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang-migrate/migrate/v4 v4.15.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/imkira/go-interpol v1.0.0 // indirect
-	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -93,7 +90,6 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/kamva/mgm/v3 v3.5.0 // indirect
 	github.com/klauspost/compress v1.16.5 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
@@ -169,6 +165,7 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	gorm.io/driver/postgres v1.5.2 // indirect
+	gotest.tools/v3 v3.1.0 // indirect
 	mellium.im/sasl v0.3.1 // indirect
 	moul.io/http2curl v1.0.1-0.20190925090545-5cd742060b0e // indirect
 )

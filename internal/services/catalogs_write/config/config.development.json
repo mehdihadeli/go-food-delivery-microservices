@@ -63,15 +63,15 @@
     "instrumentationName": "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service",
     "id": 1,
     "alwaysOnSampler": true,
-    "jaegerExporterConfig": {
+    "jaegerExporterOptions": {
       "agentHost": "localhost",
       "agentPort": "6831"
     },
-    "zipkinExporterConfig": {
+    "zipkinExporterOptions": {
       "url": "http://localhost:9411/api/v2/spans"
     },
     "otelMetricsOptions": {
-      "port": ":2220",
+      "port": ":2001",
       "metricsRoutePath": "/metrics",
       "name": "catalogs-write-service"
     }

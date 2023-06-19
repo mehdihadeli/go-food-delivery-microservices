@@ -13,5 +13,5 @@ func NewCatalogsWriteApplicationBuilder() *CatalogsWriteApplicationBuilder {
 }
 
 func (a *CatalogsWriteApplicationBuilder) Build() *CatalogsWriteApplication {
-	return NewCatalogsWriteApplication(a.Providers, a.Options)
+	return NewCatalogsWriteApplication(a.Providers, a.Options, a.Logger)
 }

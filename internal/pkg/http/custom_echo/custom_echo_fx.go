@@ -2,13 +2,11 @@ package customEcho
 
 import (
 	"context"
-	"errors"
-	"net/http"
-	"time"
 
 	"go.uber.org/fx"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 )
 
 // Module provided to fxlog
@@ -20,14 +18,12 @@ var Module = fx.Module(
 	// - execute its func only if it requested
 	fx.Provide(
 		config.ProvideConfig,
-		//// https://uber-go.github.io/fx/value-groups/consume.html#with-annotated-functions
-		//// https://uber-go.github.io/fx/annotate.html
-		//fxlog.Annotate(
-		//	NewEchoHttpServer,
-		//	fxlog.ParamTags(``, ``, `optional:"true"`),
-		//),
-		// https://uber-go.github.io/fx/parameter-objects.html#using-parameter-objects
-		NewEchoHttpServer,
+		// https://uber-go.github.io/fx/value-groups/consume.html#with-annotated-functions
+		// https://uber-go.github.io/fx/annotate.html
+		fx.Annotate(
+			NewEchoHttpServer,
+			fx.ParamTags(``, ``, `optional:"true"`),
+		),
 	),
 	// - execute after registering all of our provided
 	// - they execute by their orders
@@ -37,21 +33,20 @@ var Module = fx.Module(
 )
 
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`
-func registerHooks(lc fx.Lifecycle, echoServer EchoHttpServer) {
+func registerHooks(lc fx.Lifecycle, echoServer EchoHttpServer, logger logger.Logger) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			// Start server in a separate goroutine, this way when the server is shutdown "s.e.Start" will
-			// return promptly, and the call to "s.e.Shutdown" is the one that will wait for all other
-			// resources to be properly freed. If it was the other way around, the application would just
-			// exit without gracefully shutting down the server.
-			// For more details: https://medium.com/@momchil.dev/proper-http-shutdown-in-go-bd3bfaade0f2
+			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
+			// this ctx is just for startup dependencies setup and OnStart callbacks, and it has short timeout 15s, and it is not alive in whole lifetime app
+			// if we need an app context which is alive until the app context done we should create it manually here
+
 			go func() {
-				if err := echoServer.RunHttpServer(ctx, nil); !errors.Is(
-					err,
-					http.ErrServerClosed,
-				) {
-					echoServer.Logger().
-						Fatalf("(EchoHttpServer.RunHttpServer) error in running server: {%v}", err)
+				if err := echoServer.RunHttpServer(); err != nil {
+					// do a fatal for going to OnStop process
+					logger.Fatalf(
+						"(EchoHttpServer.RunHttpServer) error in running server: {%v}",
+						err,
+					)
 				}
 			}()
 			echoServer.Logger().Infof(
@@ -64,12 +59,12 @@ func registerHooks(lc fx.Lifecycle, echoServer EchoHttpServer) {
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
-			defer cancel()
+			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
+			// this ctx is just for stopping callbacks or OnStop callbacks, and it has short timeout 15s, and it is not alive in whole lifetime app
 			if err := echoServer.GracefulShutdown(ctx); err != nil {
-				echoServer.Logger().Errorf("error shutting down server: %v", err)
+				echoServer.Logger().Errorf("error shutting down echo server: %v", err)
 			} else {
-				echoServer.Logger().Info("server shutdown gracefully")
+				echoServer.Logger().Info("echo server shutdown gracefully")
 			}
 			return nil
 		},

@@ -10,23 +10,25 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/delivery"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/get_product_by_id/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/get_product_by_id/v1/queries"
 )
 
 type getProductByIdEndpoint struct {
-	*delivery.ProductEndpointBase
+	params.ProductRouteParams
 }
 
 func NewGetProductByIdEndpoint(
-	productEndpointBase *delivery.ProductEndpointBase,
-) *getProductByIdEndpoint {
-	return &getProductByIdEndpoint{productEndpointBase}
+	params params.ProductRouteParams,
+) route.Endpoint {
+	return &getProductByIdEndpoint{
+		ProductRouteParams: params,
+	}
 }
 
-func (ep *getProductByIdEndpoint) MapRoute() {
+func (ep *getProductByIdEndpoint) MapEndpoint() {
 	ep.ProductsGroup.GET("/:id", ep.handler())
 }
 
@@ -43,6 +45,11 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 		ep.CatalogsMetrics.GetProductByIdHttpRequests.Add(ctx, 1)
+
+		return customErrors.NewBadRequestErrorWrap(
+			errors.New("sssssssss"),
+			"[getProductByIdEndpoint_handler.Bind] error in the binding request",
+		)
 
 		request := &dtos.GetProductByIdRequestDto{}
 		if err := c.Bind(request); err != nil {

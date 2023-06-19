@@ -10,23 +10,24 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/params"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/updating_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/updating_product/v1/dtos"
 )
 
 type updateProductEndpoint struct {
-	*delivery.ProductEndpointBase
+	params.ProductRouteParams
 }
 
 func NewUpdateProductEndpoint(
-	productEndpointBase *delivery.ProductEndpointBase,
-) *updateProductEndpoint {
-	return &updateProductEndpoint{productEndpointBase}
+	params params.ProductRouteParams,
+) route.Endpoint {
+	return &updateProductEndpoint{ProductRouteParams: params}
 }
 
-func (ep *updateProductEndpoint) MapRoute() {
+func (ep *updateProductEndpoint) MapEndpoint() {
 	ep.ProductsGroup.PUT("/:id", ep.handler())
 }
 

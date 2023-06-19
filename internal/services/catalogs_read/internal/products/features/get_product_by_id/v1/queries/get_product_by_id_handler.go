@@ -11,8 +11,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/data"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/dto"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/get_product_by_id/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
@@ -20,19 +20,22 @@ import (
 
 type GetProductByIdHandler struct {
 	log             logger.Logger
-	mongoRepository contracts.ProductRepository
-	redisRepository contracts.ProductCacheRepository
+	mongoRepository data.ProductRepository
+	redisRepository data.ProductCacheRepository
+	tracer          tracing.AppTracer
 }
 
 func NewGetProductByIdHandler(
 	log logger.Logger,
-	mongoRepository contracts.ProductRepository,
-	redisRepository contracts.ProductCacheRepository,
+	mongoRepository data.ProductRepository,
+	redisRepository data.ProductCacheRepository,
+	tracer tracing.AppTracer,
 ) *GetProductByIdHandler {
 	return &GetProductByIdHandler{
 		log:             log,
 		mongoRepository: mongoRepository,
 		redisRepository: redisRepository,
+		tracer:          tracer,
 	}
 }
 
@@ -40,7 +43,7 @@ func (q *GetProductByIdHandler) Handle(
 	ctx context.Context,
 	query *GetProductById,
 ) (*dtos.GetProductByIdResponseDto, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "getProductByIdHandler.Handle")
+	ctx, span := q.tracer.Start(ctx, "getProductByIdHandler.Handle")
 	span.SetAttributes(attribute.Object("Query", query))
 	span.SetAttributes(attribute2.String("Id", query.Id.String()))
 	defer span.End()

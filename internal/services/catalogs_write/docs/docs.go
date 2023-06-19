@@ -23,10 +23,10 @@ const docTemplate = `{
             "get": {
                 "description": "Get all products",
                 "consumes": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "produces": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "tags": [
                     "Products"
@@ -61,10 +61,10 @@ const docTemplate = `{
             "post": {
                 "description": "Create new product item",
                 "consumes": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "produces": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "tags": [
                     "Products"
@@ -95,10 +95,10 @@ const docTemplate = `{
             "get": {
                 "description": "Search products",
                 "consumes": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "produces": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "tags": [
                     "Products"
@@ -140,10 +140,10 @@ const docTemplate = `{
             "get": {
                 "description": "Get product by id",
                 "consumes": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "produces": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "tags": [
                     "Products"
@@ -170,10 +170,10 @@ const docTemplate = `{
             "put": {
                 "description": "Update existing product",
                 "consumes": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "produces": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "tags": [
                     "Products"
@@ -206,10 +206,10 @@ const docTemplate = `{
             "delete": {
                 "description": "Delete existing product",
                 "consumes": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "produces": [
-                    "application_exceptions/json"
+                    "application/json"
                 ],
                 "tags": [
                     "Products"

@@ -17,20 +17,22 @@ import (
 type SearchProductsHandler struct {
 	log    logger.Logger
 	pgRepo data.ProductRepository
+	tracer tracing.AppTracer
 }
 
 func NewSearchProductsHandler(
 	log logger.Logger,
 	pgRepo data.ProductRepository,
+	tracer tracing.AppTracer,
 ) *SearchProductsHandler {
-	return &SearchProductsHandler{log: log, pgRepo: pgRepo}
+	return &SearchProductsHandler{log: log, pgRepo: pgRepo, tracer: tracer}
 }
 
 func (c *SearchProductsHandler) Handle(
 	ctx context.Context,
 	query *SearchProducts,
 ) (*dtos.SearchProductsResponseDto, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "SearchProductsHandler.Handle")
+	ctx, span := c.tracer.Start(ctx, "SearchProductsHandler.Handle")
 	span.SetAttributes(attribute.Object("Query", query))
 	defer span.End()
 

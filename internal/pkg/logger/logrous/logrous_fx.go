@@ -20,3 +20,11 @@ var Module = fx.Module("logrousfx",
 		),
 		config.ProvideLogConfig,
 	))
+
+var ModuleFunc = func(l logger.Logger) fx.Option {
+	return fx.Module("logrousfx",
+
+		fx.Provide(config.ProvideLogConfig),
+		fx.Supply(fx.Annotate(l, fx.As(new(logger.Logger)))),
+	)
+}

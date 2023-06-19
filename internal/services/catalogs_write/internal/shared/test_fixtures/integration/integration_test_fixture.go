@@ -5,9 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/uow"
-
-	"github.com/mehdihadeli/go-mediatr"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
@@ -15,14 +12,10 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mappings"
-	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/repositories"
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
 )
 
@@ -33,7 +26,6 @@ type IntegrationTestSharedFixture struct {
 }
 
 type IntegrationTestFixture struct {
-	*contracts2.InfrastructureConfigurations
 	ProductRepository  data.ProductRepository
 	CatalogUnitOfWorks data.CatalogUnitOfWork
 	Bus                bus.Bus
@@ -62,61 +54,63 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 }
 
 func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *IntegrationTestFixture {
-	ctx, cancel := context.WithCancel(context.Background())
+	//ctx, cancel := context.WithCancel(context.Background())
+	//
+	//// we could use EmptyLogger if we don't want to log anything
+	//c := infrastructure.NewTestInfrastructureConfigurator(shared.T(), shared.Log, shared.Cfg)
+	//infrastructures, cleanup, err := c.ConfigInfrastructures(ctx)
+	//if err != nil {
+	//	cancel()
+	//	require.FailNow(shared.T(), err.Error())
+	//}
+	//
+	//productRep := repositories.NewPostgresProductRepository(
+	//	infrastructures.Log,
+	//	infrastructures.Gorm,
+	//)
+	//catalogUnitOfWork := uow.NewCatalogsUnitOfWork(infrastructures.Log, infrastructures.Gorm)
+	//
+	//mqBus, err := rabbitmq.NewRabbitMQTestContainers().
+	//	Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+	//		// Products RabbitMQ configuration
+	//		rabbitmq2.ConfigProductsRabbitMQ(builder)
+	//	})
+	//if err != nil {
+	//	cancel()
+	//	require.FailNow(shared.T(), err.Error())
+	//}
+	//
+	//catalogsMetrics, err := metrics.ConfigCatalogsMetrics(
+	//	infrastructures.Cfg,
+	//	infrastructures.Metrics,
+	//)
+	//if err != nil {
+	//	cancel()
+	//	require.FailNow(shared.T(), err.Error())
+	//}
+	//
+	//shared.T().Cleanup(func() {
+	//	// with Cancel() we send signal to done() channel to stop  grpc, http and workers gracefully
+	//	// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
+	//	// https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
+	//	mediatr.ClearRequestRegistrations()
+	//	cancel()
+	//	cleanup()
+	//})
+	//
+	//integration := &IntegrationTestFixture{
+	//	InfrastructureConfigurations: infrastructures,
+	//	Bus:                          mqBus,
+	//	CatalogsMetrics:              catalogsMetrics,
+	//	ProductRepository:            productRep,
+	//	CatalogUnitOfWorks:           catalogUnitOfWork,
+	//	Ctx:                          ctx,
+	//	cancel:                       cancel,
+	//}
+	//
+	//return integration
 
-	// we could use EmptyLogger if we don't want to log anything
-	c := infrastructure.NewTestInfrastructureConfigurator(shared.T(), shared.Log, shared.Cfg)
-	infrastructures, cleanup, err := c.ConfigInfrastructures(ctx)
-	if err != nil {
-		cancel()
-		require.FailNow(shared.T(), err.Error())
-	}
-
-	productRep := repositories.NewPostgresProductRepository(
-		infrastructures.Log,
-		infrastructures.Gorm,
-	)
-	catalogUnitOfWork := uow.NewCatalogsUnitOfWork(infrastructures.Log, infrastructures.Gorm)
-
-	mqBus, err := rabbitmq.NewRabbitMQTestContainers().
-		Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
-			// Products RabbitMQ configuration
-			rabbitmq2.ConfigProductsRabbitMQ(builder)
-		})
-	if err != nil {
-		cancel()
-		require.FailNow(shared.T(), err.Error())
-	}
-
-	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(
-		infrastructures.Cfg,
-		infrastructures.Metrics,
-	)
-	if err != nil {
-		cancel()
-		require.FailNow(shared.T(), err.Error())
-	}
-
-	shared.T().Cleanup(func() {
-		// with Cancel() we send signal to done() channel to stop  grpc, http and workers gracefully
-		// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
-		// https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
-		mediatr.ClearRequestRegistrations()
-		cancel()
-		cleanup()
-	})
-
-	integration := &IntegrationTestFixture{
-		InfrastructureConfigurations: infrastructures,
-		Bus:                          mqBus,
-		CatalogsMetrics:              catalogsMetrics,
-		ProductRepository:            productRep,
-		CatalogUnitOfWorks:           catalogUnitOfWork,
-		Ctx:                          ctx,
-		cancel:                       cancel,
-	}
-
-	return integration
+	return &IntegrationTestFixture{}
 }
 
 func (e *IntegrationTestFixture) Run() {

@@ -3,23 +3,23 @@ package aggregate
 // https://www.eventstore.com/blog/what-is-event-sourcing
 
 import (
-    "time"
+	"time"
 
-    uuid "github.com/satori/go.uuid"
+	"github.com/goccy/go-json"
+	uuid "github.com/satori/go.uuid"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/errors"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
-    customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-    typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/serializer/jsonSerializer"
-    dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/dtos/v1"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/dtos/v1"
 
-    domainExceptions "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/exceptions/domain_exceptions"
-    createOrderDomainEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/features/creating_order/v1/events/domain_events"
-    updateOrderDomainEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/features/updating_shopping_card/v1/events"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/models/orders/value_objects"
+	domainExceptions "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/exceptions/domain_exceptions"
+	createOrderDomainEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/features/creating_order/v1/events/domain_events"
+	updateOrderDomainEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/features/updating_shopping_card/v1/events"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/models/orders/value_objects"
 )
 
 type Order struct {
@@ -45,28 +45,52 @@ func (o *Order) NewEmptyAggregate() {
 	o.EventSourcedAggregateRoot = base
 }
 
-func NewOrder(id uuid.UUID, shopItems []*value_objects.ShopItem, accountEmail, deliveryAddress string, deliveredTime time.Time, createdAt time.Time) (*Order, error) {
+func NewOrder(
+	id uuid.UUID,
+	shopItems []*value_objects.ShopItem,
+	accountEmail, deliveryAddress string,
+	deliveredTime time.Time,
+	createdAt time.Time,
+) (*Order, error) {
 	order := &Order{}
 	order.NewEmptyAggregate()
 	order.SetId(id)
 
 	if shopItems == nil || len(shopItems) == 0 {
-		return nil, domainExceptions.NewOrderShopItemsRequiredError("[Order_NewOrder] order items is required")
+		return nil, domainExceptions.NewOrderShopItemsRequiredError(
+			"[Order_NewOrder] order items is required",
+		)
 	}
 
 	itemsDto, err := mapper.Map[[]*dtosV1.ShopItemDto](shopItems)
 	if err != nil {
-		return nil, customErrors.NewDomainErrorWrap(err, "[Order_NewOrder.Map] error in the mapping []ShopItems to []ShopItemsDto")
+		return nil, customErrors.NewDomainErrorWrap(
+			err,
+			"[Order_NewOrder.Map] error in the mapping []ShopItems to []ShopItemsDto",
+		)
 	}
 
-	event, err := createOrderDomainEventsV1.NewOrderCreatedEventV1(id, itemsDto, accountEmail, deliveryAddress, deliveredTime, createdAt)
+	event, err := createOrderDomainEventsV1.NewOrderCreatedEventV1(
+		id,
+		itemsDto,
+		accountEmail,
+		deliveryAddress,
+		deliveredTime,
+		createdAt,
+	)
 	if err != nil {
-		return nil, customErrors.NewDomainErrorWrap(err, "[Order_NewOrder.NewOrderCreatedEventV1] error in creating order created event")
+		return nil, customErrors.NewDomainErrorWrap(
+			err,
+			"[Order_NewOrder.NewOrderCreatedEventV1] error in creating order created event",
+		)
 	}
 
 	err = order.Apply(event, true)
 	if err != nil {
-		return nil, customErrors.NewDomainErrorWrap(err, "[Order_NewOrder.Apply] error in applying created event")
+		return nil, customErrors.NewDomainErrorWrap(
+			err,
+			"[Order_NewOrder.Apply] error in applying created event",
+		)
 	}
 
 	return order, nil
@@ -162,7 +186,8 @@ func (o *Order) CancelReason() string {
 }
 
 func (o *Order) String() string {
-	return jsonSerializer.PrettyPrint(o)
+	j, _ := json.Marshal(o)
+	return string(j)
 }
 
 func getShopItemsTotalPrice(shopItems []*value_objects.ShopItem) float64 {

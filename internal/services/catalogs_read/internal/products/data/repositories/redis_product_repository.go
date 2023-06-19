@@ -12,8 +12,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/data"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
 )
 
@@ -24,13 +24,15 @@ const (
 type redisProductRepository struct {
 	log         logger.Logger
 	redisClient redis.UniversalClient
+	tracer      tracing.AppTracer
 }
 
 func NewRedisProductRepository(
 	log logger.Logger,
 	redisClient redis.UniversalClient,
-) contracts.ProductCacheRepository {
-	return &redisProductRepository{log: log, redisClient: redisClient}
+	tracer tracing.AppTracer,
+) data.ProductCacheRepository {
+	return &redisProductRepository{log: log, redisClient: redisClient, tracer: tracer}
 }
 
 func (r *redisProductRepository) PutProduct(
@@ -38,7 +40,7 @@ func (r *redisProductRepository) PutProduct(
 	key string,
 	product *models.Product,
 ) error {
-	ctx, span := tracing.Tracer.Start(ctx, "redisRepository.PutProduct")
+	ctx, span := r.tracer.Start(ctx, "redisRepository.PutProduct")
 	span.SetAttributes(attribute2.String("PrefixKey", r.getRedisProductPrefixKey()))
 	span.SetAttributes(attribute2.String("Key", key))
 	defer span.End()
@@ -90,7 +92,7 @@ func (r *redisProductRepository) GetProductById(
 	ctx context.Context,
 	key string,
 ) (*models.Product, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "redisRepository.GetProductById")
+	ctx, span := r.tracer.Start(ctx, "redisRepository.GetProductById")
 	span.SetAttributes(attribute2.String("PrefixKey", r.getRedisProductPrefixKey()))
 	span.SetAttributes(attribute2.String("Key", key))
 	defer span.End()
@@ -138,7 +140,7 @@ func (r *redisProductRepository) GetProductById(
 }
 
 func (r *redisProductRepository) DeleteProduct(ctx context.Context, key string) error {
-	ctx, span := tracing.Tracer.Start(ctx, "redisRepository.DeleteProduct")
+	ctx, span := r.tracer.Start(ctx, "redisRepository.DeleteProduct")
 	span.SetAttributes(attribute2.String("PrefixKey", r.getRedisProductPrefixKey()))
 	span.SetAttributes(attribute2.String("Key", key))
 	defer span.End()
@@ -169,7 +171,7 @@ func (r *redisProductRepository) DeleteProduct(ctx context.Context, key string) 
 }
 
 func (r *redisProductRepository) DeleteAllProducts(ctx context.Context) error {
-	ctx, span := tracing.Tracer.Start(ctx, "redisRepository.DeleteAllProducts")
+	ctx, span := r.tracer.Start(ctx, "redisRepository.DeleteAllProducts")
 	span.SetAttributes(attribute2.String("PrefixKey", r.getRedisProductPrefixKey()))
 	defer span.End()
 

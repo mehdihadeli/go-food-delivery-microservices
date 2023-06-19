@@ -16,7 +16,7 @@ type AppOptions struct {
 	ServiceName  string `mapstructure:"serviceName"  env:"ServiceName"`
 }
 
-func NewAppConfig(env config.Environment) (*AppOptions, error) {
+func NewAppOptions(env config.Environment) (*AppOptions, error) {
 	cfg, err := config.BindConfigKey[*AppOptions](optionName, env)
 	if err != nil {
 		return nil, err

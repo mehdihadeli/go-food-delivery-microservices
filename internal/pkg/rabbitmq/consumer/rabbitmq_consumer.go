@@ -34,13 +34,11 @@ const (
 	retryDelay    = 300 * time.Millisecond
 )
 
-var (
-	retryOptions = []retry.Option{
-		retry.Attempts(retryAttempts),
-		retry.Delay(retryDelay),
-		retry.DelayType(retry.BackOffDelay),
-	}
-)
+var retryOptions = []retry.Option{
+	retry.Attempts(retryAttempts),
+	retry.Delay(retryDelay),
+	retry.DelayType(retry.BackOffDelay),
+}
 
 type rabbitMQConsumer struct {
 	rabbitmqConsumerOptions *configurations.RabbitMQConsumerConfiguration
@@ -94,7 +92,7 @@ func (r *rabbitMQConsumer) AddMessageConsumedHandler(h func(message messagingTyp
 }
 
 func (r *rabbitMQConsumer) Start(ctx context.Context) error {
-	//https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/go/receive.go
+	// https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/go/receive.go
 	if r.connection == nil {
 		return errors.New("connection is nil")
 	}
@@ -172,7 +170,7 @@ func (r *rabbitMQConsumer) Start(ctx context.Context) error {
 	msgs, err := r.channel.Consume(
 		queue,
 		r.rabbitmqConsumerOptions.ConsumerId,
-		r.rabbitmqConsumerOptions.AutoAck, //When autoAck (also known as noAck) is true, the server will acknowledge deliveries to this consumer prior to writing the delivery to the network. When autoAck is true, the consumer should not call Delivery.Ack.
+		r.rabbitmqConsumerOptions.AutoAck, // When autoAck (also known as noAck) is true, the server will acknowledge deliveries to this consumer prior to writing the delivery to the network. When autoAck is true, the consumer should not call Delivery.Ack.
 		r.rabbitmqConsumerOptions.QueueOptions.Exclusive,
 		r.rabbitmqConsumerOptions.NoLocal,
 		r.rabbitmqConsumerOptions.NoWait,
@@ -183,16 +181,16 @@ func (r *rabbitMQConsumer) Start(ctx context.Context) error {
 	}
 
 	// This channel will receive a notification when a channel closed event happens.
-	//https://github.com/streadway/amqp/blob/v1.0.0/channel.go#L447
-	//https://github.com/rabbitmq/amqp091-go/blob/main/example_client_test.go#L75
+	// https://github.com/streadway/amqp/blob/v1.0.0/channel.go#L447
+	// https://github.com/rabbitmq/amqp091-go/blob/main/example_client_test.go#L75
 	chClosedCh := make(chan *amqp091.Error, 1)
 	ch.NotifyClose(chClosedCh)
 
-	//https://blog.boot.dev/golang/connecting-to-rabbitmq-in-golang/
-	//https://levelup.gitconnected.com/connecting-a-service-in-golang-to-a-rabbitmq-server-835294d8c914
-	//https://www.ribice.ba/golang-rabbitmq-client/
-	//https://medium.com/@dhanushgopinath/automatically-recovering-rabbitmq-connections-in-go-applications-7795a605ca59
-	//https://github.com/rabbitmq/amqp091-go/blob/main/_examples/pubsub/pubsub.go
+	// https://blog.boot.dev/golang/connecting-to-rabbitmq-in-golang/
+	// https://levelup.gitconnected.com/connecting-a-service-in-golang-to-a-rabbitmq-server-835294d8c914
+	// https://www.ribice.ba/golang-rabbitmq-client/
+	// https://medium.com/@dhanushgopinath/automatically-recovering-rabbitmq-connections-in-go-applications-7795a605ca59
+	// https://github.com/rabbitmq/amqp091-go/blob/main/_examples/pubsub/pubsub.go
 	for i := 0; i < r.rabbitmqConsumerOptions.ConcurrencyLimit; i++ {
 		r.logger.Infof("Processing messages on thread %d", i)
 		go func() {
@@ -224,7 +222,7 @@ func (r *rabbitMQConsumer) Start(ctx context.Context) error {
 	return nil
 }
 
-func (r *rabbitMQConsumer) Stop(ctx context.Context) error {
+func (r *rabbitMQConsumer) Stop() error {
 	defer func() {
 		if r.channel != nil && r.channel.IsClosed() == false {
 			r.channel.Cancel(r.rabbitmqConsumerOptions.ConsumerId, false)
@@ -378,7 +376,7 @@ func (r *rabbitMQConsumer) runHandlersWithRetry(
 		var lastHandler pipeline.ConsumerHandlerFunc
 
 		if r.pipelines != nil && len(r.pipelines) > 0 {
-			var reversPipes = r.reversOrder(r.pipelines)
+			reversPipes := r.reversOrder(r.pipelines)
 			lastHandler = func() error {
 				handler := handler.(consumer.ConsumerHandler)
 				return handler.Handle(ctx, messageConsumeContext)
@@ -405,7 +403,6 @@ func (r *rabbitMQConsumer) runHandlersWithRetry(
 
 			v := aggregateResult.(pipeline.ConsumerHandlerFunc)
 			err := v()
-
 			if err != nil {
 				return errors.Wrap(err, "error handling consumer handlers pipeline")
 			}
@@ -465,7 +462,7 @@ func (r *rabbitMQConsumer) deserializeData(
 	body []byte,
 ) interface{} {
 	if contentType == "" {
-		contentType = "application_exceptions/json"
+		contentType = "application/json"
 	}
 
 	if body == nil || len(body) == 0 {
@@ -473,9 +470,9 @@ func (r *rabbitMQConsumer) deserializeData(
 		return nil
 	}
 
-	if contentType == "application_exceptions/json" {
+	if contentType == "application/json" {
 		// r.rabbitmqConsumerOptions.ConsumerMessageType --> actual type
-		//deserialize, err := r.eventSerializer.DeserializeType(body, r.rabbitmqConsumerOptions.ConsumerMessageType, contentType)
+		// deserialize, err := r.eventSerializer.DeserializeType(body, r.rabbitmqConsumerOptions.ConsumerMessageType, contentType)
 		deserialize, err := r.eventSerializer.DeserializeMessage(
 			body,
 			eventType,

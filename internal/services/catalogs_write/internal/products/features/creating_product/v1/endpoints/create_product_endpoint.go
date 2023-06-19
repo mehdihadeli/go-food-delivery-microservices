@@ -10,21 +10,22 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/params"
 	createProductCommand "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/commands"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/delivery"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/dtos"
 )
 
 type createProductEndpoint struct {
-	*delivery.ProductEndpointBase
+	params.ProductRouteParams
 }
 
-func NewCreteProductEndpoint(endpointBase *delivery.ProductEndpointBase) *createProductEndpoint {
-	return &createProductEndpoint{endpointBase}
+func NewCreteProductEndpoint(params params.ProductRouteParams) route.Endpoint {
+	return &createProductEndpoint{ProductRouteParams: params}
 }
 
-func (ep *createProductEndpoint) MapRoute() {
+func (ep *createProductEndpoint) MapEndpoint() {
 	ep.ProductsGroup.POST("", ep.handler())
 }
 
@@ -51,7 +52,6 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 			ep.Logger.Errorf(
 				fmt.Sprintf("[createProductEndpoint_handler.Bind] err: %v", badRequestErr),
 			)
-			return badRequestErr
 		}
 
 		command, err := createProductCommand.NewCreateProduct(

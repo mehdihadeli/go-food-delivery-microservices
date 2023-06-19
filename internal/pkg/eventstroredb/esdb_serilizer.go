@@ -27,14 +27,19 @@ type EsdbSerializer struct {
 	eventSerializer    serializer.EventSerializer
 }
 
-func NewEsdbSerializer(metadataSerializer serializer.MetadataSerializer, eventSerializer serializer.EventSerializer) *EsdbSerializer {
+func NewEsdbSerializer(
+	metadataSerializer serializer.MetadataSerializer,
+	eventSerializer serializer.EventSerializer,
+) *EsdbSerializer {
 	return &EsdbSerializer{
 		metadataSerializer: metadataSerializer,
 		eventSerializer:    eventSerializer,
 	}
 }
 
-func (e *EsdbSerializer) StreamEventToEventData(streamEvent *models.StreamEvent) (esdb.EventData, error) {
+func (e *EsdbSerializer) StreamEventToEventData(
+	streamEvent *models.StreamEvent,
+) (esdb.EventData, error) {
 	eventSerializationResult, err := e.eventSerializer.Serialize(streamEvent.Event)
 	if err != nil {
 		return *new(esdb.EventData), err
@@ -48,7 +53,7 @@ func (e *EsdbSerializer) StreamEventToEventData(streamEvent *models.StreamEvent)
 	var contentType esdb.ContentType
 
 	switch eventSerializationResult.ContentType {
-	case "application_exceptions/json":
+	case "application/json":
 		contentType = esdb.JsonContentType
 	default:
 		contentType = esdb.BinaryContentType
@@ -67,7 +72,9 @@ func (e *EsdbSerializer) StreamEventToEventData(streamEvent *models.StreamEvent)
 	}, nil
 }
 
-func (e *EsdbSerializer) ExpectedStreamVersionToEsdbExpectedRevision(expectedVersion expectedStreamVersion.ExpectedStreamVersion) esdb.ExpectedRevision {
+func (e *EsdbSerializer) ExpectedStreamVersionToEsdbExpectedRevision(
+	expectedVersion expectedStreamVersion.ExpectedStreamVersion,
+) esdb.ExpectedRevision {
 	if expectedVersion.IsNoStream() {
 		return esdb.NoStream{}
 	}
@@ -81,7 +88,9 @@ func (e *EsdbSerializer) ExpectedStreamVersionToEsdbExpectedRevision(expectedVer
 	return esdb.StreamRevision{Value: uint64(expectedVersion.Value())}
 }
 
-func (e *EsdbSerializer) StreamReadPositionToStreamPosition(readPosition readPosition.StreamReadPosition) esdb.StreamPosition {
+func (e *EsdbSerializer) StreamReadPositionToStreamPosition(
+	readPosition readPosition.StreamReadPosition,
+) esdb.StreamPosition {
 	if readPosition.IsEnd() {
 		return esdb.End{}
 	}
@@ -92,11 +101,15 @@ func (e *EsdbSerializer) StreamReadPositionToStreamPosition(readPosition readPos
 	return esdb.Revision(1)
 }
 
-func (e *EsdbSerializer) StreamTruncatePositionToInt64(truncatePosition truncatePosition.StreamTruncatePosition) uint64 {
+func (e *EsdbSerializer) StreamTruncatePositionToInt64(
+	truncatePosition truncatePosition.StreamTruncatePosition,
+) uint64 {
 	return uint64(truncatePosition.Value())
 }
 
-func (e *EsdbSerializer) EsdbReadStreamToResolvedEvents(stream *esdb.ReadStream) ([]*esdb.ResolvedEvent, error) {
+func (e *EsdbSerializer) EsdbReadStreamToResolvedEvents(
+	stream *esdb.ReadStream,
+) ([]*esdb.ResolvedEvent, error) {
 	var events []*esdb.ResolvedEvent
 
 	for {
@@ -117,12 +130,20 @@ func (e *EsdbSerializer) EsdbReadStreamToResolvedEvents(stream *esdb.ReadStream)
 	return events, nil
 }
 
-func (e *EsdbSerializer) EsdbPositionToStreamReadPosition(position esdb.Position) readPosition.StreamReadPosition {
+func (e *EsdbSerializer) EsdbPositionToStreamReadPosition(
+	position esdb.Position,
+) readPosition.StreamReadPosition {
 	return readPosition.FromInt64(int64(position.Commit))
 }
 
-func (e *EsdbSerializer) ResolvedEventToStreamEvent(resolveEvent *esdb.ResolvedEvent) (*models.StreamEvent, error) {
-	deserializedEvent, err := e.eventSerializer.DeserializeEvent(resolveEvent.Event.Data, resolveEvent.Event.EventType, resolveEvent.Event.ContentType)
+func (e *EsdbSerializer) ResolvedEventToStreamEvent(
+	resolveEvent *esdb.ResolvedEvent,
+) (*models.StreamEvent, error) {
+	deserializedEvent, err := e.eventSerializer.DeserializeEvent(
+		resolveEvent.Event.Data,
+		resolveEvent.Event.EventType,
+		resolveEvent.Event.ContentType,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +167,9 @@ func (e *EsdbSerializer) ResolvedEventToStreamEvent(resolveEvent *esdb.ResolvedE
 	}, nil
 }
 
-func (e *EsdbSerializer) ResolvedEventsToStreamEvents(resolveEvents []*esdb.ResolvedEvent) ([]*models.StreamEvent, error) {
+func (e *EsdbSerializer) ResolvedEventsToStreamEvents(
+	resolveEvents []*esdb.ResolvedEvent,
+) ([]*models.StreamEvent, error) {
 	var streamEvents []*models.StreamEvent
 
 	linq.From(resolveEvents).WhereT(func(item *esdb.ResolvedEvent) bool {
@@ -162,11 +185,16 @@ func (e *EsdbSerializer) ResolvedEventsToStreamEvents(resolveEvents []*esdb.Reso
 	return streamEvents, nil
 }
 
-func (e *EsdbSerializer) EsdbWriteResultToAppendEventResult(writeResult *esdb.WriteResult) *appendResult.AppendEventsResult {
+func (e *EsdbSerializer) EsdbWriteResultToAppendEventResult(
+	writeResult *esdb.WriteResult,
+) *appendResult.AppendEventsResult {
 	return appendResult.From(writeResult.CommitPosition, writeResult.NextExpectedVersion)
 }
 
-func (e *EsdbSerializer) Serialize(data interface{}, meta metadata.Metadata) (*esdb.EventData, error) {
+func (e *EsdbSerializer) Serialize(
+	data interface{},
+	meta metadata.Metadata,
+) (*esdb.EventData, error) {
 	serializedData, err := e.eventSerializer.Serialize(data)
 	if err != nil {
 		return nil, err
@@ -187,12 +215,18 @@ func (e *EsdbSerializer) Serialize(data interface{}, meta metadata.Metadata) (*e
 	}, nil
 }
 
-func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interface{}, metadata.Metadata, error) {
+func (e *EsdbSerializer) Deserialize(
+	resolveEvent *esdb.ResolvedEvent,
+) (interface{}, metadata.Metadata, error) {
 	eventType := resolveEvent.Event.EventType
 	data := resolveEvent.Event.Data
 	userMeta := resolveEvent.Event.UserMetadata
 
-	payload, err := e.eventSerializer.DeserializeEvent(data, eventType, resolveEvent.Event.ContentType)
+	payload, err := e.eventSerializer.DeserializeEvent(
+		data,
+		eventType,
+		resolveEvent.Event.ContentType,
+	)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -205,7 +239,11 @@ func (e *EsdbSerializer) Deserialize(resolveEvent *esdb.ResolvedEvent) (interfac
 	return payload, meta, nil
 }
 
-func (e *EsdbSerializer) DomainEventToStreamEvent(domainEvent domain.IDomainEvent, meta metadata.Metadata, position int64) *models.StreamEvent {
+func (e *EsdbSerializer) DomainEventToStreamEvent(
+	domainEvent domain.IDomainEvent,
+	meta metadata.Metadata,
+	position int64,
+) *models.StreamEvent {
 	return &models.StreamEvent{
 		EventID:  uuid2.NewV4(),
 		Event:    domainEvent,

@@ -1,50 +1,79 @@
 package configurations
 
 import (
-	"context"
+	"github.com/go-playground/validator"
+	googleGrpc "google.golang.org/grpc"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
 	grpcServer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/configurations/endpoints"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/configurations/grpc"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/configurations/mappings"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/configurations/mediatr"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/contracts"
-	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/shared/contracts"
+	ordersservice "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/contracts/proto/service_clients"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/contracts/repositories"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/grpc"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/orders/models/orders/aggregate"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orders/internal/shared/contracts"
 )
 
-type ordersModuleConfigurator struct {
-	*contracts2.InfrastructureConfigurations
-	routeBuilder       *customEcho.RouteBuilder
-	grpcServiceBuilder *grpcServer.GrpcServiceBuilder
-	bus                bus.Bus
-	ordersMetrics      *contracts2.OrdersMetrics
+type OrdersModuleConfigurator struct {
+	*fxapp.Application
 }
 
-func NewOrdersModuleConfigurator(infrastructure *contracts2.InfrastructureConfigurations, ordersMetrics *contracts2.OrdersMetrics, bus bus.Bus, routeBuilder *customEcho.RouteBuilder, grpcServiceBuilder *grpcServer.GrpcServiceBuilder) contracts.OrdersModuleConfigurator {
-	return &ordersModuleConfigurator{InfrastructureConfigurations: infrastructure, routeBuilder: routeBuilder, grpcServiceBuilder: grpcServiceBuilder, bus: bus, ordersMetrics: ordersMetrics}
+func NewOrdersModuleConfigurator(
+	fxapp *fxapp.Application,
+) *OrdersModuleConfigurator {
+	return &OrdersModuleConfigurator{
+		Application: fxapp,
+	}
 }
 
-func (c *ordersModuleConfigurator) ConfigureOrdersModule(ctx context.Context) error {
-	//Config Orders Mappings
-	err := mappings.ConfigureOrdersMappings()
-	if err != nil {
-		return err
-	}
+func (c *OrdersModuleConfigurator) ConfigureOrdersModule() {
+	c.ResolveFunc(
+		func(logger logger.Logger,
+			server customEcho.EchoHttpServer,
+			orderRepository repositories.OrderMongoRepository,
+			orderAggregateStore store.AggregateStore[*aggregate.Order],
+			tracer tracing.AppTracer,
+		) error {
+			// Config Orders Mappings
+			err := mappings.ConfigureOrdersMappings()
+			if err != nil {
+				return err
+			}
 
-	//Config Orders Mediators
-	err = mediatr.ConfigOrdersMediator(c.InfrastructureConfigurations)
-	if err != nil {
-		return err
-	}
+			// Config Orders Mediators
+			err = mediatr.ConfigOrdersMediator(logger, orderRepository, orderAggregateStore, tracer)
+			if err != nil {
+				return err
+			}
 
-	//Config Orders Grpc
-	grpc.ConfigOrdersGrpc(ctx, c.grpcServiceBuilder, c.InfrastructureConfigurations, c.bus, c.ordersMetrics)
+			return nil
+		},
+	)
+}
 
-	//Config Orders Endpoints
-	endpoints.ConfigOrdersEndpoints(ctx, c.routeBuilder, c.InfrastructureConfigurations, c.bus, c.ordersMetrics)
+func (c *OrdersModuleConfigurator) MapOrdersEndpoints() {
+	// Config Orders Http Endpoints
+	c.ResolveFuncWithParamTag(func(endpoints []route.Endpoint) {
+		for _, endpoint := range endpoints {
+			endpoint.MapEndpoint()
+		}
+	}, `group:"order-routes"`,
+	)
 
-	return nil
+	// Config Orders Grpc Endpoints
+	c.ResolveFunc(
+		func(ordersGrpcServer grpcServer.GrpcServer, ordersMetrics *contracts.OrdersMetrics, logger logger.Logger, validator *validator.Validate) error {
+			orderGrpcService := grpc.NewOrderGrpcService(logger, validator, ordersMetrics)
+			ordersGrpcServer.GrpcServiceBuilder().RegisterRoutes(func(server *googleGrpc.Server) {
+				ordersservice.RegisterOrdersServiceServer(server, orderGrpcService)
+			})
+			return nil
+		},
+	)
 }

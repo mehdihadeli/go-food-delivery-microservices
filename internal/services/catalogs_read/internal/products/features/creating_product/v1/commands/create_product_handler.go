@@ -10,27 +10,30 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/data"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
 )
 
 type CreateProductHandler struct {
 	log             logger.Logger
-	mongoRepository contracts.ProductRepository
-	redisRepository contracts.ProductCacheRepository
+	mongoRepository data.ProductRepository
+	redisRepository data.ProductCacheRepository
+	tracer          tracing.AppTracer
 }
 
 func NewCreateProductHandler(
 	log logger.Logger,
-	mongoRepository contracts.ProductRepository,
-	redisRepository contracts.ProductCacheRepository,
+	mongoRepository data.ProductRepository,
+	redisRepository data.ProductCacheRepository,
+	tracer tracing.AppTracer,
 ) *CreateProductHandler {
 	return &CreateProductHandler{
 		log:             log,
 		mongoRepository: mongoRepository,
 		redisRepository: redisRepository,
+		tracer:          tracer,
 	}
 }
 
@@ -38,7 +41,7 @@ func (c *CreateProductHandler) Handle(
 	ctx context.Context,
 	command *CreateProduct,
 ) (*dtos.CreateProductResponseDto, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "CreateProductHandler.Handle")
+	ctx, span := c.tracer.Start(ctx, "CreateProductHandler.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductId))
 	span.SetAttributes(attribute.Object("Command", command))
 	defer span.End()

@@ -11,7 +11,7 @@ require (
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/brpaz/echozap v1.1.3
-	github.com/caarlos0/env/v6 v6.10.1
+	github.com/caarlos0/env/v8 v8.0.0
 	github.com/docker/go-connections v0.4.0
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/elastic/go-elasticsearch/v8 v8.8.0
@@ -61,7 +61,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.16.0
 	go.opentelemetry.io/otel/sdk/metric v0.39.0
 	go.opentelemetry.io/otel/trace v1.16.0
-	go.uber.org/fx v1.19.3
+	go.uber.org/fx v1.20.0
 	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.55.0
 	gorm.io/driver/postgres v1.5.2

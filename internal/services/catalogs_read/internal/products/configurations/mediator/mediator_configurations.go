@@ -5,8 +5,8 @@ import (
 	"github.com/mehdihadeli/go-mediatr"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/data"
 	createProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/commands"
 	createProductDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/dtos"
 	deleteProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/deleting_products/v1/commands"
@@ -21,15 +21,16 @@ import (
 
 func ConfigProductsMediator(
 	logger logger.Logger,
-	mongoProductRepository contracts2.ProductRepository,
-	cacheProductRepository contracts2.ProductCacheRepository,
-	bus bus2.Bus,
+	mongoProductRepository data.ProductRepository,
+	cacheProductRepository data.ProductCacheRepository,
+	tracer tracing.AppTracer,
 ) error {
 	err := mediatr.RegisterRequestHandler[*createProductCommandV1.CreateProduct, *createProductDtosV1.CreateProductResponseDto](
 		createProductCommandV1.NewCreateProductHandler(
 			logger,
 			mongoProductRepository,
 			cacheProductRepository,
+			tracer,
 		),
 	)
 	if err != nil {
@@ -41,6 +42,7 @@ func ConfigProductsMediator(
 			logger,
 			mongoProductRepository,
 			cacheProductRepository,
+			tracer,
 		),
 	)
 	if err != nil {
@@ -52,6 +54,7 @@ func ConfigProductsMediator(
 			logger,
 			mongoProductRepository,
 			cacheProductRepository,
+			tracer,
 		),
 	)
 	if err != nil {
@@ -59,7 +62,7 @@ func ConfigProductsMediator(
 	}
 
 	err = mediatr.RegisterRequestHandler[*getProductsQueryV1.GetProducts, *getProductsDtoV1.GetProductsResponseDto](
-		getProductsQueryV1.NewGetProductsHandler(logger, mongoProductRepository),
+		getProductsQueryV1.NewGetProductsHandler(logger, mongoProductRepository, tracer),
 	)
 	if err != nil {
 		return errors.WrapIf(err, "error while registering handlers in the mediator")
@@ -69,6 +72,7 @@ func ConfigProductsMediator(
 		searchProductsQueryV1.NewSearchProductsHandler(
 			logger,
 			mongoProductRepository,
+			tracer,
 		),
 	)
 	if err != nil {
@@ -80,6 +84,7 @@ func ConfigProductsMediator(
 			logger,
 			mongoProductRepository,
 			cacheProductRepository,
+			tracer,
 		),
 	)
 	if err != nil {

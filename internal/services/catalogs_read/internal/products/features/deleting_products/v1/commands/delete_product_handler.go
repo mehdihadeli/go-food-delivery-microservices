@@ -11,25 +11,27 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/data"
 )
 
 type DeleteProductCommand struct {
 	log             logger.Logger
-	mongoRepository contracts.ProductRepository
-	redisRepository contracts.ProductCacheRepository
+	mongoRepository data.ProductRepository
+	redisRepository data.ProductCacheRepository
+	tracer          tracing.AppTracer
 }
 
 func NewDeleteProductHandler(
 	log logger.Logger,
-	repository contracts.ProductRepository,
-	redisRepository contracts.ProductCacheRepository,
+	repository data.ProductRepository,
+	redisRepository data.ProductCacheRepository,
+	tracer tracing.AppTracer,
 ) *DeleteProductCommand {
 	return &DeleteProductCommand{
 		log:             log,
 		mongoRepository: repository,
 		redisRepository: redisRepository,
+		tracer:          tracer,
 	}
 }
 
@@ -37,7 +39,7 @@ func (c *DeleteProductCommand) Handle(
 	ctx context.Context,
 	command *DeleteProduct,
 ) (*mediatr.Unit, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "DeleteProductCommand.Handle")
+	ctx, span := c.tracer.Start(ctx, "DeleteProductCommand.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductId.String()))
 	span.SetAttributes(attribute.Object("Command", command))
 	defer span.End()

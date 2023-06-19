@@ -11,20 +11,21 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/data"
 )
 
 type UpdateProductHandler struct {
 	log             logger.Logger
-	mongoRepository contracts.ProductRepository
-	redisRepository contracts.ProductCacheRepository
+	mongoRepository data.ProductRepository
+	redisRepository data.ProductCacheRepository
+	tracer          tracing.AppTracer
 }
 
 func NewUpdateProductHandler(
 	log logger.Logger,
-	mongoRepository contracts.ProductRepository,
-	redisRepository contracts.ProductCacheRepository,
+	mongoRepository data.ProductRepository,
+	redisRepository data.ProductCacheRepository,
+	tracer tracing.AppTracer,
 ) *UpdateProductHandler {
 	return &UpdateProductHandler{
 		log:             log,
@@ -37,7 +38,7 @@ func (c *UpdateProductHandler) Handle(
 	ctx context.Context,
 	command *UpdateProduct,
 ) (*mediatr.Unit, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "UpdateProductHandler.Handle")
+	ctx, span := c.tracer.Start(ctx, "UpdateProductHandler.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductId.String()))
 	span.SetAttributes(attribute.Object("Command", command))
 	defer span.End()

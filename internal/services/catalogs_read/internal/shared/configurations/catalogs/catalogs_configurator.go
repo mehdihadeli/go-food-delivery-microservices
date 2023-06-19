@@ -13,24 +13,24 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/catalogs/infrastructure"
 )
 
-type CatalogsConfigurator struct {
+type CatalogsServiceConfigurator struct {
 	*fxapp.Application
 	infrastructureConfigurator *infrastructure.InfrastructureConfigurator
 	productsModuleConfigurator *configurations.ProductsModuleConfigurator
 }
 
-func NewCatalogsConfigurator(fxapp *fxapp.Application) *CatalogsConfigurator {
+func NewCatalogsServiceConfigurator(fxapp *fxapp.Application) *CatalogsServiceConfigurator {
 	infraConfigurator := infrastructure.NewInfrastructureConfigurator(fxapp)
 	productModuleConfigurator := configurations.NewProductsModuleConfigurator(fxapp)
 
-	return &CatalogsConfigurator{
+	return &CatalogsServiceConfigurator{
 		Application:                fxapp,
 		infrastructureConfigurator: infraConfigurator,
 		productsModuleConfigurator: productModuleConfigurator,
 	}
 }
 
-func (ic *CatalogsConfigurator) ConfigureCatalogs() {
+func (ic *CatalogsServiceConfigurator) ConfigureCatalogs() {
 	// Shared
 	// Infrastructure
 	ic.infrastructureConfigurator.ConfigInfrastructures()
@@ -43,10 +43,10 @@ func (ic *CatalogsConfigurator) ConfigureCatalogs() {
 	ic.productsModuleConfigurator.ConfigureProductsModule()
 }
 
-func (ic *CatalogsConfigurator) MapCatalogsEndpoints() {
+func (ic *CatalogsServiceConfigurator) MapCatalogsEndpoints() {
 	// Shared
 	ic.ResolveFunc(
-		func(catalogsServer customEcho.EchoHttpServer, options *config.AppOptions) error {
+		func(catalogsServer customEcho.EchoHttpServer, cfg *config.Config) error {
 			catalogsServer.SetupDefaultMiddlewares()
 
 			// Config catalogs root endpoint
@@ -55,7 +55,10 @@ func (ic *CatalogsConfigurator) MapCatalogsEndpoints() {
 					e.GET("", func(ec echo.Context) error {
 						return ec.String(
 							http.StatusOK,
-							fmt.Sprintf("%s is running...", options.GetMicroserviceNameUpper()),
+							fmt.Sprintf(
+								"%s is running...",
+								cfg.AppOptions.GetMicroserviceNameUpper(),
+							),
 						)
 					})
 				})
@@ -68,6 +71,6 @@ func (ic *CatalogsConfigurator) MapCatalogsEndpoints() {
 	)
 
 	// Modules
-	// Products Module endpoints
+	// Products CatalogsServiceModule endpoints
 	ic.productsModuleConfigurator.MapProductsEndpoints()
 }

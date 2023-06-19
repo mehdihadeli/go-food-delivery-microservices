@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"emperror.dev/errors"
-	"github.com/caarlos0/env/v6"
+	"github.com/caarlos0/env/v8"
 	"github.com/spf13/viper"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"

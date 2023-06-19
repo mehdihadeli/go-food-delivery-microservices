@@ -150,5 +150,5 @@ func (s *DefaultEventSerializer) DeserializeEvent(
 }
 
 func (s *DefaultEventSerializer) ContentType() string {
-	return "application_exceptions/json"
+	return "application/json"
 }

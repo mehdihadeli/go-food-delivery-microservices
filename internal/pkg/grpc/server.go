@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"time"
@@ -34,7 +33,7 @@ const (
 )
 
 type GrpcServer interface {
-	RunGrpcServer(ctx context.Context, configGrpc ...func(grpcServer *googleGrpc.Server)) error
+	RunGrpcServer(configGrpc ...func(grpcServer *googleGrpc.Server)) error
 	GracefulShutdown()
 	GetCurrentGrpcServer() *googleGrpc.Server
 	GrpcServiceBuilder() *GrpcServiceBuilder
@@ -106,7 +105,6 @@ func NewGrpcServer(
 }
 
 func (s *grpcServer) RunGrpcServer(
-	ctx context.Context,
 	configGrpc ...func(grpcServer *googleGrpc.Server),
 ) error {
 	l, err := net.Listen("tcp", s.config.Port)

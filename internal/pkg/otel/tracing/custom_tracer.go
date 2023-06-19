@@ -7,15 +7,15 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type CustomTracer interface {
+type AppTracer interface {
 	trace.Tracer
 }
 
-type customTracer struct {
+type appTracer struct {
 	trace.Tracer
 }
 
-func (c *customTracer) Start(
+func (c *appTracer) Start(
 	ctx context.Context,
 	spanName string,
 	opts ...trace.SpanStartOption,
@@ -28,8 +28,8 @@ func (c *customTracer) Start(
 	return c.Tracer.Start(ctx, spanName, opts...)
 }
 
-func NewCustomTracer(name string, options ...trace.TracerOption) CustomTracer {
+func NewAppTracer(name string, options ...trace.TracerOption) AppTracer {
 	// without registering `NewOtelTracing` it uses global empty (NoopTracer) TraceProvider but after using `NewOtelTracing`, global TraceProvider will be replaced
 	tracer := otel.Tracer(name, options...)
-	return &customTracer{Tracer: tracer}
+	return &appTracer{Tracer: tracer}
 }

@@ -10,23 +10,23 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/delivery"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/deleting_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/deleting_product/v1/dtos"
 )
 
 type deleteProductEndpoint struct {
-	*delivery.ProductEndpointBase
+	params.ProductRouteParams
 }
 
 func NewDeleteProductEndpoint(
-	productEndpointBase *delivery.ProductEndpointBase,
-) *deleteProductEndpoint {
-	return &deleteProductEndpoint{productEndpointBase}
+	params params.ProductRouteParams,
+) route.Endpoint {
+	return &deleteProductEndpoint{ProductRouteParams: params}
 }
 
-func (ep *deleteProductEndpoint) MapRoute() {
+func (ep *deleteProductEndpoint) MapEndpoint() {
 	ep.ProductsGroup.DELETE("/:id", ep.handler())
 }
 

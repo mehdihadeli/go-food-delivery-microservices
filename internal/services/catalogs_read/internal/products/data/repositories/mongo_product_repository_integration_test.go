@@ -11,7 +11,6 @@ import (
 	mongo2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/mongo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -151,7 +150,10 @@ func (p *productMongoRepositoryTestSuite) TearDownTest() {
 	p.ctx.Done()
 }
 
-func setupTest(ctx context.Context, p *productMongoRepositoryTestSuite) (contracts.ProductRepository, error) {
+func setupTest(
+	ctx context.Context,
+	p *productMongoRepositoryTestSuite,
+) (contracts.ProductRepository, error) {
 	mongoDB, err := mongo2.NewMongoTestContainers().Start(ctx, p.T())
 	if err != nil {
 		return nil, err
@@ -172,8 +174,22 @@ func seedAndMigration(p *productMongoRepositoryTestSuite, db *mongo.Client) {
 	// https://github.com/go-testfixtures/testfixtures#templating
 	// seed data
 	seedProducts := []models.Product{
-		{Id: uuid.NewV4().String(), ProductId: uuid.NewV4().String(), Name: gofakeit.Name(), Description: gofakeit.AdjectiveDescriptive(), Price: gofakeit.Price(150, 6000), CreatedAt: time.Now()},
-		{Id: uuid.NewV4().String(), ProductId: uuid.NewV4().String(), Name: gofakeit.Name(), Description: gofakeit.AdjectiveDescriptive(), Price: gofakeit.Price(150, 6000), CreatedAt: time.Now()},
+		{
+			Id:          uuid.NewV4().String(),
+			ProductId:   uuid.NewV4().String(),
+			Name:        gofakeit.Name(),
+			Description: gofakeit.AdjectiveDescriptive(),
+			Price:       gofakeit.Price(150, 6000),
+			CreatedAt:   time.Now(),
+		},
+		{
+			Id:          uuid.NewV4().String(),
+			ProductId:   uuid.NewV4().String(),
+			Name:        gofakeit.Name(),
+			Description: gofakeit.AdjectiveDescriptive(),
+			Price:       gofakeit.Price(150, 6000),
+			CreatedAt:   time.Now(),
+		},
 	}
 
 	//// https://go.dev/doc/faq#convert_slice_of_interface
@@ -188,6 +204,11 @@ func seedAndMigration(p *productMongoRepositoryTestSuite, db *mongo.Client) {
 		p.FailNowf("error in seed database", err.Error())
 	}
 
-	result, err := mongodb.Paginate[*models.Product](p.ctx, utils.NewListQuery(10, 1), collection, nil)
+	result, err := mongodb.Paginate[*models.Product](
+		p.ctx,
+		utils.NewListQuery(10, 1),
+		collection,
+		nil,
+	)
 	items = result.Items
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/ahmetb/go-linq/v3"
 	attribute2 "go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
@@ -29,21 +30,23 @@ type eventStoreDbEventStore struct {
 	log        logger.Logger
 	client     *esdb.Client
 	serializer *EsdbSerializer
+	tracer     trace.Tracer
 }
 
 func NewEventStoreDbEventStore(
 	log logger.Logger,
 	client *esdb.Client,
 	serializer *EsdbSerializer,
+	tracer trace.Tracer,
 ) store.EventStore {
-	return &eventStoreDbEventStore{log: log, client: client, serializer: serializer}
+	return &eventStoreDbEventStore{log: log, client: client, serializer: serializer, tracer: tracer}
 }
 
 func (e *eventStoreDbEventStore) StreamExists(
 	streamName streamName.StreamName,
 	ctx context.Context,
 ) (bool, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.StreamExists")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.StreamExists")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -76,7 +79,7 @@ func (e *eventStoreDbEventStore) AppendEvents(
 	events []*models.StreamEvent,
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.AppendEvents")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.AppendEvents")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -127,7 +130,7 @@ func (e *eventStoreDbEventStore) AppendNewEvents(
 	events []*models.StreamEvent,
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.AppendNewEvents")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.AppendNewEvents")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -163,7 +166,7 @@ func (e *eventStoreDbEventStore) ReadEvents(
 	count uint64,
 	ctx context.Context,
 ) ([]*models.StreamEvent, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.ReadEvents")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.ReadEvents")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -218,7 +221,7 @@ func (e *eventStoreDbEventStore) ReadEventsWithMaxCount(
 	readPosition readPosition.StreamReadPosition,
 	ctx context.Context,
 ) ([]*models.StreamEvent, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsWithMaxCount")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsWithMaxCount")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -230,7 +233,7 @@ func (e *eventStoreDbEventStore) ReadEventsFromStart(
 	count uint64,
 	ctx context.Context,
 ) ([]*models.StreamEvent, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsFromStart")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsFromStart")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -243,7 +246,7 @@ func (e *eventStoreDbEventStore) ReadEventsBackwards(
 	count uint64,
 	ctx context.Context,
 ) ([]*models.StreamEvent, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsBackwards")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsBackwards")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -298,7 +301,7 @@ func (e *eventStoreDbEventStore) ReadEventsBackwardsWithMaxCount(
 	readPosition readPosition.StreamReadPosition,
 	ctx context.Context,
 ) ([]*models.StreamEvent, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsBackwardsWithMaxCount")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsBackwardsWithMaxCount")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -310,7 +313,7 @@ func (e *eventStoreDbEventStore) ReadEventsBackwardsFromEnd(
 	count uint64,
 	ctx context.Context,
 ) ([]*models.StreamEvent, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsBackwardsWithMaxCount")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.ReadEventsBackwardsWithMaxCount")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -323,7 +326,7 @@ func (e *eventStoreDbEventStore) TruncateStream(
 	expectedVersion expectedStreamVersion.ExpectedStreamVersion,
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.TruncateStream")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.TruncateStream")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 
@@ -366,7 +369,7 @@ func (e *eventStoreDbEventStore) DeleteStream(
 	expectedVersion expectedStreamVersion.ExpectedStreamVersion,
 	ctx context.Context,
 ) error {
-	ctx, span := tracing.Tracer.Start(ctx, "eventStoreDbEventStore.DeleteStream")
+	ctx, span := e.tracer.Start(ctx, "eventStoreDbEventStore.DeleteStream")
 	span.SetAttributes(attribute2.String("StreamName", streamName.String()))
 	defer span.End()
 

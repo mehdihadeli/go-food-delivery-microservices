@@ -227,7 +227,7 @@ func (r *rabbitmqBus) Start(ctx context.Context) error {
 			// will process again with reConsume functionality
 			continue
 		} else if err != nil {
-			err2 := r.Stop(ctx)
+			err2 := r.Stop()
 			if err2 != nil {
 				return errors.WrapIf(err, err2.Error())
 			}
@@ -238,7 +238,7 @@ func (r *rabbitmqBus) Start(ctx context.Context) error {
 	return nil
 }
 
-func (r *rabbitmqBus) Stop(ctx context.Context) error {
+func (r *rabbitmqBus) Stop() error {
 	waitGroup := sync.WaitGroup{}
 	waitGroup.Add(len(r.consumers))
 
@@ -246,7 +246,7 @@ func (r *rabbitmqBus) Stop(ctx context.Context) error {
 		go func(c consumer.Consumer) {
 			defer waitGroup.Done()
 
-			err := c.Stop(ctx)
+			err := c.Stop()
 			if err != nil {
 				r.logger.Error("error in the unconsuming")
 			}

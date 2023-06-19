@@ -28,18 +28,27 @@ import (
 type postgresProductRepository struct {
 	log                   logger.Logger
 	gormGenericRepository data.GenericRepository[*models.Product]
+	tracer                tracing.AppTracer
 }
 
-func NewPostgresProductRepository(log logger.Logger, db *gorm.DB) data2.ProductRepository {
+func NewPostgresProductRepository(
+	log logger.Logger,
+	db *gorm.DB,
+	tracer tracing.AppTracer,
+) data2.ProductRepository {
 	gormRepository := repository.NewGenericGormRepository[*models.Product](db)
-	return &postgresProductRepository{log: log, gormGenericRepository: gormRepository}
+	return &postgresProductRepository{
+		log:                   log,
+		gormGenericRepository: gormRepository,
+		tracer:                tracer,
+	}
 }
 
 func (p *postgresProductRepository) GetAllProducts(
 	ctx context.Context,
 	listQuery *utils.ListQuery,
 ) (*utils.ListResult[*models.Product], error) {
-	ctx, span := tracing.Tracer.Start(ctx, "postgresProductRepository.GetAllProducts")
+	ctx, span := p.tracer.Start(ctx, "postgresProductRepository.GetAllProducts")
 	defer span.End()
 
 	result, err := p.gormGenericRepository.GetAll(ctx, listQuery)
@@ -67,7 +76,7 @@ func (p *postgresProductRepository) SearchProducts(
 	searchText string,
 	listQuery *utils.ListQuery,
 ) (*utils.ListResult[*models.Product], error) {
-	ctx, span := tracing.Tracer.Start(ctx, "postgresProductRepository.SearchProducts")
+	ctx, span := p.tracer.Start(ctx, "postgresProductRepository.SearchProducts")
 	span.SetAttributes(attribute2.String("SearchText", searchText))
 	defer span.End()
 
@@ -98,7 +107,7 @@ func (p *postgresProductRepository) GetProductById(
 	ctx context.Context,
 	uuid uuid.UUID,
 ) (*models.Product, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "postgresProductRepository.GetProductById")
+	ctx, span := p.tracer.Start(ctx, "postgresProductRepository.GetProductById")
 	span.SetAttributes(attribute2.String("ProductId", uuid.String()))
 	defer span.End()
 
@@ -132,7 +141,7 @@ func (p *postgresProductRepository) CreateProduct(
 	ctx context.Context,
 	product *models.Product,
 ) (*models.Product, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "postgresProductRepository.CreateProduct")
+	ctx, span := p.tracer.Start(ctx, "postgresProductRepository.CreateProduct")
 	defer span.End()
 
 	err := p.gormGenericRepository.Add(ctx, product)
@@ -162,7 +171,7 @@ func (p *postgresProductRepository) UpdateProduct(
 	ctx context.Context,
 	updateProduct *models.Product,
 ) (*models.Product, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "postgresProductRepository.UpdateProduct")
+	ctx, span := p.tracer.Start(ctx, "postgresProductRepository.UpdateProduct")
 	defer span.End()
 
 	err := p.gormGenericRepository.Update(ctx, updateProduct)
@@ -192,7 +201,7 @@ func (p *postgresProductRepository) UpdateProduct(
 }
 
 func (p *postgresProductRepository) DeleteProductByID(ctx context.Context, uuid uuid.UUID) error {
-	ctx, span := tracing.Tracer.Start(ctx, "postgresProductRepository.UpdateProduct")
+	ctx, span := p.tracer.Start(ctx, "postgresProductRepository.UpdateProduct")
 	span.SetAttributes(attribute2.String("ProductId", uuid.String()))
 	defer span.End()
 

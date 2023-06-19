@@ -10,23 +10,24 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/delivery"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/params"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/searching_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/searching_product/v1/queries"
 )
 
 type searchProductsEndpoint struct {
-	*delivery.ProductEndpointBase
+	params.ProductRouteParams
 }
 
 func NewSearchProductsEndpoint(
-	productEndpointBase *delivery.ProductEndpointBase,
-) *searchProductsEndpoint {
-	return &searchProductsEndpoint{productEndpointBase}
+	params params.ProductRouteParams,
+) route.Endpoint {
+	return &searchProductsEndpoint{ProductRouteParams: params}
 }
 
-func (ep *searchProductsEndpoint) MapRoute() {
+func (ep *searchProductsEndpoint) MapEndpoint() {
 	ep.ProductsGroup.GET("/search", ep.handler())
 }
 

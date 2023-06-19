@@ -50,7 +50,7 @@ func NewOtelMetrics(
 	return &OtelMetrics{Config: config, Meter: meter, Logger: logger, Echo: e}, nil
 }
 
-func (o *OtelMetrics) Run(ctx context.Context) error {
+func (o *OtelMetrics) Run() error {
 	o.Echo.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize:         1 << 10, // 1 KB
 		DisablePrintStack: true,

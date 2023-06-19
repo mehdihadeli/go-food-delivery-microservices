@@ -10,6 +10,7 @@ import (
 	"github.com/ahmetb/go-linq/v3"
 	uuid "github.com/satori/go.uuid"
 	attribute2 "go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
@@ -30,14 +31,21 @@ type esdbAggregateStore[T models.IHaveEventSourcedAggregate] struct {
 	log        logger.Logger
 	eventStore store.EventStore
 	serializer *EsdbSerializer
+	tracer     trace.Tracer
 }
 
 func NewEventStoreAggregateStore[T models.IHaveEventSourcedAggregate](
 	log logger.Logger,
 	eventStore store.EventStore,
 	serializer *EsdbSerializer,
+	tracer trace.Tracer,
 ) store.AggregateStore[T] {
-	return &esdbAggregateStore[T]{log: log, eventStore: eventStore, serializer: serializer}
+	return &esdbAggregateStore[T]{
+		log:        log,
+		eventStore: eventStore,
+		serializer: serializer,
+		tracer:     tracer,
+	}
 }
 
 func (a *esdbAggregateStore[T]) StoreWithVersion(
@@ -46,7 +54,7 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(
 	expectedVersion expectedStreamVersion.ExpectedStreamVersion,
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.StoreWithVersion")
+	ctx, span := a.tracer.Start(ctx, "esdbAggregateStore.StoreWithVersion")
 	span.SetAttributes(attribute2.String("AggregateID", aggregate.Id().String()))
 	defer span.End()
 
@@ -119,7 +127,7 @@ func (a *esdbAggregateStore[T]) Store(
 	metadata metadata.Metadata,
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.Store")
+	ctx, span := a.tracer.Start(ctx, "esdbAggregateStore.Store")
 	defer span.End()
 
 	expectedVersion := expectedStreamVersion.FromInt64(aggregate.OriginalVersion())
@@ -140,7 +148,7 @@ func (a *esdbAggregateStore[T]) Store(
 }
 
 func (a *esdbAggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID) (T, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.Load")
+	ctx, span := a.tracer.Start(ctx, "esdbAggregateStore.Load")
 	defer span.End()
 
 	position := readPosition.Start
@@ -153,7 +161,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(
 	aggregateId uuid.UUID,
 	position readPosition.StreamReadPosition,
 ) (T, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.LoadWithReadPosition")
+	ctx, span := a.tracer.Start(ctx, "esdbAggregateStore.LoadWithReadPosition")
 	span.SetAttributes(attribute2.String("AggregateID", aggregateId.String()))
 	defer span.End()
 
@@ -234,7 +242,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(
 }
 
 func (a *esdbAggregateStore[T]) Exists(ctx context.Context, aggregateId uuid.UUID) (bool, error) {
-	ctx, span := tracing.Tracer.Start(ctx, "esdbAggregateStore.Exists")
+	ctx, span := a.tracer.Start(ctx, "esdbAggregateStore.Exists")
 	span.SetAttributes(attribute2.String("AggregateID", aggregateId.String()))
 	defer span.End()
 

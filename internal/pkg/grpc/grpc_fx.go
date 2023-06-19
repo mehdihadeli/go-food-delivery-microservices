@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"time"
 
 	"go.uber.org/fx"
 
@@ -43,13 +42,13 @@ func registerHooks(
 ) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			// Start server in a separate goroutine, this way when the server is shutdown "s.e.Start" will
-			// return promptly, and the call to "s.e.Shutdown" is the one that will wait for all other
-			// resources to be properly freed. If it was the other way around, the application would just
-			// exit without gracefully shutting down the server.
-			// For more details: https://medium.com/@momchil.dev/proper-http-shutdown-in-go-bd3bfaade0f2
+			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
+			// this ctx is just for startup dependencies setup and OnStart callbacks, and it has short timeout 15s, and it is not alive in whole lifetime app
+			// if we need an app context which is alive until the app context done we should create it manually here
+
 			go func() {
-				if err := grpcServer.RunGrpcServer(ctx, nil); err != nil {
+				if err := grpcServer.RunGrpcServer(nil); err != nil {
+					// do a fatal for going to OnStop process
 					logger.Fatalf("(GrpcServer.RunGrpcServer) error in running server: {%v}", err)
 				}
 			}()
@@ -63,9 +62,8 @@ func registerHooks(
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
-			defer cancel()
-
+			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
+			// this ctx is just for stopping callbacks or OnStop callbacks, and it has short timeout 15s, and it is not alive in whole lifetime app
 			grpcServer.GracefulShutdown()
 			logger.Info("server shutdown gracefully")
 

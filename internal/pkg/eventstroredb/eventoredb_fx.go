@@ -2,7 +2,6 @@ package eventstroredb
 
 import (
 	"context"
-	"time"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"go.uber.org/fx"
@@ -13,7 +12,7 @@ import (
 
 // Module provided to fxlog
 // https://uber-go.github.io/fx/modules.html
-var Module = func(builder ProjectionBuilderFuc) fx.Option {
+var Module = func(projectionBuilderConstructor interface{}) fx.Option {
 	return fx.Module(
 		"eventstoredbfx",
 		// - order is not important in provide
@@ -27,7 +26,7 @@ var Module = func(builder ProjectionBuilderFuc) fx.Option {
 			NewEsdbSubscriptionCheckpointRepository,
 			NewEsdbSubscriptionAllWorker,
 		),
-		fx.Supply(builder),
+		fx.Provide(projectionBuilderConstructor),
 		// - execute after registering all of our provided
 		// - they execute by their orders
 		// - invokes always execute its func compare to provides that only run when we request for them.
@@ -41,15 +40,15 @@ func registerHooks(
 	lc fx.Lifecycle,
 	worker EsdbSubscriptionAllWorker,
 	logger logger.Logger,
-	cfg config.EventStoreDbOptions,
+	cfg *config.EventStoreDbOptions,
 ) {
+	lifeTimeCtx := context.Background()
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			// Start server in a separate goroutine, this way when the server is shutdown "s.e.Start" will
-			// return promptly, and the call to "s.e.Shutdown" is the one that will wait for all other
-			// resources to be properly freed. If it was the other way around, the application would just
-			// exit without gracefully shutting down the server.
-			// For more details: https://medium.com/@momchil.dev/proper-http-shutdown-in-go-bd3bfaade0f2
+			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
+			// this ctx is just for startup dependencies setup and OnStart callbacks, and it has short timeout 15s, and it is not alive in whole lifetime app
+			// if we need an app context which is alive until the app context done we should create it manually here
 			go func() {
 				option := &EventStoreDBSubscriptionToAllOptions{
 					FilterOptions: &esdb.SubscriptionFilter{
@@ -59,7 +58,7 @@ func registerHooks(
 					SubscriptionId: cfg.Subscription.SubscriptionId,
 				}
 
-				if err := worker.SubscribeAll(ctx, option); err != nil {
+				if err := worker.SubscribeAll(lifeTimeCtx, option); err != nil {
 					logger.Fatalf(
 						"(EsdbSubscriptionAllWorker.Start) error in running esdb subscription worker: {%v}",
 						err,
@@ -71,8 +70,9 @@ func registerHooks(
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
-			defer cancel()
+			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
+			// this ctx is just for stopping callbacks or OnStop callbacks, and it has short timeout 15s, and it is not alive in whole lifetime app
+			lifeTimeCtx.Done()
 
 			return nil
 		},

@@ -5,6 +5,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
 
@@ -17,6 +18,7 @@ func ConfigProductsRabbitMQ(
 	builder rabbitmqConfigurations.RabbitMQConfigurationBuilder,
 	logger logger.Logger,
 	validator *validator.Validate,
+	tracer tracing.AppTracer,
 ) {
 	// add custom message type mappings
 	// utils.RegisterCustomMessageTypesToRegistrty(map[string]types.IMessage{"productCreatedV1": &creatingProductIntegration.ProductCreatedV1{}})
@@ -31,6 +33,7 @@ func ConfigProductsRabbitMQ(
 							createProductExternalEventV1.NewProductCreatedConsumer(
 								logger,
 								validator,
+								tracer,
 							),
 						)
 					},
@@ -45,9 +48,14 @@ func ConfigProductsRabbitMQ(
 							deleteProductExternalEventV1.NewProductDeletedConsumer(
 								logger,
 								validator,
+								tracer,
 							),
 						)
-						deleteProductExternalEventV1.NewProductDeletedConsumer(logger, validator)
+						deleteProductExternalEventV1.NewProductDeletedConsumer(
+							logger,
+							validator,
+							tracer,
+						)
 					},
 				)
 			}).
@@ -60,9 +68,14 @@ func ConfigProductsRabbitMQ(
 							updateProductExternalEventsV1.NewProductUpdatedConsumer(
 								logger,
 								validator,
+								tracer,
 							),
 						)
-						updateProductExternalEventsV1.NewProductUpdatedConsumer(logger, validator)
+						updateProductExternalEventsV1.NewProductUpdatedConsumer(
+							logger,
+							validator,
+							tracer,
+						)
 					},
 				)
 			})

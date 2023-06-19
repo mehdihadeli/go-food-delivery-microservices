@@ -20,31 +20,33 @@ func Middleware(serviceName string) echo.MiddlewareFunc {
 			request := c.Request()
 			ctx := request.Context()
 
-			//https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md
-			ctx = otel.GetTextMapPropagator().Extract(ctx, propagation.HeaderCarrier(request.Header))
+			// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/http.md
+			ctx = otel.GetTextMapPropagator().
+				Extract(ctx, propagation.HeaderCarrier(request.Header))
 			opts := []trace.SpanStartOption{
 				trace.WithAttributes(semconv.NetAttributesFromHTTPRequest("tcp", request)...),
 				trace.WithAttributes(semconv.EndUserAttributesFromHTTPRequest(request)...),
-				trace.WithAttributes(semconv.HTTPServerAttributesFromHTTPRequest(serviceName, c.Path(), request)...),
+				trace.WithAttributes(
+					semconv.HTTPServerAttributesFromHTTPRequest(serviceName, c.Path(), request)...),
 				trace.WithSpanKind(trace.SpanKindServer),
 			}
 
-			ctx, span := otel.Tracer("ehco").Start(ctx, fmt.Sprintf("%s process", c.Path()), opts...)
+			ctx, span := otel.Tracer("ehco").
+				Start(ctx, fmt.Sprintf("%s process", c.Path()), opts...)
 			defer span.End()
 
-			//pass new ctx to next middleware
+			// pass new ctx to next middleware
 			c.SetRequest(request.WithContext(ctx))
 
 			err := next(c)
 
 			if err != nil {
-				c.Error(err)
 				err = tracing.TraceHttpErrFromSpanWithCode(span, err, c.Response().Status)
 			} else {
 				span.SetAttributes(semconv.HTTPAttributesFromHTTPStatusCode(c.Response().Status)...)
 			}
 
-			//update request context
+			// update request context
 			c.SetRequest(request.WithContext(ctx))
 
 			return err

@@ -22,3 +22,13 @@ var Module = fx.Module("zapfx",
 			fx.As(new(logger.Logger))),
 	),
 )
+
+var ModuleFunc = func(l logger.Logger) fx.Option {
+	return fx.Module(
+		"zapfx",
+
+		fx.Provide(config.ProvideLogConfig),
+		fx.Supply(fx.Annotate(l, fx.As(new(logger.Logger)))),
+		fx.Supply(fx.Annotate(l, fx.As(new(ZapLogger)))),
+	)
+}

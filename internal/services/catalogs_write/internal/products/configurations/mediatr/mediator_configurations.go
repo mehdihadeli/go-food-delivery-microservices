@@ -5,6 +5,7 @@ import (
 
 	logger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
 	createProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/commands"
@@ -24,45 +25,46 @@ func ConfigProductsMediator(
 	uow data.CatalogUnitOfWork,
 	productRepository data.ProductRepository,
 	producer producer.Producer,
+	tracer tracing.AppTracer,
 ) error {
 	// https://stackoverflow.com/questions/72034479/how-to-implement-generic-interfaces
 	err := mediatr.RegisterRequestHandler[*createProductCommandV1.CreateProduct, *createProductV1.CreateProductResponseDto](
-		createProductCommandV1.NewCreateProductHandler(logger, uow, producer),
+		createProductCommandV1.NewCreateProductHandler(logger, uow, producer, tracer),
 	)
 	if err != nil {
 		return err
 	}
 
 	err = mediatr.RegisterRequestHandler[*getProductsQueryV1.GetProducts, *getProductsDtosV1.GetProductsResponseDto](
-		getProductsQueryV1.NewGetProductsHandler(logger, productRepository),
+		getProductsQueryV1.NewGetProductsHandler(logger, productRepository, tracer),
 	)
 	if err != nil {
 		return err
 	}
 
 	err = mediatr.RegisterRequestHandler[*searchProductsQueryV1.SearchProducts, *searchProductsDtosV1.SearchProductsResponseDto](
-		searchProductsQueryV1.NewSearchProductsHandler(logger, productRepository),
+		searchProductsQueryV1.NewSearchProductsHandler(logger, productRepository, tracer),
 	)
 	if err != nil {
 		return err
 	}
 
 	err = mediatr.RegisterRequestHandler[*updateProductCommandV1.UpdateProduct, *mediatr.Unit](
-		updateProductCommandV1.NewUpdateProductHandler(logger, uow, producer),
+		updateProductCommandV1.NewUpdateProductHandler(logger, uow, producer, tracer),
 	)
 	if err != nil {
 		return err
 	}
 
 	err = mediatr.RegisterRequestHandler[*deleteProductCommandV1.DeleteProduct, *mediatr.Unit](
-		deleteProductCommandV1.NewDeleteProductHandler(logger, uow, producer),
+		deleteProductCommandV1.NewDeleteProductHandler(logger, uow, producer, tracer),
 	)
 	if err != nil {
 		return err
 	}
 
 	err = mediatr.RegisterRequestHandler[*getProductByIdQueryV1.GetProductById, *getProductByIdDtosV1.GetProductByIdResponseDto](
-		getProductByIdQueryV1.NewGetProductByIdHandler(logger, productRepository),
+		getProductByIdQueryV1.NewGetProductByIdHandler(logger, productRepository, tracer),
 	)
 	if err != nil {
 		return err

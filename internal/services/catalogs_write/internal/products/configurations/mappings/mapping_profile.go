@@ -7,7 +7,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 
-	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/proto/service_clients"
+	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/grpc/proto/service_clients"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/models"
 )
 
@@ -22,19 +22,21 @@ func ConfigureProductsMappings() error {
 		return err
 	}
 
-	err = mapper.CreateCustomMap[*dtoV1.ProductDto, *productsService.Product](func(product *dtoV1.ProductDto) *productsService.Product {
-		if product == nil {
-			return nil
-		}
-		return &productsService.Product{
-			ProductId:   product.ProductId.String(),
-			Name:        product.Name,
-			Description: product.Description,
-			Price:       product.Price,
-			CreatedAt:   timestamppb.New(product.CreatedAt),
-			UpdatedAt:   timestamppb.New(product.UpdatedAt),
-		}
-	})
+	err = mapper.CreateCustomMap[*dtoV1.ProductDto, *productsService.Product](
+		func(product *dtoV1.ProductDto) *productsService.Product {
+			if product == nil {
+				return nil
+			}
+			return &productsService.Product{
+				ProductId:   product.ProductId.String(),
+				Name:        product.Name,
+				Description: product.Description,
+				Price:       product.Price,
+				CreatedAt:   timestamppb.New(product.CreatedAt),
+				UpdatedAt:   timestamppb.New(product.UpdatedAt),
+			}
+		},
+	)
 	if err != nil {
 		return err
 	}

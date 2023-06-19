@@ -9,7 +9,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/docs"
 )
 
-func (ic *CatalogsConfigurator) configSwagger(routeBuilder *customEcho.RouteBuilder) {
+func (ic *CatalogsServiceConfigurator) configSwagger(routeBuilder *customEcho.RouteBuilder) {
 	// https://github.com/swaggo/swag#how-to-use-it-with-gin
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Title = "Catalogs Read-Service Api"

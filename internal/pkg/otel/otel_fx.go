@@ -2,12 +2,9 @@ package otel
 
 import (
 	"context"
-	"errors"
-	"net/http"
-	"time"
 
 	"go.opentelemetry.io/otel/metric"
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
@@ -22,10 +19,15 @@ var Module = fx.Module(
 	fx.Provide(
 		config.ProvideOtelConfig,
 		metrics.NewOtelMetrics,
+		tracing.NewOtelTracing,
 		fx.Annotate(
 			provideMeter,
 			fx.As(new(metric.Meter))),
-		tracing.NewOtelTracing,
+		fx.Annotate(
+			provideTracer,
+			fx.As(new(tracing.AppTracer)),
+			fx.As(new(trace.Tracer)),
+		),
 	),
 	fx.Invoke(registerHooks),
 )
@@ -34,25 +36,25 @@ func provideMeter(otelMetrics *metrics.OtelMetrics) metric.Meter {
 	return otelMetrics.Meter
 }
 
+func provideTracer(tracingOtel *tracing.TracingOpenTelemetry) tracing.AppTracer {
+	return tracingOtel.AppTracer
+}
+
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`
 func registerHooks(
 	lc fx.Lifecycle,
 	metrics *metrics.OtelMetrics,
-	tracerProvider *tracesdk.TracerProvider,
+	tracingOtel *tracing.TracingOpenTelemetry,
 ) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			// Start server in a separate goroutine, this way when the server is shutdown "s.e.Start" will
-			// return promptly, and the call to "s.e.Shutdown" is the one that will wait for all other
-			// resources to be properly freed. If it was the other way around, the application would just
-			// exit without gracefully shutting down the server.
-			// For more details: https://medium.com/@momchil.dev/proper-http-shutdown-in-go-bd3bfaade0f2
 			go func() {
-				if err := metrics.Run(ctx); !errors.Is(
-					err,
-					http.ErrServerClosed,
-				) {
-					metrics.Logger.Fatalf("(s.RunHttpServer) error in running server: {%v}", err)
+				if err := metrics.Run(); err != nil {
+					// do a fatal for running OnStop hook
+					metrics.Logger.Fatalf(
+						"(metrics.RunHttpServer) error in running metrics server: {%v}",
+						err,
+					)
 				}
 			}()
 			metrics.Logger.Infof(
@@ -65,10 +67,7 @@ func registerHooks(
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
-			defer cancel()
-
-			if err := tracerProvider.Shutdown(ctx); err != nil {
+			if err := tracingOtel.TracerProvider.Shutdown(ctx); err != nil {
 				metrics.Logger.Errorf("error in shutting down trace provider: %v", err)
 			} else {
 				metrics.Logger.Info("trace provider shutdown gracefully")

@@ -15,7 +15,7 @@ import (
 )
 
 // https://pmihaylov.com/shared-components-go-microservices/
-var Module = fx.Module(
+var CatalogsServiceModule = fx.Module(
 	"catalogsfx",
 	// Shared Modules
 	appconfig.Module,

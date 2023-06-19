@@ -5,25 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/rabbitmq"
-
-	"github.com/mehdihadeli/go-mediatr"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
-	rabbitmqTestContainer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations/mappings"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/data/repositories"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/catalogs/metrics"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/configurations/infrastructure"
 	sharedContracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/shared/contracts"
 )
 
@@ -39,7 +26,6 @@ type IntegrationTestSharedFixture struct {
 }
 
 type IntegrationTestFixture struct {
-	*sharedContracts.InfrastructureConfigurations
 	RedisProductRepository contracts.ProductCacheRepository
 	MongoProductRepository contracts.ProductRepository
 	Bus                    bus.Bus
@@ -49,84 +35,86 @@ type IntegrationTestFixture struct {
 }
 
 func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture {
-	// we could use EmptyLogger if we don't want to log anything
-	log := defaultLogger.Logger
-	cfg, _ := config.NewAppConfig(constants.Test)
+	//	// we could use EmptyLogger if we don't want to log anything
+	//	log := defaultLogger.Logger
+	//	cfg, _ := config.NewConfig(constants.Test)
+	//
+	//	err := mappings.ConfigureProductsMappings()
+	//	if err != nil {
+	//		require.FailNow(t, err.Error())
+	//	}
+	//	require.NoError(t, err)
+	//
+	//	integration := &IntegrationTestSharedFixture{
+	//		Cfg: cfg,
+	//		Log: log,
+	//	}
+	//
+	//	return integration
+	//}
+	//
+	//func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *IntegrationTestFixture {
+	//	ctx, cancel := context.WithCancel(context.Background())
+	//
+	//	// we could use EmptyLogger if we don't want to log anything
+	//	c := infrastructure.NewTestInfrastructureConfigurator(shared.T(), shared.Log, shared.Cfg)
+	//	infrastructures, cleanup, err := c.ConfigInfrastructures(ctx)
+	//	if err != nil {
+	//		cancel()
+	//		require.FailNow(shared.T(), err.Error())
+	//	}
+	//
+	//	productRep := repositories.NewMongoProductRepository(
+	//		infrastructures.Log,
+	//		infrastructures.MongoClient,
+	//	)
+	//	redisRepository := repositories.NewRedisProductRepository(
+	//		infrastructures.Log,
+	//		infrastructures.Cfg,
+	//		infrastructures.Redis,
+	//	)
+	//
+	//	mqBus, err := rabbitmqTestContainer.NewRabbitMQTestContainers().
+	//		Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+	//			// Products RabbitMQ configuration
+	//			rabbitmq.ConfigProductsRabbitMQ(builder, infrastructures)
+	//		})
+	//	if err != nil {
+	//		cancel()
+	//		require.FailNow(shared.T(), err.Error())
+	//	}
+	//
+	//	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(
+	//		infrastructures.Cfg,
+	//		infrastructures.Metrics,
+	//	)
+	//	if err != nil {
+	//		cancel()
+	//		require.FailNow(shared.T(), err.Error())
+	//	}
+	//
+	//	shared.T().Cleanup(func() {
+	//		// with Cancel() we send signal to done() channel to stop  grpc, http and workers gracefully
+	//		// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
+	//		// https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
+	//		mediatr.ClearRequestRegistrations()
+	//		cancel()
+	//		cleanup()
+	//	})
+	//
+	//	integration := &IntegrationTestFixture{
+	//		InfrastructureConfigurations: infrastructures,
+	//		Bus:                          mqBus,
+	//		CatalogsMetrics:              catalogsMetrics,
+	//		MongoProductRepository:       productRep,
+	//		RedisProductRepository:       redisRepository,
+	//		Ctx:                          ctx,
+	//		cancel:                       cancel,
+	//	}
+	//
+	//	return integration
 
-	err := mappings.ConfigureProductsMappings()
-	if err != nil {
-		require.FailNow(t, err.Error())
-	}
-	require.NoError(t, err)
-
-	integration := &IntegrationTestSharedFixture{
-		Cfg: cfg,
-		Log: log,
-	}
-
-	return integration
-}
-
-func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *IntegrationTestFixture {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	// we could use EmptyLogger if we don't want to log anything
-	c := infrastructure.NewTestInfrastructureConfigurator(shared.T(), shared.Log, shared.Cfg)
-	infrastructures, cleanup, err := c.ConfigInfrastructures(ctx)
-	if err != nil {
-		cancel()
-		require.FailNow(shared.T(), err.Error())
-	}
-
-	productRep := repositories.NewMongoProductRepository(
-		infrastructures.Log,
-		infrastructures.MongoClient,
-	)
-	redisRepository := repositories.NewRedisProductRepository(
-		infrastructures.Log,
-		infrastructures.Cfg,
-		infrastructures.Redis,
-	)
-
-	mqBus, err := rabbitmqTestContainer.NewRabbitMQTestContainers().
-		Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
-			// Products RabbitMQ configuration
-			rabbitmq.ConfigProductsRabbitMQ(builder, infrastructures)
-		})
-	if err != nil {
-		cancel()
-		require.FailNow(shared.T(), err.Error())
-	}
-
-	catalogsMetrics, err := metrics.ConfigCatalogsMetrics(
-		infrastructures.Cfg,
-		infrastructures.Metrics,
-	)
-	if err != nil {
-		cancel()
-		require.FailNow(shared.T(), err.Error())
-	}
-
-	shared.T().Cleanup(func() {
-		// with Cancel() we send signal to done() channel to stop  grpc, http and workers gracefully
-		// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
-		// https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
-		mediatr.ClearRequestRegistrations()
-		cancel()
-		cleanup()
-	})
-
-	integration := &IntegrationTestFixture{
-		InfrastructureConfigurations: infrastructures,
-		Bus:                          mqBus,
-		CatalogsMetrics:              catalogsMetrics,
-		MongoProductRepository:       productRep,
-		RedisProductRepository:       redisRepository,
-		Ctx:                          ctx,
-		cancel:                       cancel,
-	}
-
-	return integration
+	return &IntegrationTestSharedFixture{}
 }
 
 func (e *IntegrationTestFixture) Run() {

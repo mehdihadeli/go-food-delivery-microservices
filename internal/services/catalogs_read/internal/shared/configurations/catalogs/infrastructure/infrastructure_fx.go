@@ -11,6 +11,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
@@ -29,9 +30,9 @@ var Module = fx.Module(
 	otel.Module,
 	redis.Module,
 	rabbitmq.Module(
-		func(v *validator.Validate, l logger.Logger) configurations.RabbitMQConfigurationBuilderFuc {
+		func(v *validator.Validate, l logger.Logger, tracer tracing.AppTracer) configurations.RabbitMQConfigurationBuilderFuc {
 			return func(builder configurations.RabbitMQConfigurationBuilder) {
-				rabbitmq2.ConfigProductsRabbitMQ(builder, l, nil)
+				rabbitmq2.ConfigProductsRabbitMQ(builder, l, v, tracer)
 			}
 		},
 	),

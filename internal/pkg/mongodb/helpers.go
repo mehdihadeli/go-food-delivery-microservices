@@ -8,7 +8,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
@@ -20,16 +19,13 @@ func Paginate[T any](
 	collection *mongo.Collection,
 	filter interface{},
 ) (*utils.ListResult[T], error) {
-	ctx, span := tracing.Tracer.Start(ctx, "mongodb.Paginate")
-	defer span.End()
-
 	if filter == nil {
 		filter = bson.D{}
 	}
 
 	count, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "CountDocuments"))
+		return nil, errors.WrapIf(err, "CountDocuments")
 	}
 
 	limit := int64(listQuery.GetLimit())
@@ -40,7 +36,7 @@ func Paginate[T any](
 		Skip:  &skip,
 	})
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "Find"))
+		return nil, errors.WrapIf(err, "Find")
 	}
 	defer cursor.Close(ctx) // nolint: errcheck
 
@@ -49,13 +45,13 @@ func Paginate[T any](
 	for cursor.Next(ctx) {
 		var prod T
 		if err := cursor.Decode(&prod); err != nil {
-			return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "Find"))
+			return nil, errors.WrapIf(err, "Find")
 		}
 		products = append(products, prod)
 	}
 
 	if err := cursor.Err(); err != nil {
-		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "cursor.Err"))
+		return nil, errors.WrapIf(err, "cursor.Err")
 	}
 
 	return utils.NewListResult[T](products, listQuery.GetSize(), listQuery.GetPage(), count), nil

@@ -10,22 +10,23 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/delivery"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/getting_products/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/getting_products/v1/queries"
 )
 
 type getProductsEndpoint struct {
-	*delivery.ProductEndpointBase
+	params.ProductRouteParams
 }
 
 func NewGetProductsEndpoint(
-	productEndpointBase *delivery.ProductEndpointBase,
-) *getProductsEndpoint {
-	return &getProductsEndpoint{productEndpointBase}
+	params params.ProductRouteParams,
+) route.Endpoint {
+	return &getProductsEndpoint{ProductRouteParams: params}
 }
 
-func (ep *getProductsEndpoint) MapRoute() {
+func (ep *getProductsEndpoint) MapEndpoint() {
 	ep.ProductsGroup.GET("", ep.handler())
 }
 

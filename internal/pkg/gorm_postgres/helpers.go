@@ -8,7 +8,6 @@ import (
 	"emperror.dev/errors"
 	"gorm.io/gorm"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
@@ -19,9 +18,6 @@ func Paginate[T any](
 	listQuery *utils.ListQuery,
 	db *gorm.DB,
 ) (*utils.ListResult[T], error) {
-	ctx, span := tracing.Tracer.Start(ctx, "gorm.Paginate")
-	defer span.End()
-
 	var items []T
 	var totalRows int64
 	db.Model(items).WithContext(ctx).Count(&totalRows)
@@ -58,7 +54,7 @@ func Paginate[T any](
 	}
 
 	if err := query.Find(&items).Error; err != nil {
-		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "error in finding products."))
+		return nil, errors.WrapIf(err, "error in finding products.")
 	}
 
 	return utils.NewListResult[T](items, listQuery.GetSize(), listQuery.GetPage(), totalRows), nil
