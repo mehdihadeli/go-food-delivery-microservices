@@ -18,7 +18,7 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 )
 
@@ -37,7 +37,7 @@ type TracingOpenTelemetry struct {
 	jaegerExporter tracesdk.SpanExporter
 	zipkinExporter tracesdk.SpanExporter
 	stdExporter    tracesdk.SpanExporter
-	environment    config.Environment
+	environment    environemnt.Environment
 	TracerProvider *tracesdk.TracerProvider
 	AppTracer      AppTracer
 }
@@ -47,7 +47,7 @@ type TracingOpenTelemetry struct {
 
 func NewOtelTracing(
 	config *config2.OpenTelemetryOptions,
-	environment config.Environment,
+	environment environemnt.Environment,
 ) (*TracingOpenTelemetry, error) {
 	openTel := &TracingOpenTelemetry{config: config, environment: environment}
 

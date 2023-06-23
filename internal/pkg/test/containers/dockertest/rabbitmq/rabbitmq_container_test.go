@@ -8,6 +8,9 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	messageConsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
@@ -18,14 +21,18 @@ import (
 
 func Test_RabbitMQ_Container(t *testing.T) {
 	ctx := context.Background()
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler()
+	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
+	defaultLogger.SetupDefaultLogger()
+	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
 
-	rabbitmq, err := NewRabbitMQDockerTest().Start(ctx, t, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+	rabbitmq, err := NewRabbitMQDockerTest().Start(ctx, t, eventSerializer, defaultLogger.Logger, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
 		builder.AddConsumer(ProducerConsumerMessage{},
 			func(consumerBuilder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
-				consumerBuilder.WithHandlers(func(handlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
-					handlerBuilder.AddHandler(fakeConsumer)
-				})
+				consumerBuilder.WithHandlers(
+					func(handlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
+						handlerBuilder.AddHandler(fakeConsumer)
+					},
+				)
 			})
 	})
 
@@ -38,7 +45,14 @@ func Test_RabbitMQ_Container(t *testing.T) {
 	// wait for consumers ready to consume before publishing messages (for preventing messages lost)
 	time.Sleep(time.Second * 1)
 
-	err = rabbitmq.PublishMessage(context.Background(), &ProducerConsumerMessage{Data: "ssssssssss", Message: types.NewMessage(uuid.NewV4().String())}, nil)
+	err = rabbitmq.PublishMessage(
+		context.Background(),
+		&ProducerConsumerMessage{
+			Data:    "ssssssssss",
+			Message: types.NewMessage(uuid.NewV4().String()),
+		},
+		nil,
+	)
 	if err != nil {
 		return
 	}

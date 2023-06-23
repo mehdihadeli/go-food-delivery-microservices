@@ -2,8 +2,11 @@ package contracts
 
 import (
 	"context"
-	"gorm.io/gorm"
 	"testing"
+
+	"gorm.io/gorm"
+
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 )
 
 type PostgresContainerOptions struct {
@@ -20,5 +23,10 @@ type PostgresContainerOptions struct {
 
 type GormContainer interface {
 	Start(ctx context.Context, t *testing.T, options ...*PostgresContainerOptions) (*gorm.DB, error)
+	CreatingContainerOptions(
+		ctx context.Context,
+		t *testing.T,
+		options ...*PostgresContainerOptions,
+	) (*gormPostgres.GormOptions, error)
 	Cleanup(ctx context.Context) error
 }

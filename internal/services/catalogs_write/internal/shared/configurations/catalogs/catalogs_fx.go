@@ -7,7 +7,7 @@ import (
 	api "go.opentelemetry.io/otel/metric"
 	"go.uber.org/fx"
 
-	appconfig "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/data/uow"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/configurations/catalogs/infrastructure"
@@ -18,7 +18,7 @@ import (
 var CatalogsServiceModule = fx.Module(
 	"catalogsfx",
 	// Shared Modules
-	appconfig.Module,
+	config.Module,
 	infrastructure.Module,
 
 	// Features Modules
@@ -31,7 +31,7 @@ var CatalogsServiceModule = fx.Module(
 
 // ref: https://github.com/open-telemetry/opentelemetry-go/blob/main/example/prometheus/main.go
 func provideCatalogsMetrics(
-	cfg *appconfig.AppOptions,
+	cfg *config.AppOptions,
 	meter metric.Meter,
 ) (*contracts.CatalogsMetrics, error) {
 	createProductGrpcRequests, err := meter.Float64Counter(

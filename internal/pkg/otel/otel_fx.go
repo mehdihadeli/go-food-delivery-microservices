@@ -7,6 +7,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
@@ -44,20 +45,25 @@ func provideTracer(tracingOtel *tracing.TracingOpenTelemetry) tracing.AppTracer 
 func registerHooks(
 	lc fx.Lifecycle,
 	metrics *metrics.OtelMetrics,
+	logger logger.Logger,
 	tracingOtel *tracing.TracingOpenTelemetry,
 ) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
+			if metrics.Meter == nil {
+				return nil
+			}
+
 			go func() {
 				if err := metrics.Run(); err != nil {
 					// do a fatal for running OnStop hook
-					metrics.Logger.Fatalf(
+					logger.Fatalf(
 						"(metrics.RunHttpServer) error in running metrics server: {%v}",
 						err,
 					)
 				}
 			}()
-			metrics.Logger.Infof(
+			logger.Infof(
 				"Metrics server %s is listening on Host:{%s} Http PORT: {%s}",
 				metrics.Config.OTelMetricsOptions.Name,
 				metrics.Config.OTelMetricsOptions.Host,
@@ -68,15 +74,18 @@ func registerHooks(
 		},
 		OnStop: func(ctx context.Context) error {
 			if err := tracingOtel.TracerProvider.Shutdown(ctx); err != nil {
-				metrics.Logger.Errorf("error in shutting down trace provider: %v", err)
+				logger.Errorf("error in shutting down trace provider: %v", err)
 			} else {
-				metrics.Logger.Info("trace provider shutdown gracefully")
+				logger.Info("trace provider shutdown gracefully")
 			}
 
+			if metrics.Meter == nil {
+				return nil
+			}
 			if err := metrics.GracefulShutdown(ctx); err != nil {
-				metrics.Logger.Errorf("error shutting down metrics server: %v", err)
+				logger.Errorf("error shutting down metrics server: %v", err)
 			} else {
-				metrics.Logger.Info("metrics server shutdown gracefully")
+				logger.Info("metrics server shutdown gracefully")
 			}
 			return nil
 		},

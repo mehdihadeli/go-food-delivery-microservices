@@ -1,11 +1,12 @@
 package fxapp
 
 import (
+	"time"
+
 	"go.uber.org/fx"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
+	logConfig "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/fxlog"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/logrous"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
@@ -13,39 +14,41 @@ import (
 )
 
 func CreateFxApp(
-	logger logger.Logger,
-	providers []interface{},
-	invokes []interface{},
-	options ...fx.Option,
+	app *application,
 ) *fx.App {
 	var opts []fx.Option
 
-	opts = append(opts, fx.Provide(providers...))
+	opts = append(opts, fx.Provide(app.provides...))
 
-	opts = append(opts, fx.Invoke(invokes...))
+	opts = append(opts, fx.Decorate(app.decorates...))
 
-	options = append(options, opts...)
+	opts = append(opts, fx.Invoke(app.invokes...))
 
-	AppModule := fx.Module("appfx",
-		options...,
+	app.options = append(app.options, opts...)
+
+	AppModule := fx.Module("fxapp",
+		app.options...,
 	)
 
 	var logModule fx.Option
-	logoption, err := config2.ProvideLogConfig()
-	if err != nil || logoption == nil {
-		logModule = zap.ModuleFunc(logger)
-	} else if logoption.LogType == models.Logrus {
-		logModule = logrous.ModuleFunc(logger)
+	logOption, err := logConfig.ProvideLogConfig(app.environment)
+	if err != nil || logOption == nil {
+		logModule = zap.ModuleFunc(app.logger)
+	} else if logOption.LogType == models.Logrus {
+		logModule = logrous.ModuleFunc(app.logger)
 	} else {
-		logModule = zap.ModuleFunc(logger)
+		logModule = zap.ModuleFunc(app.logger)
 	}
 
+	duration := 30 * time.Second
+
 	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Run`
-	fxApp := fx.New( // setup fxlog logger
-		config.Module,
+	fxApp := fx.New(
+		fx.StartTimeout(duration),
+		config.ModuleFunc(app.environment),
 		logModule,
 		fxlog.FxLogger,
-		fx.ErrorHook(NewFxErrorHandler(logger)),
+		fx.ErrorHook(NewFxErrorHandler(app.logger)),
 		AppModule,
 	)
 

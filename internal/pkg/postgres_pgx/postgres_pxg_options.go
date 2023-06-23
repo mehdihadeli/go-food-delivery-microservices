@@ -4,6 +4,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
@@ -19,6 +20,6 @@ type PostgresPxgOptions struct {
 	LogLevel int    `mapstructure:"logLevel"`
 }
 
-func provideConfig() (*PostgresPxgOptions, error) {
-	return config.BindConfigKey[*PostgresPxgOptions](optionName)
+func provideConfig(environment environemnt.Environment) (*PostgresPxgOptions, error) {
+	return config.BindConfigKey[*PostgresPxgOptions](optionName, environment)
 }

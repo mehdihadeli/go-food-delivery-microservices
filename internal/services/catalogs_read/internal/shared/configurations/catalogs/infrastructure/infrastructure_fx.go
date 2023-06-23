@@ -29,7 +29,7 @@ var Module = fx.Module(
 	mongodb.Module,
 	otel.Module,
 	redis.Module,
-	rabbitmq.Module(
+	rabbitmq.ModuleFunc(
 		func(v *validator.Validate, l logger.Logger, tracer tracing.AppTracer) configurations.RabbitMQConfigurationBuilderFuc {
 			return func(builder configurations.RabbitMQConfigurationBuilder) {
 				rabbitmq2.ConfigProductsRabbitMQ(builder, l, v, tracer)

@@ -7,13 +7,14 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
 
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	mocks3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/mocks"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	dto "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/dto/v1"
@@ -22,7 +23,7 @@ import (
 )
 
 type UnitTestSharedFixture struct {
-	Cfg *config.Config
+	Cfg *config.AppOptions
 	Log logger.Logger
 	suite.Suite
 }
@@ -37,7 +38,7 @@ type UnitTestMockFixture struct {
 func NewUnitTestSharedFixture(t *testing.T) *UnitTestSharedFixture {
 	// we could use EmptyLogger if we don't want to log anything
 	log := defaultLogger.Logger
-	cfg := &config.Config{}
+	cfg := &config.AppOptions{}
 
 	err := configMapper()
 	require.NoError(t, err)

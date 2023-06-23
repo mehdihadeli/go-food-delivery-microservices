@@ -10,18 +10,21 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	messageConsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/pipeline"
 	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
+	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
 )
 
@@ -30,24 +33,27 @@ func Test_Consume_Message(t *testing.T) {
 	defer errorUtils.HandlePanic()
 
 	ctx := context.Background()
-	tp, err := tracing.NewOtelTracing(&otel.OpenTelemetryOptions{
+	defaultLogger2.SetupDefaultLogger()
+	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
+
+	tp, err := tracing.NewOtelTracing(&config2.OpenTelemetryOptions{
 		ServiceName:     "test",
 		Enabled:         true,
 		AlwaysOnSampler: true,
-		JaegerExporterOptions: &otel.JaegerExporterOptions{
+		JaegerExporterOptions: &config2.JaegerExporterOptions{
 			AgentHost: "localhost",
 			AgentPort: "6831",
 		},
-		ZipkinExporterOptions: &otel.ZipkinExporterOptions{
+		ZipkinExporterOptions: &config2.ZipkinExporterOptions{
 			Url: "http://localhost:9411/api/v2/spans",
 		},
-	})
+	}, environemnt.Development)
 	require.NoError(t, err)
 
-	defer tp.Shutdown(ctx)
+	defer tp.TracerProvider.Shutdown(ctx)
 
-	conn, err := types.NewRabbitMQConnection(context.Background(), &config.RabbitmqOptions{
-		RabbitmqHostOptions: &config.rabbitmqHostOptions{
+	conn, err := types.NewRabbitMQConnection(&config.RabbitmqOptions{
+		RabbitmqHostOptions: &config.RabbitmqHostOptions{
 			UserName: "guest",
 			Password: "guest",
 			HostName: "localhost",
@@ -55,7 +61,7 @@ func Test_Consume_Message(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	fakeHandler := consumer.NewRabbitMQFakeTestConsumerHandler()
+	fakeHandler := consumer.NewRabbitMQFakeTestConsumerHandler[ProducerConsumerMessage]()
 	builder := configurations.NewRabbitMQConsumerConfigurationBuilder(ProducerConsumerMessage{})
 	builder.WithHandlers(
 		func(consumerHandlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
@@ -67,7 +73,7 @@ func Test_Consume_Message(t *testing.T) {
 	rabbitmqConsumer, err := NewRabbitMQConsumer(
 		conn,
 		builder.Build(),
-		json.NewEventSerializer(),
+		eventSerializer,
 		defaultLogger2.Logger,
 	)
 	require.NoError(t, err)
@@ -78,7 +84,7 @@ func Test_Consume_Message(t *testing.T) {
 	}
 	err = rabbitmqConsumer.Start(ctx)
 	if err != nil {
-		rabbitmqConsumer.Stop(ctx)
+		rabbitmqConsumer.Stop()
 	}
 	require.NoError(t, err)
 
@@ -86,7 +92,7 @@ func Test_Consume_Message(t *testing.T) {
 		conn,
 		nil,
 		defaultLogger2.Logger,
-		json.NewEventSerializer())
+		eventSerializer)
 	require.NoError(t, err)
 
 	//time.Sleep(time.Second * 5)
@@ -109,7 +115,7 @@ func Test_Consume_Message(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	rabbitmqConsumer.Stop(ctx)
+	rabbitmqConsumer.Stop()
 	conn.Close()
 
 	fmt.Println(conn.IsClosed())

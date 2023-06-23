@@ -7,7 +7,7 @@ import (
 	"github.com/nolleh/caption_json_formatter"
 	"github.com/sirupsen/logrus"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
@@ -32,7 +32,7 @@ var loggerLevelMap = map[string]logrus.Level{
 }
 
 // NewLogrusLogger creates a new logrus logger
-func NewLogrusLogger(cfg *config2.LogOptions, env config.Environment) logger.Logger {
+func NewLogrusLogger(cfg *config2.LogOptions, env environemnt.Environment) logger.Logger {
 	logrusLogger := &logrusLogger{level: cfg.LogLevel, logOptions: cfg}
 	logrusLogger.initLogger(env)
 
@@ -40,7 +40,7 @@ func NewLogrusLogger(cfg *config2.LogOptions, env config.Environment) logger.Log
 }
 
 // InitLogger Init logger
-func (l *logrusLogger) initLogger(env config.Environment) {
+func (l *logrusLogger) initLogger(env environemnt.Environment) {
 	logLevel := l.GetLoggerLevel()
 
 	// Create a new instance of the logger. You can have any number of instances.

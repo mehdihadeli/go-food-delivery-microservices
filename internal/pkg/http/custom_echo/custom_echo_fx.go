@@ -2,6 +2,8 @@ package customEcho
 
 import (
 	"context"
+	"errors"
+	"net/http"
 
 	"go.uber.org/fx"
 
@@ -41,7 +43,8 @@ func registerHooks(lc fx.Lifecycle, echoServer EchoHttpServer, logger logger.Log
 			// if we need an app context which is alive until the app context done we should create it manually here
 
 			go func() {
-				if err := echoServer.RunHttpServer(); err != nil {
+				// When Shutdown is called, Serve, ListenAndServe, and ListenAndServeTLS immediately return ErrServerClosed. Make sure the program doesn’t exit and waits instead for Shutdown to return.
+				if err := echoServer.RunHttpServer(); !errors.Is(err, http.ErrServerClosed) {
 					// do a fatal for going to OnStop process
 					logger.Fatalf(
 						"(EchoHttpServer.RunHttpServer) error in running server: {%v}",
@@ -61,6 +64,8 @@ func registerHooks(lc fx.Lifecycle, echoServer EchoHttpServer, logger logger.Log
 		OnStop: func(ctx context.Context) error {
 			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
 			// this ctx is just for stopping callbacks or OnStop callbacks, and it has short timeout 15s, and it is not alive in whole lifetime app
+			// https://medium.com/@mokiat/proper-http-shutdown-in-go-bd3bfaade0f2
+			// When Shutdown is called, Serve, ListenAndServe, and ListenAndServeTLS immediately return ErrServerClosed. Make sure the program doesn’t exit and waits instead for Shutdown to return.
 			if err := echoServer.GracefulShutdown(ctx); err != nil {
 				echoServer.Logger().Errorf("error shutting down echo server: %v", err)
 			} else {

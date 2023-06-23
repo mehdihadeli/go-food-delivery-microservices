@@ -24,19 +24,22 @@ import (
 )
 
 func Test_AddRabbitMQ(t *testing.T) {
-	ctx := context.Background()
+	testUtils.SkipCI(t)
 
-	fakeConsumer2 := consumer.NewRabbitMQFakeTestConsumerHandler()
-	fakeConsumer3 := consumer.NewRabbitMQFakeTestConsumerHandler()
+	fakeConsumer2 := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
+	fakeConsumer3 := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
 
-	b, err := NewRabbitmqBus(ctx, &config.RabbitmqOptions{
-		RabbitmqHostOptions: &config.rabbitmqHostOptions{
+	defaultLogger2.SetupDefaultLogger()
+	serializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
+
+	b, err := NewRabbitmqBus(&config.RabbitmqOptions{
+		RabbitmqHostOptions: &config.RabbitmqHostOptions{
 			UserName: "guest",
 			Password: "guest",
 			HostName: "localhost",
 			Port:     5672,
 		},
-	},
+	}, serializer, defaultLogger2.Logger,
 		func(builder configurations.RabbitMQConfigurationBuilder) {
 			builder.AddProducer(
 				ProducerConsumerMessage{},
@@ -53,8 +56,7 @@ func Test_AddRabbitMQ(t *testing.T) {
 							consumerPipelineBuilder.AddPipeline(NewPipeline1())
 						})
 				})
-		}, serializer.NewDefaultEventSerializer(json.NewJsonSerializer()),
-		defaultLogger2.Logger)
+		})
 
 	require.NoError(t, err)
 
@@ -65,12 +67,13 @@ func Test_AddRabbitMQ(t *testing.T) {
 	//})
 	//require.NoError(t, err)
 
-	err = b.ConnectConsumerHandler(ProducerConsumerMessage{}, fakeConsumer2)
+	err = b.ConnectConsumerHandler(&ProducerConsumerMessage{}, fakeConsumer2)
 	require.NoError(t, err)
 
-	err = b.ConnectConsumerHandler(ProducerConsumerMessage{}, fakeConsumer3)
+	err = b.ConnectConsumerHandler(&ProducerConsumerMessage{}, fakeConsumer3)
 	require.NoError(t, err)
 
+	ctx := context.Background()
 	err = b.Start(ctx)
 	require.NoError(t, err)
 
@@ -89,7 +92,7 @@ func Test_AddRabbitMQ(t *testing.T) {
 	})
 	assert.NoError(t, err)
 
-	b.Stop(ctx)
+	b.Stop()
 }
 
 type ProducerConsumerMessage struct {

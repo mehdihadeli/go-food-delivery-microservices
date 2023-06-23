@@ -26,7 +26,7 @@ var Module = fx.Module(
 	gormPostgres.Module,
 	postgres.Module,
 	otel.Module,
-	rabbitmq.Module(
+	rabbitmq.ModuleFunc(
 		func() configurations.RabbitMQConfigurationBuilderFuc {
 			return func(builder configurations.RabbitMQConfigurationBuilder) {
 				rabbitmq2.ConfigProductsRabbitMQ(builder)

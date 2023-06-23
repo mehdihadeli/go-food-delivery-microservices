@@ -1,13 +1,20 @@
 package main
 
 import (
-	"context"
+	"github.com/spf13/cobra"
 
-	"go.uber.org/fx"
-
-	application "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/app"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/configurations/catalogs"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/app"
 )
+
+var rootCmd = &cobra.Command{
+	Use:              "ecommerce-microservices",
+	Short:            "ecommerce-microservices based on vertical slice architecture",
+	Long:             `This is a command runner or cli for api architecture in golang.`,
+	TraverseChildren: true,
+	Run: func(cmd *cobra.Command, args []string) {
+		app.NewApp().Run()
+	},
+}
 
 // https://github.com/swaggo/swag#how-to-use-it-with-gin
 
@@ -17,29 +24,5 @@ import (
 // @version 1.0
 // @description Catalogs Write-Service Api.
 func main() {
-	// configure dependencies
-	appBuilder := application.NewCatalogsWriteApplicationBuilder()
-	appBuilder.ProvideModule(catalogs.CatalogsServiceModule)
-
-	app := appBuilder.Build()
-
-	app.RegisterHook(func(lifecycle fx.Lifecycle) {
-		lifecycle.Append(fx.Hook{
-			OnStart: func(ctx context.Context) error {
-				return nil
-			},
-			OnStop: func(ctx context.Context) error {
-				// some cleanup if exists
-				return nil
-			},
-		})
-	})
-
-	// configure application
-	app.ConfigureCatalogs()
-
-	app.MapCatalogsEndpoints()
-
-	app.Logger.Info("Starting catalog_service application")
-	app.Run()
+	_ = rootCmd.Execute()
 }

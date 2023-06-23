@@ -2,16 +2,25 @@ package app
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 )
 
 type CatalogsWriteApplicationBuilder struct {
-	*fxapp.ApplicationBuilder
+	contracts.ApplicationBuilder
 }
 
 func NewCatalogsWriteApplicationBuilder() *CatalogsWriteApplicationBuilder {
-	return &CatalogsWriteApplicationBuilder{fxapp.NewApplicationBuilder()}
+	builder := &CatalogsWriteApplicationBuilder{fxapp.NewApplicationBuilder()}
+
+	return builder
 }
 
 func (a *CatalogsWriteApplicationBuilder) Build() *CatalogsWriteApplication {
-	return NewCatalogsWriteApplication(a.Providers, a.Options, a.Logger)
+	return NewCatalogsWriteApplication(
+		a.GetProvides(),
+		a.GetDecorates(),
+		a.Options(),
+		a.Logger(),
+		a.Environment(),
+	)
 }

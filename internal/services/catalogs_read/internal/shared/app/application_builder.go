@@ -13,5 +13,5 @@ func NewCatalogsReadApplicationBuilder() *CatalogsReadApplicationBuilder {
 }
 
 func (a *CatalogsReadApplicationBuilder) Build() *CatalogsReadApplication {
-	return NewCatalogsReadApplication(a.Providers, a.Options, a.Logger)
+	return NewCatalogsReadApplication(a.Providers, a.Options, a.Logger, a.Environment)
 }

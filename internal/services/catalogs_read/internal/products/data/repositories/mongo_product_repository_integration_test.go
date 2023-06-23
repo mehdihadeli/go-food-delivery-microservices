@@ -10,6 +10,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
 	mongo2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/mongo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/data"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
 
@@ -153,7 +154,7 @@ func (p *productMongoRepositoryTestSuite) TearDownTest() {
 func setupTest(
 	ctx context.Context,
 	p *productMongoRepositoryTestSuite,
-) (contracts.ProductRepository, error) {
+) (data.ProductRepository, error) {
 	mongoDB, err := mongo2.NewMongoTestContainers().Start(ctx, p.T())
 	if err != nil {
 		return nil, err

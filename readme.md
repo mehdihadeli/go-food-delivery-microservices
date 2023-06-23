@@ -7,6 +7,8 @@
 
 > A practical store sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture**. For communication between independent services, We use asynchronous messaging with using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
 
+**You can use this project as a template to build your Backend project in the Go language on top of this project.**
+
 💡 This application is not business oriented and my focus is mostly on technical part, I just want to implement a sample with using different technologies, software architecture design, principles and all the thing we need for creating a microservices app.
 
 🌀 This Application is `in-progress` and I will add new features and thecnologies over time. 

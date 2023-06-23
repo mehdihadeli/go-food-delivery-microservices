@@ -7,7 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations"
@@ -15,12 +15,12 @@ import (
 )
 
 type CatalogsServiceConfigurator struct {
-	*fxapp.Application
+	contracts.Application
 	infrastructureConfigurator *infrastructure.InfrastructureConfigurator
 	productsModuleConfigurator *configurations.ProductsModuleConfigurator
 }
 
-func NewCatalogsServiceConfigurator(fxapp *fxapp.Application) *CatalogsServiceConfigurator {
+func NewCatalogsServiceConfigurator(fxapp contracts.Application) *CatalogsServiceConfigurator {
 	infraConfigurator := infrastructure.NewInfrastructureConfigurator(fxapp)
 	productModuleConfigurator := configurations.NewProductsModuleConfigurator(fxapp)
 

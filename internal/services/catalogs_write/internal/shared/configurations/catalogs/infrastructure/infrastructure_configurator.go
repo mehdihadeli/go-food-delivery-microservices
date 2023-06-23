@@ -1,14 +1,14 @@
 package infrastructure
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 )
 
 type InfrastructureConfigurator struct {
-	*fxapp.Application
+	contracts.Application
 }
 
-func NewInfrastructureConfigurator(fxapp *fxapp.Application) *InfrastructureConfigurator {
+func NewInfrastructureConfigurator(fxapp contracts.Application) *InfrastructureConfigurator {
 	return &InfrastructureConfigurator{
 		Application: fxapp,
 	}

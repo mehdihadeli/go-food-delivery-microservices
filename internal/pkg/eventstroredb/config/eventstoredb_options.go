@@ -4,6 +4,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
@@ -19,6 +20,6 @@ type Subscription struct {
 	SubscriptionId string   `mapstructure:"subscriptionId" validate:"required"`
 }
 
-func ProvideConfig() (*EventStoreDbOptions, error) {
-	return config.BindConfigKey[*EventStoreDbOptions](optionName)
+func ProvideConfig(environment environemnt.Environment) (*EventStoreDbOptions, error) {
+	return config.BindConfigKey[*EventStoreDbOptions](optionName, environment)
 }

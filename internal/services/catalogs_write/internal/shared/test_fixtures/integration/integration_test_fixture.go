@@ -1,119 +1,102 @@
 package integration
 
 import (
-	"context"
+	"fmt"
 	"testing"
-	"time"
 
-	"github.com/stretchr/testify/require"
+	_ "github.com/lib/pq"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
 	"github.com/stretchr/testify/suite"
+	"gopkg.in/khaiql/dbcleaner.v2"
+	"gopkg.in/khaiql/dbcleaner.v2/engine"
+	"gorm.io/gorm"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/configurations/mappings"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
-	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/app/test"
 )
 
 type IntegrationTestSharedFixture struct {
-	Cfg *config.Config
-	Log logger.Logger
-	suite.Suite
-}
-
-type IntegrationTestFixture struct {
-	ProductRepository  data.ProductRepository
-	CatalogUnitOfWorks data.CatalogUnitOfWork
+	Cfg                *config.AppOptions
+	Log                logger.Logger
 	Bus                bus.Bus
-	CatalogsMetrics    *contracts2.CatalogsMetrics
-	Ctx                context.Context
-	cancel             context.CancelFunc
+	CatalogUnitOfWorks data.CatalogUnitOfWork
+	ProductRepository  data.ProductRepository
+	suite.Suite
+	Container       contracts.Container
+	DbCleaner       dbcleaner.DbCleaner
+	RabbitmqCleaner *rabbithole.Client
+	rabbitmqOptions *config2.RabbitmqOptions
+	Gorm            *gorm.DB
 }
 
 func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture {
-	// we could use EmptyLogger if we don't want to log anything
-	log := defaultLogger.Logger
-	cfg, _ := config.InitConfig(constants.Test)
+	result := test.NewTestApp().Run(t)
 
-	err := mappings.ConfigureProductsMappings()
+	// https://github.com/michaelklishin/rabbit-hole
+	rmqc, _ := rabbithole.NewClient(
+		fmt.Sprintf(result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint()),
+		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
+		result.RabbitmqOptions.RabbitmqHostOptions.Password)
+
+	// https://github.com/khaiql/dbcleaner
+	postgresEngine := engine.NewPostgresEngine(result.GormOptions.Dns())
+	postgresCleaner := dbcleaner.New()
+	postgresCleaner.SetEngine(postgresEngine)
+
+	shared := &IntegrationTestSharedFixture{
+		Log:                result.Logger,
+		Container:          result.Container,
+		Cfg:                result.Cfg,
+		RabbitmqCleaner:    rmqc,
+		DbCleaner:          postgresCleaner,
+		ProductRepository:  result.ProductRepository,
+		CatalogUnitOfWorks: result.CatalogUnitOfWorks,
+		Bus:                result.Bus,
+		rabbitmqOptions:    result.RabbitmqOptions,
+		Gorm:               result.Gorm,
+	}
+
+	return shared
+}
+
+func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
+	// https://github.com/michaelklishin/rabbit-hole
+	// Get all queues
+	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
 	if err != nil {
-		require.FailNow(t, err.Error())
-	}
-	require.NoError(t, err)
-
-	integration := &IntegrationTestSharedFixture{
-		Cfg: cfg,
-		Log: log,
+		return err
 	}
 
-	return integration
+	// clear each queue
+	for _, queue := range queues {
+		_, err = i.RabbitmqCleaner.PurgeQueue(
+			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
+			queue.Name,
+		)
+		i.Require().NoError(err)
+	}
+
+	return nil
 }
 
-func NewIntegrationTestFixture(shared *IntegrationTestSharedFixture) *IntegrationTestFixture {
-	//ctx, cancel := context.WithCancel(context.Background())
-	//
-	//// we could use EmptyLogger if we don't want to log anything
-	//c := infrastructure.NewTestInfrastructureConfigurator(shared.T(), shared.Log, shared.Cfg)
-	//infrastructures, cleanup, err := c.ConfigInfrastructures(ctx)
-	//if err != nil {
-	//	cancel()
-	//	require.FailNow(shared.T(), err.Error())
-	//}
-	//
-	//productRep := repositories.NewPostgresProductRepository(
-	//	infrastructures.Log,
-	//	infrastructures.Gorm,
-	//)
-	//catalogUnitOfWork := uow.NewCatalogsUnitOfWork(infrastructures.Log, infrastructures.Gorm)
-	//
-	//mqBus, err := rabbitmq.NewRabbitMQTestContainers().
-	//	Start(ctx, shared.T(), func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
-	//		// Products RabbitMQ configuration
-	//		rabbitmq2.ConfigProductsRabbitMQ(builder)
-	//	})
-	//if err != nil {
-	//	cancel()
-	//	require.FailNow(shared.T(), err.Error())
-	//}
-	//
-	//catalogsMetrics, err := metrics.ConfigCatalogsMetrics(
-	//	infrastructures.Cfg,
-	//	infrastructures.Metrics,
-	//)
-	//if err != nil {
-	//	cancel()
-	//	require.FailNow(shared.T(), err.Error())
-	//}
-	//
-	//shared.T().Cleanup(func() {
-	//	// with Cancel() we send signal to done() channel to stop  grpc, http and workers gracefully
-	//	// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
-	//	// https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
-	//	mediatr.ClearRequestRegistrations()
-	//	cancel()
-	//	cleanup()
-	//})
-	//
-	//integration := &IntegrationTestFixture{
-	//	InfrastructureConfigurations: infrastructures,
-	//	Bus:                          mqBus,
-	//	CatalogsMetrics:              catalogsMetrics,
-	//	ProductRepository:            productRep,
-	//	CatalogUnitOfWorks:           catalogUnitOfWork,
-	//	Ctx:                          ctx,
-	//	cancel:                       cancel,
-	//}
-	//
-	//return integration
-
-	return &IntegrationTestFixture{}
+func (i *IntegrationTestSharedFixture) CleanupPostgresData() {
+	tables := []string{"products"}
+	err := cleanupTables(i.Gorm, tables)
+	i.Require().NoError(err)
 }
 
-func (e *IntegrationTestFixture) Run() {
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
+func cleanupTables(db *gorm.DB, tables []string) error {
+	// Iterate over the tables and delete all records
+	for _, table := range tables {
+		err := db.Exec("DELETE FROM " + table).Error
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

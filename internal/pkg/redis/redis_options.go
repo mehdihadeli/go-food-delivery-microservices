@@ -4,6 +4,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
@@ -17,6 +18,6 @@ type RedisOptions struct {
 	PoolSize int    `mapstructure:"poolSize"`
 }
 
-func provideConfig() (*RedisOptions, error) {
-	return config.BindConfigKey[*RedisOptions](optionName)
+func provideConfig(environment environemnt.Environment) (*RedisOptions, error) {
+	return config.BindConfigKey[*RedisOptions](optionName, environment)
 }

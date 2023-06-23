@@ -9,36 +9,44 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
+	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 )
 
 func Test_Publish_Message(t *testing.T) {
 	testUtils.SkipCI(t)
+
+	defaultLogger.SetupDefaultLogger()
+	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
+
 	ctx := context.Background()
 	tp, err := tracing.NewOtelTracing(
-		&otel.OpenTelemetryOptions{
+		&config2.OpenTelemetryOptions{
 			ServiceName:     "test",
 			Enabled:         true,
 			AlwaysOnSampler: true,
-			JaegerExporterOptions: &otel.JaegerExporterOptions{
+			JaegerExporterOptions: &config2.JaegerExporterOptions{
 				AgentHost: "localhost",
 				AgentPort: "6831",
 			},
 		},
+		environemnt.Development,
 	)
 	if err != nil {
 		return
 	}
-	defer tp.Shutdown(ctx)
+	defer tp.TracerProvider.Shutdown(ctx)
 
-	conn, err := types.NewRabbitMQConnection(ctx, &config.RabbitmqOptions{
-		RabbitmqHostOptions: &config.rabbitmqHostOptions{
+	conn, err := types.NewRabbitMQConnection(&config.RabbitmqOptions{
+		RabbitmqHostOptions: &config.RabbitmqHostOptions{
 			UserName: "guest",
 			Password: "guest",
 			HostName: "localhost",
@@ -51,7 +59,7 @@ func Test_Publish_Message(t *testing.T) {
 		conn,
 		nil,
 		defaultLogger.Logger,
-		json.NewEventSerializer(),
+		eventSerializer,
 	)
 	require.NoError(t, err)
 

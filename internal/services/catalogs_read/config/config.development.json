@@ -34,11 +34,13 @@
     "callerEnabled": false
   },
   "rabbitmqOptions": {
+    "autoStart": true,
     "rabbitmqHostOptions": {
       "userName": "guest",
       "password": "guest",
       "hostName": "localhost",
-      "port": 5672
+      "port": 5672,
+      "httpPort": 15672
     }
   },
   "redisOptions": {

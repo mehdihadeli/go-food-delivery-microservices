@@ -6,18 +6,18 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
-
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[AppOptions]())
 
 type AppOptions struct {
 	DeliveryType string `mapstructure:"deliveryType" env:"DeliveryType"`
 	ServiceName  string `mapstructure:"serviceName"  env:"ServiceName"`
 }
 
-func NewAppOptions(env config.Environment) (*AppOptions, error) {
-	cfg, err := config.BindConfigKey[*AppOptions](optionName, env)
+func NewAppOptions(environment environemnt.Environment) (*AppOptions, error) {
+	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[AppOptions]())
+	cfg, err := config.BindConfigKey[*AppOptions](optionName, environment)
 	if err != nil {
 		return nil, err
 	}

@@ -3,7 +3,7 @@ package configurations
 import (
 	googleGrpc "google.golang.org/grpc"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
+	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	grpcServer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
@@ -18,11 +18,11 @@ import (
 )
 
 type ProductsModuleConfigurator struct {
-	*fxapp.Application
+	contracts2.Application
 }
 
 func NewProductsModuleConfigurator(
-	fxapp *fxapp.Application,
+	fxapp contracts2.Application,
 ) *ProductsModuleConfigurator {
 	return &ProductsModuleConfigurator{
 		Application: fxapp,

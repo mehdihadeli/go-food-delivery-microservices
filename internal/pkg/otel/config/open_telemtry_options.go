@@ -4,6 +4,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
@@ -37,6 +38,6 @@ type OTelMetricsOptions struct {
 	MetricsRoutePath string `mapstructure:"metricsRoutePath"`
 }
 
-func ProvideOtelConfig() (*OpenTelemetryOptions, error) {
-	return config.BindConfigKey[*OpenTelemetryOptions](optionName)
+func ProvideOtelConfig(environment environemnt.Environment) (*OpenTelemetryOptions, error) {
+	return config.BindConfigKey[*OpenTelemetryOptions](optionName, environment)
 }

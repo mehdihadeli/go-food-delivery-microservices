@@ -13,5 +13,5 @@ func NewOrdersApplicationBuilder() *OrdersApplicationBuilder {
 }
 
 func (a *OrdersApplicationBuilder) Build() *OrdersApplication {
-	return NewOrdersApplication(a.Providers, a.Options, a.Logger)
+	return NewOrdersApplication(a.Providers, a.Options, a.Logger, a.Environment)
 }

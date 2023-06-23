@@ -50,11 +50,13 @@
     "sslMode": false
   },
   "rabbitmqOptions": {
+    "autoStart": true,
     "rabbitmqHostOptions": {
       "userName": "guest",
       "password": "guest",
       "hostName": "localhost",
-      "port": 5672
+      "port": 5672,
+      "httpPort": 15672
     }
   },
   "OpenTelemetryOptions": {
@@ -71,7 +73,7 @@
       "url": "http://localhost:9411/api/v2/spans"
     },
     "otelMetricsOptions": {
-      "port": ":2001",
+      "port": ":3001",
       "metricsRoutePath": "/metrics",
       "name": "catalogs-write-service"
     }

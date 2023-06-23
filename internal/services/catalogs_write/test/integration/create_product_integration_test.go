@@ -1,23 +1,21 @@
-//go:build.sh integration
-// +build.sh integration
-
-package createProductCommand
+package integration
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
 
+	"emperror.dev/errors"
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/mehdihadeli/go-mediatr"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
-	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
-
+	createProductCommand "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/dtos"
 	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/events/integration_events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/mocks/testData"
@@ -25,7 +23,7 @@ import (
 )
 
 type createProductIntegrationTests struct {
-	*integration.IntegrationTestFixture
+	//*integration.IntegrationTestFixture
 	*integration.IntegrationTestSharedFixture
 }
 
@@ -39,23 +37,26 @@ func TestCreateProductIntegration(t *testing.T) {
 }
 
 func (c *createProductIntegrationTests) Test_Should_Create_New_Product_To_DB() {
-	testUtils.SkipCI(c.T())
+	ctx := context.Background()
 
-	command, err := NewCreateProduct(
+	command, err := createProductCommand.NewCreateProduct(
 		gofakeit.Name(),
 		gofakeit.AdjectiveDescriptive(),
 		gofakeit.Price(150, 6000),
 	)
 	c.Require().NoError(err)
 
-	result, err := mediatr.Send[*CreateProduct, *dtos.CreateProductResponseDto](c.Ctx, command)
+	result, err := mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
+		ctx,
+		command,
+	)
 	c.Require().NoError(err)
 
 	c.Assert().NotNil(result)
 	c.Assert().Equal(command.ProductID, result.ProductID)
 
-	createdProduct, err := c.IntegrationTestFixture.ProductRepository.GetProductById(
-		c.Ctx,
+	createdProduct, err := c.ProductRepository.GetProductById(
+		ctx,
 		result.ProductID,
 	)
 	c.Require().NoError(err)
@@ -63,112 +64,156 @@ func (c *createProductIntegrationTests) Test_Should_Create_New_Product_To_DB() {
 }
 
 func (c *createProductIntegrationTests) Test_Should_Return_Error_For_Duplicate_Record() {
-	testUtils.SkipCI(c.T())
+	ctx := context.Background()
 
 	id := testData.Products[0].ProductId
 
-	command := &CreateProduct{
+	command := &createProductCommand.CreateProduct{
 		Name:        gofakeit.Name(),
 		Description: gofakeit.AdjectiveDescriptive(),
 		Price:       gofakeit.Price(150, 6000),
 		ProductID:   id,
 	}
 
-	result, err := mediatr.Send[*CreateProduct, *dtos.CreateProductResponseDto](c.Ctx, command)
+	result, err := mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
+		ctx,
+		command,
+	)
 	c.Assert().Error(err)
 	c.True(customErrors.IsApplicationError(err, http.StatusConflict))
 	c.Assert().Nil(result)
 }
 
 func (c *createProductIntegrationTests) Test_Should_Publish_Product_Created_To_Broker() {
-	testUtils.SkipCI(c.T())
+	ctx := context.Background()
 
 	shouldPublish := messaging.ShouldProduced[*integrationEvents.ProductCreatedV1](
-		c.Ctx,
+		ctx,
 		c.Bus,
 		nil,
 	)
 
-	command, err := NewCreateProduct(
+	command, err := createProductCommand.NewCreateProduct(
 		gofakeit.Name(),
 		gofakeit.AdjectiveDescriptive(),
 		gofakeit.Price(150, 6000),
 	)
 	c.Require().NoError(err)
 
-	_, err = mediatr.Send[*CreateProduct, *dtos.CreateProductResponseDto](c.Ctx, command)
+	_, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
+		ctx,
+		command,
+	)
 	c.Require().NoError(err)
 
 	// ensuring message published to the rabbitmq broker
-	shouldPublish.Validate(c.Ctx, "there is no published message", time.Second*30)
+	shouldPublish.Validate(ctx, "there is no published message", time.Second*30)
 }
 
 func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With_Existing_Consumer_From_Broker() {
-	testUtils.SkipCI(c.T())
+	ctx := context.Background()
 
 	// should consume productCreatedTestConsumer
-	newConsumer := messaging.ShouldConsume[*integrationEvents.ProductCreatedV1](c.Ctx, c.Bus, nil)
+	// we setup this handler in `BeforeTest`
+	newConsumer := messaging.ShouldConsume[*integrationEvents.ProductCreatedV1](ctx, c.Bus, nil)
 
-	command, err := NewCreateProduct(
+	command, err := createProductCommand.NewCreateProduct(
 		gofakeit.Name(),
 		gofakeit.AdjectiveDescriptive(),
 		gofakeit.Price(150, 6000),
 	)
 	c.Require().NoError(err)
 
-	_, err = mediatr.Send[*CreateProduct, *dtos.CreateProductResponseDto](c.Ctx, command)
+	_, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
+		ctx,
+		command,
+	)
 	c.Require().NoError(err)
 
 	// ensuring message can be consumed with a consumer
-	newConsumer.Validate(c.Ctx, "there is no consumed message", time.Second*30)
+	newConsumer.Validate(ctx, "there is no consumed message", time.Second*30)
 }
 
 func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker() {
-	testUtils.SkipCI(c.T())
+	ctx := context.Background()
+	defer c.Bus.Stop()
 
 	// should consume productCreatedTestConsumer
 	newConsumer, err := messaging.ShouldConsumeNewConsumer[*integrationEvents.ProductCreatedV1](
-		c.Ctx,
 		c.Bus,
 	)
-	require.NoError(c.T(), err)
+	c.Require().NoError(err)
 
-	c.IntegrationTestFixture.Run()
+	// at first, we should add new consumer to rabbitmq bus then start the broker, because we can't add new consumer after start.
+	// we should also turn off consumer in `BeforeTest` for this test
+	c.Bus.Start(ctx)
 
-	command, err := NewCreateProduct(
+	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+	time.Sleep(1 * time.Second)
+
+	command, err := createProductCommand.NewCreateProduct(
 		gofakeit.Name(),
 		gofakeit.AdjectiveDescriptive(),
 		gofakeit.Price(150, 6000),
 	)
 	c.Require().NoError(err)
 
-	_, err = mediatr.Send[*CreateProduct, *dtos.CreateProductResponseDto](c.Ctx, command)
+	_, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
+		ctx,
+		command,
+	)
 	c.Require().NoError(err)
 
 	// ensuring message can be consumed with a consumer
-	newConsumer.Validate(c.Ctx, "there is no consumed message", time.Second*30)
+	newConsumer.Validate(ctx, "there is no consumed message", time.Second*30)
 }
 
 func (c *createProductIntegrationTests) BeforeTest(suiteName, testName string) {
-	if testName != "Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker" {
-		c.IntegrationTestFixture.Run()
+	if testName == "Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker" {
+		c.Bus.Stop()
 	}
+}
+
+func (c *createProductIntegrationTests) TearDownSuite() {
+	c.Bus.Stop()
+}
+
+func (c *createProductIntegrationTests) SetupSuite() {
+	// in test mode we set rabbitmq `AutoStart=false`
+	// register one consumer for `ProductCreatedV1` message before executing the tests
+	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*integrationEvents.ProductCreatedV1]()
+	err := c.Bus.ConnectConsumerHandler(&integrationEvents.ProductCreatedV1{}, testConsumer)
+	c.Require().NoError(err)
+
+	c.Bus.Start(context.Background())
+	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+	time.Sleep(1 * time.Second)
 }
 
 func (c *createProductIntegrationTests) SetupTest() {
 	c.T().Log("SetupTest")
-	c.IntegrationTestFixture = integration.NewIntegrationTestFixture(c.IntegrationTestSharedFixture)
-	err := mediatr.RegisterRequestHandler[*CreateProduct, *dtos.CreateProductResponseDto](
-		NewCreateProductHandler(c.Log, c.Cfg, c.CatalogUnitOfWorks, c.Bus),
-	)
-	c.Require().NoError(err)
 
-	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*integrationEvents.ProductCreatedV1]()
-	err = c.Bus.ConnectConsumerHandler(&integrationEvents.ProductCreatedV1{}, testConsumer)
+	// seed data in each test
+	err := seedData(c.Gorm)
 	c.Require().NoError(err)
 }
 
 func (c *createProductIntegrationTests) TearDownTest() {
 	c.T().Log("TearDownTest")
 	// cleanup test containers with their hooks
+	err := c.CleanupRabbitmqData()
+	if err != nil {
+		c.Require().NoError(err)
+	}
+
+	c.CleanupPostgresData()
+}
+
+func seedData(gormDB *gorm.DB) error {
+	// seed data
+	err := gormDB.CreateInBatches(testData.Products, len(testData.Products)).Error
+	if err != nil {
+		return errors.Wrap(err, "error in seed database")
+	}
+	return nil
 }

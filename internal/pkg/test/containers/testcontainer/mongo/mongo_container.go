@@ -34,11 +34,11 @@ func NewMongoTestContainers() contracts.MongoContainer {
 	}
 }
 
-func (g *mongoTestContainers) Start(
+func (g *mongoTestContainers) CreatingContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.MongoContainerOptions,
-) (*mongo.Client, error) {
+) (*mongodb.MongoDbOptions, error) {
 	// https://github.com/testcontainers/testcontainers-go
 	// https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
 	containerReq := g.getRunOptions(options...)
@@ -70,15 +70,29 @@ func (g *mongoTestContainers) Start(
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() { _ = dbContainer.Terminate(ctx) })
-
-	db, err := mongodb.NewMongoDB(&mongodb.MongoDbOptions{
+	option := &mongodb.MongoDbOptions{
 		User:     g.defaultOptions.UserName,
 		Password: g.defaultOptions.Password,
 		UseAuth:  false,
 		Host:     host,
 		Port:     g.defaultOptions.HostPort,
 		Database: g.defaultOptions.Database,
-	})
+	}
+
+	return option, nil
+}
+
+func (g *mongoTestContainers) Start(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.MongoContainerOptions,
+) (*mongo.Client, error) {
+	mongoOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := mongodb.NewMongoDB(mongoOptions)
 	if err != nil {
 		return nil, err
 	}

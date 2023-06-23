@@ -4,6 +4,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
@@ -16,6 +17,6 @@ type GrpcOptions struct {
 	Name        string `mapstructure:"name"        env:"Name"`
 }
 
-func ProvideConfig() (*GrpcOptions, error) {
-	return config.BindConfigKey[*GrpcOptions](optionName)
+func ProvideConfig(environment environemnt.Environment) (*GrpcOptions, error) {
+	return config.BindConfigKey[*GrpcOptions](optionName, environment)
 }

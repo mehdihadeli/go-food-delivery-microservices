@@ -12,7 +12,7 @@ type person struct {
 	Age  int
 }
 
-var currentSerializer = NewJsonSerializer()
+var currentSerializer = NewDefaultSerializer()
 
 func Test_Deserialize_Unstructured_Data_Into_Empty_Interface(t *testing.T) {
 	// https://www.sohamkamani.com/golang/json/#decoding-json-to-maps---unstructured-data

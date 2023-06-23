@@ -35,7 +35,7 @@ var Module = fx.Module(
 		},
 	),
 	otel.Module,
-	rabbitmq.Module(
+	rabbitmq.ModuleFunc(
 		func() configurations.RabbitMQConfigurationBuilderFuc {
 			return func(builder configurations.RabbitMQConfigurationBuilder) {
 				rabbitmq2.ConfigOrdersRabbitMQ(builder)

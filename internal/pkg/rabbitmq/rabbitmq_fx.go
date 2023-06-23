@@ -12,9 +12,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 )
 
-// Module provided to fxlog
+// ModuleFunc provided to fxlog
 // https://uber-go.github.io/fx/modules.html
-var Module = func(rabbitMQConfigurationConstructor interface{}) fx.Option {
+var ModuleFunc = func(rabbitMQConfigurationConstructor interface{}) fx.Option {
 	return fx.Module(
 		"rabbitmqfx",
 		// - order is not important in provide
@@ -40,7 +40,16 @@ var Module = func(rabbitMQConfigurationConstructor interface{}) fx.Option {
 }
 
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`
-func registerHooks(lc fx.Lifecycle, bus bus.RabbitmqBus, logger logger.Logger) {
+func registerHooks(
+	lc fx.Lifecycle,
+	bus bus.RabbitmqBus,
+	rabbitmqOptions *config.RabbitmqOptions,
+	logger logger.Logger,
+) {
+	if rabbitmqOptions.AutoStart == false {
+		return
+	}
+
 	lifeTimeCtx := context.Background()
 
 	lc.Append(fx.Hook{

@@ -30,11 +30,13 @@
     "logType": 0
   },
   "rabbitmq": {
+    "autoStart": false,
     "rabbitMqHostOptions": {
       "userName": "guest",
       "password": "guest",
       "hostName": "localhost",
-      "port": 5672
+      "port": 5672,
+      "httpPort": 15672
     }
   },
   "redis": {

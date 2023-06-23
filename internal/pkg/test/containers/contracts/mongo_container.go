@@ -2,8 +2,11 @@ package contracts
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/mongo"
 	"testing"
+
+	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
 )
 
 type MongoContainerOptions struct {
@@ -19,6 +22,15 @@ type MongoContainerOptions struct {
 }
 
 type MongoContainer interface {
-	Start(ctx context.Context, t *testing.T, options ...*MongoContainerOptions) (*mongo.Client, error)
+	Start(
+		ctx context.Context,
+		t *testing.T,
+		options ...*MongoContainerOptions,
+	) (*mongo.Client, error)
+	CreatingContainerOptions(
+		ctx context.Context,
+		t *testing.T,
+		options ...*MongoContainerOptions,
+	) (*mongodb.MongoDbOptions, error)
 	Cleanup(ctx context.Context) error
 }

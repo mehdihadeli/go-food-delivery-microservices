@@ -7,29 +7,32 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/caarlos0/env/v8"
+	"github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
-func BindConfig[T any](environments ...Environment) (T, error) {
+func BindConfig[T any](environments ...environemnt.Environment) (T, error) {
 	return BindConfigKey[T]("", environments...)
 }
 
-func BindConfigKey[T any](configKey string, environments ...Environment) (T, error) {
+func BindConfigKey[T any](configKey string, environments ...environemnt.Environment) (T, error) {
 	var configPath string
 
-	environment := Environment("")
+	environment := environemnt.Environment("")
 	if len(environments) > 0 {
 		environment = environments[0]
 	} else {
 		environment = constants.Dev
 	}
 
-	configPathFromEnv := os.Getenv(constants.ConfigPath)
-	if configPathFromEnv != "" {
-		configPath = configPathFromEnv
+	// https://articles.wesionary.team/environment-variable-configuration-in-your-golang-project-using-viper-4e8289ef664d
+	configPathFromEnv := viper.Get(constants.ConfigPath)
+	if configPathFromEnv != nil {
+		configPath = configPathFromEnv.(string)
 	} else {
 		// https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
 		// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
@@ -62,28 +65,36 @@ func BindConfigKey[T any](configKey string, environments ...Environment) (T, err
 		}
 	}
 
+	viper.AutomaticEnv()
+
+	// https://github.com/caarlos0/env
 	if err := env.Parse(cfg); err != nil {
 		fmt.Printf("%+v\n", err)
 	}
+
+	// https://github.com/mcuadros/go-defaults
+	defaults.SetDefaults(cfg)
 
 	return cfg, nil
 }
 
 func getConfigRootPath() (string, error) {
 	// Get the current working directory
+	// Getwd gives us the current working directory that we are running our app with `go run` command. in goland we can specify this working directory for the project
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(fmt.Sprintf("Current working directory is: %s", wd))
 
 	// Get the absolute path of the executed project directory
-	projectPath, err := filepath.Abs(wd)
+	absCurrentDir, err := filepath.Abs(wd)
 	if err != nil {
 		return "", err
 	}
 
 	// Get the path to the "config" folder within the project directory
-	configPath := filepath.Join(projectPath, "config")
+	configPath := filepath.Join(absCurrentDir, "config")
 
 	return configPath, nil
 }

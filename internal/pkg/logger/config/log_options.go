@@ -4,6 +4,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
@@ -16,6 +17,6 @@ type LogOptions struct {
 	CallerEnabled bool           `mapstructure:"callerEnabled"`
 }
 
-func ProvideLogConfig() (*LogOptions, error) {
-	return config.BindConfigKey[*LogOptions](optionName)
+func ProvideLogConfig(env environemnt.Environment) (*LogOptions, error) {
+	return config.BindConfigKey[*LogOptions](optionName, env)
 }

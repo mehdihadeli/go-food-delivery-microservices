@@ -12,7 +12,7 @@ import (
 
 type jsonSerializer struct{}
 
-func NewJsonSerializer() serializer.Serializer {
+func NewDefaultSerializer() serializer.Serializer {
 	return &jsonSerializer{}
 }
 

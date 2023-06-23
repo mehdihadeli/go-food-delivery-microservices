@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 )
 
 type Config struct {
@@ -11,7 +12,7 @@ type Config struct {
 	MongoDocumentOptions MongoDocumentOptions `mapstructure:"mongoDocumentOptions"`
 }
 
-func NewConfig(env config.Environment) (*Config, error) {
+func NewConfig(env environemnt.Environment) (*Config, error) {
 	cfg, err := config.BindConfig[*Config](env)
 	if err != nil {
 		return nil, err
