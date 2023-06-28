@@ -5,21 +5,20 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
-
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	mocks3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/mocks"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
 	dto "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/dto/v1"
-	mocks2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/mocks"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/models"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/mocks"
 )
 
 type UnitTestSharedFixture struct {
@@ -29,14 +28,16 @@ type UnitTestSharedFixture struct {
 }
 
 type UnitTestMockFixture struct {
-	Uow               *mocks2.CatalogUnitOfWork
-	ProductRepository *mocks2.ProductRepository
+	Uow               *mocks.CatalogUnitOfWork
+	ProductRepository *mocks.ProductRepository
 	Bus               *mocks3.Bus
+	Tracer            trace.Tracer
 	Ctx               context.Context
 }
 
 func NewUnitTestSharedFixture(t *testing.T) *UnitTestSharedFixture {
 	// we could use EmptyLogger if we don't want to log anything
+	defaultLogger.SetupDefaultLogger()
 	log := defaultLogger.Logger
 	cfg := &config.AppOptions{}
 
@@ -61,10 +62,10 @@ func NewUnitTestMockFixture(t *testing.T) *UnitTestMockFixture {
 	})
 
 	// create new mocks
-	productRepository := &mocks2.ProductRepository{}
+	productRepository := &mocks.ProductRepository{}
 	bus := &mocks3.Bus{}
-	uow := &mocks2.CatalogUnitOfWork{}
-	catalogContext := &mocks2.CatalogContext{}
+	uow := &mocks.CatalogUnitOfWork{}
+	catalogContext := &mocks.CatalogContext{}
 
 	//// or just clear the mocks
 	//c.Bus.ExpectedCalls = nil
@@ -93,11 +94,16 @@ func NewUnitTestMockFixture(t *testing.T) *UnitTestMockFixture {
 
 	bus.On("PublishMessage", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
+	// empty tracer, just for testing
+	nopetracer := trace.NewNoopTracerProvider()
+	testTracer := nopetracer.Tracer("test_tracer")
+
 	return &UnitTestMockFixture{
 		Ctx:               ctx,
 		Bus:               bus,
 		ProductRepository: productRepository,
 		Uow:               uow,
+		Tracer:            testTracer,
 	}
 }
 

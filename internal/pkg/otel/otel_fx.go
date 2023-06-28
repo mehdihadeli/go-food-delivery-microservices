@@ -2,7 +2,9 @@ package otel
 
 import (
 	"context"
+	"net/http"
 
+	"emperror.dev/errors"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/fx"
@@ -55,7 +57,9 @@ func registerHooks(
 			}
 
 			go func() {
-				if err := metrics.Run(); err != nil {
+				// https://medium.com/@mokiat/proper-http-shutdown-in-go-bd3bfaade0f2
+				// When Shutdown is called, Serve, ListenAndServe, and ListenAndServeTLS immediately return ErrServerClosed. Make sure the program doesn’t exit and waits instead for Shutdown to return.
+				if err := metrics.Run(); !errors.Is(err, http.ErrServerClosed) {
 					// do a fatal for running OnStop hook
 					logger.Fatalf(
 						"(metrics.RunHttpServer) error in running metrics server: {%v}",
@@ -82,6 +86,10 @@ func registerHooks(
 			if metrics.Meter == nil {
 				return nil
 			}
+			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
+			// this ctx is just for stopping callbacks or OnStop callbacks, and it has short timeout 15s, and it is not alive in whole lifetime app
+			// https://medium.com/@mokiat/proper-http-shutdown-in-go-bd3bfaade0f2
+			// When Shutdown is called, Serve, ListenAndServe, and ListenAndServeTLS immediately return ErrServerClosed. Make sure the program doesn’t exit and waits instead for Shutdown to return.
 			if err := metrics.GracefulShutdown(ctx); err != nil {
 				logger.Errorf("error shutting down metrics server: %v", err)
 			} else {

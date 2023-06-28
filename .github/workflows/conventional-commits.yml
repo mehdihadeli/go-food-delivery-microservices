@@ -1,0 +1,57 @@
+# https://github.com/amannn/action-semantic-pull-request
+# https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/configuring-commit-squashing-for-pull-requests
+# Linting workflow: https://github.com/rhysd/actionlint
+
+name: Conventional Commits
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+      - edited
+      - ready_for_review
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+  # https://github.com/amannn/action-semantic-pull-request
+permissions:
+  pull-requests: read
+
+jobs:
+  conventional-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Pull Request Title Conventional Commits
+        uses: amannn/action-semantic-pull-request@v5
+        if: always()
+        id: check-pull-request-title-conventional-commits
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Comments the error message from the above lint_pr_title action
+      - if: ${{ always() && steps.check-pull-request-title-conventional-commits.outputs.error_message != null}}
+        name: Comment on PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-title-lint-error
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          message: |
+            We require all PRs to follow [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
+            More details 👇🏼
+            ```
+             ${{ steps.check-pull-request-title-conventional-commits.outputs.error_message}}
+            ```
+        # deletes the error comment if the title is correct
+      - if: ${{ steps.check-pull-request-title-conventional-commits.outputs.error_message == null }}
+        name: delete the comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr-title-lint-error
+          delete: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

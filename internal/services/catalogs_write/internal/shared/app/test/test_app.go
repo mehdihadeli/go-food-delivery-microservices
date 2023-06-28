@@ -10,8 +10,8 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
@@ -29,6 +29,7 @@ type TestAppResult struct {
 	Container          contracts.Container
 	Logger             logger.Logger
 	RabbitmqOptions    *config2.RabbitmqOptions
+	EchoHttpOptions    *config3.EchoHttpOptions
 	GormOptions        *gormPostgres.GormOptions
 	CatalogUnitOfWorks data.CatalogUnitOfWork
 	ProductRepository  data.ProductRepository
@@ -47,14 +48,12 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	appBuilder.ProvideModule(catalogs.CatalogsServiceModule)
 	appBuilder.Decorate(rabbitmq.RabbitmqContainerOptionsDecorator(t, lifetimeCtx))
 	appBuilder.Decorate(gorm.GormContainerOptionsDecorator(t, lifetimeCtx))
-	appBuilder.Decorate(func(metrics *metrics.OtelMetrics) *metrics.OtelMetrics {
-		metrics.Meter = nil
-		return metrics
-	})
 
 	testApp := appBuilder.Build()
 
 	testApp.ConfigureCatalogs()
+
+	testApp.MapCatalogsEndpoints()
 
 	testApp.ResolveFunc(
 		func(cfg *config.AppOptions,
@@ -65,6 +64,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 			catalogUnitOfWorks data.CatalogUnitOfWork,
 			productRepository data.ProductRepository,
 			gorm *gorm2.DB,
+			echoOptions *config3.EchoHttpOptions,
 		) {
 			result = &TestAppResult{
 				Bus:                bus,
@@ -76,6 +76,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 				ProductRepository:  productRepository,
 				CatalogUnitOfWorks: catalogUnitOfWorks,
 				Gorm:               gorm,
+				EchoHttpOptions:    echoOptions,
 			}
 		},
 	)

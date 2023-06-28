@@ -1,0 +1,33 @@
+#https://taskfile.dev/#/installation
+
+version: "3"
+
+tasks:
+  pkg-mock:
+    desc: Generate pkg interfaces mocks
+    cmds:
+      - cd internal/pkg/messaging && mockery --output mocks --all
+      - cd internal/pkg/es && mockery --output mocks --all
+      - cd internal/pkg/core && mockery --output mocks --all
+
+  services-mock:
+    desc: Generate services interfaces mocks
+    cmds:
+      - cd internal/services/catalogs_write && mockery --output mocks --all
+      - cd internal/services/catalogs_read && mockery --output mocks --all
+      - cd internal/services/orders && mockery --output mocks --all
+
+  integration:
+    desc: Run integration tests
+    cmds:
+      - go test -v -tags=integration ./...
+
+  e2e:
+    desc: Run integration tests
+    cmds:
+      - go test -v -tags=e2e ./...
+
+  unit:
+    desc: Run unit tests
+    cmds:
+      - go test -v -tags=unit ./...

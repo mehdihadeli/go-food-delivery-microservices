@@ -34,6 +34,9 @@ go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
 # https://github.com/OpenAPITools/openapi-generator-cli
 npm install -g @openapitools/openapi-generator-cli
 
+# https://vektra.github.io/mockery/latest/installation/
+go install github.com/vektra/mockery/v2@latest
+
 OS="$(uname -s)"
 
 if [[ "$OS" == "Linux" ]]; then

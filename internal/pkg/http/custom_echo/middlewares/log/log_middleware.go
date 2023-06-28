@@ -48,7 +48,7 @@ func EchoLogger(logger logger.Logger) echo.MiddlewareFunc {
 			case n >= 300:
 				logger.Errorw("Echo logger middleware: Redirection", fields)
 			default:
-				logger.Errorw("Echo logger middleware: Success", fields)
+				logger.Infow("Echo logger middleware: Success", fields)
 			}
 
 			return nil

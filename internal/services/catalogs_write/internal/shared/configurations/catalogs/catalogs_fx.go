@@ -34,6 +34,10 @@ func provideCatalogsMetrics(
 	cfg *config.AppOptions,
 	meter metric.Meter,
 ) (*contracts.CatalogsMetrics, error) {
+	if meter == nil {
+		return nil, nil
+	}
+
 	createProductGrpcRequests, err := meter.Float64Counter(
 		fmt.Sprintf("%s_create_product_grpc_requests_total", cfg.ServiceName),
 		api.WithDescription("The total number of create product grpc requests"),

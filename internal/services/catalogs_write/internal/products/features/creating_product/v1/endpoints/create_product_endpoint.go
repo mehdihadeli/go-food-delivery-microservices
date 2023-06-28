@@ -41,6 +41,7 @@ func (ep *createProductEndpoint) MapEndpoint() {
 func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
+
 		ep.CatalogsMetrics.CreateProductHttpRequests.Add(ctx, 1)
 
 		request := &dtos.CreateProductRequestDto{}

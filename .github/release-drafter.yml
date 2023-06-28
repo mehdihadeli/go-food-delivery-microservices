@@ -12,21 +12,26 @@ name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
 template: |
   ## What Changed 👀
-
   $CHANGES
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
 categories:
   - title: 🚀 Features
     labels:
       - feature
+  - title: ♻️ Enhancement
+    labels:
       - enhancement
+      - refactor
   - title: 🐛 Bug Fixes
     labels:
       - fix
       - bug
-  - title: ⚠️ Changes
+  - title: 👷 CI
     labels:
-      - changed
+      - ci
+  - title: ⚠️ Breaking Changes
+    labels:
+      - breaking-changes
   - title: ⛔️ Deprecated
     labels:
       - deprecated
@@ -48,44 +53,56 @@ categories:
     label: 'chore'
   - title: 🧺 Miscellaneous #Everything except ABAP
     label: misc
-  - title: "Other changes"
+  - title: 🚩 Other changes
 ## putting no labels pr to `Other Changes` category with no label - https://github.com/release-drafter/release-drafter/issues/139#issuecomment-480473934
+
 
 # https://www.trywilco.com/post/wilco-ci-cd-github-heroku
 # https://github.com/release-drafter/release-drafter#autolabeler
 # https://github.com/fuxingloh/multi-labeler
 
 # Using regex for defining rules - https://regexr.com/
+# https://stackoverflow.com/questions/58899999/regexp-to-match-conventional-commit-syntax
 autolabeler:
   - label: 'chore'
     branch:
-      - '/^chore/.*/'
+      - '(chore)(\([a-z ]+\))?\/.'
     title:
-      - '/^chore: .*/'
-  - label: 'docs'
-    branch:
-      - '/^docs/.*/'
-    title:
-      - '/^docs: .*/'
+      - '^(chore)(\([a-z ]+\))?: .'
   - label: 'bug'
     branch:
-      - '/^fix/.*/'
+      - '(fix)(\([a-z ]+\))?\/.'
     title:
-      - '/^fix: .*/'
+      - '^(fix)(\([a-z ]+\))?: .'
   - label: 'feature'
     branch:
-      - '/^feat/.*/'
+      - '(feat)(\([a-z ]+\))?\/.'
     title:
-      - '/^feat: .*/'
-    body:
-      - '/JIRA-[0-9]{1,4}/'
+      - '^(feat)(\([a-z ]+\))?: .'
+  - label: 'ci/cd'
+    branch:
+      - '(ci)(\([a-z ]+\))?\/.'
+    title:
+      - '^(ci)(\([a-z ]+\))?: .'
+  - label: 'minor'
+    branch:
+      - '(feat)(\([a-z ]+\))?\/.'
+    title:
+      - '^(feat)(\([a-z ]+\))?: .'
+  - label: 'patch'
+    branch:
+      - '(fix)(\([a-z ]+\))?\/.'
+      - '(ci)(\([a-z ]+\))?\/.'
+    title:
+      - '^(fix)(\([a-z ]+\))?: .'
+      - '^(ci)(\([a-z ]+\))?: .'
 
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
 version-resolver:
   major:
     labels:
-      - major
+      - breaking-changes
   minor:
     labels:
       - minor

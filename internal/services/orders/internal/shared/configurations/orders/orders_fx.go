@@ -34,6 +34,10 @@ func configOrdersMetrics(
 	cfg *config.Config,
 	meter metric.Meter,
 ) (*contracts.OrdersMetrics, error) {
+	if meter == nil {
+		return nil, nil
+	}
+
 	appOptions := cfg.AppOptions
 	successGrpcRequests, err := meter.Float64Counter(
 		fmt.Sprintf("%s_success_grpc_requests_total", appOptions.ServiceName),

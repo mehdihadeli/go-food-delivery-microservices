@@ -218,9 +218,6 @@ func (r *rabbitmqBus) Start(ctx context.Context) error {
 		)
 	}
 
-	s = r.messageTypeConsumers
-	fmt.Println(s)
-
 	p, err := producer2.NewRabbitMQProducer(
 		r.rabbitmqConnection,
 		producersConfiguration,
@@ -289,6 +286,9 @@ func (r *rabbitmqBus) PublishMessage(
 	message types.IMessage,
 	meta metadata.Metadata,
 ) error {
+	if r.producer == nil {
+		r.logger.Fatal("can't find a producer for publishing messages")
+	}
 	return r.producer.PublishMessage(ctx, message, meta)
 }
 
