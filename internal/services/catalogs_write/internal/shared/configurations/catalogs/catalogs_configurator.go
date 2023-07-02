@@ -20,12 +20,12 @@ type CatalogsServiceConfigurator struct {
 	productsModuleConfigurator *configurations.ProductsModuleConfigurator
 }
 
-func NewCatalogsServiceConfigurator(fxapp contracts.Application) *CatalogsServiceConfigurator {
-	infraConfigurator := infrastructure.NewInfrastructureConfigurator(fxapp)
-	productModuleConfigurator := configurations.NewProductsModuleConfigurator(fxapp)
+func NewCatalogsServiceConfigurator(app contracts.Application) *CatalogsServiceConfigurator {
+	infraConfigurator := infrastructure.NewInfrastructureConfigurator(app)
+	productModuleConfigurator := configurations.NewProductsModuleConfigurator(app)
 
 	return &CatalogsServiceConfigurator{
-		Application:                fxapp,
+		Application:                app,
 		infrastructureConfigurator: infraConfigurator,
 		productsModuleConfigurator: productModuleConfigurator,
 	}

@@ -15,7 +15,6 @@ import (
 
 type createProductUnitTests struct {
 	*unit_test.UnitTestSharedFixture
-	*unit_test.UnitTestMockFixture
 }
 
 func TestCreateProductUnit(t *testing.T) {
@@ -23,11 +22,6 @@ func TestCreateProductUnit(t *testing.T) {
 		t,
 		&createProductUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)},
 	)
-}
-
-func (c *createProductUnitTests) SetupTest() {
-	// create new mocks or clear mocks before executing
-	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
 }
 
 func (c *createProductUnitTests) Test_New_Create_Product_Should_Return_No_Error_For_Valid_Input() {

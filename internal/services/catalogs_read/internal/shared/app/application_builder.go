@@ -2,16 +2,25 @@ package app
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 )
 
 type CatalogsReadApplicationBuilder struct {
-	*fxapp.ApplicationBuilder
+	contracts.ApplicationBuilder
 }
 
 func NewCatalogsReadApplicationBuilder() *CatalogsReadApplicationBuilder {
-	return &CatalogsReadApplicationBuilder{fxapp.NewApplicationBuilder()}
+	builder := &CatalogsReadApplicationBuilder{fxapp.NewApplicationBuilder()}
+
+	return builder
 }
 
 func (a *CatalogsReadApplicationBuilder) Build() *CatalogsReadApplication {
-	return NewCatalogsReadApplication(a.Providers, a.Options, a.Logger, a.Environment)
+	return NewCatalogsReadApplication(
+		a.GetProvides(),
+		a.GetDecorates(),
+		a.Options(),
+		a.Logger(),
+		a.Environment(),
+	)
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
@@ -18,22 +19,24 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
+	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/grpc/proto/service_clients"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/configurations/catalogs"
 )
 
 type TestApp struct{}
 
 type TestAppResult struct {
-	Cfg                *config.AppOptions
-	Bus                bus.RabbitmqBus
-	Container          contracts.Container
-	Logger             logger.Logger
-	RabbitmqOptions    *config2.RabbitmqOptions
-	EchoHttpOptions    *config3.EchoHttpOptions
-	GormOptions        *gormPostgres.GormOptions
-	CatalogUnitOfWorks data.CatalogUnitOfWork
-	ProductRepository  data.ProductRepository
-	Gorm               *gorm2.DB
+	Cfg                  *config.AppOptions
+	Bus                  bus.RabbitmqBus
+	Container            contracts.Container
+	Logger               logger.Logger
+	RabbitmqOptions      *config2.RabbitmqOptions
+	EchoHttpOptions      *config3.EchoHttpOptions
+	GormOptions          *gormPostgres.GormOptions
+	CatalogUnitOfWorks   data.CatalogUnitOfWork
+	ProductRepository    data.ProductRepository
+	Gorm                 *gorm2.DB
+	ProductServiceClient productsService.ProductsServiceClient
 }
 
 func NewTestApp() *TestApp {
@@ -65,6 +68,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 			productRepository data.ProductRepository,
 			gorm *gorm2.DB,
 			echoOptions *config3.EchoHttpOptions,
+			grpcClient grpc.GrpcClient,
 		) {
 			result = &TestAppResult{
 				Bus:                bus,
@@ -77,6 +81,9 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 				CatalogUnitOfWorks: catalogUnitOfWorks,
 				Gorm:               gorm,
 				EchoHttpOptions:    echoOptions,
+				ProductServiceClient: productsService.NewProductsServiceClient(
+					grpcClient.GetGrpcConnection(),
+				),
 			}
 		},
 	)

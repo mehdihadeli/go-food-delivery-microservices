@@ -13,6 +13,7 @@ import (
 	getProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/getting_products/v1/endpoints"
 	searchProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/searching_product/v1/endpoints"
 	updateProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/updating_product/v1/endpoints"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/grpc"
 )
 
 var Module = fx.Module(
@@ -20,6 +21,7 @@ var Module = fx.Module(
 
 	// Other provides
 	fx.Provide(repositories.NewPostgresProductRepository),
+	fx.Provide(grpc.NewProductGrpcService),
 
 	fx.Provide(fx.Annotate(func(catalogsServer customEcho.EchoHttpServer) *echo.Group {
 		var g *echo.Group

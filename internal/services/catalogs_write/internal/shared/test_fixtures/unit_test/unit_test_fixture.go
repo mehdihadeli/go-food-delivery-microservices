@@ -1,7 +1,6 @@
 package unit_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
 	dto "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/dto/v1"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/mocks"
 )
@@ -25,14 +25,11 @@ type UnitTestSharedFixture struct {
 	Cfg *config.AppOptions
 	Log logger.Logger
 	suite.Suite
-}
-
-type UnitTestMockFixture struct {
+	Items             []*models.Product
 	Uow               *mocks.CatalogUnitOfWork
 	ProductRepository *mocks.ProductRepository
 	Bus               *mocks3.Bus
 	Tracer            trace.Tracer
-	Ctx               context.Context
 }
 
 func NewUnitTestSharedFixture(t *testing.T) *UnitTestSharedFixture {
@@ -44,23 +41,36 @@ func NewUnitTestSharedFixture(t *testing.T) *UnitTestSharedFixture {
 	err := configMapper()
 	require.NoError(t, err)
 
+	// empty tracer, just for testing
+	nopetracer := trace.NewNoopTracerProvider()
+	testTracer := nopetracer.Tracer("test_tracer")
+
 	unit := &UnitTestSharedFixture{
-		Cfg: cfg,
-		Log: log,
+		Cfg:    cfg,
+		Log:    log,
+		Items:  testData.Products,
+		Tracer: testTracer,
 	}
 
 	return unit
 }
 
-func NewUnitTestMockFixture(t *testing.T) *UnitTestMockFixture {
-	ctx, cancel := context.WithCancel(context.Background())
+func configMapper() error {
+	err := mapper.CreateMap[*models.Product, *dto.ProductDto]()
+	if err != nil {
+		return err
+	}
 
-	t.Cleanup(func() {
-		// https://dev.to/mcaci/how-to-use-the-context-done-method-in-go-22me
-		// https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go
-		cancel()
-	})
+	err = mapper.CreateMap[*dto.ProductDto, *models.Product]()
+	if err != nil {
+		return err
+	}
 
+	return nil
+}
+
+// //////////////Shared Hooks////////////////
+func (c *UnitTestSharedFixture) SetupTest() {
 	// create new mocks
 	productRepository := &mocks.ProductRepository{}
 	bus := &mocks3.Bus{}
@@ -91,32 +101,9 @@ func NewUnitTestMockFixture(t *testing.T) *UnitTestMockFixture {
 		})
 
 	mockUOW.Times(1)
-
 	bus.On("PublishMessage", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
-	// empty tracer, just for testing
-	nopetracer := trace.NewNoopTracerProvider()
-	testTracer := nopetracer.Tracer("test_tracer")
-
-	return &UnitTestMockFixture{
-		Ctx:               ctx,
-		Bus:               bus,
-		ProductRepository: productRepository,
-		Uow:               uow,
-		Tracer:            testTracer,
-	}
-}
-
-func configMapper() error {
-	err := mapper.CreateMap[*models.Product, *dto.ProductDto]()
-	if err != nil {
-		return err
-	}
-
-	err = mapper.CreateMap[*dto.ProductDto, *models.Product]()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	c.Uow = uow
+	c.ProductRepository = productRepository
+	c.Bus = bus
 }

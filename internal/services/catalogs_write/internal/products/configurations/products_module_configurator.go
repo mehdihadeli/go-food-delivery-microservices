@@ -14,7 +14,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/grpc"
 	productsservice "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/grpc/proto/service_clients"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/contracts"
 )
 
 type ProductsModuleConfigurator struct {
@@ -59,10 +58,9 @@ func (c *ProductsModuleConfigurator) MapProductsEndpoints() {
 
 	// Config Products Grpc Endpoints
 	c.ResolveFunc(
-		func(catalogsGrpcServer grpcServer.GrpcServer, catalogsMetrics *contracts.CatalogsMetrics, logger logger.Logger) error {
-			productGrpcService := grpc.NewProductGrpcService(catalogsMetrics, logger)
+		func(catalogsGrpcServer grpcServer.GrpcServer, grpcService *grpc.ProductGrpcServiceServer) error {
 			catalogsGrpcServer.GrpcServiceBuilder().RegisterRoutes(func(server *googleGrpc.Server) {
-				productsservice.RegisterProductsServiceServer(server, productGrpcService)
+				productsservice.RegisterProductsServiceServer(server, grpcService)
 			})
 
 			return nil

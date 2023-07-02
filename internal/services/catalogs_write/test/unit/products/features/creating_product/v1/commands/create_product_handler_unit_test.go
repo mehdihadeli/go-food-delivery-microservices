@@ -4,6 +4,7 @@
 package commands
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"testing"
@@ -23,8 +24,6 @@ import (
 
 type createProductHandlerUnitTests struct {
 	*unit_test.UnitTestSharedFixture
-	*unit_test.UnitTestMockFixture
-	createProductHandler *createProductCommandV1.CreateProductHandler
 }
 
 func TestCreateProductHandlerUnit(t *testing.T) {
@@ -36,19 +35,16 @@ func TestCreateProductHandlerUnit(t *testing.T) {
 	)
 }
 
-func (c *createProductHandlerUnitTests) SetupTest() {
-	// create new mocks or clear mocks before executing
-	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
-	c.createProductHandler = createProductCommandV1.NewCreateProductHandler(
+func (c *createProductHandlerUnitTests) Test_Handle_Should_Create_New_Product_With_Valid_Data() {
+	ctx := context.Background()
+	id := uuid.NewV4()
+
+	createProductHandler := createProductCommandV1.NewCreateProductHandler(
 		c.Log,
 		c.Uow,
 		c.Bus,
 		c.Tracer,
 	)
-}
-
-func (c *createProductHandlerUnitTests) Test_Handle_Should_Create_New_Product_With_Valid_Data() {
-	id := uuid.NewV4()
 
 	createProduct := &createProductCommandV1.CreateProduct{
 		ProductID:   id,
@@ -64,7 +60,7 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Create_New_Product_Wi
 		Once().
 		Return(product, nil)
 
-	dto, err := c.createProductHandler.Handle(c.Ctx, createProduct)
+	dto, err := createProductHandler.Handle(ctx, createProduct)
 	c.Require().NoError(err)
 
 	c.Uow.AssertNumberOfCalls(c.T(), "Do", 1)
@@ -74,6 +70,7 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Create_New_Product_Wi
 }
 
 func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Duplicate_Item() {
+	ctx := context.Background()
 	id := uuid.NewV4()
 
 	createProduct := &createProductCommandV1.CreateProduct{
@@ -88,7 +85,14 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Dupl
 		Once().
 		Return(nil, errors.New("error duplicate product"))
 
-	dto, err := c.createProductHandler.Handle(c.Ctx, createProduct)
+	createProductHandler := createProductCommandV1.NewCreateProductHandler(
+		c.Log,
+		c.Uow,
+		c.Bus,
+		c.Tracer,
+	)
+
+	dto, err := createProductHandler.Handle(ctx, createProduct)
 
 	c.Uow.AssertNumberOfCalls(c.T(), "Do", 1)
 	c.ProductRepository.AssertNumberOfCalls(c.T(), "CreateProduct", 1)
@@ -99,6 +103,7 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Dupl
 }
 
 func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Error_In_Bus() {
+	ctx := context.Background()
 	id := uuid.NewV4()
 
 	createProduct := &createProductCommandV1.CreateProduct{
@@ -121,7 +126,14 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 		Once().
 		Return(errors.New("error in the publish message"))
 
-	dto, err := c.createProductHandler.Handle(c.Ctx, createProduct)
+	createProductHandler := createProductCommandV1.NewCreateProductHandler(
+		c.Log,
+		c.Uow,
+		c.Bus,
+		c.Tracer,
+	)
+
+	dto, err := createProductHandler.Handle(ctx, createProduct)
 
 	c.Uow.AssertNumberOfCalls(c.T(), "Do", 1)
 	c.ProductRepository.AssertNumberOfCalls(c.T(), "CreateProduct", 1)
@@ -132,6 +144,7 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 }
 
 func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Error_In_Mapping() {
+	ctx := context.Background()
 	id := uuid.NewV4()
 
 	createProduct := &createProductCommandV1.CreateProduct{
@@ -149,7 +162,14 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 
 	mapper.ClearMappings()
 
-	dto, err := c.createProductHandler.Handle(c.Ctx, createProduct)
+	createProductHandler := createProductCommandV1.NewCreateProductHandler(
+		c.Log,
+		c.Uow,
+		c.Bus,
+		c.Tracer,
+	)
+
+	dto, err := createProductHandler.Handle(ctx, createProduct)
 
 	c.Uow.AssertNumberOfCalls(c.T(), "Do", 1)
 	c.ProductRepository.AssertNumberOfCalls(c.T(), "CreateProduct", 1)

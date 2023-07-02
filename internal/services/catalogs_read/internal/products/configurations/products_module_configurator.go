@@ -1,7 +1,7 @@
 package configurations
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	logger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
@@ -11,14 +11,14 @@ import (
 )
 
 type ProductsModuleConfigurator struct {
-	*fxapp.Application
+	contracts.Application
 }
 
 func NewProductsModuleConfigurator(
-	fxapp *fxapp.Application,
+	app contracts.Application,
 ) *ProductsModuleConfigurator {
 	return &ProductsModuleConfigurator{
-		Application: fxapp,
+		Application: app,
 	}
 }
 

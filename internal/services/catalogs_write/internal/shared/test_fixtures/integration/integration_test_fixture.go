@@ -27,25 +27,28 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
 	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/events/integration_events"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/updating_product/v1/events/integration_events"
+	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/grpc/proto/service_clients"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/shared/app/test"
 )
 
 type IntegrationTestSharedFixture struct {
-	Cfg                *config.AppOptions
-	Log                logger.Logger
-	Bus                bus.Bus
-	CatalogUnitOfWorks data.CatalogUnitOfWork
-	ProductRepository  data.ProductRepository
 	suite.Suite
-	Container       contracts.Container
-	DbCleaner       dbcleaner.DbCleaner
-	RabbitmqCleaner *rabbithole.Client
-	rabbitmqOptions *config2.RabbitmqOptions
-	Gorm            *gorm.DB
-	BaseAddress     string
-	Items           []*models.Product
+	Cfg                  *config.AppOptions
+	Log                  logger.Logger
+	Bus                  bus.Bus
+	CatalogUnitOfWorks   data.CatalogUnitOfWork
+	ProductRepository    data.ProductRepository
+	Container            contracts.Container
+	DbCleaner            dbcleaner.DbCleaner
+	RabbitmqCleaner      *rabbithole.Client
+	rabbitmqOptions      *config2.RabbitmqOptions
+	Gorm                 *gorm.DB
+	BaseAddress          string
+	Items                []*models.Product
+	ProductServiceClient productsService.ProductsServiceClient
 }
 
 func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture {
@@ -63,17 +66,18 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 	postgresCleaner.SetEngine(postgresEngine)
 
 	shared := &IntegrationTestSharedFixture{
-		Log:                result.Logger,
-		Container:          result.Container,
-		Cfg:                result.Cfg,
-		RabbitmqCleaner:    rmqc,
-		DbCleaner:          postgresCleaner,
-		ProductRepository:  result.ProductRepository,
-		CatalogUnitOfWorks: result.CatalogUnitOfWorks,
-		Bus:                result.Bus,
-		rabbitmqOptions:    result.RabbitmqOptions,
-		Gorm:               result.Gorm,
-		BaseAddress:        result.EchoHttpOptions.BasePathAddress(),
+		Log:                  result.Logger,
+		Container:            result.Container,
+		Cfg:                  result.Cfg,
+		RabbitmqCleaner:      rmqc,
+		DbCleaner:            postgresCleaner,
+		ProductRepository:    result.ProductRepository,
+		CatalogUnitOfWorks:   result.CatalogUnitOfWorks,
+		Bus:                  result.Bus,
+		rabbitmqOptions:      result.RabbitmqOptions,
+		Gorm:                 result.Gorm,
+		BaseAddress:          result.EchoHttpOptions.BasePathAddress(),
+		ProductServiceClient: result.ProductServiceClient,
 	}
 
 	return shared
@@ -121,6 +125,11 @@ func (i *IntegrationTestSharedFixture) SetupSuite() {
 	// register one consumer for `ProductCreatedV1` message before executing the tests
 	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*integrationEvents.ProductCreatedV1]()
 	err := i.Bus.ConnectConsumerHandler(&integrationEvents.ProductCreatedV1{}, testConsumer)
+	i.Require().NoError(err)
+
+	// register one consumer for `ProductUpdatedV1` message before executing the tests
+	testConsumer2 := consumer.NewRabbitMQFakeTestConsumerHandler[*integration_events.ProductUpdatedV1]()
+	err = i.Bus.ConnectConsumerHandler(&integration_events.ProductUpdatedV1{}, testConsumer2)
 	i.Require().NoError(err)
 
 	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually

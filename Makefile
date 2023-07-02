@@ -90,6 +90,8 @@ pkg-mocks:
 	cd internal/pkg/es && mockery --output mocks --all
 	cd internal/pkg/core && mockery --output mocks --all
 
-.PHONY: catalogs-write-mocks
-catalogs-write-mocks:
+.PHONY: services-mocks
+services-mocks:
 	cd internal/services/catalogs_write && mockery --output mocks --all
+	cd internal/services/catalogs_read && mockery --output mocks --all
+	cd internal/services/orders && mockery --output mocks --all

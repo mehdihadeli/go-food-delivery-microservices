@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/configurations"
@@ -14,17 +14,17 @@ import (
 )
 
 type CatalogsServiceConfigurator struct {
-	*fxapp.Application
+	contracts.Application
 	infrastructureConfigurator *infrastructure.InfrastructureConfigurator
 	productsModuleConfigurator *configurations.ProductsModuleConfigurator
 }
 
-func NewCatalogsServiceConfigurator(fxapp *fxapp.Application) *CatalogsServiceConfigurator {
-	infraConfigurator := infrastructure.NewInfrastructureConfigurator(fxapp)
-	productModuleConfigurator := configurations.NewProductsModuleConfigurator(fxapp)
+func NewCatalogsServiceConfigurator(app contracts.Application) *CatalogsServiceConfigurator {
+	infraConfigurator := infrastructure.NewInfrastructureConfigurator(app)
+	productModuleConfigurator := configurations.NewProductsModuleConfigurator(app)
 
 	return &CatalogsServiceConfigurator{
-		Application:                fxapp,
+		Application:                app,
 		infrastructureConfigurator: infraConfigurator,
 		productsModuleConfigurator: productModuleConfigurator,
 	}

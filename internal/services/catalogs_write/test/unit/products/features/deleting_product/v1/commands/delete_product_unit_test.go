@@ -15,7 +15,6 @@ import (
 
 type deleteProductUnitTests struct {
 	*unit_test.UnitTestSharedFixture
-	*unit_test.UnitTestMockFixture
 }
 
 func TestDeleteProductByIdUnit(t *testing.T) {
@@ -23,11 +22,6 @@ func TestDeleteProductByIdUnit(t *testing.T) {
 		t,
 		&deleteProductUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)},
 	)
-}
-
-func (c *deleteProductUnitTests) SetupTest() {
-	// create new mocks or clear mocks before executing
-	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
 }
 
 func (c *deleteProductUnitTests) Test_New_Delete_Product_Should_Return_No_Error_For_Valid_Input() {
