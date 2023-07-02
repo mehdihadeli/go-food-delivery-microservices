@@ -51,7 +51,7 @@ type rabbitMQConsumer struct {
 	ErrChan                 chan error
 	handlers                []consumer.ConsumerHandler
 	pipelines               []pipeline.ConsumerPipeline
-	messageConsumedHandlers []func(message messagingTypes.IMessage)
+	isConsumedNotifications []func(message messagingTypes.IMessage)
 }
 
 // NewRabbitMQConsumer create a new generic RabbitMQ consumer
@@ -60,7 +60,7 @@ func NewRabbitMQConsumer(
 	consumerConfiguration *configurations.RabbitMQConsumerConfiguration,
 	eventSerializer serializer.EventSerializer,
 	logger logger.Logger,
-	messageConsumedHandlers ...func(message messagingTypes.IMessage),
+	isConsumedNotifications ...func(message messagingTypes.IMessage),
 ) (consumer.Consumer, error) {
 	if consumerConfiguration == nil {
 		return nil, errors.New("consumer configuration is required")
@@ -82,13 +82,13 @@ func NewRabbitMQConsumer(
 		pipelines:               consumerConfiguration.Pipelines,
 	}
 
-	cons.messageConsumedHandlers = messageConsumedHandlers
+	cons.isConsumedNotifications = isConsumedNotifications
 
 	return cons, nil
 }
 
-func (r *rabbitMQConsumer) AddMessageConsumedHandler(h func(message messagingTypes.IMessage)) {
-	r.messageConsumedHandlers = append(r.messageConsumedHandlers, h)
+func (r *rabbitMQConsumer) IsConsumed(h func(message messagingTypes.IMessage)) {
+	r.isConsumedNotifications = append(r.isConsumedNotifications, h)
 }
 
 func (r *rabbitMQConsumer) Start(ctx context.Context) error {
@@ -194,7 +194,6 @@ func (r *rabbitMQConsumer) Start(ctx context.Context) error {
 	for i := 0; i < r.rabbitmqConsumerOptions.ConcurrencyLimit; i++ {
 		r.logger.Infof("Processing messages on thread %d", i)
 		go func() {
-			defer errorUtils.HandlePanic()
 			for {
 				select {
 				case <-ctx.Done():
@@ -213,6 +212,7 @@ func (r *rabbitMQConsumer) Start(ctx context.Context) error {
 						return
 					}
 
+					// handle received message and remove message form queue with a manual ack
 					r.handleReceived(ctx, msg)
 				}
 			}
@@ -248,6 +248,10 @@ func (r *rabbitMQConsumer) Stop() error {
 
 func (r *rabbitMQConsumer) ConnectHandler(handler consumer.ConsumerHandler) {
 	r.handlers = append(r.handlers, handler)
+}
+
+func (r *rabbitMQConsumer) GetName() string {
+	return r.rabbitmqConsumerOptions.Name
 }
 
 func (r *rabbitMQConsumer) reConsumeOnDropConnection(ctx context.Context) {
@@ -317,10 +321,10 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 				return
 			}
 			_ = consumeTracing.FinishConsumerSpan(beforeConsumeSpan, nil)
-			if len(r.messageConsumedHandlers) > 0 {
-				for _, handler := range r.messageConsumedHandlers {
-					if handler != nil {
-						handler(consumeContext.Message())
+			if len(r.isConsumedNotifications) > 0 {
+				for _, notification := range r.isConsumedNotifications {
+					if notification != nil {
+						notification(consumeContext.Message())
 					}
 				}
 			}

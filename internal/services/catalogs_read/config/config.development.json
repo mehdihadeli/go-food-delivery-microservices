@@ -58,10 +58,6 @@
     "database": "catalogs_service",
     "useAuth": true
   },
-  "mongoCollections": {
-    "products": "products",
-    "categories": "categories"
-  },
   "OpenTelemetryOptions": {
     "enable": true,
     "serviceName": "catalogs-read-service",

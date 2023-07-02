@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 	externalEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/features/creating_product/v1/events/integration_events/external_events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
@@ -36,39 +36,37 @@ func TestCreateProductIntegration(t *testing.T) {
 
 func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer_Should_Consume_Product_Created() {
 	ctx := context.Background()
-	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*externalEvents.ProductCreatedV1]()
-	err := c.Bus.ConnectConsumerHandler(&externalEvents.ProductCreatedV1{}, fakeConsumer)
-	c.NoError(err)
+
+	newConsumer, err := messaging.ShouldConsumeNewConsumer[*externalEvents.ProductCreatedV1](c.Bus)
 
 	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually
 	c.Bus.Start(context.Background())
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(1 * time.Second)
 	defer c.Bus.Stop()
+	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 
 	err = c.Bus.PublishMessage(
 		ctx,
 		&externalEvents.ProductCreatedV1{
-			Message:   types.NewMessage(uuid.NewV4().String()),
-			ProductId: uuid.NewV4().String(),
-			Name:      gofakeit.Name(),
-			Price:     gofakeit.Price(150, 6000),
-			CreatedAt: time.Now(),
+			Message:     types.NewMessage(uuid.NewV4().String()),
+			ProductId:   uuid.NewV4().String(),
+			Name:        gofakeit.Name(),
+			Price:       gofakeit.Price(150, 6000),
+			CreatedAt:   time.Now(),
+			Description: gofakeit.EmojiDescription(),
 		},
 		nil,
 	)
 	c.NoError(err)
 
-	// ensuring message published to the rabbitmq broker
-	c.NoError(testUtils.WaitUntilConditionMet(func() bool {
-		return fakeConsumer.IsHandled()
-	}))
+	// ensuring message can be consumed with a consumer
+	newConsumer.Validate(ctx, "there is no consumed message", time.Second*60)
 }
 
 func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer() {
 	ctx := context.Background()
 	cons := externalEvents.NewProductCreatedConsumer(c.Log, validator.New(), c.Tracer)
-	err := c.Bus.ConnectConsumerHandler(externalEvents.ProductCreatedV1{}, cons)
+	err := c.Bus.ConnectConsumerHandler(&externalEvents.ProductCreatedV1{}, cons)
 	c.NoError(err)
 
 	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually

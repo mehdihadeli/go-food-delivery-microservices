@@ -28,11 +28,11 @@ func (_m *Bus) EXPECT() *Bus_Expecter {
 }
 
 // AddMessageConsumedHandler provides a mock function with given fields: _a0
-func (_m *Bus) AddMessageConsumedHandler(_a0 func(types.IMessage)) {
+func (_m *Bus) IsConsumed(_a0 func(types.IMessage)) {
 	_m.Called(_a0)
 }
 
-// Bus_AddMessageConsumedHandler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddMessageConsumedHandler'
+// Bus_AddMessageConsumedHandler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsConsumed'
 type Bus_AddMessageConsumedHandler_Call struct {
 	*mock.Call
 }
@@ -40,7 +40,7 @@ type Bus_AddMessageConsumedHandler_Call struct {
 // AddMessageConsumedHandler is a helper method to define mock.On call
 //   - _a0 func(types.IMessage)
 func (_e *Bus_Expecter) AddMessageConsumedHandler(_a0 interface{}) *Bus_AddMessageConsumedHandler_Call {
-	return &Bus_AddMessageConsumedHandler_Call{Call: _e.mock.On("AddMessageConsumedHandler", _a0)}
+	return &Bus_AddMessageConsumedHandler_Call{Call: _e.mock.On("IsConsumed", _a0)}
 }
 
 func (_c *Bus_AddMessageConsumedHandler_Call) Run(run func(_a0 func(types.IMessage))) *Bus_AddMessageConsumedHandler_Call {
@@ -61,11 +61,11 @@ func (_c *Bus_AddMessageConsumedHandler_Call) RunAndReturn(run func(func(types.I
 }
 
 // AddMessageProducedHandler provides a mock function with given fields: _a0
-func (_m *Bus) AddMessageProducedHandler(_a0 func(types.IMessage)) {
+func (_m *Bus) IsProduced(_a0 func(types.IMessage)) {
 	_m.Called(_a0)
 }
 
-// Bus_AddMessageProducedHandler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddMessageProducedHandler'
+// Bus_AddMessageProducedHandler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsProduced'
 type Bus_AddMessageProducedHandler_Call struct {
 	*mock.Call
 }
@@ -73,7 +73,7 @@ type Bus_AddMessageProducedHandler_Call struct {
 // AddMessageProducedHandler is a helper method to define mock.On call
 //   - _a0 func(types.IMessage)
 func (_e *Bus_Expecter) AddMessageProducedHandler(_a0 interface{}) *Bus_AddMessageProducedHandler_Call {
-	return &Bus_AddMessageProducedHandler_Call{Call: _e.mock.On("AddMessageProducedHandler", _a0)}
+	return &Bus_AddMessageProducedHandler_Call{Call: _e.mock.On("IsProduced", _a0)}
 }
 
 func (_c *Bus_AddMessageProducedHandler_Call) Run(run func(_a0 func(types.IMessage))) *Bus_AddMessageProducedHandler_Call {

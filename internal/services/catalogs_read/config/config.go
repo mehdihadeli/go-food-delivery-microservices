@@ -35,6 +35,5 @@ func (cfg *AppOptions) GetMicroserviceName() string {
 }
 
 type MongoDocumentOptions struct {
-	Products     string `mapstructure:"products"     validate:"required" env:"Products"`
-	DatabaseName string `mapstructure:"databaseName" validate:"required" env:"DatabaseName"`
+	Products string `mapstructure:"products" validate:"required" env:"Products"`
 }

@@ -17,6 +17,7 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/updating_product/v1/commands"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/updating_product/v1/events/integration_events"
@@ -167,4 +168,20 @@ func (c *updateProductIntegrationTests) BeforeTest(suiteName, testName string) {
 	if testName == "Test_Should_Consume_Product_Updated_With_New_Consumer_From_Broker" {
 		c.Bus.Stop()
 	}
+}
+
+func (c *updateProductIntegrationTests) SetupSuite() {
+	// register one consumer for `ProductUpdatedV1` message before executing the tests
+	testConsumer2 := consumer.NewRabbitMQFakeTestConsumerHandler[*integration_events.ProductUpdatedV1]()
+	err := c.Bus.ConnectConsumerHandler(&integration_events.ProductUpdatedV1{}, testConsumer2)
+	c.Require().NoError(err)
+
+	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually
+	c.Bus.Start(context.Background())
+	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+	time.Sleep(1 * time.Second)
+}
+
+func (c *updateProductIntegrationTests) TearDownSuite() {
+	c.Bus.Stop()
 }

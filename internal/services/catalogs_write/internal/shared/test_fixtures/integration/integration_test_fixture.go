@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"emperror.dev/errors"
 	"github.com/brianvoe/gofakeit/v6"
@@ -21,13 +20,10 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/testfixture"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/contracts/data"
-	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/creating_product/v1/events/integration_events"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/features/updating_product/v1/events/integration_events"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/grpc/proto/service_clients"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/internal/products/models"
@@ -121,23 +117,6 @@ func cleanupTables(db *gorm.DB, tables []string) error {
 }
 
 // //////////////////////// Shared Hooks //////////////////////////////////
-func (i *IntegrationTestSharedFixture) SetupSuite() {
-	// register one consumer for `ProductCreatedV1` message before executing the tests
-	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*integrationEvents.ProductCreatedV1]()
-	err := i.Bus.ConnectConsumerHandler(&integrationEvents.ProductCreatedV1{}, testConsumer)
-	i.Require().NoError(err)
-
-	// register one consumer for `ProductUpdatedV1` message before executing the tests
-	testConsumer2 := consumer.NewRabbitMQFakeTestConsumerHandler[*integration_events.ProductUpdatedV1]()
-	err = i.Bus.ConnectConsumerHandler(&integration_events.ProductUpdatedV1{}, testConsumer2)
-	i.Require().NoError(err)
-
-	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually
-	i.Bus.Start(context.Background())
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-}
-
 func (i *IntegrationTestSharedFixture) SetupTest() {
 	i.T().Log("SetupTest")
 
@@ -156,10 +135,6 @@ func (i *IntegrationTestSharedFixture) TearDownTest() {
 	}
 
 	i.CleanupPostgresData()
-}
-
-func (i *IntegrationTestSharedFixture) TearDownSuite() {
-	i.Bus.Stop()
 }
 
 func seedData(gormDB *gorm.DB) ([]*models.Product, error) {

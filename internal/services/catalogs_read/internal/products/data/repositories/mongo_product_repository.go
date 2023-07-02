@@ -11,44 +11,38 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb/repository"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/config"
-	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/data"
-
-	"go.mongodb.org/mongo-driver/mongo"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
-
 	"emperror.dev/errors"
-
 	uuid2 "github.com/satori/go.uuid"
+	"go.mongodb.org/mongo-driver/mongo"
 	attribute2 "go.opentelemetry.io/otel/attribute"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb/repository"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-
+	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/read_service/internal/products/models"
 )
 
 type mongoProductRepository struct {
 	log                    logger.Logger
 	mongoGenericRepository data.GenericRepository[*models.Product]
-	cfg                    *config.Config
 	tracer                 tracing.AppTracer
 }
 
 func NewMongoProductRepository(
 	log logger.Logger,
 	db *mongo.Client,
-	cfg *config.Config,
+	mongoOptions *mongodb.MongoDbOptions,
 	tracer tracing.AppTracer,
 ) data2.ProductRepository {
 	mongoRepo := repository.NewGenericMongoRepository[*models.Product](
 		db,
-		cfg.MongoDocumentOptions.DatabaseName,
-		cfg.MongoDocumentOptions.Products,
+		mongoOptions.Database,
+		"products",
 	)
 	return &mongoProductRepository{log: log, mongoGenericRepository: mongoRepo, tracer: tracer}
 }

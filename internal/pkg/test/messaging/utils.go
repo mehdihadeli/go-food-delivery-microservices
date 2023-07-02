@@ -18,7 +18,7 @@ func ShouldProduced[T types.IMessage](
 ) hypothesis.Hypothesis[T] {
 	hypo := hypothesis.ForT[T](condition)
 
-	bus.AddMessageProducedHandler(func(message types.IMessage) {
+	bus.IsProduced(func(message types.IMessage) {
 		typ := utils.GetMessageBaseReflectType(typeMapper.GenericInstanceByT[T]())
 		if utils.GetMessageBaseReflectType(message) == typ {
 			m, ok := message.(T)
@@ -39,7 +39,7 @@ func ShouldConsume[T types.IMessage](
 ) hypothesis.Hypothesis[T] {
 	hypo := hypothesis.ForT[T](condition)
 
-	bus.AddMessageConsumedHandler(func(message types.IMessage) {
+	bus.IsConsumed(func(message types.IMessage) {
 		typ := utils.GetMessageBaseReflectType(typeMapper.GenericInstanceByT[T]())
 		if utils.GetMessageBaseReflectType(message) == typ {
 			m, ok := message.(T)

@@ -26,11 +26,11 @@ func (_m *Consumer) EXPECT() *Consumer_Expecter {
 }
 
 // AddMessageConsumedHandler provides a mock function with given fields: _a0
-func (_m *Consumer) AddMessageConsumedHandler(_a0 func(types.IMessage)) {
+func (_m *Consumer) IsConsumed(_a0 func(types.IMessage)) {
 	_m.Called(_a0)
 }
 
-// Consumer_AddMessageConsumedHandler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddMessageConsumedHandler'
+// Consumer_AddMessageConsumedHandler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsConsumed'
 type Consumer_AddMessageConsumedHandler_Call struct {
 	*mock.Call
 }
@@ -38,7 +38,7 @@ type Consumer_AddMessageConsumedHandler_Call struct {
 // AddMessageConsumedHandler is a helper method to define mock.On call
 //   - _a0 func(types.IMessage)
 func (_e *Consumer_Expecter) AddMessageConsumedHandler(_a0 interface{}) *Consumer_AddMessageConsumedHandler_Call {
-	return &Consumer_AddMessageConsumedHandler_Call{Call: _e.mock.On("AddMessageConsumedHandler", _a0)}
+	return &Consumer_AddMessageConsumedHandler_Call{Call: _e.mock.On("IsConsumed", _a0)}
 }
 
 func (_c *Consumer_AddMessageConsumedHandler_Call) Run(run func(_a0 func(types.IMessage))) *Consumer_AddMessageConsumedHandler_Call {

@@ -10,5 +10,6 @@ type Consumer interface {
 	Start(ctx context.Context) error
 	Stop() error
 	ConnectHandler(handler ConsumerHandler)
-	AddMessageConsumedHandler(func(message types.IMessage))
+	IsConsumed(func(message types.IMessage))
+	GetName() string
 }

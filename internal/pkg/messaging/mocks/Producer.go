@@ -25,11 +25,11 @@ func (_m *Producer) EXPECT() *Producer_Expecter {
 }
 
 // AddMessageProducedHandler provides a mock function with given fields: _a0
-func (_m *Producer) AddMessageProducedHandler(_a0 func(types.IMessage)) {
+func (_m *Producer) IsProduced(_a0 func(types.IMessage)) {
 	_m.Called(_a0)
 }
 
-// Producer_AddMessageProducedHandler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AddMessageProducedHandler'
+// Producer_AddMessageProducedHandler_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsProduced'
 type Producer_AddMessageProducedHandler_Call struct {
 	*mock.Call
 }
@@ -37,7 +37,7 @@ type Producer_AddMessageProducedHandler_Call struct {
 // AddMessageProducedHandler is a helper method to define mock.On call
 //   - _a0 func(types.IMessage)
 func (_e *Producer_Expecter) AddMessageProducedHandler(_a0 interface{}) *Producer_AddMessageProducedHandler_Call {
-	return &Producer_AddMessageProducedHandler_Call{Call: _e.mock.On("AddMessageProducedHandler", _a0)}
+	return &Producer_AddMessageProducedHandler_Call{Call: _e.mock.On("IsProduced", _a0)}
 }
 
 func (_c *Producer_AddMessageProducedHandler_Call) Run(run func(_a0 func(types.IMessage))) *Producer_AddMessageProducedHandler_Call {

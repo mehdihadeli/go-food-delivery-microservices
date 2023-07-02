@@ -12,5 +12,5 @@ type BusControl interface {
 	// Stop stops all consumers
 	Stop() error
 
-	AddMessageConsumedHandler(func(message types.IMessage))
+	IsConsumed(func(message types.IMessage))
 }

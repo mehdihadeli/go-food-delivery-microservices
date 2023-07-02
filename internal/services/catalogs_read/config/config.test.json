@@ -3,10 +3,6 @@
     "serviceName": "catalogs_read_service",
     "deliveryType": "http"
   },
-  "mongoDocumentOptions": {
-    "products": "products",
-    "databaseName": "catalogs_write"
-  },
   "grpcOptions": {
     "name": "catalogs_read_service",
     "port": ":6004",

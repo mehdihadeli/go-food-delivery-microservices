@@ -83,6 +83,7 @@ func (c *productCreatedConsumer) Handle(
 			logger.Fields{"Id": command.ProductId},
 		)
 	}
+	c.logger.Info("Product consumer handled.")
 
-	return nil
+	return err
 }
