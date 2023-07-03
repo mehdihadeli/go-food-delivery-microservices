@@ -1,0 +1,21 @@
+package integration_events
+
+import (
+	uuid "github.com/satori/go.uuid"
+
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+
+	dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dto/v1"
+)
+
+type ProductCreatedV1 struct {
+	*types.Message
+	*dtoV1.ProductDto
+}
+
+func NewProductCreatedV1(productDto *dtoV1.ProductDto) *ProductCreatedV1 {
+	return &ProductCreatedV1{
+		ProductDto: productDto,
+		Message:    types.NewMessage(uuid.NewV4().String()),
+	}
+}

@@ -2,8 +2,11 @@ package contracts
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"testing"
+
+	"github.com/go-redis/redis/v8"
+
+	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
 )
 
 type RedisContainerOptions struct {
@@ -18,6 +21,15 @@ type RedisContainerOptions struct {
 }
 
 type RedisContainer interface {
-	Start(ctx context.Context, t *testing.T, options ...*RedisContainerOptions) (redis.UniversalClient, error)
+	Start(
+		ctx context.Context,
+		t *testing.T,
+		options ...*RedisContainerOptions,
+	) (redis.UniversalClient, error)
+	CreatingContainerOptions(
+		ctx context.Context,
+		t *testing.T,
+		options ...*RedisContainerOptions,
+	) (*redis2.RedisOptions, error)
 	Cleanup(ctx context.Context) error
 }

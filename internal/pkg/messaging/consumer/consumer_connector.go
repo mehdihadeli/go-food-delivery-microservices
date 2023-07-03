@@ -5,8 +5,8 @@ import (
 )
 
 type ConsumerConnector interface {
-	// ConnectConsumerHandler adds a consumer handler to existing consumer and create a new consumer if it doesn't already exist
+	// ConnectConsumerHandler Add handler to existing consumer. creates new consumer if not exist
 	ConnectConsumerHandler(messageType types.IMessage, consumerHandler ConsumerHandler) error
-	// ConnectConsumer add consumer to consumers list
+	// ConnectConsumer Add a new consumer to existing message type consumers. if there is no consumer, will create a new consumer for the message type
 	ConnectConsumer(messageType types.IMessage, consumer Consumer) error
 }

@@ -60,7 +60,7 @@ services:
       - store
 
   redis:
-    image: redis:6-alpine
+    image: redis:latest
     restart: on-failure
     container_name: redis
     ports:
