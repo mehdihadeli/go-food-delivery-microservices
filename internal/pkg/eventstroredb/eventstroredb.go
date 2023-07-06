@@ -7,7 +7,7 @@ import (
 )
 
 func NewEventStoreDB(cfg *config.EventStoreDbOptions) (*esdb.Client, error) {
-	settings, err := esdb.ParseConnectionString(cfg.ConnectionString)
+	settings, err := esdb.ParseConnectionString(cfg.GrpcEndPoint())
 	if err != nil {
 		return nil, err
 	}

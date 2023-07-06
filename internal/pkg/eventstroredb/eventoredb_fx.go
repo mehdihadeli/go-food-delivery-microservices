@@ -2,6 +2,7 @@ package eventstroredb
 
 import (
 	"context"
+	"time"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"go.uber.org/fx"
@@ -57,12 +58,12 @@ func registerHooks(
 					},
 					SubscriptionId: cfg.Subscription.SubscriptionId,
 				}
-
 				if err := worker.SubscribeAll(lifetimeCtx, option); err != nil {
-					logger.Fatalf(
-						"(EsdbSubscriptionAllWorker.Start) error in running esdb subscription worker: {%v}",
+					logger.Errorf(
+						"(worker.SubscribeAll) error in running esdb subscription worker: {%v}",
 						err,
 					)
+					return
 				}
 			}()
 			logger.Info("esdb subscription worker is listening.")
@@ -72,7 +73,8 @@ func registerHooks(
 		OnStop: func(ctx context.Context) error {
 			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
 			// this ctx is just for stopping callbacks or OnStop callbacks, and it has short timeout 15s, and it is not alive in whole lifetime app
-			lifetimeCtx.Done()
+			_, cancel := context.WithTimeout(lifetimeCtx, 5*time.Second)
+			defer cancel()
 
 			return nil
 		},

@@ -111,7 +111,7 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 		customHadnlers.ProblemHandlerFunc(err, c, s.log)
 	}
 
-	// log errors and informations
+	// log errors and information
 	s.echo.Use(log.EchoLogger(s.log))
 	s.echo.Use(otelTracer.Middleware(s.config.Name))
 	// Because we use metrics server middleware, if it is not available, our echo will not work.

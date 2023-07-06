@@ -24,5 +24,8 @@ var rootCmd = &cobra.Command{
 // @version 1.0
 // @description Catalogs Read-Service Api.
 func main() {
-	_ = rootCmd.Execute()
+	err := rootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
 }

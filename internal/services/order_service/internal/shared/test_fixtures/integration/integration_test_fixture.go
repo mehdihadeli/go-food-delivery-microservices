@@ -5,14 +5,21 @@ import (
 	"fmt"
 	"testing"
 
+	"emperror.dev/errors"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
+	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/config"
 	ordersService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/proto/service_clients"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/app/test"
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/contracts"
 
@@ -41,8 +48,10 @@ type IntegrationTestSharedFixture struct {
 	rabbitmqOptions      *config.RabbitmqOptions
 	BaseAddress          string
 	mongoClient          *mongo.Client
+	esdbClient           *esdb.Client
 	MongoDbOptions       *mongodb.MongoDbOptions
-	Items                []*aggregate.Order
+	EventStoreDbOptions  *config3.EventStoreDbOptions
+	Items                []*read_models.OrderReadModel
 	OrdersServiceClient  ordersService.OrdersServiceClient
 }
 
@@ -63,6 +72,7 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 		OrderMongoRepository: result.OrderMongoRepository,
 		OrderAggregateStore:  result.OrderAggregateStore,
 		MongoDbOptions:       result.MongoDbOptions,
+		EventStoreDbOptions:  result.EventStoreDbOptions,
 		mongoClient:          result.MongoClient,
 		Bus:                  result.Bus,
 		rabbitmqOptions:      result.RabbitmqOptions,
@@ -118,6 +128,11 @@ func cleanupCollections(db *mongo.Client, collections []string, databaseName str
 // //////////////////////// Shared Hooks //////////////////////////////////
 func (i *IntegrationTestSharedFixture) SetupTest() {
 	i.T().Log("SetupTest")
+
+	// seed data in each test
+	res, err := seedReadModelData(i.mongoClient, i.MongoDbOptions.Database)
+	i.Require().NoError(err)
+	i.Items = res
 }
 
 func (i *IntegrationTestSharedFixture) TearDownTest() {
@@ -130,4 +145,30 @@ func (i *IntegrationTestSharedFixture) TearDownTest() {
 	}
 
 	i.CleanupMongoData()
+}
+
+func seedReadModelData(
+	db *mongo.Client,
+	databaseName string,
+) ([]*read_models.OrderReadModel, error) {
+	ctx := context.Background()
+	//// https://go.dev/doc/faq#convert_slice_of_interface
+	data := make([]interface{}, len(testData.Orders))
+	for i, v := range testData.Orders {
+		data[i] = v
+	}
+
+	collection := db.Database(databaseName).Collection("orders")
+	_, err := collection.InsertMany(context.Background(), data, &options.InsertManyOptions{})
+	if err != nil {
+		return nil, errors.WrapIf(err, "error in seed database")
+	}
+
+	result, err := mongodb.Paginate[*read_models.OrderReadModel](
+		ctx,
+		utils.NewListQuery(10, 1),
+		collection,
+		nil,
+	)
+	return result.Items, nil
 }

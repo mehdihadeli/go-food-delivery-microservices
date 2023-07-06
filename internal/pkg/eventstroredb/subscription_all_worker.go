@@ -162,7 +162,9 @@ func (s *esdbSubscriptionAllWorker) SubscribeAll(
 
 		select {
 		case <-ctx.Done():
-			return nil
+			time.Sleep(1 * time.Second)
+			// context canceled or deadlined
+			return ctx.Err()
 		}
 	}
 }

@@ -6,8 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"go.mongodb.org/mongo-driver/mongo"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/eventstoredb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/config"
 	ordersService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/proto/service_clients"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
@@ -40,6 +42,7 @@ type TestAppResult struct {
 	OrderAggregateStore  store.AggregateStore[*aggregate.Order]
 	OrdersServiceClient  ordersService.OrdersServiceClient
 	MongoClient          *mongo.Client
+	EsdbClient           *esdb.Client
 	MongoDbOptions       *mongodb.MongoDbOptions
 }
 
@@ -54,6 +57,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	appBuilder := NewOrdersTestApplicationBuilder(t)
 	appBuilder.ProvideModule(orders.OrderServiceModule)
 	appBuilder.Decorate(rabbitmq.RabbitmqContainerOptionsDecorator(t, lifetimeCtx))
+	appBuilder.Decorate(eventstoredb.EventstoreDBContainerOptionsDecorator(t, lifetimeCtx))
 
 	testApp := appBuilder.Build()
 
@@ -73,6 +77,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 			orderMongoRepository repositories.OrderMongoRepository,
 			orderAggregateStore store.AggregateStore[*aggregate.Order],
 			mongoClient *mongo.Client,
+			esdbClient *esdb.Client,
 			mongoDbOptions *mongodb.MongoDbOptions,
 		) {
 			result = &TestAppResult{
@@ -84,6 +89,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 				MongoClient:          mongoClient,
 				MongoDbOptions:       mongoDbOptions,
 				EchoHttpOptions:      echoOptions,
+				EsdbClient:           esdbClient,
 				EventStoreDbOptions:  eventStoreDbOptions,
 				OrderMongoRepository: orderMongoRepository,
 				OrderAggregateStore:  orderAggregateStore,

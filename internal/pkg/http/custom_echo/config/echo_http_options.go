@@ -14,7 +14,7 @@ import (
 var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[EchoHttpOptions]())
 
 type EchoHttpOptions struct {
-	Port                string   `mapstructure:"port"                validate:"required" env:"Port"`
+	Port                string   `mapstructure:"port"                validate:"required" env:"TcpPort"`
 	Development         bool     `mapstructure:"development"                             env:"Development"`
 	BasePath            string   `mapstructure:"basePath"            validate:"required" env:"BasePath"`
 	DebugErrorsResponse bool     `mapstructure:"debugErrorsResponse"                     env:"DebugErrorsResponse"`

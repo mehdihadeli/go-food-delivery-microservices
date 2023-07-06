@@ -191,7 +191,7 @@ services:
       - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
       - EVENTSTORE_MEM_DB=true
     ports:
-      - "1113:1113"
+      - ${EVENTSTORE_TCP_HOST_PORT:-1113}:${EVENTSTORE_TCP_PORT:-1113}
       - ${EVENTSTORE_HOST_PORT:-2113}:${EVENTSTORE_PORT:-2113}
     volumes:
       - type: volume

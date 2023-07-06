@@ -60,14 +60,15 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
-	// get a free random host hostPort
+	// get a free random host port for rabbitmq `Tcp Port`
 	hostPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[0]))
 	if err != nil {
 		return nil, err
 	}
 	g.defaultOptions.HostPort = hostPort.Int()
 
-	//https://github.com/michaelklishin/rabbit-hole/issues/74
+	// https://github.com/michaelklishin/rabbit-hole/issues/74
+	// get a free random host port for rabbitmq UI `Http Port`
 	uiHttpPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[1]))
 	if err != nil {
 		return nil, err

@@ -67,7 +67,9 @@
     }
   },
   "eventStoreDbOptions": {
-    "connectionString": "esdb://localhost:2113?tls=false",
+    "host": "localhost",
+    "httpPort": 2113,
+    "tcpPort": 1113 ,
     "subscription": {
       "subscriptionId": "orders-subscription",
       "prefix": ["order-"]
