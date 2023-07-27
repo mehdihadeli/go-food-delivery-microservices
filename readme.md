@@ -1,40 +1,41 @@
-# 🧺 Store Golang Microservices Sample
+# 🧺Go Ecommerce Microservices
 
 [![CI](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/store-golang-microservice)](https://goreportcard.com/report/github.com/mehdihadeli/store-golang-microservice)
-![Go Version](https://img.shields.io/badge/go%20version-%3E=1.19-61CFDD.svg?style=flat-square)
+![Go Version](https://img.shields.io/badge/go%20version-%3E=1.20-61CFDD.svg?style=flat-square)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod&style=flat-square&color=ff69b4)](https://gitpod.io/#https://github.com/mehdihadeli/store-golang-microservices)
 
-> A practical store sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture** and **Dependency Injection**. For communication between independent services, We use asynchronous messaging with using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
-
+> A practical e-commerce sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture** and **Dependency Injection**. For communication between independent services, We use asynchronous messaging with using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
 
 **You can use this project as a template to build your Backend project in the Go language on top of this project.**
 
 💡 This application is not business oriented and my focus is mostly on technical part, I just want to implement a sample with using different technologies, software architecture design, principles and all the thing we need for creating a microservices app.
 
-🌀 This Application is `in-progress` and I will add new features and thecnologies over time. 
+🌀 This Application is `in-progress` and I will add new features and technologies over time.
 
 Other versions of this project is available in these repositories, We can choose best fit architecture for our projects based on production needs:
+
 - [Ecommerce Application with Microservices Architecture in C#](https://github.com/mehdihadeli/ecommerce-microservices)
 - [Ecommerce Application with Modular Monolith Architecture in C#](https://github.com/mehdihadeli/ecommerce-modular-monolith)
 - [Golang Vertical Slice Architecture Boilerplate Template](https://github.com/mehdihadeli/go-vertical-slice-template)
 
 ## Features
+
 - ✅ Using `Vertical Slice Architecture` as a high level architecture
 - ✅ Using `Event Driven Architecture` on top of RabbitMQ Message Broker with a custom [Event Bus](pkg/messaging/bus/)
 - ✅ Using `Data Centeric Architecture` based on CRUD in [Catalogs Read Service](services/catalogs/read_service/)
-- ✅ Using `Event Sourcing` in `Audit Based` services like [Orders Service](services/orders/) 
+- ✅ Using `Event Sourcing` in `Audit Based` services like [Orders Service](services/orders/)
 - ✅ Using `CQRS Pattern` and `Mediator Pattern`on top of [Go-MediatR](https://github.com/mehdihadeli/Go-MediatR) library
 - ✅ Using `Dependency Injection` and `Inversion of Control`on top of [uber-go/fx](https://github.com/uber-go/fx) library
 - ✅ Using RESTFul api with [Echo](https://github.com/labstack/echo) framework and using swagger with [swaggo/swag](https://github.com/swaggo/swag) library
 - ✅ Using gRpc for internal service communication
 - ✅ Using [go-playground/validator](https://github.com/go-playground/validator) for validating input data in the REST and gRpc
-- ✅ Using `Postgres` and `EventStoreDB` for write databases with fully supports transactions(ACID) 
-- ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL) 
+- ✅ Using `Postgres` and `EventStoreDB` for write databases with fully supports transactions(ACID)
+- ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL)
 - ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
 - ✅ Using `OpenTelemetry` for collection `Metrics` with using Prometheus and Grafana
 - ✅ Using `End2End Test` and `Integration Test` for testing some of the features with using docker containers (cleanup tests) and [testcontainers/testcontainers-go](https://github.com/testcontainers/testcontainers-go) library
-- ✅ Using `Zap` and structured logging 
+- ✅ Using `Zap` and structured logging
 - ✅ Using `Viper` for configuration management
 - ✅ Using docker and `docker-compose` for deployment
 - 🚧 Using `Domain Driven Design` in some of services like [Catalogs Write Service](services/catalogs/write_service/) and [Orders Service](services/catalogs/orders/)
@@ -73,6 +74,7 @@ Other versions of this project is available in these repositories, We can choose
 ## Project Layout and Structure
 
 Each microservices are based on these projects structure:
+
 - [Standard Go Project Layout](https://github.com/golang-standards/project-layout)
 
 ## System Architecture
@@ -89,7 +91,6 @@ In this project I used [vertical slice architecture](https://jimmybogard.com/ver
 - With this approach, each of our vertical slices can decide for itself how to best fulfill the request. New features only add code, we're not changing shared code and worrying about side effects. For implementing vertical slice architecture using cqrs pattern is a good match.
 
 ![](./assets/vertical-slice-architecture.jpg)
-
 
 ![](./assets/vsa2.png)
 
@@ -127,11 +128,12 @@ Keeping such a split works great with CQRS. It segregates our operations and sli
 
 ![](./assets/high-level.png)
 
-
 ## Formatting
+
 For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt), [golines](https://github.com/segmentio/golines) and [golangci-lint](https://golangci-lint.run/usage/integrations/#goland) in my GoLand. you can do this formatting automatically by [this guide](https://github.com/mvdan/gofumpt#goland).
 
 ## Live Reloding In Development
+
 For live reloading in dev mode I use [reflex](https://github.com/cespare/reflex) library
 
 ## References
