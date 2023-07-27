@@ -9,15 +9,18 @@
 
 **You can use this project as a template to build your Backend project in the Go language on top of this project.**
 
-💡 This application is not business oriented and my focus is mostly on technical part, I just want to implement a sample with using different technologies, software architecture design, principles and all the thing we need for creating a microservices app.
+💡 This application is not `business oriented`` and my focus is mostly on technical part, I just want to implement a sample with using different technologies, software architecture design, principles and all the thing we need for creating a microservices app.
 
-🌀 This Application is `in-progress` and I will add new features and technologies over time.
+🚀 This Application is `in-progress` and I will add new features and technologies over time.
 
-Other versions of this project is available in these repositories, We can choose best fit architecture for our projects based on production needs:
+For your simplest golang projects, you can use my `go-vertical-slice-template` project:
 
-- [Ecommerce Application with Microservices Architecture in C#](https://github.com/mehdihadeli/ecommerce-microservices)
-- [Ecommerce Application with Modular Monolith Architecture in C#](https://github.com/mehdihadeli/ecommerce-modular-monolith)
-- [Golang Vertical Slice Architecture Boilerplate Template](https://github.com/mehdihadeli/go-vertical-slice-template)
+- [https://github.com/mehdihadeli/go-vertical-slice-template](https://github.com/mehdihadeli/go-vertical-slice-template)
+
+For more advance projects, with two `microservices` and `modular monolith architecture`, check the C# version:
+
+- [https://github.com/mehdihadeli/ecommerce-microservices](https://github.com/mehdihadeli/ecommerce-microservices)
+- [https://github.com/mehdihadeli/ecommerce-modular-monolith](https://github.com/mehdihadeli/ecommerce-modular-monolith)
 
 ## Features
 
@@ -34,7 +37,7 @@ Other versions of this project is available in these repositories, We can choose
 - ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL)
 - ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
 - ✅ Using `OpenTelemetry` for collection `Metrics` with using Prometheus and Grafana
-- ✅ Using `End2End Test` and `Integration Test` for testing some of the features with using docker containers (cleanup tests) and [testcontainers/testcontainers-go](https://github.com/testcontainers/testcontainers-go) library
+- ✅ Using `End2End Test` and `Integration Test` for testing some of the features with using docker containers (cleanup tests) and [testcontainers-go](https://github.com/testcontainers/testcontainers-go) library
 - ✅ Using `Zap` and structured logging
 - ✅ Using `Viper` for configuration management
 - ✅ Using docker and `docker-compose` for deployment
