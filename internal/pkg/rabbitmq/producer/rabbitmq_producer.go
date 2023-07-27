@@ -1,4 +1,4 @@
-//go:build.sh go1.18
+//go:build go1.18
 
 package producer
 
@@ -31,7 +31,7 @@ type rabbitMQProducer struct {
 	connection              types.IConnection
 	eventSerializer         serializer.EventSerializer
 	producersConfigurations map[string]*configurations.RabbitMQProducerConfiguration
-	messageProducedHandlers []func(message types2.IMessage)
+	isProducedNotifications []func(message types2.IMessage)
 }
 
 func NewRabbitMQProducer(
@@ -39,7 +39,7 @@ func NewRabbitMQProducer(
 	rabbitmqProducersConfiguration map[string]*configurations.RabbitMQProducerConfiguration,
 	logger logger.Logger,
 	eventSerializer serializer.EventSerializer,
-	messageProducedHandlers ...func(message types2.IMessage),
+	isProducedNotifications ...func(message types2.IMessage),
 ) (producer.Producer, error) {
 	p := &rabbitMQProducer{
 		logger:                  logger,
@@ -48,13 +48,13 @@ func NewRabbitMQProducer(
 		producersConfigurations: rabbitmqProducersConfiguration,
 	}
 
-	p.messageProducedHandlers = messageProducedHandlers
+	p.isProducedNotifications = isProducedNotifications
 
 	return p, nil
 }
 
-func (r *rabbitMQProducer) AddMessageProducedHandler(h func(message types2.IMessage)) {
-	r.messageProducedHandlers = append(r.messageProducedHandlers, h)
+func (r *rabbitMQProducer) IsProduced(h func(message types2.IMessage)) {
+	r.isProducedNotifications = append(r.isProducedNotifications, h)
 }
 
 func (r *rabbitMQProducer) PublishMessage(
@@ -197,10 +197,10 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		return producer2.FinishProducerSpan(beforeProduceSpan, errors.New("ack not confirmed"))
 	}
 
-	if len(r.messageProducedHandlers) > 0 {
-		for _, handler := range r.messageProducedHandlers {
-			if handler != nil {
-				handler(message)
+	if len(r.isProducedNotifications) > 0 {
+		for _, notification := range r.isProducedNotifications {
+			if notification != nil {
+				notification(message)
 			}
 		}
 	}

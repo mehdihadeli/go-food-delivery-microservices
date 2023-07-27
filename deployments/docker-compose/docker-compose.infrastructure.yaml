@@ -1,9 +1,11 @@
 version: "3.8"
+name: go-ecommerce-microservices
 
 services:
   rabbitmq:
     image: rabbitmq:management
     container_name: rabbitmq
+    pull_policy: if_not_present
     restart: on-failure
     ports:
       - ${RABBITMQ_HOST_PORT:-5672}:${RABBITMQ_PORT:-5672}
@@ -15,6 +17,7 @@ services:
       
   prometheus:
     image: prom/prometheus:latest
+    pull_policy: if_not_present
     container_name: prometheus
     restart: on-failure
     user: root
@@ -29,6 +32,7 @@ services:
 
   node_exporter:
     container_name: node_exporter
+    pull_policy: if_not_present
     restart: on-failure
     image: prom/node-exporter
     ports:
@@ -38,6 +42,7 @@ services:
 
   grafana:
     container_name: grafana
+    pull_policy: if_not_present
     restart: on-failure
     image: grafana/grafana
     ports:
@@ -47,6 +52,7 @@ services:
 
   postgres:
     image: postgres:latest
+    pull_policy: if_not_present
     container_name: postgres
     restart: on-failure
     ports:
@@ -58,8 +64,11 @@ services:
     networks:
       - store
 
+  # https://developer.redis.com/howtos/quick-start
+  # redis-stack is a image with redis modules enabled like JSON module
   redis:
-    image: redis:6-alpine
+    image: redis/redis-stack:latest
+    pull_policy: if_not_present
     restart: on-failure
     container_name: redis
     ports:
@@ -123,6 +132,7 @@ services:
 
   mongo:
     image: mongo
+    pull_policy: if_not_present
     container_name: mongo
     restart: on-failure
     # https://docs.docker.com/compose/environment-variables/env-file/#parameter-expansion
@@ -136,6 +146,7 @@ services:
 
   jaeger:
     container_name: jaeger
+    pull_policy: if_not_present
     restart: on-failure
     image: jaegertracing/all-in-one:latest
     ports:
@@ -147,6 +158,7 @@ services:
 
   zipkin:
     image: openzipkin/zipkin:latest
+    pull_policy: if_not_present
     restart: on-failure
     container_name: zipkin
     ports:
@@ -156,6 +168,7 @@ services:
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib-dev:latest
+    pull_policy: if_not_present
     command: ["--config=/etc/otel-collector-config.yaml", ""]
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
@@ -175,8 +188,10 @@ services:
   # https://developers.eventstore.com/server/v21.10/installation.html#insecure-single-node
   # https://hub.docker.com/r/eventstore/eventstore/tags
   # https://stackoverflow.com/questions/65272764/ports-are-not-available-listen-tcp-0-0-0-0-50070-bind-an-attempt-was-made-to
+  # EVENTSTORE_MEM_DB=true, it tells the EventStoreDB container to use an in-memory database, which means that any data stored in EventStoreDB will not be persisted between container restarts. Once the container is stopped or restarted, all data will be lost.
   eventstore:
     image: eventstore/eventstore:latest
+    pull_policy: if_not_present
     container_name: eventstore
     restart: on-failure
     environment:
@@ -190,7 +205,7 @@ services:
       - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
       - EVENTSTORE_MEM_DB=true
     ports:
-      - "1113:1113"
+      - ${EVENTSTORE_TCP_HOST_PORT:-1113}:${EVENTSTORE_TCP_PORT:-1113}
       - ${EVENTSTORE_HOST_PORT:-2113}:${EVENTSTORE_PORT:-2113}
     volumes:
       - type: volume
@@ -236,20 +251,7 @@ services:
   #     - store
   #   depends_on:
   #     - elasticsearch
-
-  portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer
-    restart: unless-stopped
-    security_opt:
-      - no-new-privileges:true
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./portainer-data:/data
-    ports:
-      - 9000:9000
-
+  
 volumes:
   eventstore-volume-data:
   eventstore-volume-logs:

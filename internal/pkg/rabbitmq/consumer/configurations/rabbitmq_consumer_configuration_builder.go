@@ -1,4 +1,4 @@
-//go:build.sh go1.18
+//go:build go1.18
 
 package configurations
 
@@ -34,6 +34,7 @@ type RabbitMQConsumerConfigurationBuilder interface {
 	WithExchangeArgs(args map[string]any) RabbitMQConsumerConfigurationBuilder
 	WithRoutingKey(routingKey string) RabbitMQConsumerConfigurationBuilder
 	WithBindingArgs(args map[string]any) RabbitMQConsumerConfigurationBuilder
+	WithName(name string) RabbitMQConsumerConfigurationBuilder
 	Build() *RabbitMQConsumerConfiguration
 }
 
@@ -79,6 +80,13 @@ func (b *rabbitMQConsumerConfigurationBuilder) WithExitOnError(
 	exitOnError bool,
 ) RabbitMQConsumerConfigurationBuilder {
 	b.rabbitmqConsumerConfigurations.ExitOnError = exitOnError
+	return b
+}
+
+func (b *rabbitMQConsumerConfigurationBuilder) WithName(
+	name string,
+) RabbitMQConsumerConfigurationBuilder {
+	b.rabbitmqConsumerConfigurations.Name = name
 	return b
 }
 

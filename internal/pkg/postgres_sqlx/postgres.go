@@ -1,42 +1,34 @@
-package postgres_sqlx
+package postgressqlx
 
 import (
 	"context"
 	"database/sql"
-	"emperror.dev/errors"
 	"fmt"
+	"os"
+	"strconv"
+	"time"
+
+	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/jackc/pgx/v4/stdlib" // load pgx driver for PostgreSQL
 	"github.com/jmoiron/sqlx"
 	"github.com/uptrace/bun/driver/pgdriver"
-	"os"
-	"strconv"
-	"time"
 )
-
-type Config struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	User     string `mapstructure:"user"`
-	DBName   string `mapstructure:"dbName"`
-	SSLMode  bool   `mapstructure:"sslMode"`
-	Password string `mapstructure:"password"`
-}
 
 type Sqlx struct {
 	SqlxDB          *sqlx.DB
 	DB              *sql.DB
 	SquirrelBuilder squirrel.StatementBuilderType
 	GoquBuilder     *goqu.SelectDataset
-	config          *Config
+	config          *PostgresSqlxOptions
 }
 
 // NewSqlxConn creates a database connection with appropriate pool configuration
 // and runs migration to prepare database.
 //
 // Migration will be omitted if appropriate config parameter set.
-func NewSqlxConn(cfg *Config) (*Sqlx, error) {
+func NewSqlxConn(cfg *PostgresSqlxOptions) (*Sqlx, error) {
 	// Define database connection settings.
 	maxConn, _ := strconv.Atoi(os.Getenv("DB_MAX_CONNECTIONS"))
 	maxIdleConn, _ := strconv.Atoi(os.Getenv("DB_MAX_IDLE_CONNECTIONS"))
@@ -49,7 +41,6 @@ func NewSqlxConn(cfg *Config) (*Sqlx, error) {
 	}
 
 	err := createDB(cfg)
-
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +71,7 @@ func NewSqlxConn(cfg *Config) (*Sqlx, error) {
 		return nil, fmt.Errorf("error, not sent ping to database, %w", err)
 	}
 
-	//squirrel
+	// squirrel
 	squirrelBuilder := squirrel.StatementBuilder.
 		PlaceholderFormat(squirrel.Dollar).RunWith(db)
 
@@ -89,12 +80,18 @@ func NewSqlxConn(cfg *Config) (*Sqlx, error) {
 	database := dialect.DB(db)
 	goquBuilder := database.From()
 
-	sqlx := &Sqlx{DB: db.DB, SqlxDB: db, SquirrelBuilder: squirrelBuilder, GoquBuilder: goquBuilder, config: cfg}
+	sqlx := &Sqlx{
+		DB:              db.DB,
+		SqlxDB:          db,
+		SquirrelBuilder: squirrelBuilder,
+		GoquBuilder:     goquBuilder,
+		config:          cfg,
+	}
 
 	return sqlx, nil
 }
 
-func createDB(cfg *Config) error {
+func createDB(cfg *PostgresSqlxOptions) error {
 	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'
 	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,
@@ -107,7 +104,9 @@ func createDB(cfg *Config) error {
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(datasource)))
 
 	var exists int
-	rows, err := sqldb.Query(fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
+	rows, err := sqldb.Query(
+		fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName),
+	)
 	if err != nil {
 		return err
 	}

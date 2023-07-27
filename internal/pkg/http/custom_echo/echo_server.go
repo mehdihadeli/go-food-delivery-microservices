@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/brpaz/echozap"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.opentelemetry.io/otel/metric"
-	"go.uber.org/zap"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	customHadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/log"
 	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
 	otelTracer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_tracer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -20,18 +20,19 @@ import (
 
 type echoHttpServer struct {
 	echo         *echo.Echo
-	config       *EchoHttpConfig
+	config       *config.EchoHttpOptions
 	log          logger.Logger
 	meter        metric.Meter
-	serviceName  string
 	routeBuilder *RouteBuilder
 }
 
 type EchoHttpServer interface {
-	RunHttpServer(ctx context.Context, configEcho ...func(echo *echo.Echo)) error
+	RunHttpServer(configEcho ...func(echo *echo.Echo)) error
 	GracefulShutdown(ctx context.Context) error
 	ApplyVersioningFromHeader()
 	GetEchoInstance() *echo.Echo
+	Logger() logger.Logger
+	Cfg() *config.EchoHttpOptions
 	SetupDefaultMiddlewares()
 	RouteBuilder() *RouteBuilder
 	AddMiddlewares(middlewares ...echo.MiddlewareFunc)
@@ -39,24 +40,23 @@ type EchoHttpServer interface {
 }
 
 func NewEchoHttpServer(
-	config *EchoHttpConfig,
+	config *config.EchoHttpOptions,
 	logger logger.Logger,
-	serviceName string,
 	meter metric.Meter,
 ) EchoHttpServer {
 	e := echo.New()
+	e.HideBanner = false
+
 	return &echoHttpServer{
 		echo:         e,
 		config:       config,
 		log:          logger,
 		meter:        meter,
-		serviceName:  serviceName,
 		routeBuilder: NewRouteBuilder(e),
 	}
 }
 
 func (s *echoHttpServer) RunHttpServer(
-	ctx context.Context,
 	configEcho ...func(echo *echo.Echo),
 ) error {
 	s.echo.Server.ReadTimeout = constants.ReadTimeout
@@ -70,21 +70,16 @@ func (s *echoHttpServer) RunHttpServer(
 		}
 	}
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				s.log.Infof("%s is shutting down Http PORT: {%s}", s.serviceName, s.config.Port)
-				if err := s.GracefulShutdown(ctx); err != nil {
-					s.log.Errorf("(Shutdown) err: {%v}", err)
-				}
-				return
-			}
-		}
-	}()
-
 	// https://echo.labstack.com/guide/http_server/
 	return s.echo.Start(s.config.Port)
+}
+
+func (s *echoHttpServer) Logger() logger.Logger {
+	return s.log
+}
+
+func (s *echoHttpServer) Cfg() *config.EchoHttpOptions {
+	return s.config
 }
 
 func (s *echoHttpServer) RouteBuilder() *RouteBuilder {
@@ -111,25 +106,17 @@ func (s *echoHttpServer) GracefulShutdown(ctx context.Context) error {
 }
 
 func (s *echoHttpServer) SetupDefaultMiddlewares() {
-	// https://echo.labstack.com/middleware/
-	// https://github.com/avelino/awesome-go#middlewares
-	// handling internal echo middlewares logs with our log provider
-	if s.log.LogType() == logger.Zap {
-		s.log.Configure(func(internalLog interface{}) {
-			// https://github.com/brpaz/echozap
-			s.echo.Use(echozap.ZapLogger(internalLog.(*zap.Logger)))
-		})
-	} else if s.log.LogType() == logger.Logrus {
-		s.log.Configure(func(internalLog interface{}) {
-		})
+	// set error handler
+	s.echo.HTTPErrorHandler = func(err error, c echo.Context) {
+		customHadnlers.ProblemHandlerFunc(err, c, s.log)
 	}
 
-	s.echo.HideBanner = false
-	s.echo.HTTPErrorHandler = customHadnlers.ProblemHandler
-
-	s.echo.Use(otelTracer.Middleware(s.serviceName))
+	// log errors and information
+	s.echo.Use(log.EchoLogger(s.log))
+	s.echo.Use(otelTracer.Middleware(s.config.Name))
+	// Because we use metrics server middleware, if it is not available, our echo will not work.
 	if s.meter != nil {
-		s.echo.Use(otelMetrics.Middleware(s.meter, s.serviceName))
+		s.echo.Use(otelMetrics.Middleware(s.meter, s.config.Name))
 	}
 
 	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{

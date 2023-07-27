@@ -5,11 +5,19 @@
 ![Go Version](https://img.shields.io/badge/go%20version-%3E=1.19-61CFDD.svg?style=flat-square)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod&style=flat-square&color=ff69b4)](https://gitpod.io/#https://github.com/mehdihadeli/store-golang-microservices)
 
-> A practical store sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture**. For communication between independent services, We use asynchronous messaging with using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
+> A practical store sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture** and **Dependency Injection**. For communication between independent services, We use asynchronous messaging with using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
+
+
+**You can use this project as a template to build your Backend project in the Go language on top of this project.**
 
 💡 This application is not business oriented and my focus is mostly on technical part, I just want to implement a sample with using different technologies, software architecture design, principles and all the thing we need for creating a microservices app.
 
 🌀 This Application is `in-progress` and I will add new features and thecnologies over time. 
+
+Other versions of this project is available in these repositories, We can choose best fit architecture for our projects based on production needs:
+- [Ecommerce Application with Microservices Architecture in C#](https://github.com/mehdihadeli/ecommerce-microservices)
+- [Ecommerce Application with Modular Monolith Architecture in C#](https://github.com/mehdihadeli/ecommerce-modular-monolith)
+- [Golang Vertical Slice Architecture Boilerplate Template](https://github.com/mehdihadeli/go-vertical-slice-template)
 
 ## Features
 - ✅ Using `Vertical Slice Architecture` as a high level architecture
@@ -17,6 +25,7 @@
 - ✅ Using `Data Centeric Architecture` based on CRUD in [Catalogs Read Service](services/catalogs/read_service/)
 - ✅ Using `Event Sourcing` in `Audit Based` services like [Orders Service](services/orders/) 
 - ✅ Using `CQRS Pattern` and `Mediator Pattern`on top of [Go-MediatR](https://github.com/mehdihadeli/Go-MediatR) library
+- ✅ Using `Dependency Injection` and `Inversion of Control`on top of [uber-go/fx](https://github.com/uber-go/fx) library
 - ✅ Using RESTFul api with [Echo](https://github.com/labstack/echo) framework and using swagger with [swaggo/swag](https://github.com/swaggo/swag) library
 - ✅ Using gRpc for internal service communication
 - ✅ Using [go-playground/validator](https://github.com/go-playground/validator) for validating input data in the REST and gRpc
@@ -24,7 +33,9 @@
 - ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL) 
 - ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
 - ✅ Using `OpenTelemetry` for collection `Metrics` with using Prometheus and Grafana
-- ✅ Using `End2End Test` and `Integration Test` for testing some of the features 
+- ✅ Using `End2End Test` and `Integration Test` for testing some of the features with using docker containers (cleanup tests) and [testcontainers/testcontainers-go](https://github.com/testcontainers/testcontainers-go) library
+- ✅ Using `Zap` and structured logging 
+- ✅ Using `Viper` for configuration management
 - ✅ Using docker and `docker-compose` for deployment
 - 🚧 Using `Domain Driven Design` in some of services like [Catalogs Write Service](services/catalogs/write_service/) and [Orders Service](services/catalogs/orders/)
 - 🚧 Using `Helm` and `Kubernetes` for deployment
@@ -52,6 +63,12 @@
 - ✔️ **[`go-redis/redis`](https://github.com/go-redis/redis)** - Type-safe Redis client for Golang
 - ✔️ **[`go-gorm/gorm`](https://github.com/go-gorm/gorm)** - The fantastic ORM library for Golang, aims to be developer friendly
 - ✔️ **[`go-playground/validator`](https://github.com/go-playground/validator)** - Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving
+- ✔️ **[`spf13/viper`](https://github.com/spf13/viper)** - Go configuration with fangs
+- ✔️ **[`caarlos0/env`](https://github.com/caarlos0/env)** - A simple and zero-dependencies library to parse environment variables into structs.
+- ✔️ **[`joho/godotenv`](https://github.com/joho/godotenv)** - A Go port of Ruby's dotenv library (Loads environment variables from .env files)
+- ✔️ **[`mcuadros/go-defaults`](https://github.com/mcuadros/go-defaults)** - Go structures with default values using tags
+- ✔️ **[`uber-go/fx`](https://github.com/uber-go/fx)** - A dependency injection based application framework for Go.
+- ✔️ **[`testcontainers/testcontainers-go`](https://github.com/testcontainers/testcontainers-go)** - Testcontainers for Go is a Go package that makes it simple to create and clean up container-based dependencies for automated integration/smoke tests.
 
 ## Project Layout and Structure
 

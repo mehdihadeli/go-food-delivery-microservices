@@ -17,59 +17,55 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
-	"go.opentelemetry.io/otel/trace"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-	otel2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 )
 
-//https://opentelemetry.io/docs/reference/specification/
-//https://opentelemetry.io/docs/instrumentation/go/getting-started/
-//https://opentelemetry.io/docs/instrumentation/go/manual/
-//https://opentelemetry.io/docs/reference/specification/trace/semantic_conventions/
-//https://uptrace.dev/opentelemetry/go-tracing.html
-//https://lightstep.com/blog/opentelemetry-go-all-you-need-to-know
-//https://trstringer.com/otel-part2-instrumentation/
-//https://trstringer.com/otel-part5-propagation/
-//https://github.com/tedsuo/otel-go-basics/blob/main/server.go
+// https://opentelemetry.io/docs/reference/specification/
+// https://opentelemetry.io/docs/instrumentation/go/getting-started/
+// https://opentelemetry.io/docs/instrumentation/go/manual/
+// https://opentelemetry.io/docs/reference/specification/trace/semantic_conventions/
+// https://uptrace.dev/opentelemetry/go-tracing.html
+// https://lightstep.com/blog/opentelemetry-go-all-you-need-to-know
+// https://trstringer.com/otel-part2-instrumentation/
+// https://trstringer.com/otel-part5-propagation/
+// https://github.com/tedsuo/otel-go-basics/blob/main/server.go
 
-type openTelemtry struct {
-	config         *otel2.OpenTelemetryConfig
-	tracerProvider *tracesdk.TracerProvider
+type TracingOpenTelemetry struct {
+	config         *config2.OpenTelemetryOptions
 	jaegerExporter tracesdk.SpanExporter
 	zipkinExporter tracesdk.SpanExporter
 	stdExporter    tracesdk.SpanExporter
-	tracerName     string
+	environment    environemnt.Environment
+	TracerProvider *tracesdk.TracerProvider
+	AppTracer      AppTracer
 }
 
 // Create one tracer per package
 // NOTE: You only need a tracer if you are creating your own spans
 
-// Tracer global tracer for app
-var Tracer trace.Tracer
-
-func init() {
-	Tracer = NewCustomTracer("app-tracer") //instrumentation name
-}
-
-func AddOtelTracing(config *otel2.OpenTelemetryConfig) (*tracesdk.TracerProvider, error) {
-	openTel := &openTelemtry{config: config}
+func NewOtelTracing(
+	config *config2.OpenTelemetryOptions,
+	environment environemnt.Environment,
+) (*TracingOpenTelemetry, error) {
+	openTel := &TracingOpenTelemetry{config: config, environment: environment}
 
 	err := openTel.configExporters()
 	if err != nil {
 		return nil, errors.WrapIf(err, "error in config exporter")
 	}
 
-	//https://opentelemetry.io/docs/instrumentation/go/manual/#initializing-a-new-tracer
+	// https://opentelemetry.io/docs/instrumentation/go/manual/#initializing-a-new-tracer
 	err = openTel.configTracerProvider()
 	if err != nil {
 		return nil, err
 	}
 
-	//https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/propagators/ot/ot_propagator.go
-	//https://github.com/open-telemetry/opentelemetry-go/blob/main/propagation/trace_context.go
-	//https://github.com/open-telemetry/opentelemetry-go/blob/main/propagation/baggage.go/
-	//https://trstringer.com/otel-part5-propagation/
+	// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/propagators/ot/ot_propagator.go
+	// https://github.com/open-telemetry/opentelemetry-go/blob/main/propagation/trace_context.go
+	// https://github.com/open-telemetry/opentelemetry-go/blob/main/propagation/baggage.go/
+	// https://trstringer.com/otel-part5-propagation/
 	propagators := []propagation.TextMapPropagator{
 		ot.OT{}, // should be placed before `TraceContext` for preventing conflict
 		propagation.TraceContext{},
@@ -78,17 +74,17 @@ func AddOtelTracing(config *otel2.OpenTelemetryConfig) (*tracesdk.TracerProvider
 
 	// Register our TracerProvider as the global so any imported
 	// instrumentation in the future will default to using it.
-	otel.SetTracerProvider(openTel.tracerProvider)
+	otel.SetTracerProvider(openTel.TracerProvider)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagators...))
 
-	//https://trstringer.com/otel-part2-instrumentation/
-	// Finally, set the tracer that can be used for this package.
-	Tracer = NewCustomTracer(config.InstrumetationName)
+	// https://trstringer.com/otel-part2-instrumentation/
+	// Finally, set the tracer that can be used for this package. global app tracer
+	openTel.AppTracer = NewAppTracer(config.InstrumentationName)
 
-	return openTel.tracerProvider, nil
+	return openTel, nil
 }
 
-func (o *openTelemtry) configTracerProvider() error {
+func (o *TracingOpenTelemetry) configTracerProvider() error {
 	var sampler tracesdk.Sampler
 	if o.config.AlwaysOnSampler {
 		sampler = tracesdk.AlwaysSample()
@@ -104,7 +100,7 @@ func (o *openTelemtry) configTracerProvider() error {
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String(o.config.ServiceName),
 			attribute.Int64("ID", o.config.Id),
-			attribute.String("environment", core.GetEnvironment()),
+			attribute.String("environment", o.environment.GetEnvironmentName()),
 		),
 	)
 	if err != nil {
@@ -119,21 +115,21 @@ func (o *openTelemtry) configTracerProvider() error {
 		tracesdk.WithSampler(sampler),
 
 		// https://opentelemetry.io/docs/instrumentation/go/exporting_data/#resources
-		//Resources are a special type of attribute that apply to all spans generated by a process
+		// Resources are a special type of attribute that apply to all spans generated by a process
 		tracesdk.WithResource(r),
 	)
-	o.tracerProvider = tp
+	o.TracerProvider = tp
 	return nil
 }
 
-func (o *openTelemtry) configExporters() error {
+func (o *TracingOpenTelemetry) configExporters() error {
 	logger := log.New(os.Stderr, "otel_log", log.Ldate|log.Ltime|log.Llongfile)
 
-	if o.config.JaegerExporterConfig != nil {
+	if o.config.JaegerExporterOptions != nil {
 		// Create the Jaeger exporter
 		jaegerExporter, err := jaeger.New(jaeger.WithAgentEndpoint(
-			jaeger.WithAgentHost(o.config.JaegerExporterConfig.AgentHost),
-			jaeger.WithAgentPort(o.config.JaegerExporterConfig.AgentPort),
+			jaeger.WithAgentHost(o.config.JaegerExporterOptions.AgentHost),
+			jaeger.WithAgentPort(o.config.JaegerExporterOptions.AgentPort),
 			jaeger.WithLogger(logger),
 		))
 		if err != nil {
@@ -141,9 +137,9 @@ func (o *openTelemtry) configExporters() error {
 		}
 		o.jaegerExporter = jaegerExporter
 	}
-	if o.config.ZipkinExporterConfig != nil {
+	if o.config.ZipkinExporterOptions != nil {
 		zipkinExporter, err := zipkin.New(
-			o.config.ZipkinExporterConfig.Url,
+			o.config.ZipkinExporterOptions.Url,
 		)
 		if err != nil {
 			return err

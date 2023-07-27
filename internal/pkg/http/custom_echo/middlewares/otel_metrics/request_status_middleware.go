@@ -18,8 +18,14 @@ var (
 // Middleware adds request status metrics to the otel
 // ref: https://github.com/open-telemetry/opentelemetry-go/blob/main/example/prometheus/main.go
 func Middleware(meter api.Meter, serviceName string) echo.MiddlewareFunc {
-	errorCounter, _ := meter.Float64Counter(fmt.Sprintf("%s_error_http_requests_total", serviceName), api.WithDescription("The total number of error http requests"))
-	successCounter, _ = meter.Float64Counter(fmt.Sprintf("%s_success_http_requests_total", serviceName), api.WithDescription("The total number of success http requests"))
+	errorCounter, _ := meter.Float64Counter(
+		fmt.Sprintf("%s_error_http_requests_total", serviceName),
+		api.WithDescription("The total number of error http requests"),
+	)
+	successCounter, _ = meter.Float64Counter(
+		fmt.Sprintf("%s_success_http_requests_total", serviceName),
+		api.WithDescription("The total number of success http requests"),
+	)
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -32,15 +38,8 @@ func Middleware(meter api.Meter, serviceName string) echo.MiddlewareFunc {
 			)
 
 			if err != nil {
-				c.Error(err)
-				if err != nil {
-					return err
-				}
 				errorCounter.Add(ctx, 1, attrs)
 			} else {
-				if err != nil {
-					return err
-				}
 				successCounter.Add(ctx, 1, attrs)
 			}
 

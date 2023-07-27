@@ -1,18 +1,17 @@
 package problemDetails
 
 import (
-    "encoding/json"
-    "fmt"
-    "net/http"
-    "reflect"
-    "time"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"reflect"
+	"time"
 
-    "emperror.dev/errors"
+	"emperror.dev/errors"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
-    defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-    typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
 const (
@@ -56,7 +55,12 @@ func (p *problemDetail) ErrBody() error {
 
 // Error  Error() interface method
 func (p *problemDetail) Error() string {
-	return fmt.Sprintf("Error Title: %s - Error Status: %d - Error Detail: %s", p.Title, p.Status, p.Detail)
+	return fmt.Sprintf(
+		"Error Title: %s - Error Status: %d - Error Detail: %s",
+		p.Title,
+		p.Status,
+		p.Detail,
+	)
 }
 
 func (p *problemDetail) GetStatus() int {
@@ -135,7 +139,11 @@ func NewProblemDetailFromCode(status int, stackTrace string) ProblemDetailErr {
 }
 
 // NewProblemDetailFromCodeAndDetail New ProblemDetail Error With Message
-func NewProblemDetailFromCodeAndDetail(status int, detail string, stackTrace string) ProblemDetailErr {
+func NewProblemDetailFromCodeAndDetail(
+	status int,
+	detail string,
+	stackTrace string,
+) ProblemDetailErr {
 	return &problemDetail{
 		Status:     status,
 		Title:      http.StatusText(status),
@@ -184,10 +192,8 @@ func ResolveProblemDetail(err error) ProblemDetailErr {
 // WriteTo writes the JSON Problem to an HTTP Response Writer
 func WriteTo(p ProblemDetailErr, w http.ResponseWriter) (int, error) {
 	defaultLogger.Logger.Error(p.Error())
-	if core.IsDevelopment() {
-		stackTrace := p.GetStackTrace()
-		fmt.Println(stackTrace)
-	}
+	stackTrace := p.GetStackTrace()
+	fmt.Println(stackTrace)
 
 	writeHeaderTo(p, w)
 	marshal, err := json.Marshal(&p)

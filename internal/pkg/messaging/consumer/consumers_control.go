@@ -1,16 +1,16 @@
 package consumer
 
 import (
-    "context"
+	"context"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 )
 
 type BusControl interface {
 	// Start starts all consumers
 	Start(ctx context.Context) error
 	// Stop stops all consumers
-	Stop(ctx context.Context) error
+	Stop() error
 
-	AddMessageConsumedHandler(func(message types.IMessage))
+	IsConsumed(func(message types.IMessage))
 }

@@ -1,0 +1,78 @@
+{
+  "appOptions": {
+    "serviceName": "order_service",
+    "deliveryType": "http"
+  },
+  "grpcOptions": {
+    "name": "order_service",
+    "port": ":6005",
+    "host": "localhost",
+    "development": true
+  },
+  "echoHttpOptions": {
+    "name": "order_service",
+    "port": ":8000",
+    "development": true,
+    "timeout": 30,
+    "basePath": "/api/v1",
+    "host": "http://localhost",
+    "ordersPath": "orders",
+    "debugHeaders": true,
+    "httpClientDebug": true,
+    "debugErrorsResponse": true,
+    "ignoreLogUrls": [
+      "metrics"
+    ]
+  },
+  "logOptions": {
+    "level": "debug",
+    "logType": 0,
+    "callerEnabled": false
+  },
+  "mongoDbOptions": {
+    "host": "localhost",
+    "port": 27017,
+    "user": "admin",
+    "password": "admin",
+    "database": "orders_service",
+    "useAuth": true
+  },
+  "rabbitmqOptions": {
+    "autoStart": true,
+    "rabbitmqHostOptions": {
+      "userName": "guest",
+      "password": "guest",
+      "hostName": "localhost",
+      "port": 5672,
+      "httpPort": 15672
+    }
+  },
+  "OpenTelemetryOptions": {
+    "enable": true,
+    "serviceName": "orders-service",
+    "instrumentationName": "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice",
+    "id": 3,
+    "alwaysOnSampler": true,
+    "jaegerExporterOptions": {
+      "agentHost": "localhost",
+      "agentPort": "6831"
+    },
+    "zipkinExporterOptions": {
+      "url": "http://localhost:9411/api/v2/spans"
+    },
+    "otelMetricsOptions": {
+      "port": ":2003",
+      "metricsRoutePath": "/metrics",
+      "name": "orders-service"
+    }
+  },
+  "eventStoreDbOptions": {
+    "host": "localhost",
+    "httpPort": 2113,
+    "tcpPort": 1113 ,
+    "subscription": {
+      "subscriptionId": "orders-subscription",
+      "prefix": ["order-"]
+    }
+  }
+}

@@ -1,21 +1,24 @@
 package logrous
 
 import (
-    "os"
-    "time"
+	"os"
+	"time"
 
-    "github.com/nolleh/caption_json_formatter"
-    "github.com/sirupsen/logrus"
+	"github.com/nolleh/caption_json_formatter"
+	"github.com/sirupsen/logrus"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 )
 
 type logrusLogger struct {
-	level    string
-	encoding string
-	logger   *logrus.Logger
+	level      string
+	encoding   string
+	logger     *logrus.Logger
+	logOptions *config2.LogOptions
 }
 
 // For mapping config logger
@@ -28,25 +31,16 @@ var loggerLevelMap = map[string]logrus.Level{
 	"fatal": logrus.FatalLevel,
 }
 
-func (l *logrusLogger) GetLoggerLevel() logrus.Level {
-	level, exist := loggerLevelMap[l.level]
-	if !exist {
-		return logrus.DebugLevel
-	}
-
-	return level
-}
-
 // NewLogrusLogger creates a new logrus logger
-func NewLogrusLogger(cfg *logger.LogConfig) logger.Logger {
-	logrusLogger := &logrusLogger{level: cfg.LogLevel}
-	logrusLogger.initLogger()
+func NewLogrusLogger(cfg *config2.LogOptions, env environemnt.Environment) logger.Logger {
+	logrusLogger := &logrusLogger{level: cfg.LogLevel, logOptions: cfg}
+	logrusLogger.initLogger(env)
 
 	return logrusLogger
 }
 
 // InitLogger Init logger
-func (l *logrusLogger) initLogger() {
+func (l *logrusLogger) initLogger(env environemnt.Environment) {
 	logLevel := l.GetLoggerLevel()
 
 	// Create a new instance of the logger. You can have any number of instances.
@@ -58,7 +52,7 @@ func (l *logrusLogger) initLogger() {
 	// Can be any io.Writer, see below for File example
 	logrusLogger.SetOutput(os.Stdout)
 
-	if core.IsDevelopment() {
+	if env.IsDevelopment() {
 		logrusLogger.SetReportCaller(false)
 		logrusLogger.SetFormatter(&logrus.TextFormatter{
 			DisableColors: false,
@@ -67,15 +61,24 @@ func (l *logrusLogger) initLogger() {
 		})
 	} else {
 		logrusLogger.SetReportCaller(false)
-		//https://github.com/nolleh/caption_json_formatter
+		// https://github.com/nolleh/caption_json_formatter
 		logrusLogger.SetFormatter(&caption_json_formatter.Formatter{PrettyPrint: true})
 	}
 
 	l.logger = logrusLogger
 }
 
-func (l *logrusLogger) LogType() logger.LogType {
-	return logger.Logrus
+func (l *logrusLogger) GetLoggerLevel() logrus.Level {
+	level, exist := loggerLevelMap[l.level]
+	if !exist {
+		return logrus.DebugLevel
+	}
+
+	return level
+}
+
+func (l *logrusLogger) LogType() models.LogType {
+	return models.Logrus
 }
 
 func (l *logrusLogger) Configure(cfg func(internalLog interface{})) {
@@ -153,7 +156,12 @@ func (l *logrusLogger) WithName(name string) {
 	l.logger.WithField(constants.NAME, name)
 }
 
-func (l *logrusLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration, metaData map[string][]string, err error) {
+func (l *logrusLogger) GrpcMiddlewareAccessLogger(
+	method string,
+	time time.Duration,
+	metaData map[string][]string,
+	err error,
+) {
 	l.Info(
 		constants.GRPC,
 		logrus.WithField(constants.METHOD, method),
@@ -163,7 +171,14 @@ func (l *logrusLogger) GrpcMiddlewareAccessLogger(method string, time time.Durat
 	)
 }
 
-func (l *logrusLogger) GrpcClientInterceptorLogger(method string, req interface{}, reply interface{}, time time.Duration, metaData map[string][]string, err error) {
+func (l *logrusLogger) GrpcClientInterceptorLogger(
+	method string,
+	req interface{},
+	reply interface{},
+	time time.Duration,
+	metaData map[string][]string,
+	err error,
+) {
 	l.Info(
 		constants.GRPC,
 		logrus.WithField(constants.METHOD, method),

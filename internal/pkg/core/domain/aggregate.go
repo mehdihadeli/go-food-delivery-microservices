@@ -5,9 +5,8 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/ahmetb/go-linq/v3"
+	"github.com/goccy/go-json"
 	uuid "github.com/satori/go.uuid"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/serializer/jsonSerializer"
 )
 
 const (
@@ -82,7 +81,6 @@ func (a *AggregateRoot) OriginalVersion() int64 {
 }
 
 func (a *AggregateRoot) AddDomainEvents(event IDomainEvent) {
-
 	if linq.From(a.uncommittedEvents).Contains(event) {
 		return
 	}
@@ -106,5 +104,6 @@ func (a *AggregateRoot) GetUncommittedEvents() []IDomainEvent {
 }
 
 func (a *AggregateRoot) String() string {
-	return fmt.Sprintf("Aggregate json: %s", jsonSerializer.ColoredPrettyPrint(a))
+	j, _ := json.Marshal(a)
+	return fmt.Sprintf("Aggregate json: %s", string(j))
 }

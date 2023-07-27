@@ -24,7 +24,7 @@ func (config *MigrationConfig) Migrate(ctx context.Context) error {
 		return errors.New("DBName is required in the config.")
 	}
 
-	db, err := mongodb2.NewMongoDB(ctx, &mongodb2.MongoDbConfig{
+	db, err := mongodb2.NewMongoDB(ctx, &mongodb2.MongoDbOptions{
 		Host:     config.Host,
 		Port:     config.Port,
 		User:     config.User,
@@ -36,7 +36,10 @@ func (config *MigrationConfig) Migrate(ctx context.Context) error {
 		return err
 	}
 
-	driver, err := mongodb.WithInstance(db, &mongodb.Config{DatabaseName: config.DBName, MigrationsCollection: config.VersionTable})
+	driver, err := mongodb.WithInstance(
+		db,
+		&mongodb.Config{DatabaseName: config.DBName, MigrationsCollection: config.VersionTable},
+	)
 	if err != nil {
 		return fmt.Errorf("failed to initialize migrator: %w", err)
 	}

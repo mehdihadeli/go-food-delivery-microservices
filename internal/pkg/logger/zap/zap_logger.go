@@ -1,25 +1,29 @@
 package zap
 
 import (
-    "os"
-    "time"
+	"os"
+	"time"
 
-    "go.uber.org/zap"
-    "go.uber.org/zap/zapcore"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 )
 
 type zapLogger struct {
 	level       string
 	sugarLogger *zap.SugaredLogger
 	logger      *zap.Logger
+	logOptions  *config2.LogOptions
 }
 
 type ZapLogger interface {
 	logger.Logger
+	InternalLogger() *zap.Logger
 	DPanic(args ...interface{})
 	DPanicf(template string, args ...interface{})
 	Sync() error
@@ -36,11 +40,14 @@ var loggerLevelMap = map[string]zapcore.Level{
 }
 
 // NewZapLogger create new zap logger
-func NewZapLogger(cfg *logger.LogConfig) ZapLogger {
-	zapLogger := &zapLogger{level: cfg.LogLevel}
-	zapLogger.initLogger()
-
+func NewZapLogger(cfg *config2.LogOptions, env environemnt.Environment) ZapLogger {
+	zapLogger := &zapLogger{level: cfg.LogLevel, logOptions: cfg}
+	zapLogger.initLogger(env)
 	return zapLogger
+}
+
+func (l *zapLogger) InternalLogger() *zap.Logger {
+	return l.logger
 }
 
 func (l *zapLogger) getLoggerLevel() zapcore.Level {
@@ -48,12 +55,11 @@ func (l *zapLogger) getLoggerLevel() zapcore.Level {
 	if !exist {
 		return zapcore.DebugLevel
 	}
-
 	return level
 }
 
 // InitLogger Init logger
-func (l *zapLogger) initLogger() {
+func (l *zapLogger) initLogger(env environemnt.Environment) {
 	logLevel := l.getLoggerLevel()
 
 	logWriter := zapcore.AddSync(os.Stdout)
@@ -61,7 +67,7 @@ func (l *zapLogger) initLogger() {
 	var encoderCfg zapcore.EncoderConfig
 	var encoder zapcore.Encoder
 
-	if core.IsProduction() {
+	if env.IsProduction() {
 		encoderCfg = zap.NewProductionEncoderConfig()
 		encoderCfg.NameKey = "[SERVICE]"
 		encoderCfg.TimeKey = "[TIME]"
@@ -93,7 +99,15 @@ func (l *zapLogger) initLogger() {
 	}
 
 	core := zapcore.NewCore(encoder, logWriter, zap.NewAtomicLevelAt(logLevel))
-	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+
+	var options []zap.Option
+
+	if l.logOptions.CallerEnabled {
+		options = append(options, zap.AddCaller())
+		options = append(options, zap.AddCallerSkip(1))
+	}
+
+	logger := zap.New(core, options...)
 
 	l.logger = logger
 	l.sugarLogger = logger.Sugar()
@@ -103,8 +117,8 @@ func (l *zapLogger) Configure(cfg func(internalLog interface{})) {
 	cfg(l.logger)
 }
 
-func (l *zapLogger) LogType() logger.LogType {
-	return logger.Zap
+func (l *zapLogger) LogType() models.LogType {
+	return models.Zap
 }
 
 // WithName add logger microservice name
@@ -124,7 +138,7 @@ func (l *zapLogger) Debugf(template string, args ...interface{}) {
 }
 
 func (l *zapLogger) Debugw(msg string, fields logger.Fields) {
-	zapFields := mapToFields(fields)
+	zapFields := mapToZapFields(fields)
 	l.logger.Debug(msg, zapFields...)
 }
 
@@ -140,7 +154,7 @@ func (l *zapLogger) Infof(template string, args ...interface{}) {
 
 // Infow logs a message with some additional context.
 func (l *zapLogger) Infow(msg string, fields logger.Fields) {
-	zapFields := mapToFields(fields)
+	zapFields := mapToZapFields(fields)
 	l.logger.Info(msg, zapFields...)
 }
 
@@ -171,7 +185,7 @@ func (l *zapLogger) Error(args ...interface{}) {
 
 // Errorw logs a message with some additional context.
 func (l *zapLogger) Errorw(msg string, fields logger.Fields) {
-	zapFields := mapToFields(fields)
+	zapFields := mapToZapFields(fields)
 	l.logger.Error(msg, zapFields...)
 }
 
@@ -226,7 +240,12 @@ func (l *zapLogger) Sync() error {
 	return l.sugarLogger.Sync()
 }
 
-func (l *zapLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration, metaData map[string][]string, err error) {
+func (l *zapLogger) GrpcMiddlewareAccessLogger(
+	method string,
+	time time.Duration,
+	metaData map[string][]string,
+	err error,
+) {
 	l.Info(
 		constants.GRPC,
 		zap.String(constants.METHOD, method),
@@ -236,7 +255,13 @@ func (l *zapLogger) GrpcMiddlewareAccessLogger(method string, time time.Duration
 	)
 }
 
-func (l *zapLogger) GrpcClientInterceptorLogger(method string, req, reply interface{}, time time.Duration, metaData map[string][]string, err error) {
+func (l *zapLogger) GrpcClientInterceptorLogger(
+	method string,
+	req, reply interface{},
+	time time.Duration,
+	metaData map[string][]string,
+	err error,
+) {
 	l.Info(
 		constants.GRPC,
 		zap.String(constants.METHOD, method),
@@ -248,11 +273,34 @@ func (l *zapLogger) GrpcClientInterceptorLogger(method string, req, reply interf
 	)
 }
 
-func mapToFields(fields map[string]interface{}) []zap.Field {
-	var zapFields []zap.Field
-	for k, v := range fields {
-		zapFields = append(zapFields, zap.Any(k, v))
+func mapToZapFields(data map[string]interface{}) []zap.Field {
+	fields := make([]zap.Field, 0, len(data))
+
+	for key, value := range data {
+		field := zap.Field{
+			Key:       key,
+			Type:      getFieldType(value),
+			Interface: value,
+		}
+		fields = append(fields, field)
 	}
 
-	return zapFields
+	return fields
+}
+
+func getFieldType(value interface{}) zapcore.FieldType {
+	switch value.(type) {
+	case string:
+		return zapcore.StringType
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+		return zapcore.Int64Type
+	case bool:
+		return zapcore.BoolType
+	case float32, float64:
+		return zapcore.Float64Type
+	case error:
+		return zapcore.ErrorType
+	default:
+		return zapcore.StringerType
+	}
 }

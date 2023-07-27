@@ -5,13 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"emperror.dev/errors"
 	"github.com/kamva/mgm/v3"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
@@ -25,17 +20,8 @@ const (
 	maxPoolSize     = 300
 )
 
-type MongoDbConfig struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	User     string `mapstructure:"user"`
-	Password string `mapstructure:"password"`
-	Database string `mapstructure:"database"`
-	UseAuth  bool   `mapstructure:"useAuth"`
-}
-
 // NewMongoDB Create new MongoDB client
-func NewMongoDB(ctx context.Context, cfg *MongoDbConfig) (*mongo.Client, error) {
+func NewMongoDB(cfg *MongoDbOptions) (*mongo.Client, error) {
 	uriAddres := fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port)
 	opt := options.Client().ApplyURI(uriAddres).
 		SetConnectTimeout(connectTimeout).
@@ -52,6 +38,7 @@ func NewMongoDB(ctx context.Context, cfg *MongoDbConfig) (*mongo.Client, error) 
 		return nil, err
 	}
 
+	ctx := context.Background()
 	if err := client.Connect(ctx); err != nil {
 		return nil, err
 	}
@@ -67,48 +54,4 @@ func NewMongoDB(ctx context.Context, cfg *MongoDbConfig) (*mongo.Client, error) 
 	}
 
 	return client, nil
-}
-
-// https://stackoverflow.com/a/23650312/581476
-
-func Paginate[T any](ctx context.Context, listQuery *utils.ListQuery, collection *mongo.Collection, filter interface{}) (*utils.ListResult[T], error) {
-	ctx, span := tracing.Tracer.Start(ctx, "mongodb.Paginate")
-	defer span.End()
-
-	if filter == nil {
-		filter = bson.D{}
-	}
-
-	count, err := collection.CountDocuments(ctx, filter)
-	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "CountDocuments"))
-	}
-
-	limit := int64(listQuery.GetLimit())
-	skip := int64(listQuery.GetOffset())
-
-	cursor, err := collection.Find(ctx, filter, &options.FindOptions{
-		Limit: &limit,
-		Skip:  &skip,
-	})
-	if err != nil {
-		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "Find"))
-	}
-	defer cursor.Close(ctx) // nolint: errcheck
-
-	products := make([]T, 0, listQuery.GetSize())
-
-	for cursor.Next(ctx) {
-		var prod T
-		if err := cursor.Decode(&prod); err != nil {
-			return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "Find"))
-		}
-		products = append(products, prod)
-	}
-
-	if err := cursor.Err(); err != nil {
-		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "cursor.Err"))
-	}
-
-	return utils.NewListResult[T](products, listQuery.GetSize(), listQuery.GetPage(), count), nil
 }

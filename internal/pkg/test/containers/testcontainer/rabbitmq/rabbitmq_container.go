@@ -9,8 +9,8 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
@@ -31,6 +31,8 @@ func NewRabbitMQTestContainers() contracts.RabbitMQContainer {
 			VirtualHost: "/",
 			UserName:    "guest",
 			Password:    "guest",
+			HttpPort:    15672,
+			HostPort:    5672,
 			Tag:         "management",
 			ImageName:   "rabbitmq",
 			Name:        "rabbitmq-testcontainers",
@@ -38,12 +40,16 @@ func NewRabbitMQTestContainers() contracts.RabbitMQContainer {
 	}
 }
 
-func (g *rabbitmqTestContainers) Start(ctx context.Context, t *testing.T, rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc, options ...*contracts.RabbitMQContainerOptions) (bus.Bus, error) {
-	//https://github.com/testcontainers/testcontainers-go
-	//https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
+func (g *rabbitmqTestContainers) CreatingContainerOptions(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.RabbitMQContainerOptions,
+) (*config.RabbitmqOptions, error) {
+	// https://github.com/testcontainers/testcontainers-go
+	// https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
 	containerReq := g.getRunOptions(options...)
 
-	//TODO: Using Parallel Container
+	// TODO: Using Parallel Container
 	dbContainer, err := testcontainers.GenericContainer(
 		ctx,
 		testcontainers.GenericContainerRequest{
@@ -54,19 +60,21 @@ func (g *rabbitmqTestContainers) Start(ctx context.Context, t *testing.T, rabbit
 		return nil, err
 	}
 
-	// get a free random host hostPort
+	// get a free random host port for rabbitmq `Tcp Port`
 	hostPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[0]))
 	if err != nil {
 		return nil, err
 	}
+	g.defaultOptions.HostPort = hostPort.Int()
 
+	// https://github.com/michaelklishin/rabbit-hole/issues/74
+	// get a free random host port for rabbitmq UI `Http Port`
 	uiHttpPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[1]))
 	if err != nil {
 		return nil, err
 	}
+	g.defaultOptions.HttpPort = uiHttpPort.Int()
 	t.Logf("rabbitmq ui port is: %d", uiHttpPort.Int())
-
-	g.defaultOptions.HostPort = hostPort.Int()
 
 	host, err := dbContainer.Host(ctx)
 	if err != nil {
@@ -80,20 +88,39 @@ func (g *rabbitmqTestContainers) Start(ctx context.Context, t *testing.T, rabbit
 		_ = dbContainer.Terminate(ctx)
 	})
 
-	mqBus, err := bus2.NewRabbitMQBus(
-		ctx,
-		&config.RabbitMQConfig{
-			RabbitMqHostOptions: &config.RabbitMqHostOptions{
-				UserName:    g.defaultOptions.UserName,
-				Password:    g.defaultOptions.Password,
-				HostName:    host,
-				VirtualHost: g.defaultOptions.VirtualHost,
-				Port:        g.defaultOptions.HostPort,
-			},
+	option := &config.RabbitmqOptions{
+		RabbitmqHostOptions: &config.RabbitmqHostOptions{
+			UserName:    g.defaultOptions.UserName,
+			Password:    g.defaultOptions.Password,
+			HostName:    host,
+			VirtualHost: g.defaultOptions.VirtualHost,
+			Port:        g.defaultOptions.HostPort,
+			HttpPort:    g.defaultOptions.HttpPort,
 		},
+	}
+
+	return option, nil
+}
+
+func (g *rabbitmqTestContainers) Start(
+	ctx context.Context,
+	t *testing.T,
+	serializer serializer.EventSerializer,
+	logger logger.Logger,
+	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
+	options ...*contracts.RabbitMQContainerOptions,
+) (bus.Bus, error) {
+	rabbitOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	mqBus, err := bus2.NewRabbitmqBus(
+		rabbitOptions,
+		serializer,
+		logger,
 		rabbitmqBuilderFunc,
-		json.NewJsonEventSerializer(),
-		defaultLogger.Logger)
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +132,9 @@ func (g *rabbitmqTestContainers) Cleanup(ctx context.Context) error {
 	return g.container.Terminate(ctx)
 }
 
-func (g *rabbitmqTestContainers) getRunOptions(opts ...*contracts.RabbitMQContainerOptions) testcontainers.ContainerRequest {
+func (g *rabbitmqTestContainers) getRunOptions(
+	opts ...*contracts.RabbitMQContainerOptions,
+) testcontainers.ContainerRequest {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {

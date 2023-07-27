@@ -5,11 +5,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
-type Config struct {
-	URL string `mapstructure:"url"`
-}
-
-func NewElasticClient(cfg Config) (*elasticsearch.Client, error) {
+func NewElasticClient(cfg *ElasticOptions) (*elasticsearch.Client, error) {
 	es, err := elasticsearch.NewClient(elasticsearch.Config{
 		Addresses: []string{cfg.URL},
 	})

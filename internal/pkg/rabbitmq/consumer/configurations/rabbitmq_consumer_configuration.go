@@ -1,8 +1,9 @@
-//go:build.sh go1.18
+//go:build go1.18
 
 package configurations
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
@@ -14,6 +15,7 @@ import (
 )
 
 type RabbitMQConsumerConfiguration struct {
+	Name                string
 	ConsumerMessageType reflect.Type
 	Pipelines           []pipeline.ConsumerPipeline
 	Handlers            []consumer.ConsumerHandler
@@ -32,10 +34,12 @@ type RabbitMQConsumerConfiguration struct {
 func NewDefaultRabbitMQConsumerConfiguration(
 	messageType types2.IMessage,
 ) *RabbitMQConsumerConfiguration {
+	name := fmt.Sprintf("%s_consumer", utils.GetMessageName(messageType))
+
 	return &RabbitMQConsumerConfiguration{
 		ConsumerOptions:  &consumer.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
 		ConcurrencyLimit: 1,
-		PrefetchCount:    4, //how many messages we can handle at once
+		PrefetchCount:    4, // how many messages we can handle at once
 		NoLocal:          false,
 		NoWait:           true,
 		BindingOptions: &options.RabbitMQBindingOptions{
@@ -51,5 +55,6 @@ func NewDefaultRabbitMQConsumerConfiguration(
 			Name:    utils.GetQueueName(messageType),
 		},
 		ConsumerMessageType: utils.GetMessageBaseReflectType(messageType),
+		Name:                name,
 	}
 }

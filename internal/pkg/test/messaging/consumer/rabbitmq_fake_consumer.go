@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/hypothesis"
@@ -12,17 +13,23 @@ type RabbitMQFakeTestConsumerHandler[T any] struct {
 	hypothesis hypothesis.Hypothesis[T]
 }
 
-func NewRabbitMQFakeTestConsumerHandlerWithHypothesis[T any](hypothesis hypothesis.Hypothesis[T]) *RabbitMQFakeTestConsumerHandler[T] {
+func NewRabbitMQFakeTestConsumerHandlerWithHypothesis[T any](
+	hypothesis hypothesis.Hypothesis[T],
+) *RabbitMQFakeTestConsumerHandler[T] {
 	return &RabbitMQFakeTestConsumerHandler[T]{
 		hypothesis: hypothesis,
 	}
 }
 
 func NewRabbitMQFakeTestConsumerHandler[T any]() *RabbitMQFakeTestConsumerHandler[T] {
+	fmt.Println("NewRabbitMQFakeTestConsumerHandler created.")
 	return &RabbitMQFakeTestConsumerHandler[T]{}
 }
 
-func (f *RabbitMQFakeTestConsumerHandler[T]) Handle(ctx context.Context, consumeContext types.MessageConsumeContext) error {
+func (f *RabbitMQFakeTestConsumerHandler[T]) Handle(
+	ctx context.Context,
+	consumeContext types.MessageConsumeContext,
+) error {
 	f.isHandled = true
 	if f.hypothesis != nil {
 		m, ok := consumeContext.Message().(T)

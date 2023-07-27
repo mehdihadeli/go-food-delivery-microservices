@@ -1,34 +1,20 @@
 package gormPostgres
 
 import (
-    "context"
-    "database/sql"
-    "fmt"
-    "strings"
+	"database/sql"
+	"fmt"
 
-    "go.uber.org/zap"
-    "moul.io/zapgorm2"
+	"emperror.dev/errors"
+	"github.com/uptrace/bun/driver/pgdriver"
 
-    "emperror.dev/errors"
+	gormPostgres "gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
-    "github.com/uptrace/bun/driver/pgdriver"
-    gormPostgres "gorm.io/driver/postgres"
-    "gorm.io/gorm"
-
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/gromlog"
 )
 
-type GormConfig struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	User     string `mapstructure:"user"`
-	DBName   string `mapstructure:"dbName"`
-	SSLMode  bool   `mapstructure:"sslMode"`
-	Password string `mapstructure:"password"`
-}
-
-func NewGorm(cfg *GormConfig) (*gorm.DB, error) {
+func NewGorm(cfg *GormOptions) (*gorm.DB, error) {
 	if cfg.DBName == "" {
 		return nil, errors.New("DBName is required in the config.")
 	}
@@ -47,11 +33,10 @@ func NewGorm(cfg *GormConfig) (*gorm.DB, error) {
 		cfg.Password,
 	)
 
-	// https://github.com/moul/zapgorm2
-	logger := zapgorm2.New(zap.L())
-	logger.SetAsDefault() // optional: configure gorm to use this zapgorm.Logger for callbacks
-
-	gormDb, err := gorm.Open(gormPostgres.Open(dataSourceName), &gorm.Config{Logger: logger})
+	gormDb, err := gorm.Open(
+		gormPostgres.Open(dataSourceName),
+		&gorm.Config{Logger: gromlog.NewGormCustomLogger(defaultLogger.Logger)},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +44,7 @@ func NewGorm(cfg *GormConfig) (*gorm.DB, error) {
 	return gormDb, nil
 }
 
-func createDB(cfg *GormConfig) error {
+func createDB(cfg *GormOptions) error {
 	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'
 	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,
@@ -98,55 +83,4 @@ func createDB(cfg *GormConfig) error {
 	defer sqldb.Close()
 
 	return nil
-}
-
-// Ref: https://dev.to/rafaelgfirmino/pagination-using-gorm-scopes-3k5f
-func Paginate[T any](
-	ctx context.Context,
-	listQuery *utils.ListQuery,
-	db *gorm.DB,
-) (*utils.ListResult[T], error) {
-	ctx, span := tracing.Tracer.Start(ctx, "gorm.Paginate")
-	defer span.End()
-
-	var items []T
-	var totalRows int64
-	db.Model(items).WithContext(ctx).Count(&totalRows)
-
-	// generate where query
-	query := db.WithContext(ctx).
-		Offset(listQuery.GetOffset()).
-		Limit(listQuery.GetLimit()).
-		Order(listQuery.GetOrderBy())
-
-	if listQuery.Filters != nil {
-		for _, filter := range listQuery.Filters {
-			column := filter.Field
-			action := filter.Comparison
-			value := filter.Value
-
-			switch action {
-			case "equals":
-				whereQuery := fmt.Sprintf("%s = ?", column)
-				query = query.WithContext(ctx).Where(whereQuery, value)
-				break
-			case "contains":
-				whereQuery := fmt.Sprintf("%s LIKE ?", column)
-				query = query.WithContext(ctx).Where(whereQuery, "%"+value+"%")
-				break
-			case "in":
-				whereQuery := fmt.Sprintf("%s IN (?)", column)
-				queryArray := strings.Split(value, ",")
-				query = query.WithContext(ctx).Where(whereQuery, queryArray)
-				break
-
-			}
-		}
-	}
-
-	if err := query.Find(&items).Error; err != nil {
-		return nil, tracing.TraceErrFromSpan(span, errors.WrapIf(err, "error in finding products."))
-	}
-
-	return utils.NewListResult[T](items, listQuery.GetSize(), listQuery.GetPage(), totalRows), nil
 }

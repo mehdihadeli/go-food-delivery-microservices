@@ -1,28 +1,28 @@
 package grpc
 
 import (
-    "context"
-    "fmt"
-    "net"
-    "time"
+	"fmt"
+	"net"
+	"time"
 
-    "google.golang.org/grpc/health"
-    "google.golang.org/grpc/health/grpc_health_v1"
-    "google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/keepalive"
 
-    "emperror.dev/errors"
+	"emperror.dev/errors"
 
-    grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
-    grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-    grpcCtxTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
-    "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-    "go.opentelemetry.io/otel/metric"
-    googleGrpc "google.golang.org/grpc"
-    "google.golang.org/grpc/reflection"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpcCtxTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel/metric"
+	googleGrpc "google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
-    grpcError "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/grpc_error"
-    otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/otel_metrics"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
+	grpcError "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/grpc_error"
+	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/otel_metrics"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 )
 
 const (
@@ -32,14 +32,8 @@ const (
 	gRPCTime          = 10
 )
 
-type GrpcConfig struct {
-	Port        string `mapstructure:"port"        env:"Port"`
-	Host        string `mapstructure:"host"        env:"Host"`
-	Development bool   `mapstructure:"development" env:"Development"`
-}
-
 type GrpcServer interface {
-	RunGrpcServer(ctx context.Context, configGrpc ...func(grpcServer *googleGrpc.Server)) error
+	RunGrpcServer(configGrpc ...func(grpcServer *googleGrpc.Server)) error
 	GracefulShutdown()
 	GetCurrentGrpcServer() *googleGrpc.Server
 	GrpcServiceBuilder() *GrpcServiceBuilder
@@ -47,18 +41,17 @@ type GrpcServer interface {
 
 type grpcServer struct {
 	server         *googleGrpc.Server
-	config         *GrpcConfig
+	config         *config.GrpcOptions
 	log            logger.Logger
 	serviceName    string
 	serviceBuilder *GrpcServiceBuilder
 }
 
 func NewGrpcServer(
-	config *GrpcConfig,
+	config *config.GrpcOptions,
 	logger logger.Logger,
-	serviceName string,
 	meter metric.Meter,
-) *grpcServer {
+) GrpcServer {
 	unaryServerInterceptors := []googleGrpc.UnaryServerInterceptor{
 		otelgrpc.UnaryServerInterceptor(),
 		grpcError.UnaryServerInterceptor(),
@@ -73,11 +66,11 @@ func NewGrpcServer(
 	if meter != nil {
 		unaryServerInterceptors = append(
 			unaryServerInterceptors,
-			otelMetrics.UnaryServerInterceptor(meter, serviceName),
+			otelMetrics.UnaryServerInterceptor(meter, config.Name),
 		)
 		streamServerInterceptors = append(
 			streamServerInterceptors,
-			otelMetrics.StreamServerInterceptor(meter, serviceName),
+			otelMetrics.StreamServerInterceptor(meter, config.Name),
 		)
 	}
 
@@ -100,19 +93,18 @@ func NewGrpcServer(
 
 	healthServer := health.NewServer()
 	grpc_health_v1.RegisterHealthServer(s, healthServer)
-	healthServer.SetServingStatus(serviceName, grpc_health_v1.HealthCheckResponse_SERVING)
+	healthServer.SetServingStatus(config.Name, grpc_health_v1.HealthCheckResponse_SERVING)
 
 	return &grpcServer{
 		server:         s,
 		config:         config,
 		log:            logger,
-		serviceName:    serviceName,
+		serviceName:    config.Name,
 		serviceBuilder: NewGrpcServiceBuilder(s),
 	}
 }
 
 func (s *grpcServer) RunGrpcServer(
-	ctx context.Context,
 	configGrpc ...func(grpcServer *googleGrpc.Server),
 ) error {
 	l, err := net.Listen("tcp", s.config.Port)
@@ -130,17 +122,6 @@ func (s *grpcServer) RunGrpcServer(
 	if s.config.Development {
 		reflection.Register(s.server)
 	}
-
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				s.log.Infof("%s is shutting down Grpc PORT: {%s}", s.serviceName, s.config.Port)
-				s.GracefulShutdown()
-				return
-			}
-		}
-	}()
 
 	s.log.Infof(
 		"[grpcServer.RunGrpcServer] Writer gRPC server is listening on port: %s",

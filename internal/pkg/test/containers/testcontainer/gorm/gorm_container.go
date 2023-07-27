@@ -10,7 +10,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 	"gorm.io/gorm"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
@@ -34,12 +34,16 @@ func NewGormTestContainers() contracts.GormContainer {
 	}
 }
 
-func (g *gormTestContainers) Start(ctx context.Context, t *testing.T, options ...*contracts.PostgresContainerOptions) (*gorm.DB, error) {
-	//https://github.com/testcontainers/testcontainers-go
-	//https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
+func (g *gormTestContainers) CreatingContainerOptions(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.PostgresContainerOptions,
+) (*gormPostgres.GormOptions, error) {
+	// https://github.com/testcontainers/testcontainers-go
+	// https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
 	containerReq := g.getRunOptions(options...)
 
-	//TODO: Using Parallel Container
+	// TODO: Using Parallel Container
 	dbContainer, err := testcontainers.GenericContainer(
 		ctx,
 		testcontainers.GenericContainerRequest{
@@ -69,14 +73,28 @@ func (g *gormTestContainers) Start(ctx context.Context, t *testing.T, options ..
 		_ = dbContainer.Terminate(ctx)
 	})
 
-	db, err := gormPostgres.NewGorm(&gormPostgres.GormConfig{
+	gormOptions := &gormPostgres.GormOptions{
 		Port:     g.defaultOptions.HostPort,
 		Host:     host,
 		Password: g.defaultOptions.Password,
 		DBName:   g.defaultOptions.Database,
 		SSLMode:  false,
 		User:     g.defaultOptions.UserName,
-	})
+	}
+	return gormOptions, nil
+}
+
+func (g *gormTestContainers) Start(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.PostgresContainerOptions,
+) (*gorm.DB, error) {
+	gormOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := gormPostgres.NewGorm(gormOptions)
 
 	return db, nil
 }
@@ -85,7 +103,9 @@ func (g *gormTestContainers) Cleanup(ctx context.Context) error {
 	return g.container.Terminate(ctx)
 }
 
-func (g *gormTestContainers) getRunOptions(opts ...*contracts.PostgresContainerOptions) testcontainers.ContainerRequest {
+func (g *gormTestContainers) getRunOptions(
+	opts ...*contracts.PostgresContainerOptions,
+) testcontainers.ContainerRequest {
 	if len(opts) > 0 && opts[0] != nil {
 		option := opts[0]
 		if option.ImageName != "" {

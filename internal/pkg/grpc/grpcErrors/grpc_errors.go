@@ -1,15 +1,14 @@
 package grpcErrors
 
 import (
-    "encoding/json"
-    "fmt"
-    "time"
+	"encoding/json"
+	"fmt"
+	"time"
 
-    "google.golang.org/grpc/codes"
-    "google.golang.org/grpc/status"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-    defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 )
 
 type grpcErr struct {
@@ -54,7 +53,12 @@ func (p *grpcErr) ErrBody() error {
 
 // Error  Error() interface method
 func (p *grpcErr) Error() string {
-	return fmt.Sprintf("Error Title: %s - Error Status: %d - Error Detail: %s", p.Title, p.Status, p.Detail)
+	return fmt.Sprintf(
+		"Error Title: %s - Error Status: %d - Error Detail: %s",
+		p.Title,
+		p.Status,
+		p.Detail,
+	)
 }
 
 func (p *grpcErr) GetStatus() codes.Code {
@@ -104,10 +108,8 @@ func (p *grpcErr) ToGrpcResponseErr() error {
 
 func (p *grpcErr) ToJson() string {
 	defaultLogger.Logger.Error(p.Error())
-	if core.IsDevelopment() {
-		stackTrace := p.GetStackTrace()
-		fmt.Println(stackTrace)
-	}
+	stackTrace := p.GetStackTrace()
+	fmt.Println(stackTrace)
 
 	return string(p.json())
 }

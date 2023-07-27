@@ -1,31 +1,31 @@
 package domain
 
 import (
-    uuid "github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-    expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/events"
+	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
 )
 
 type IDomainEvent interface {
-	core.IEvent
+	events.IEvent
 	GetAggregateId() uuid.UUID
 	GetAggregateSequenceNumber() int64
 	WithAggregate(aggregateId uuid.UUID, aggregateSequenceNumber int64) *DomainEvent
 }
 
 type DomainEvent struct {
-	*core.Event
+	*events.Event
 	AggregateId             uuid.UUID `json:"aggregate_id"`
 	AggregateSequenceNumber int64     `json:"aggregate_sequence_number"`
 }
 
 func NewDomainEvent(eventType string) *DomainEvent {
 	domainEvent := &DomainEvent{
-		Event:                   core.NewEvent(eventType),
+		Event:                   events.NewEvent(eventType),
 		AggregateSequenceNumber: expectedStreamVersion.NoStream.Value(),
 	}
-	domainEvent.Event = core.NewEvent(eventType)
+	domainEvent.Event = events.NewEvent(eventType)
 
 	return domainEvent
 }
@@ -38,7 +38,10 @@ func (d *DomainEvent) GetAggregateSequenceNumber() int64 {
 	return d.AggregateSequenceNumber
 }
 
-func (d *DomainEvent) WithAggregate(aggregateId uuid.UUID, aggregateSequenceNumber int64) *DomainEvent {
+func (d *DomainEvent) WithAggregate(
+	aggregateId uuid.UUID,
+	aggregateSequenceNumber int64,
+) *DomainEvent {
 	d.AggregateId = aggregateId
 	d.AggregateSequenceNumber = aggregateSequenceNumber
 

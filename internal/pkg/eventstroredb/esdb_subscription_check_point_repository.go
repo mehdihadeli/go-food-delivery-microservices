@@ -9,7 +9,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
@@ -25,14 +25,25 @@ type CheckpointStored struct {
 	Position       uint64
 	SubscriptionId string
 	CheckpointAt   time.Time
-	*core.Event
+	*events.Event
 }
 
-func NewEsdbSubscriptionCheckpointRepository(client *esdb.Client, logger logger.Logger, esdbSerializer *EsdbSerializer) contracts.SubscriptionCheckpointRepository {
-	return &esdbSubscriptionCheckpointRepository{client: client, log: logger, esdbSerilizer: esdbSerializer}
+func NewEsdbSubscriptionCheckpointRepository(
+	client *esdb.Client,
+	logger logger.Logger,
+	esdbSerializer *EsdbSerializer,
+) contracts.SubscriptionCheckpointRepository {
+	return &esdbSubscriptionCheckpointRepository{
+		client:        client,
+		log:           logger,
+		esdbSerilizer: esdbSerializer,
+	}
 }
 
-func (e *esdbSubscriptionCheckpointRepository) Load(subscriptionId string, ctx context.Context) (uint64, error) {
+func (e *esdbSubscriptionCheckpointRepository) Load(
+	subscriptionId string,
+	ctx context.Context,
+) (uint64, error) {
 	streamName := getCheckpointStreamName(subscriptionId)
 
 	stream, err := e.client.ReadStream(
@@ -75,15 +86,29 @@ func (e *esdbSubscriptionCheckpointRepository) Load(subscriptionId string, ctx c
 	return v.Position, nil
 }
 
-func (e *esdbSubscriptionCheckpointRepository) Store(subscriptionId string, position uint64, ctx context.Context) error {
-	checkpoint := &CheckpointStored{SubscriptionId: subscriptionId, Position: position, CheckpointAt: time.Now(), Event: core.NewEvent(typeMapper.GetTypeName(&CheckpointStored{}))}
+func (e *esdbSubscriptionCheckpointRepository) Store(
+	subscriptionId string,
+	position uint64,
+	ctx context.Context,
+) error {
+	checkpoint := &CheckpointStored{
+		SubscriptionId: subscriptionId,
+		Position:       position,
+		CheckpointAt:   time.Now(),
+		Event:          events.NewEvent(typeMapper.GetTypeName(&CheckpointStored{})),
+	}
 	streamName := getCheckpointStreamName(subscriptionId)
 	eventData, err := e.esdbSerilizer.Serialize(checkpoint, nil)
 	if err != nil {
 		return errors.WrapIf(err, "esdbSerilizer.Serialize")
 	}
 
-	_, err = e.client.AppendToStream(ctx, streamName, esdb.AppendToStreamOptions{ExpectedRevision: esdb.StreamExists{}}, *eventData)
+	_, err = e.client.AppendToStream(
+		ctx,
+		streamName,
+		esdb.AppendToStreamOptions{ExpectedRevision: esdb.StreamExists{}},
+		*eventData,
+	)
 
 	if errors.Is(err, esdb.ErrWrongExpectedStreamRevision) {
 		streamMeta := esdb.StreamMetadata{}
@@ -97,13 +122,17 @@ func (e *esdbSubscriptionCheckpointRepository) Store(subscriptionId string, posi
 			streamName,
 			esdb.AppendToStreamOptions{ExpectedRevision: esdb.NoStream{}},
 			streamMeta)
-
 		if err != nil {
 			return errors.WrapIf(err, "client.SetStreamMetadata")
 		}
 
 		// append event again expecting stream to not exist
-		_, err = e.client.AppendToStream(ctx, streamName, esdb.AppendToStreamOptions{ExpectedRevision: esdb.NoStream{}}, *eventData)
+		_, err = e.client.AppendToStream(
+			ctx,
+			streamName,
+			esdb.AppendToStreamOptions{ExpectedRevision: esdb.NoStream{}},
+			*eventData,
+		)
 		if err != nil {
 			return err
 		}

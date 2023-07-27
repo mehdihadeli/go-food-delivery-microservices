@@ -1,33 +1,25 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
-	"emperror.dev/errors"
 	"fmt"
+	"time"
+
+	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/log/zapadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/uptrace/bun/driver/pgdriver"
-	"time"
+	"go.uber.org/zap"
 )
 
-//Ref:https://github.com/henvic/pgxtutorial
+// Ref:https://github.com/henvic/pgxtutorial
 // https://aiven.io/blog/aiven-for-postgresql-for-your-go-application
-import (
-	"context"
-	"github.com/jackc/pgx/v4"
-)
-
-type Config struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	User     string `mapstructure:"user"`
-	DBName   string `mapstructure:"dbName"`
-	SSLMode  bool   `mapstructure:"sslMode"`
-	Password string `mapstructure:"password"`
-}
 
 const (
 	maxConn           = 50
@@ -49,11 +41,11 @@ type Pgx struct {
 	DB              *sql.DB
 	SquirrelBuilder squirrel.StatementBuilderType
 	GoquBuilder     *goqu.SelectDataset
-	config          *Config
+	config          *PostgresPxgOptions
 }
 
-// NewPgxPoolConn func for connection to PostgreSQL database.
-func NewPgxPoolConn(ctx context.Context, cfg *Config, logger pgx.Logger, logLevel pgx.LogLevel) (*Pgx, error) {
+// NewPgx func for connection to PostgreSQL database.
+func NewPgx(cfg *PostgresPxgOptions) (*Pgx, error) {
 	if cfg.DBName == "" {
 		return nil, errors.New("DBName is required in the config.")
 	}
@@ -87,16 +79,13 @@ func NewPgxPoolConn(ctx context.Context, cfg *Config, logger pgx.Logger, logLeve
 	// https://henvic.dev/posts/go-postgres/
 	// https://aiven.io/blog/aiven-for-postgresql-for-your-go-application
 	// https://jbrandhorst.com/post/postgres/
-
-	if logger != nil {
-		poolCfg.ConnConfig.Logger = logger
+	if cfg.LogLevel != 0 {
+		poolCfg.ConnConfig.LogLevel = pgx.LogLevel(cfg.LogLevel)
 	}
+	// set logger to use zap
+	poolCfg.ConnConfig.Logger = zapadapter.NewLogger(zap.L())
 
-	if logLevel != 0 {
-		poolCfg.ConnConfig.LogLevel = logLevel
-	}
-
-	connPool, err := pgxpool.ConnectConfig(ctx, poolCfg)
+	connPool, err := pgxpool.ConnectConfig(context.Background(), poolCfg)
 	if err != nil {
 		return nil, errors.WrapIf(err, "pgx.ConnectConfig")
 	}
@@ -107,8 +96,10 @@ func NewPgxPoolConn(ctx context.Context, cfg *Config, logger pgx.Logger, logLeve
 	}
 
 	// https://github.com/jackc/pgx/issues/737#issuecomment-640075332
-	//db, err := sql.Open("pgx", dataSourceName)
-	db := stdlib.OpenDB(*pgxConfig) // db.Conn().Raw() - get a connection from the pool with stdlib and sql/database
+	// db, err := sql.Open("pgx", dataSourceName)
+	db := stdlib.OpenDB(
+		*pgxConfig,
+	) // db.Conn().Raw() - get a connection from the pool with stdlib and sql/database
 
 	// goqu
 	dialect := goqu.Dialect("postgres")
@@ -119,7 +110,13 @@ func NewPgxPoolConn(ctx context.Context, cfg *Config, logger pgx.Logger, logLeve
 	squirrelBuilder := squirrel.StatementBuilder.
 		PlaceholderFormat(squirrel.Dollar).RunWith(db)
 
-	p := &Pgx{ConnPool: connPool, DB: db, SquirrelBuilder: squirrelBuilder, GoquBuilder: goquBuilder, config: cfg}
+	p := &Pgx{
+		ConnPool:        connPool,
+		DB:              db,
+		SquirrelBuilder: squirrelBuilder,
+		GoquBuilder:     goquBuilder,
+		config:          cfg,
+	}
 
 	return p, nil
 }
@@ -129,7 +126,7 @@ func (db *Pgx) Close() {
 	_ = db.DB.Close()
 }
 
-func createDB(cfg *Config) error {
+func createDB(cfg *PostgresPxgOptions) error {
 	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'
 	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,
@@ -142,7 +139,9 @@ func createDB(cfg *Config) error {
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(datasource)))
 
 	var exists int
-	rows, err := sqldb.Query(fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
+	rows, err := sqldb.Query(
+		fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName),
+	)
 	if err != nil {
 		return err
 	}

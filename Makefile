@@ -80,3 +80,18 @@ lint:
 .PHONY: c4
 c4:
 	cd tools/c4 && go mod tidy && sh generate.sh
+
+# https://medium.com/yemeksepeti-teknoloji/mocking-an-interface-using-mockery-in-go-afbcb83cc773
+# https://vektra.github.io/mockery/latest/running/
+# https://amitshekhar.me/blog/test-with-testify-and-mockery-in-go
+.PHONY: pkg-mocks
+pkg-mocks:
+	cd internal/pkg/messaging && mockery --output mocks --all
+	cd internal/pkg/es && mockery --output mocks --all
+	cd internal/pkg/core && mockery --output mocks --all
+
+.PHONY: services-mocks
+services-mocks:
+	cd internal/services/catalogs_write && mockery --output mocks --all
+	cd internal/services/catalogs_read && mockery --output mocks --all
+	cd internal/services/orders && mockery --output mocks --all
