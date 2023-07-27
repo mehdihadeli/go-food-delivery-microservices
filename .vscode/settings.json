@@ -1,0 +1,11 @@
+{
+    "gopls": {
+    "ui.semanticTokens": true
+    },
+	"go.lintTool":"golangci-lint",
+    "go.lintFlags": ["--fast"],
+	"go.lintOnSave": "package",
+	"go.testFlags": ["-failfast","-v"],
+    "go.toolsManagement.autoUpdate": true,
+    "go.useLanguageServer": true
+}

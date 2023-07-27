@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package gorm.types;
+
+option go_package = "github.com/infobloxopen/protoc-gen-gorm/types;types";
+
+message UUIDValue {
+    string value = 1;
+}
+
+message JSONValue {
+    string value = 1;
+}
+
+message UUID {
+    string value = 1;
+}
+
+message InetValue {
+    string value = 1;
+}
+
+message TimeOnly {
+    uint32 value = 1;
+}

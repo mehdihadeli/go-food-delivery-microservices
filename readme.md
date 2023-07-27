@@ -20,15 +20,14 @@
 - ✅ Using RESTFul api with [Echo](https://github.com/labstack/echo) framework and using swagger with [swaggo/swag](https://github.com/swaggo/swag) library
 - ✅ Using gRpc for internal service communication
 - ✅ Using [go-playground/validator](https://github.com/go-playground/validator) for validating input data in the REST and gRpc
-- ✅ Using `Postgres` and `EventStoreDB` for write databases as relational DB and `MongoDB` and `Elasric Search` for read databases
-- ✅ Using `OpenTelemetry` for collection `Metrics` and `Distributed Tracing`
+- ✅ Using `Postgres` and `EventStoreDB` for write databases with fully supports transactions(ACID) 
+- ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL) 
+- ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
+- ✅ Using `OpenTelemetry` for collection `Metrics` with using Prometheus and Grafana
+- ✅ Using `End2End Test` and `Integration Test` for testing some of the features 
 - ✅ Using docker and `docker-compose` for deployment
-
-## Roadmap
-- 🚧 Add `Dependecny Injections` with using [uber-go/fx](https://github.com/uber-go/fx)
-- 🚧 Using `Domain Driven Design` in some of services like [Catalogs Write Service](services/catalogs/write_service/) 
+- 🚧 Using `Domain Driven Design` in some of services like [Catalogs Write Service](services/catalogs/write_service/) and [Orders Service](services/catalogs/orders/)
 - 🚧 Using `Helm` and `Kubernetes` for deployment
-- 🚧 Add `Identity Management` and `OAuth`
 
 ## Technologies - Libraries
 
@@ -53,6 +52,11 @@
 - ✔️ **[`go-redis/redis`](https://github.com/go-redis/redis)** - Type-safe Redis client for Golang
 - ✔️ **[`go-gorm/gorm`](https://github.com/go-gorm/gorm)** - The fantastic ORM library for Golang, aims to be developer friendly
 - ✔️ **[`go-playground/validator`](https://github.com/go-playground/validator)** - Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving
+
+## Project Layout and Structure
+
+Each microservices are based on these projects structure:
+- [Standard Go Project Layout](https://github.com/golang-standards/project-layout)
 
 ## System Architecture
 
@@ -106,6 +110,12 @@ Keeping such a split works great with CQRS. It segregates our operations and sli
 
 ![](./assets/high-level.png)
 
+
+## Formatting
+For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt), [golines](https://github.com/segmentio/golines) and [golangci-lint](https://golangci-lint.run/usage/integrations/#goland) in my GoLand. you can do this formatting automatically by [this guide](https://github.com/mvdan/gofumpt#goland).
+
+## Live Reloding In Development
+For live reloading in dev mode I use [reflex](https://github.com/cespare/reflex) library
 
 ## References
 

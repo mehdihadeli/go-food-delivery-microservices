@@ -1,0 +1,21 @@
+# https://buf.build/
+version: v1
+name: buf.build.sh/mehdihadeli/store-golang-microservices
+deps:
+  - buf.build.sh/googleapis/googleapis
+lint:
+  use:
+    - DEFAULT
+  ignore_only:
+    PACKAGE_DIRECTORY_MATCH:
+      - api/proto/catalogs/products.proto
+      - api/proto/orders/orders.proto
+    PACKAGE_VERSION_SUFFIX:
+      - api/proto/catalogs/products.proto
+      - api/proto/orders/orders.proto
+    RPC_REQUEST_RESPONSE_UNIQUE:
+      - api/proto/catalogs/products.proto
+      - api/proto/orders/orders.proto
+    RPC_RESPONSE_STANDARD_NAME:
+      - api/proto/catalogs/products.proto
+      - api/proto/orders/orders.proto

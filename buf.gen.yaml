@@ -1,0 +1,14 @@
+#https://buf.build/
+version: v1
+plugins:
+  - remote: buf.build.sh/protocolbuffers/plugins/go:v1.28.0-1
+    out: api/proto/gen/
+    opt: paths=source_relative
+  - remote: buf.build.sh/grpc/plugins/go:v1.2.0-1
+    out: api/proto/gen/
+    opt: paths=source_relative,require_unimplemented_servers=false
+  - remote: buf.build.sh/grpc-ecosystem/plugins/grpc-gateway:v2.7.2-1
+    out: api/proto/gen/
+    opt: paths=source_relative
+  - remote: buf.build.sh/grpc-ecosystem/plugins/openapiv2:v2.7.2-1
+    out: api/openapi

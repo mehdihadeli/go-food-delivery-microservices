@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="catalogs-write" type="GoApplicationRunConfiguration" factoryName="Go Application" singleton="false">
+    <module name="store-golang-microservice-sample" />
+    <working_directory value="$PROJECT_DIR$/internal/services/catalogs_write" />
+    <kind value="PACKAGE" />
+    <package value="github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogs/write_service/cmd/app" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/internal/services/catalogs_write/cmd/app/main.go" />
+    <method v="2" />
+  </configuration>
+</component>
