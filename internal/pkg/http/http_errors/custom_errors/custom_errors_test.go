@@ -1,14 +1,14 @@
 package customErrors
 
 import (
-    "fmt"
-    "testing"
+	"fmt"
+	"testing"
 
-    "emperror.dev/errors"
-    "github.com/stretchr/testify/assert"
+	"emperror.dev/errors"
+	"github.com/stretchr/testify/assert"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
-    errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
+	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
 )
 
 func Test_BadRequest_Err(t *testing.T) {
@@ -122,7 +122,11 @@ func Test_Application_Err(t *testing.T) {
 
 	assert.Equal(t, 400, appErr.Status())
 	assert.Equal(t, "this is a application_exceptions errorUtils", appErr.Message())
-	assert.Equal(t, "this is a application_exceptions errorUtils: handling application_exceptions errorUtils", appErr.Error())
+	assert.Equal(
+		t,
+		"this is a application_exceptions errorUtils: handling application_exceptions errorUtils",
+		appErr.Error(),
+	)
 	assert.NotNil(t, appErr.Unwrap())
 	assert.NotNil(t, appErr.Cause())
 

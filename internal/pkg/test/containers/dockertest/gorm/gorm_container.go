@@ -11,6 +11,7 @@ import (
 	"github.com/phayes/freeport"
 	"gorm.io/gorm"
 
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
@@ -34,11 +35,11 @@ func NewGormDockerTest() contracts.GormContainer {
 	}
 }
 
-func (g *gormDockerTest) Start(
+func (g *gormDockerTest) CreatingContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
-) (*gorm.DB, error) {
+) (*gormPostgres.GormOptions, error) {
 	//https://github.com/ory/dockertest/blob/v3/examples/PostgreSQL.md
 	//https://github.com/bozd4g/fb.testcontainers
 	pool, err := dockertest.NewPool("")
@@ -63,44 +64,44 @@ func (g *gormDockerTest) Start(
 		120,
 	) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
 
-	//g.resource = resource
-	//i, _ = strconv.Atoi(resource.GetPort("5432/tcp"))
-	//g.defaultOptions.HostPort = i
+	g.resource = resource
+	port, _ := strconv.Atoi(resource.GetPort("5432/tcp"))
+	g.defaultOptions.HostPort = port
 
 	t.Cleanup(func() { _ = resource.Close() })
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				_ = resource.Close()
-				return
-			}
-		}
-	}()
-
-	var db *gorm.DB
+	var postgresoptions *gormPostgres.GormOptions
 
 	if err = pool.Retry(func() error {
-		gormDb, err := gormPostgres.NewGorm(&gormPostgres.GormOptions{
+		postgresoptions = &gormPostgres.GormOptions{
 			Port:     g.defaultOptions.HostPort,
 			Host:     g.defaultOptions.Host,
 			Password: g.defaultOptions.Password,
 			DBName:   g.defaultOptions.Database,
 			SSLMode:  false,
 			User:     g.defaultOptions.UserName,
-		})
-		if err != nil {
-			return err
 		}
-		db = gormDb
 
-		sqlDb, _ := db.DB()
-		return sqlDb.Ping()
+		return nil
 	}); err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
 		return nil, err
 	}
+
+	return postgresoptions, nil
+}
+
+func (g *gormDockerTest) Start(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.PostgresContainerOptions,
+) (*gorm.DB, error) {
+	gormOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := gormPostgres.NewGorm(gormOptions)
 
 	return db, nil
 }

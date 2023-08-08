@@ -1,20 +1,23 @@
 package errorUtils
 
 import (
-    "fmt"
-    "runtime/debug"
-    "strings"
+	"fmt"
+	"runtime/debug"
+	"strings"
 
-    "emperror.dev/errors"
+	"emperror.dev/errors"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
-    defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 )
 
 // CheckErrMessages check for specific messages contains in the error
 func CheckErrMessages(err error, messages ...string) bool {
 	for _, message := range messages {
-		if strings.Contains(strings.TrimSpace(strings.ToLower(err.Error())), strings.TrimSpace(strings.ToLower(message))) {
+		if strings.Contains(
+			strings.TrimSpace(strings.ToLower(err.Error())),
+			strings.TrimSpace(strings.ToLower(message)),
+		) {
 			return true
 		}
 	}

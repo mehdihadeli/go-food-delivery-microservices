@@ -11,7 +11,7 @@
   },
   "echoHttpOptions": {
     "name": "catalogs_read_service",
-    "port": ":7001",
+    "port": ":5200",
     "development": true,
     "timeout": 30,
     "basePath": "/api/v1",

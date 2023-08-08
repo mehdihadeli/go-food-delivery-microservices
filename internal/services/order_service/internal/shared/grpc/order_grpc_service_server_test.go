@@ -11,7 +11,7 @@ package grpc
 //	"google.golang.org/protobuf/types/known/timestamppb"
 //
 //	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
-//	ordersService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/proto/service_clients"
+//	ordersService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/proto"
 //	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/test_fixtures/e2e"
 //)
 //

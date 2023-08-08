@@ -22,7 +22,11 @@ func (i inMemorySubscriptionCheckpointRepository) Load(subscriptionId string, ct
 	return checkpoint, nil
 }
 
-func (i inMemorySubscriptionCheckpointRepository) Store(subscriptionId string, position uint64, ctx context.Context) error {
+func (i inMemorySubscriptionCheckpointRepository) Store(
+	subscriptionId string,
+	position uint64,
+	ctx context.Context,
+) error {
 	i.checkpoints[subscriptionId] = position
 	return nil
 }

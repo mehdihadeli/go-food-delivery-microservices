@@ -2,9 +2,10 @@ package gorm
 
 import (
 	"context"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_Gorm_Container(t *testing.T) {

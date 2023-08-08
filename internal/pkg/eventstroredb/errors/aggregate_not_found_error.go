@@ -1,12 +1,12 @@
 package errors
 
 import (
-    "fmt"
+	"fmt"
 
-    "emperror.dev/errors"
-    uuid "github.com/satori/go.uuid"
+	"emperror.dev/errors"
+	uuid "github.com/satori/go.uuid"
 
-    customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 )
 
 //https://klotzandrew.com/blog/error-handling-in-golang/

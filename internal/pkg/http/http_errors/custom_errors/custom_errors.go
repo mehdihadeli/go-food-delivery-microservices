@@ -1,12 +1,12 @@
 package customErrors
 
 import (
-    "fmt"
-    "io"
+	"fmt"
+	"io"
 
-    "emperror.dev/errors"
+	"emperror.dev/errors"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
 )
 
 // https://klotzandrew.com/blog/error-handling-in-golang

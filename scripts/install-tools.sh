@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# In a bash script, set -e is a command that enables the "exit immediately" option. When this option is set, the script will terminate immediately if any command within the script exits with a non-zero status (indicating an error).
+set -e
+
 # `go install package@version` command works directly when we specified exact version, elsewhere it needs a `go.mod` and specifying corresponding version for each package
 
 # https://github.com/incu6us/goimports-reviser
@@ -19,8 +22,10 @@ go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 go install google.golang.org/protobuf/proto@latest
 
-# https://community.chocolatey.org/packages/protoc
+# https://dev.to/techschoolguru/how-to-define-a-protobuf-message-and-generate-go-code-4g4e
+# https://stackoverflow.com/questions/13616033/install-protocol-buffers-on-windows
 go install github.com/golang/protobuf/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 # https://github.com/swaggo/swag/
 # https://github.com/swaggo/swag/issues/817
@@ -55,6 +60,9 @@ if [[ "$OS" == "Linux" ]]; then
     echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
     sudo apt-get update
     sudo apt-get install k6
+
+    # https://grpc.io/docs/protoc-installation/
+    apt install -y protobuf-compiler
 elif [[ "$OS" == "MINGW"* || "$OS" == "MSYS"* ]]; then
     # https://github.com/bufbuild/buf
     echo "Installing Buff on Windows..."
@@ -67,6 +75,10 @@ elif [[ "$OS" == "MINGW"* || "$OS" == "MSYS"* ]]; then
      # https://k6.io/docs/get-started/installation/
      echo "Installing k6 on Windows..."
      winget install k6
+
+     # https://community.chocolatey.org/packages/protoc
+     # https://grpc.io/docs/protoc-installation/
+     choco install protoc
 else
     echo "Unsupported operating system: $OS"
     exit 1

@@ -35,7 +35,6 @@ func TestGetProductByIdHandlerUnit(t *testing.T) {
 func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 	product := c.Items[0]
 	id := uuid.NewV4()
-
 	testCases := []struct {
 		Name                          string
 		id                            uuid.UUID
@@ -93,6 +92,8 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 		c.Run(testCase.Name, func() {
 			// arrange
 			// create new mocks or clear mocks before executing
+			c.CleanupMocks()
+
 			getProductByIdHandler := getProductByIdQueryV1.NewGetProductByIdHandler(
 				c.Log,
 				c.ProductRepository,

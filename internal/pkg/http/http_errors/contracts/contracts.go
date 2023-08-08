@@ -1,8 +1,9 @@
 package contracts
 
 import (
-	"emperror.dev/errors"
 	"fmt"
+
+	"emperror.dev/errors"
 )
 
 type Causer interface {

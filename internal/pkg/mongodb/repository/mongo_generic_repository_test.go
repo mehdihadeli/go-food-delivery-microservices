@@ -1,22 +1,22 @@
 package repository
 
 import (
-    "context"
-    "log"
-    "testing"
+	"context"
+	"log"
+	"testing"
 
-    mongo2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/mongo"
+	mongo2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/mongo"
 
-    uuid "github.com/satori/go.uuid"
-    "github.com/stretchr/testify/assert"
-    "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
-    customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 const (
@@ -33,9 +33,9 @@ type Product struct {
 }
 
 type ProductMongo struct {
-	ID          string `json:"id" bson:"_id,omitempty"` // https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/write-operations/insert/#the-_id-field
-	Name        string `json:"name" bson:"name"`
-	Weight      int    `json:"weight" bson:"weight"`
+	ID          string `json:"id"          bson:"_id,omitempty"` // https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/write-operations/insert/#the-_id-field
+	Name        string `json:"name"        bson:"name"`
+	Weight      int    `json:"weight"      bson:"weight"`
 	IsAvailable bool   `json:"isAvailable" bson:"isAvailable"`
 }
 
@@ -56,7 +56,9 @@ func Test_Add(t *testing.T) {
 	repository, err := setupGenericMongoRepository(ctx, t)
 
 	product := &ProductMongo{
-		ID:          uuid.NewV4().String(), // we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
+		ID: uuid.NewV4().
+			String(),
+		// we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
 		Name:        "added_product",
 		Weight:      100,
 		IsAvailable: true,
@@ -89,7 +91,9 @@ func Test_Add_With_Data_Model(t *testing.T) {
 	}
 
 	product := &Product{
-		ID:          uuid.NewV4().String(), // we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
+		ID: uuid.NewV4().
+			String(),
+		// we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
 		Name:        "added_product",
 		Weight:      100,
 		IsAvailable: true,
@@ -503,7 +507,10 @@ func Test_Find(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	entities, err := repository.Find(ctx, specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")))
+	entities, err := repository.Find(
+		ctx,
+		specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")),
+	)
 	if err != nil {
 		return
 	}
@@ -517,14 +524,20 @@ func Test_Find_With_Data_Model(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	entities, err := repository.Find(ctx, specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")))
+	entities, err := repository.Find(
+		ctx,
+		specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")),
+	)
 	if err != nil {
 		return
 	}
 	assert.Equal(t, len(entities), 1)
 }
 
-func setupGenericMongoRepositoryWithDataModel(ctx context.Context, t *testing.T) (data.GenericRepositoryWithDataModel[*ProductMongo, *Product], error) {
+func setupGenericMongoRepositoryWithDataModel(
+	ctx context.Context,
+	t *testing.T,
+) (data.GenericRepositoryWithDataModel[*ProductMongo, *Product], error) {
 	db, err := mongo2.NewMongoTestContainers().Start(ctx, t)
 	if err != nil {
 		return nil, err
@@ -555,13 +568,17 @@ func setupGenericMongoRepository(ctx context.Context, t *testing.T) (data.Generi
 func seedAndMigration(ctx context.Context, db *mongo.Client) error {
 	seedProducts := []*ProductMongo{
 		{
-			ID:          uuid.NewV4().String(), // we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
+			ID: uuid.NewV4().
+				String(),
+			// we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
 			Name:        "seed_product1",
 			Weight:      100,
 			IsAvailable: true,
 		},
 		{
-			ID:          uuid.NewV4().String(), // we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
+			ID: uuid.NewV4().
+				String(),
+			// we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
 			Name:        "seed_product2",
 			Weight:      100,
 			IsAvailable: true,

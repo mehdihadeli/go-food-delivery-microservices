@@ -3,6 +3,7 @@ package postgres
 // Ref:https://github.com/henvic/pgxtutorial/blob/668784624474abea3619433c6e45510f4d156649/internal/database/interface.go
 import (
 	"context"
+
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -46,7 +47,12 @@ type PGXQuerier interface {
 	// CopyFrom requires all values use the binary format. Almost all types
 	// implemented by pgx use the binary format by defaultLogger. Types implementing
 	// Encoder can only be used if they encode to the binary format.
-	CopyFrom(ctx context.Context, tableName pgx.Identifier, columnNames []string, rowSrc pgx.CopyFromSource) (int64, error)
+	CopyFrom(
+		ctx context.Context,
+		tableName pgx.Identifier,
+		columnNames []string,
+		rowSrc pgx.CopyFromSource,
+	) (int64, error)
 
 	// Exec executes sql. sql can be either a prepared statement name or an SQL string. arguments should be referenced
 	// positionally from the sql string as $1, $2, etc.
@@ -63,7 +69,13 @@ type PGXQuerier interface {
 	// QueryFunc executes sql with args. For each row returned by the query the values will scanned into the elements of
 	// scans and f will be called. If any row fails to scan or f returns an error the query will be aborted and the error
 	// will be returned.
-	QueryFunc(ctx context.Context, sql string, args []any, scans []any, f func(pgx.QueryFuncRow) error) (pgconn.CommandTag, error)
+	QueryFunc(
+		ctx context.Context,
+		sql string,
+		args []any,
+		scans []any,
+		f func(pgx.QueryFuncRow) error,
+	) (pgconn.CommandTag, error)
 
 	// QueryRow is a convenience wrapper over Query. Any error that occurs while
 	// querying is deferred until calling Scan on the returned Row. That Row will

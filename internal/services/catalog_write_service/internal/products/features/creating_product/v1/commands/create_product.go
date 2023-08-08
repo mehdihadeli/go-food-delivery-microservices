@@ -19,7 +19,13 @@ type CreateProduct struct {
 }
 
 func NewCreateProduct(name string, description string, price float64) (*CreateProduct, error) {
-	command := &CreateProduct{ProductID: uuid.NewV4(), Name: name, Description: description, Price: price, CreatedAt: time.Now()}
+	command := &CreateProduct{
+		ProductID:   uuid.NewV4(),
+		Name:        name,
+		Description: description,
+		Price:       price,
+		CreatedAt:   time.Now(),
+	}
 	err := validator.Validate(command)
 	if err != nil {
 		return nil, err

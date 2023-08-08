@@ -1,11 +1,11 @@
 package domainExceptions
 
 import (
-    "fmt"
-    "testing"
+	"fmt"
+	"testing"
 
-    errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
-    "github.com/stretchr/testify/assert"
+	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_Order_Shop_Items_Required_Error(t *testing.T) {

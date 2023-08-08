@@ -1,12 +1,12 @@
 package data
 
 import (
-    "context"
+	"context"
 
-    uuid "github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 type GenericRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}] interface {

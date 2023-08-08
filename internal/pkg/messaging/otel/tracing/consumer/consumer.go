@@ -1,21 +1,21 @@
 package consumer
 
 import (
-    "context"
-    "fmt"
-    "time"
+	"context"
+	"fmt"
+	"time"
 
-    "go.opentelemetry.io/otel"
-    "go.opentelemetry.io/otel/attribute"
-    "go.opentelemetry.io/otel/baggage"
-    semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-    "go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/baggage"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.opentelemetry.io/otel/trace"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-    messageHeader "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/message_header"
-    messageTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-    tracingHeaders "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/tracing_headers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
+	messageHeader "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/message_header"
+	messageTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
+	tracingHeaders "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/tracing_headers"
 )
 
 //https://devandchill.com/posts/2021/12/go-step-by-step-guide-for-implementing-tracing-on-a-microservices-architecture-2/2/
@@ -25,7 +25,12 @@ import (
 //https://opentelemetry.io/docs/instrumentation/go/manual/#semantic-attributes
 //https://trstringer.com/otel-part5-propagation/
 
-func StartConsumerSpan(ctx context.Context, meta *metadata.Metadata, payload string, consumerTracingOptions *ConsumerTracingOptions) (context.Context, trace.Span) {
+func StartConsumerSpan(
+	ctx context.Context,
+	meta *metadata.Metadata,
+	payload string,
+	consumerTracingOptions *ConsumerTracingOptions,
+) (context.Context, trace.Span) {
 	ctx = addAfterBaggage(ctx, meta)
 
 	// If there's a span context in the message, use that as the parent context.
@@ -37,7 +42,10 @@ func StartConsumerSpan(ctx context.Context, meta *metadata.Metadata, payload str
 
 	//https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#span-name
 	// SpanName = Destination Name + Operation Name
-	ctx, span := messageTracing.MessagingTracer.Start(parentSpanContext, fmt.Sprintf("%s %s", consumerTracingOptions.Destination, "receive"), opts...)
+	ctx, span := messageTracing.MessagingTracer.Start(
+		parentSpanContext,
+		fmt.Sprintf("%s %s", consumerTracingOptions.Destination, "receive"),
+		opts...)
 
 	span.AddEvent(fmt.Sprintf("start consuming message '%s' from the broker", messageHeader.GetMessageName(*meta)))
 
@@ -66,7 +74,11 @@ func FinishConsumerSpan(span trace.Span, err error) error {
 	return err
 }
 
-func getTraceOptions(meta *metadata.Metadata, payload string, consumerTracingOptions *ConsumerTracingOptions) []trace.SpanStartOption {
+func getTraceOptions(
+	meta *metadata.Metadata,
+	payload string,
+	consumerTracingOptions *ConsumerTracingOptions,
+) []trace.SpanStartOption {
 	correlationId := messageHeader.GetCorrelationId(*meta)
 
 	//https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#topic-with-multiple-consumers

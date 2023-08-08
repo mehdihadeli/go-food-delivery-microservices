@@ -1,13 +1,13 @@
 package problemDetails
 
 import (
-    "net/http"
-    "testing"
+	"net/http"
+	"testing"
 
-    "emperror.dev/errors"
-    "github.com/stretchr/testify/assert"
+	"emperror.dev/errors"
+	"github.com/stretchr/testify/assert"
 
-    customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 )
 
 func Test_Domain_Err(t *testing.T) {

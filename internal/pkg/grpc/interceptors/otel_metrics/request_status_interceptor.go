@@ -26,7 +26,10 @@ func UnaryServerInterceptor(meter api.Meter, serviceName string) grpc.UnaryServe
 		)
 
 		if err != nil {
-			counter, err := meter.Float64Counter(fmt.Sprintf("%s_error_grpc_requests_total", serviceName), api.WithDescription("The total number of error grpc requests"))
+			counter, err := meter.Float64Counter(
+				fmt.Sprintf("%s_error_grpc_requests_total", serviceName),
+				api.WithDescription("The total number of error grpc requests"),
+			)
 			if err != nil {
 				return nil, err
 			}
@@ -60,7 +63,10 @@ func StreamServerInterceptor(meter api.Meter, serviceName string) grpc.StreamSer
 		ctx := ss.Context()
 
 		if err != nil {
-			counter, err := meter.Float64Counter(fmt.Sprintf("%s_error_grpc_requests_total", serviceName), api.WithDescription("The total number of error grpc requests"))
+			counter, err := meter.Float64Counter(
+				fmt.Sprintf("%s_error_grpc_requests_total", serviceName),
+				api.WithDescription("The total number of error grpc requests"),
+			)
 			if err != nil {
 				return err
 			}

@@ -1,61 +1,61 @@
 package grpcError
 
 import (
-    "context"
-    "fmt"
+	"context"
+	"fmt"
 
-    "google.golang.org/grpc"
+	"google.golang.org/grpc"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/grpcErrors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/grpcErrors"
 )
 
 // UnaryServerInterceptor returns a problem-detail error to client
 func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
-    return func(
-        ctx context.Context,
-        req interface{},
-        info *grpc.UnaryServerInfo,
-        handler grpc.UnaryHandler,
-    ) (interface{}, error) {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (interface{}, error) {
 
-        resp, err := handler(ctx, req)
-        if err != nil {
-            grpcErr := grpcErrors.ParseError(err)
+		resp, err := handler(ctx, req)
+		if err != nil {
+			grpcErr := grpcErrors.ParseError(err)
 
-            if grpcErr != nil {
-                return nil, grpcErr.ToGrpcResponseErr()
+			if grpcErr != nil {
+				return nil, grpcErr.ToGrpcResponseErr()
 
-            } else {
-                prb := grpcErrors.NewInternalServerGrpcError(err.Error(), fmt.Sprintf("%+v\n", err))
-                return nil, prb.ToGrpcResponseErr()
-            }
-        }
+			} else {
+				prb := grpcErrors.NewInternalServerGrpcError(err.Error(), fmt.Sprintf("%+v\n", err))
+				return nil, prb.ToGrpcResponseErr()
+			}
+		}
 
-        return resp, err
-    }
+		return resp, err
+	}
 }
 
 // StreamServerInterceptor returns a problem-detail error to client.
 func StreamServerInterceptor() grpc.StreamServerInterceptor {
-    return func(
-        srv interface{},
-        ss grpc.ServerStream,
-        info *grpc.StreamServerInfo,
-        handler grpc.StreamHandler,
-    ) error {
-        err := handler(srv, ss)
+	return func(
+		srv interface{},
+		ss grpc.ServerStream,
+		info *grpc.StreamServerInfo,
+		handler grpc.StreamHandler,
+	) error {
+		err := handler(srv, ss)
 
-        if err != nil {
-            grpcErr := grpcErrors.ParseError(err)
+		if err != nil {
+			grpcErr := grpcErrors.ParseError(err)
 
-            if grpcErr != nil {
-                return grpcErr.ToGrpcResponseErr()
+			if grpcErr != nil {
+				return grpcErr.ToGrpcResponseErr()
 
-            } else {
-                prb := grpcErrors.NewInternalServerGrpcError(err.Error(), fmt.Sprintf("%+v\n", err))
-                return prb.ToGrpcResponseErr()
-            }
-        }
-        return err
-    }
+			} else {
+				prb := grpcErrors.NewInternalServerGrpcError(err.Error(), fmt.Sprintf("%+v\n", err))
+				return prb.ToGrpcResponseErr()
+			}
+		}
+		return err
+	}
 }

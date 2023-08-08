@@ -24,7 +24,7 @@ func (config *MigrationConfig) Migrate(ctx context.Context) error {
 		return errors.New("DBName is required in the config.")
 	}
 
-	db, err := mongodb2.NewMongoDB(ctx, &mongodb2.MongoDbOptions{
+	db, err := mongodb2.NewMongoDB(&mongodb2.MongoDbOptions{
 		Host:     config.Host,
 		Port:     config.Port,
 		User:     config.User,

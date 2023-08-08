@@ -1,16 +1,16 @@
 package grpcErrors
 
 import (
-    "context"
-    "database/sql"
+	"context"
+	"database/sql"
 
-    "emperror.dev/errors"
-    "github.com/go-playground/validator"
-    "google.golang.org/grpc/codes"
+	"emperror.dev/errors"
+	"github.com/go-playground/validator"
+	"google.golang.org/grpc/codes"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-    errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
 )
 
 //https://github.com/grpc/grpc/blob/master/doc/http-grpc-status-mapping.md
@@ -44,7 +44,12 @@ func ParseError(err error) GrpcErr {
 		case customErrors.IsInternalServerError(err):
 			return NewInternalServerGrpcError(customErr.Error(), stackTrace)
 		case customErrors.IsCustomError(err):
-			return NewGrpcError(codes.Code(customErr.Status()), codes.Code(customErr.Status()).String(), customErr.Error(), stackTrace)
+			return NewGrpcError(
+				codes.Code(customErr.Status()),
+				codes.Code(customErr.Status()).String(),
+				customErr.Error(),
+				stackTrace,
+			)
 		case customErrors.IsUnMarshalingError(err):
 			return NewInternalServerGrpcError(customErr.Error(), stackTrace)
 		case customErrors.IsMarshalingError(err):
