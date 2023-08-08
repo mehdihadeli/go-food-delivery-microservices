@@ -1,8 +1,9 @@
 package commands
 
 import (
-	uuid "github.com/satori/go.uuid"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type UpdateProduct struct {
@@ -14,5 +15,11 @@ type UpdateProduct struct {
 }
 
 func NewUpdateProduct(productId uuid.UUID, name string, description string, price float64) *UpdateProduct {
-	return &UpdateProduct{ProductId: productId, Name: name, Description: description, Price: price, UpdatedAt: time.Now()}
+	return &UpdateProduct{
+		ProductId:   productId,
+		Name:        name,
+		Description: description,
+		Price:       price,
+		UpdatedAt:   time.Now(),
+	}
 }

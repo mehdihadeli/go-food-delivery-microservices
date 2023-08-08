@@ -18,8 +18,21 @@ type CreateProduct struct {
 	CreatedAt   time.Time `validate:"required"`
 }
 
-func NewCreateProduct(productId string, name string, description string, price float64, createdAt time.Time) (*CreateProduct, error) {
-	command := &CreateProduct{Id: uuid.NewV4().String(), ProductId: productId, Name: name, Description: description, Price: price, CreatedAt: createdAt}
+func NewCreateProduct(
+	productId string,
+	name string,
+	description string,
+	price float64,
+	createdAt time.Time,
+) (*CreateProduct, error) {
+	command := &CreateProduct{
+		Id:          uuid.NewV4().String(),
+		ProductId:   productId,
+		Name:        name,
+		Description: description,
+		Price:       price,
+		CreatedAt:   createdAt,
+	}
 	err := validator.Validate(command)
 	if err != nil {
 		return nil, err

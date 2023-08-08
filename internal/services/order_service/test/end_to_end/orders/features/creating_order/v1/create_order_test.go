@@ -1,7 +1,9 @@
+//go:build e2e
+// +build e2e
+
 package v1
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -49,7 +51,6 @@ func (c *createOrderE2ETest) Test_Should_Return_Created_Status_With_Valid_Input(
 
 	expect.POST("orders").
 		WithJSON(request).
-		WithContext(context.Background()).
 		Expect().
 		Status(http.StatusCreated)
 }

@@ -3,14 +3,15 @@ package migrate
 import (
 	"context"
 	"database/sql"
-	"emperror.dev/errors"
 	"fmt"
+	"path/filepath"
+	"runtime"
+
+	"emperror.dev/errors"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
-	"path/filepath"
-	"runtime"
 )
 
 // Up executes all migrations found at the given source path against the
@@ -108,7 +109,10 @@ func createDB(cfg *MigrationConfig, ctx context.Context) error {
 	}
 
 	var exists int
-	rows, err := connPool.Query(context.Background(), fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName))
+	rows, err := connPool.Query(
+		context.Background(),
+		fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName),
+	)
 	if err != nil {
 		return err
 	}

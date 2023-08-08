@@ -1,18 +1,18 @@
 package problemDetails
 
 import (
-    "context"
-    "database/sql"
-    "net/http"
-    "reflect"
+	"context"
+	"database/sql"
+	"net/http"
+	"reflect"
 
-    "emperror.dev/errors"
-    "github.com/go-playground/validator"
+	"emperror.dev/errors"
+	"github.com/go-playground/validator"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-    typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
-    errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
 )
 
 type ProblemDetailParser struct {
@@ -71,7 +71,12 @@ func ParseError(err error) ProblemDetailErr {
 		case errors.Is(err, sql.ErrNoRows):
 			return NewNotFoundErrorProblemDetail(err.Error(), stackTrace)
 		case errors.Is(err, context.DeadlineExceeded):
-			return NewProblemDetail(http.StatusRequestTimeout, constants.ErrRequestTimeoutTitle, err.Error(), stackTrace)
+			return NewProblemDetail(
+				http.StatusRequestTimeout,
+				constants.ErrRequestTimeoutTitle,
+				err.Error(),
+				stackTrace,
+			)
 		case errors.As(err, &validatorErr):
 			return NewValidationProblemDetail(validatorErr.Error(), stackTrace)
 		default:

@@ -6,8 +6,6 @@ import (
 
 	"github.com/goccy/go-reflect"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 )
 
 type Hypothesis[T any] interface {

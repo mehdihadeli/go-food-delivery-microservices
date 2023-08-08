@@ -1,9 +1,9 @@
 package messageHeader
 
 import (
-    "time"
+	"time"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 )
 
 func GetCorrelationId(m metadata.Metadata) string {

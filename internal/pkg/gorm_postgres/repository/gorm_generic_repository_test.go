@@ -1,22 +1,22 @@
 package repository
 
 import (
-    "context"
-    "log"
-    "testing"
+	"context"
+	"log"
+	"testing"
 
-    customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 
-    _ "github.com/lib/pq" // postgres driver
-    uuid "github.com/satori/go.uuid"
-    "github.com/stretchr/testify/assert"
-    "gorm.io/gorm"
+	_ "github.com/lib/pq" // postgres driver
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-    gorm2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
+	gorm2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 // Product is a domain_events entity
@@ -398,7 +398,10 @@ func Test_Find(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	entities, err := repository.Find(ctx, specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")))
+	entities, err := repository.Find(
+		ctx,
+		specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")),
+	)
 	if err != nil {
 		return
 	}
@@ -412,14 +415,20 @@ func Test_Find_With_Data_Model(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	entities, err := repository.Find(ctx, specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")))
+	entities, err := repository.Find(
+		ctx,
+		specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")),
+	)
 	if err != nil {
 		return
 	}
 	assert.Equal(t, len(entities), 1)
 }
 
-func setupGenericGormRepositoryWithDataModel(ctx context.Context, t *testing.T) (data.GenericRepositoryWithDataModel[*ProductGorm, *Product], error) {
+func setupGenericGormRepositoryWithDataModel(
+	ctx context.Context,
+	t *testing.T,
+) (data.GenericRepositoryWithDataModel[*ProductGorm, *Product], error) {
 	db, err := gorm2.NewGormTestContainers().Start(ctx, t)
 	if err != nil {
 		return nil, err

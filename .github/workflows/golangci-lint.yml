@@ -4,7 +4,6 @@ on:
     tags:
       - v*
     branches:
-      - develop
       - main
   pull_request:
 permissions:
@@ -16,15 +15,22 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+
+        # https://github.com/actions/setup-go/issues/326
       - uses: actions/setup-go@v3
         with:
-          go-version: '1.19'
-      - uses: actions/checkout@v3
+          go-version: 1.20.x
+
+      - name: Get dependencies
+        run: make install-dependencies
+
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.29
+          version: latest
+          skip-pkg-cache: true
+          skip-build-cache: true
 
           # Optional: working directory, useful for monorepos
           # working-directory: somedir

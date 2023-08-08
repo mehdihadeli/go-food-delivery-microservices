@@ -1,8 +1,9 @@
 package customErrors
 
 import (
-	"emperror.dev/errors"
 	"net/http"
+
+	"emperror.dev/errors"
 )
 
 func NewConflictError(message string) error {

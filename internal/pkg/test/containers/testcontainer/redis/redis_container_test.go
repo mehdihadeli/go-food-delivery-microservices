@@ -2,9 +2,10 @@ package redis
 
 import (
 	"context"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func Test_Redis_Container(t *testing.T) {

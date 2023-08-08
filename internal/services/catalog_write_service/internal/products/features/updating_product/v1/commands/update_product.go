@@ -17,7 +17,13 @@ type UpdateProduct struct {
 }
 
 func NewUpdateProduct(productID uuid.UUID, name string, description string, price float64) (*UpdateProduct, error) {
-	command := &UpdateProduct{ProductID: productID, Name: name, Description: description, Price: price, UpdatedAt: time.Now()}
+	command := &UpdateProduct{
+		ProductID:   productID,
+		Name:        name,
+		Description: description,
+		Price:       price,
+		UpdatedAt:   time.Now(),
+	}
 	err := validator.Validate(command)
 	if err != nil {
 		return nil, err

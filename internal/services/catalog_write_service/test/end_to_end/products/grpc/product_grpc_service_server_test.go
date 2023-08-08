@@ -11,7 +11,7 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/stretchr/testify/suite"
 
-	productService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/grpc/proto/service_clients"
+	productService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
 )
 

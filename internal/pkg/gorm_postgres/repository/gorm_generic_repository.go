@@ -1,25 +1,23 @@
 package repository
 
 import (
-    "context"
-    "fmt"
-    "reflect"
+	"context"
+	"fmt"
+	"reflect"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
+	"emperror.dev/errors"
+	"github.com/iancoleman/strcase"
+	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 
-    "emperror.dev/errors"
-
-    "github.com/iancoleman/strcase"
-    uuid "github.com/satori/go.uuid"
-    "gorm.io/gorm"
-
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/reflection_helper"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
+	reflectionHelper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/reflection_helper"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 // gorm generic repository
@@ -28,7 +26,9 @@ type gormGenericRepository[TDataModel interface{}, TEntity interface{}] struct {
 }
 
 // NewGenericGormRepositoryWithDataModel create new gorm generic repository
-func NewGenericGormRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}](db *gorm.DB) data.GenericRepositoryWithDataModel[TDataModel, TEntity] {
+func NewGenericGormRepositoryWithDataModel[TDataModel interface{}, TEntity interface{}](
+	db *gorm.DB,
+) data.GenericRepositoryWithDataModel[TDataModel, TEntity] {
 	return &gormGenericRepository[TDataModel, TEntity]{
 		db: db,
 	}
@@ -87,9 +87,15 @@ func (r *gormGenericRepository[TDataModel, TEntity]) GetById(ctx context.Context
 		var model TEntity
 		if err := r.db.WithContext(ctx).First(&model, id).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return *new(TEntity), customErrors.NewNotFoundErrorWrap(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
+				return *new(TEntity), customErrors.NewNotFoundErrorWrap(
+					err,
+					fmt.Sprintf("can't find the entity with id %s into the database.", id.String()),
+				)
 			}
-			return *new(TEntity), errors.WrapIf(err, fmt.Sprintf("can't find the entity with id %s into the database.", id.String()))
+			return *new(TEntity), errors.WrapIf(
+				err,
+				fmt.Sprintf("can't find the entity with id %s into the database.", id.String()),
+			)
 		}
 		return model, nil
 	} else {
@@ -108,7 +114,10 @@ func (r *gormGenericRepository[TDataModel, TEntity]) GetById(ctx context.Context
 	}
 }
 
-func (r *gormGenericRepository[TDataModel, TEntity]) GetAll(ctx context.Context, listQuery *utils.ListQuery) (*utils.ListResult[TEntity], error) {
+func (r *gormGenericRepository[TDataModel, TEntity]) GetAll(
+	ctx context.Context,
+	listQuery *utils.ListQuery,
+) (*utils.ListResult[TEntity], error) {
 	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	if modelType == dataModelType {
@@ -130,7 +139,11 @@ func (r *gormGenericRepository[TDataModel, TEntity]) GetAll(ctx context.Context,
 	}
 }
 
-func (r *gormGenericRepository[TDataModel, TEntity]) Search(ctx context.Context, searchTerm string, listQuery *utils.ListQuery) (*utils.ListResult[TEntity], error) {
+func (r *gormGenericRepository[TDataModel, TEntity]) Search(
+	ctx context.Context,
+	searchTerm string,
+	listQuery *utils.ListQuery,
+) (*utils.ListResult[TEntity], error) {
 	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	if modelType == dataModelType {
@@ -175,7 +188,10 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Search(ctx context.Context,
 	}
 }
 
-func (r *gormGenericRepository[TDataModel, TEntity]) GetByFilter(ctx context.Context, filters map[string]interface{}) ([]TEntity, error) {
+func (r *gormGenericRepository[TDataModel, TEntity]) GetByFilter(
+	ctx context.Context,
+	filters map[string]interface{},
+) ([]TEntity, error) {
 	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	if modelType == dataModelType {
@@ -199,11 +215,17 @@ func (r *gormGenericRepository[TDataModel, TEntity]) GetByFilter(ctx context.Con
 	}
 }
 
-func (r *gormGenericRepository[TDataModel, TEntity]) GetByFuncFilter(ctx context.Context, filterFunc func(TEntity) bool) ([]TEntity, error) {
+func (r *gormGenericRepository[TDataModel, TEntity]) GetByFuncFilter(
+	ctx context.Context,
+	filterFunc func(TEntity) bool,
+) ([]TEntity, error) {
 	return *new([]TEntity), nil
 }
 
-func (r *gormGenericRepository[TDataModel, TEntity]) FirstOrDefault(ctx context.Context, filters map[string]interface{}) (TEntity, error) {
+func (r *gormGenericRepository[TDataModel, TEntity]) FirstOrDefault(
+	ctx context.Context,
+	filters map[string]interface{},
+) (TEntity, error) {
 	return *new(TEntity), nil
 }
 
@@ -259,7 +281,11 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Delete(ctx context.Context,
 	return nil
 }
 
-func (r *gormGenericRepository[TDataModel, TEntity]) SkipTake(ctx context.Context, skip int, take int) ([]TEntity, error) {
+func (r *gormGenericRepository[TDataModel, TEntity]) SkipTake(
+	ctx context.Context,
+	skip int,
+	take int,
+) ([]TEntity, error) {
 	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	if modelType == dataModelType {
@@ -290,7 +316,10 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Count(ctx context.Context) 
 	return count
 }
 
-func (r *gormGenericRepository[TDataModel, TEntity]) Find(ctx context.Context, specification specification.Specification) ([]TEntity, error) {
+func (r *gormGenericRepository[TDataModel, TEntity]) Find(
+	ctx context.Context,
+	specification specification.Specification,
+) ([]TEntity, error) {
 	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
 	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
 	if modelType == dataModelType {

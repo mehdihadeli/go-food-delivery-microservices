@@ -1,8 +1,9 @@
 package dtosV1
 
 import (
-	uuid "github.com/satori/go.uuid"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type OrderDto struct {

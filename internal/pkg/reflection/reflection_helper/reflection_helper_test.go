@@ -1,9 +1,10 @@
 package reflectionHelper
 
 import (
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // ref: https://gist.github.com/drewolson/4771479

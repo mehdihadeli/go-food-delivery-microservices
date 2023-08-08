@@ -10,6 +10,7 @@ import (
 	"github.com/orlangure/gnomock/preset/postgres"
 	"gorm.io/gorm"
 
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
@@ -33,11 +34,11 @@ func NewGnoMockGormContainer() contracts.GormContainer {
 	}
 }
 
-func (g *gnoMockGormContainer) Start(
+func (g *gnoMockGormContainer) CreatingContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
-) (*gorm.DB, error) {
+) (*gormPostgres.GormOptions, error) {
 	//https://github.com/orlangure/gnomock
 	gnomock.WithContext(ctx)
 	runOption := g.getRunOptions(options...)
@@ -52,14 +53,30 @@ func (g *gnoMockGormContainer) Start(
 
 	t.Cleanup(func() { _ = gnomock.Stop(container) })
 
-	db, err := gormPostgres.NewGorm(&gormPostgres.GormOptions{
+	gormContainerOptions := &gormPostgres.GormOptions{
 		Port:     g.defaultOptions.HostPort,
 		Host:     container.Host,
 		Password: g.defaultOptions.Password,
 		DBName:   g.defaultOptions.Database,
 		SSLMode:  false,
 		User:     g.defaultOptions.UserName,
-	})
+	}
+
+	return gormContainerOptions, nil
+}
+
+func (g *gnoMockGormContainer) Start(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.PostgresContainerOptions,
+) (*gorm.DB, error) {
+
+	gormOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := gormPostgres.NewGorm(gormOptions)
 
 	return db, nil
 }

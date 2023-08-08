@@ -73,7 +73,8 @@ func CreateMap[TSrc any, TDst any]() error {
 	srcType := reflect.TypeOf(&src).Elem()
 	desType := reflect.TypeOf(&dst).Elem()
 
-	if (srcType.Kind() != reflect.Struct && (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() != reflect.Struct)) || (desType.Kind() != reflect.Struct && (desType.Kind() == reflect.Ptr && desType.Elem().Kind() != reflect.Struct)) {
+	if (srcType.Kind() != reflect.Struct && (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() != reflect.Struct)) ||
+		(desType.Kind() != reflect.Struct && (desType.Kind() == reflect.Ptr && desType.Elem().Kind() != reflect.Struct)) {
 		return ErrUnsupportedMap
 	}
 
@@ -127,7 +128,8 @@ func CreateCustomMap[TSrc any, TDst any](fn MapFunc[TSrc, TDst]) error {
 	srcType := reflect.TypeOf(&src).Elem()
 	desType := reflect.TypeOf(&dst).Elem()
 
-	if (srcType.Kind() != reflect.Struct && (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() != reflect.Struct)) || (desType.Kind() != reflect.Struct && (desType.Kind() == reflect.Ptr && desType.Elem().Kind() != reflect.Struct)) {
+	if (srcType.Kind() != reflect.Struct && (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() != reflect.Struct)) ||
+		(desType.Kind() != reflect.Struct && (desType.Kind() == reflect.Ptr && desType.Elem().Kind() != reflect.Struct)) {
 		return ErrUnsupportedMap
 	}
 
@@ -159,12 +161,16 @@ func Map[TDes any, TSrc any](src TSrc) (TDes, error) {
 	desIsArray := false
 	srcIsArray := false
 
-	if srcType.Kind() == reflect.Array || (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Array) || srcType.Kind() == reflect.Slice || (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Slice) {
+	if srcType.Kind() == reflect.Array || (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Array) ||
+		srcType.Kind() == reflect.Slice ||
+		(srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Slice) {
 		srcType = srcType.Elem()
 		srcIsArray = true
 	}
 
-	if desType.Kind() == reflect.Array || (desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Array) || desType.Kind() == reflect.Slice || (desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Slice) {
+	if desType.Kind() == reflect.Array || (desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Array) ||
+		desType.Kind() == reflect.Slice ||
+		(desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Slice) {
 		desType = desType.Elem()
 		desIsArray = true
 	}
@@ -201,11 +207,19 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 	// check for provided types kind.
 	// if not struct - skip.
 	if srcType.Kind() != reflect.Struct {
-		defaultLogger.Logger.Errorf("expected reflect.Struct kind for type %s, but got %s", srcType.String(), srcType.Kind().String())
+		defaultLogger.Logger.Errorf(
+			"expected reflect.Struct kind for type %s, but got %s",
+			srcType.String(),
+			srcType.Kind().String(),
+		)
 	}
 
 	if destType.Kind() != reflect.Struct {
-		defaultLogger.Logger.Errorf("expected reflect.Struct kind for type %s, but got %s", destType.String(), destType.Kind().String())
+		defaultLogger.Logger.Errorf(
+			"expected reflect.Struct kind for type %s, but got %s",
+			destType.String(),
+			destType.Kind().String(),
+		)
 	}
 
 	// profile is slice of src and dest structs fields names
@@ -303,7 +317,11 @@ func mapStructs[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 	// if types or their slices were not registered - abort
 	profile, ok := profiles[getProfileKey(src.Type(), dest.Type())]
 	if !ok {
-		defaultLogger.Logger.Errorf("no conversion specified for types %s and %s", src.Type().String(), dest.Type().String())
+		defaultLogger.Logger.Errorf(
+			"no conversion specified for types %s and %s",
+			src.Type().String(),
+			dest.Type().String(),
+		)
 		return
 	}
 

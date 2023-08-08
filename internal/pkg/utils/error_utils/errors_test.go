@@ -1,10 +1,11 @@
 package errorUtils
 
 import (
-	"emperror.dev/errors"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"emperror.dev/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_StackTraceWithErrors(t *testing.T) {

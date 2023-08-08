@@ -1,15 +1,15 @@
 package store
 
 import (
-    "context"
+	"context"
 
-    uuid "github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
-    appendResult "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/append_result"
-    readPosition "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_position/read_position"
-    expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
+	appendResult "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/append_result"
+	readPosition "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_position/read_position"
+	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
 )
 
 // AggregateStore is responsible for loading and saving Aggregate.
@@ -29,7 +29,11 @@ type AggregateStore[T models.IHaveEventSourcedAggregate] interface {
 	Load(ctx context.Context, aggregateId uuid.UUID) (T, error)
 
 	// LoadWithReadPosition loads the most recent version of an aggregate to provided  into params aggregate with an id and read position.
-	LoadWithReadPosition(ctx context.Context, aggregateId uuid.UUID, position readPosition.StreamReadPosition) (T, error)
+	LoadWithReadPosition(
+		ctx context.Context,
+		aggregateId uuid.UUID,
+		position readPosition.StreamReadPosition,
+	) (T, error)
 
 	// Exists check aggregate exists by AggregateId.
 	Exists(ctx context.Context, aggregateId uuid.UUID) (bool, error)

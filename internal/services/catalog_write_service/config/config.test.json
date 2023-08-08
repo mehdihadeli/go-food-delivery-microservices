@@ -11,7 +11,7 @@
   },
   "echoHttpOptions": {
     "name": "catalogs_write_service",
-    "port": ":7000",
+    "port": ":6001",
     "development": true,
     "timeout": 30,
     "basePath": "/api/v1",

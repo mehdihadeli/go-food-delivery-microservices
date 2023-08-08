@@ -1,8 +1,9 @@
 package customErrors
 
 import (
-	"emperror.dev/errors"
 	"net/http"
+
+	"emperror.dev/errors"
 )
 
 func NewBadRequestError(message string) error {
@@ -10,7 +11,7 @@ func NewBadRequestError(message string) error {
 		CustomError: NewCustomError(nil, http.StatusBadRequest, message),
 	}
 	stackErr := errors.WithStackIf(br)
-	
+
 	return stackErr
 }
 

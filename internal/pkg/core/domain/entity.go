@@ -1,8 +1,9 @@
 package domain
 
 import (
-	uuid "github.com/satori/go.uuid"
 	"time"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type Entity struct {
@@ -13,10 +14,10 @@ type Entity struct {
 }
 
 type EntityDataModel struct {
-	Id         uuid.UUID `json:"id" bson:"id,omitempty"`
+	Id         uuid.UUID `json:"id"          bson:"id,omitempty"`
 	EntityType string    `json:"entity_type" bson:"entity_type,omitempty"`
-	CreatedAt  time.Time `json:"created_at" bson:"created_at,omitempty"`
-	UpdatedAt  time.Time `json:"updated_at" bson:"updated_at"`
+	CreatedAt  time.Time `json:"created_at"  bson:"created_at,omitempty"`
+	UpdatedAt  time.Time `json:"updated_at"  bson:"updated_at"`
 }
 
 type IEntity interface {

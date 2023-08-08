@@ -22,7 +22,7 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/echo-swagger v1.3.3
-	github.com/swaggo/swag v1.8.3
+	github.com/swaggo/swag v1.16.1
 	go.opentelemetry.io/otel v1.16.0
 	go.opentelemetry.io/otel/metric v1.16.0
 	go.opentelemetry.io/otel/trace v1.16.0

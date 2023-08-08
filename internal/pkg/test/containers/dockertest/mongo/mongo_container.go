@@ -35,11 +35,11 @@ func NewMongoDockerTest() contracts.MongoContainer {
 	}
 }
 
-func (g *mongoDockerTest) Start(
+func (g *mongoDockerTest) CreatingContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.MongoContainerOptions,
-) (*mongo.Client, error) {
+) (*mongodb.MongoDbOptions, error) {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
@@ -64,8 +64,8 @@ func (g *mongoDockerTest) Start(
 	) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
 
 	g.resource = resource
-	i, _ := strconv.Atoi(resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Port)))
-	g.defaultOptions.HostPort = i
+	port, _ := strconv.Atoi(resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Port)))
+	g.defaultOptions.HostPort = port
 
 	t.Cleanup(func() { _ = resource.Close() })
 
@@ -79,27 +79,34 @@ func (g *mongoDockerTest) Start(
 		}
 	}()
 
-	var mongoClient *mongo.Client
-	if err = pool.Retry(func() error {
-		db, err := mongodb.NewMongoDB(ctx, &mongodb.MongoDbOptions{
-			User:     g.defaultOptions.UserName,
-			Password: g.defaultOptions.Password,
-			UseAuth:  false,
-			Host:     g.defaultOptions.Host,
-			Port:     g.defaultOptions.HostPort,
-			Database: g.defaultOptions.Database,
-		})
-		if err != nil {
-			return err
-		}
-		mongoClient = db
-		return mongoClient.Ping(context.TODO(), nil)
-	}); err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
+	mongoOptions := &mongodb.MongoDbOptions{
+		User:     g.defaultOptions.UserName,
+		Password: g.defaultOptions.Password,
+		UseAuth:  false,
+		Host:     g.defaultOptions.Host,
+		Port:     g.defaultOptions.HostPort,
+		Database: g.defaultOptions.Database,
+	}
+
+	return mongoOptions, nil
+}
+
+func (g *mongoDockerTest) Start(
+	ctx context.Context,
+	t *testing.T,
+	options ...*contracts.MongoContainerOptions,
+) (*mongo.Client, error) {
+	mongoOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	if err != nil {
 		return nil, err
 	}
 
-	return mongoClient, nil
+	db, err := mongodb.NewMongoDB(mongoOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
 
 func (g *mongoDockerTest) Cleanup(ctx context.Context) error {

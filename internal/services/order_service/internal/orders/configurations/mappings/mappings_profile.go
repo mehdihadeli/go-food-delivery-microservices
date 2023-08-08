@@ -5,12 +5,11 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-
-	grpcOrderService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/proto/service_clients"
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/value_objects"
+	grpcOrderService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/grpc/genproto"
 )
 
 func ConfigureOrdersMappings() error {

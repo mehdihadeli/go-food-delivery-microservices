@@ -2,13 +2,19 @@ name: CI
 
 on:
   push:
-    branches: ["main", "develop"]
+    branches: ["main"]
+    paths-ignore: [ "*.md", "docs", "deploy", "config", ".github", "scripts" ]
+
   pull_request:
-    branches: ["main", "develop"]
+    branches: ["main"]
+    paths-ignore: [ "*.md", "docs", "deploy", "config", ".github", "scripts" ]
 
 jobs:
-  build:
+  build-test:
     runs-on: ubuntu-latest
+    if: |
+      contains(github.event.commits[0].message, '[skip ci]') == false &&
+      contains(github.event.commits[0].message, '[ci skip]') == false
     steps:
       - uses: actions/checkout@v3
 
@@ -17,25 +23,33 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.20.x
+        id: go
+
+      - name: Cache go modules
+        id: cache
+        uses: actions/cache@preview
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: make install-dependencies
 
         # https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
         # https://pkg.go.dev/cmd/go#hdr-Package_lists_and_patterns
       - name: Build
-        run: go build -v ./...
+        run: make build
 
         # https://go.dev/doc/articles/race_detector
         # https://dev.to/s0xzwasd/run-tests-with-race-flag-in-goland-512j
-      - name: Building-Blocks Tests
-        run: go test -v ./...  -race
+      - name: Unit Tests
+        run: make unit-test
 
-      - name: Catalogs Write Service Tests
-        working-directory: ./services/catalogs_write/catalogs_write
-        run: go test -v ./...  -race
+      - name: Integration Tests
+        run: make integration-test
 
-      - name: Catalogs Read Service Tests
-        working-directory: ./services/catalogs_write/catalogs_read
-        run: go test -v ./...  -race
-
-      - name: Order Service Tests
-        working-directory: ./services/orders
-        run: go test -v ./...  -race
+      - name: End-To-End Tests
+        run: make e2e-test

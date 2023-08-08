@@ -68,7 +68,12 @@ func ParentSpanFromContext(ctx context.Context) trace.Span {
 	return nopSpan
 }
 
-func CopyFromParentSpanAttribute(ctx context.Context, span trace.Span, attributeName string, parentAttributeName string) {
+func CopyFromParentSpanAttribute(
+	ctx context.Context,
+	span trace.Span,
+	attributeName string,
+	parentAttributeName string,
+) {
 	parentAtt := GetParentSpanAttribute(ctx, parentAttributeName)
 	if reflect.ValueOf(parentAtt).IsZero() {
 		return
@@ -76,7 +81,13 @@ func CopyFromParentSpanAttribute(ctx context.Context, span trace.Span, attribute
 	span.SetAttributes(attribute.String(attributeName, parentAtt.Value.AsString()))
 }
 
-func CopyFromParentSpanAttributeIfNotSet(ctx context.Context, span trace.Span, attributeName string, attributeValue string, parentAttributeName string) {
+func CopyFromParentSpanAttributeIfNotSet(
+	ctx context.Context,
+	span trace.Span,
+	attributeName string,
+	attributeValue string,
+	parentAttributeName string,
+) {
 	if attributeValue != "" {
 		span.SetAttributes(attribute.String(attributeName, attributeValue))
 		return
@@ -90,7 +101,8 @@ func GetParentSpanAttribute(ctx context.Context, parentAttributeName string) att
 	if !ok {
 		return *new(attribute.KeyValue)
 	}
-	att := linq.From(readWriteSpan.Attributes()).FirstWithT(func(att attribute.KeyValue) bool { return string(att.Key) == parentAttributeName })
+	att := linq.From(readWriteSpan.Attributes()).
+		FirstWithT(func(att attribute.KeyValue) bool { return string(att.Key) == parentAttributeName })
 
 	return att.(attribute.KeyValue)
 }
@@ -101,7 +113,8 @@ func GetSpanAttributeFromCurrentContext(ctx context.Context, attributeName strin
 	if !ok {
 		return *new(attribute.KeyValue)
 	}
-	att := linq.From(readWriteSpan.Attributes()).FirstWithT(func(att attribute.KeyValue) bool { return string(att.Key) == attributeName })
+	att := linq.From(readWriteSpan.Attributes()).
+		FirstWithT(func(att attribute.KeyValue) bool { return string(att.Key) == attributeName })
 
 	return att.(attribute.KeyValue)
 }
@@ -111,7 +124,8 @@ func GetSpanAttribute(span trace.Span, attributeName string) attribute.KeyValue 
 	if !ok {
 		return *new(attribute.KeyValue)
 	}
-	att := linq.From(readWriteSpan.Attributes()).FirstWithT(func(att attribute.KeyValue) bool { return string(att.Key) == attributeName })
+	att := linq.From(readWriteSpan.Attributes()).
+		FirstWithT(func(att attribute.KeyValue) bool { return string(att.Key) == attributeName })
 
 	return att.(attribute.KeyValue)
 }

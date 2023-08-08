@@ -8,11 +8,6 @@ import (
 
 	gorm2 "gorm.io/gorm"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
-	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/grpc/proto/service_clients"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/configurations/catalogs"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
@@ -22,6 +17,10 @@ import (
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/configurations/catalogs"
+	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
 )
 
 type TestApp struct{}

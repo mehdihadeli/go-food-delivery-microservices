@@ -1,21 +1,21 @@
 package producer
 
 import (
-    "context"
-    "fmt"
-    "time"
+	"context"
+	"fmt"
+	"time"
 
-    "go.opentelemetry.io/otel"
-    "go.opentelemetry.io/otel/attribute"
-    "go.opentelemetry.io/otel/baggage"
-    semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-    "go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/baggage"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	"go.opentelemetry.io/otel/trace"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-    messageHeader "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/message_header"
-    messageTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
+	messageHeader "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/message_header"
+	messageTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 )
 
 //https://devandchill.com/posts/2021/12/go-step-by-step-guide-for-implementing-tracing-on-a-microservices-architecture-2/2/
@@ -25,7 +25,13 @@ import (
 //https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#messaging-attributes
 //https://trstringer.com/otel-part5-propagation/
 
-func StartProducerSpan(ctx context.Context, message types.IMessage, meta *metadata.Metadata, payload string, producerTracingOptions *ProducerTracingOptions) (context.Context, trace.Span) {
+func StartProducerSpan(
+	ctx context.Context,
+	message types.IMessage,
+	meta *metadata.Metadata,
+	payload string,
+	producerTracingOptions *ProducerTracingOptions,
+) (context.Context, trace.Span) {
 	ctx = addAfterBaggage(ctx, message, meta)
 
 	// If there's a span context in the message, use that as the parent context.
@@ -37,7 +43,10 @@ func StartProducerSpan(ctx context.Context, message types.IMessage, meta *metada
 
 	//https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#span-name
 	// SpanName = Destination Name + Operation Name
-	ctx, span := messageTracing.MessagingTracer.Start(parentSpanContext, fmt.Sprintf("%s %s", producerTracingOptions.Destination, "send"), opts...)
+	ctx, span := messageTracing.MessagingTracer.Start(
+		parentSpanContext,
+		fmt.Sprintf("%s %s", producerTracingOptions.Destination, "send"),
+		opts...)
 
 	span.AddEvent(fmt.Sprintf("start publishing message '%s' to the broker", messageHeader.GetMessageName(*meta)))
 
@@ -67,7 +76,12 @@ func FinishProducerSpan(span trace.Span, err error) error {
 	return err
 }
 
-func getTraceOptions(meta *metadata.Metadata, message types.IMessage, payload string, producerTracingOptions *ProducerTracingOptions) []trace.SpanStartOption {
+func getTraceOptions(
+	meta *metadata.Metadata,
+	message types.IMessage,
+	payload string,
+	producerTracingOptions *ProducerTracingOptions,
+) []trace.SpanStartOption {
 	correlationId := messageHeader.GetCorrelationId(*meta)
 
 	//https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#topic-with-multiple-consumers

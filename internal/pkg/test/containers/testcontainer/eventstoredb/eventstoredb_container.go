@@ -135,7 +135,7 @@ func (g *eventstoredbTestContainers) getRunOptions(
 			"EVENTSTORE_INSECURE":                   "true",
 			"EVENTSTORE_ENABLE_EXTERNAL_TCP":        "true",
 			"EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP":  "true",
-			//"EVENTSTORE_IN_MEM":                     "true",
+			"EVENTSTORE_MEM_DB":                     "true",
 		},
 	}
 
