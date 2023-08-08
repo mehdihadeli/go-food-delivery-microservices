@@ -2,6 +2,8 @@ package errors
 
 import (
 	"emperror.dev/errors"
+
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 )
 
 type readStreamError struct {
