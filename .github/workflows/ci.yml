@@ -3,15 +3,15 @@ name: CI
 on:
   push:
     branches: ["main"]
-    paths-ignore: [ "*.md", "docs", "deploy", "config", ".github", "scripts" ]
+    paths-ignore: ["*.md", "docs", "deploy", "config", ".github", "scripts"]
 
   pull_request:
     branches: ["main"]
-    paths-ignore: [ "*.md", "docs", "deploy", "config", ".github", "scripts" ]
+    paths-ignore: ["*.md", "docs", "deploy", "config", ".github", "scripts"]
 
 jobs:
   build-test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     if: |
       contains(github.event.commits[0].message, '[skip ci]') == false &&
       contains(github.event.commits[0].message, '[ci skip]') == false
@@ -26,7 +26,17 @@ jobs:
           go-version: 1.20.4
         id: go
 
+      - name: Cache go modules
+        id: cache
+        uses: actions/cache@preview
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
       - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
         run: make install-dependencies
 
         # https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
