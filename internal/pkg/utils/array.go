@@ -13,7 +13,6 @@ func Contains[T any](arr []T, x T) bool {
 
 func ContainsFunc[T any](arr []T, predicate func(T) bool) bool {
 	for _, v := range arr {
-
 		if predicate(v) == true {
 			return true
 		}

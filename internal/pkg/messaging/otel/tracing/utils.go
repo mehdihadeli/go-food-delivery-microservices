@@ -23,7 +23,7 @@ func TraceMessagingErrFromSpan(span trace.Span, err error) error {
 }
 
 func TraceMessagingErrFromContext(ctx context.Context, err error) error {
-	//https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
+	// https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 	span := trace.SpanFromContext(ctx)
 	defer span.End()
 

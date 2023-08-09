@@ -14,7 +14,6 @@ import (
 
 // AggregateStore is responsible for loading and saving Aggregate.
 type AggregateStore[T models.IHaveEventSourcedAggregate] interface {
-
 	// StoreWithVersion store the new or update aggregate state with expected version
 	StoreWithVersion(
 		aggregate T,

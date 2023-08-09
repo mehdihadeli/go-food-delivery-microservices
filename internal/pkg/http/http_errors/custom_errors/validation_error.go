@@ -41,7 +41,7 @@ func (v *validationError) IsValidationError() bool {
 
 func IsValidationError(err error) bool {
 	var validationError ValidationError
-	//us, ok := grpc_errors.Cause(err).(ValidationError)
+	// us, ok := grpc_errors.Cause(err).(ValidationError)
 	if errors.As(err, &validationError) {
 		return validationError.IsValidationError()
 	}

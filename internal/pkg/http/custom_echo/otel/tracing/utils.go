@@ -43,7 +43,7 @@ func TraceHttpErrFromSpanWithCode(span trace.Span, err error, code int) error {
 }
 
 func TraceHttpErrFromContext(ctx context.Context, err error) error {
-	//https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
+	// https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 	span := trace.SpanFromContext(ctx)
 	defer span.End()
 

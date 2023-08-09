@@ -19,7 +19,7 @@ type traceContextKeyType int
 const parentSpanKey traceContextKeyType = iota + 1
 
 func TraceErrFromContext(ctx context.Context, err error) error {
-	//https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
+	// https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 	span := trace.SpanFromContext(ctx)
 	defer span.End()
 

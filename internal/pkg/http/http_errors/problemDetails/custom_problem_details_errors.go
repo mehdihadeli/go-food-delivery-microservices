@@ -8,15 +8,14 @@ import (
 )
 
 func NewValidationProblemDetail(detail string, stackTrace string) ProblemDetailErr {
-	validationError :=
-		&problemDetail{
-			Title:      constants.ErrBadRequestTitle,
-			Detail:     detail,
-			Status:     http.StatusBadRequest,
-			Type:       getDefaultType(http.StatusBadRequest),
-			Timestamp:  time.Now(),
-			StackTrace: stackTrace,
-		}
+	validationError := &problemDetail{
+		Title:      constants.ErrBadRequestTitle,
+		Detail:     detail,
+		Status:     http.StatusBadRequest,
+		Type:       getDefaultType(http.StatusBadRequest),
+		Timestamp:  time.Now(),
+		StackTrace: stackTrace,
+	}
 
 	return validationError
 }

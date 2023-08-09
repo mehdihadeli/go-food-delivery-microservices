@@ -16,6 +16,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/postgrespxg"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
@@ -51,6 +52,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	appBuilder.ProvideModule(catalogs.CatalogsServiceModule)
 	appBuilder.Decorate(rabbitmq.RabbitmqContainerOptionsDecorator(t, lifetimeCtx))
 	appBuilder.Decorate(gorm.GormContainerOptionsDecorator(t, lifetimeCtx))
+	appBuilder.Decorate(postgrespxg.PostgresPgxContainerOptionsDecorator(t, lifetimeCtx))
 
 	testApp := appBuilder.Build()
 

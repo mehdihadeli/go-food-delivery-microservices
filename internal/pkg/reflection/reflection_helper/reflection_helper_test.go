@@ -99,7 +99,7 @@ func Test_Set_Field_Value_For_UnExported_Fields_And_UnAddressable_Struct(t *test
 func Test_Get_Field_Value_For_Exported_Fields_And_Addressable_Struct(t *testing.T) {
 	p := &PersonPublic{Name: "John", Age: 20}
 
-	//field by name only work on struct not pointer type so we should get Elem()
+	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(p).Elem()
 	name := GetFieldValue(v.FieldByName("Name")).Interface()
 	age := GetFieldValue(v.FieldByName("Age")).Interface()
@@ -111,7 +111,7 @@ func Test_Get_Field_Value_For_Exported_Fields_And_Addressable_Struct(t *testing.
 func Test_Get_Field_Value_For_UnExported_Fields_And_Addressable_Struct(t *testing.T) {
 	p := &PersonPrivate{name: "John", age: 30}
 
-	//field by name only work on struct not pointer type so we should get Elem()
+	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(p).Elem()
 	name := GetFieldValue(v.FieldByName("name")).Interface()
 	age := GetFieldValue(v.FieldByName("age")).Interface()
@@ -123,7 +123,7 @@ func Test_Get_Field_Value_For_UnExported_Fields_And_Addressable_Struct(t *testin
 func Test_Get_Field_Value_For_Exported_Fields_And_UnAddressable_Struct(t *testing.T) {
 	p := PersonPublic{Name: "John", Age: 20}
 
-	//field by name only work on struct not pointer type so we should get Elem()
+	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(&p).Elem()
 	name := GetFieldValue(v.FieldByName("Name")).Interface()
 	age := GetFieldValue(v.FieldByName("Age")).Interface()
@@ -135,7 +135,7 @@ func Test_Get_Field_Value_For_Exported_Fields_And_UnAddressable_Struct(t *testin
 func Test_Get_Field_Value_For_UnExported_Fields_And_UnAddressable_Struct(t *testing.T) {
 	p := PersonPrivate{name: "John", age: 20}
 
-	//field by name only work on struct not pointer type so we should get Elem()
+	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(&p).Elem()
 	name := GetFieldValue(v.FieldByName("name")).Interface()
 	age := GetFieldValue(v.FieldByName("age")).Interface()
@@ -147,7 +147,7 @@ func Test_Get_Field_Value_For_UnExported_Fields_And_UnAddressable_Struct(t *test
 func Test_Set_Field_For_Exported_Fields_And_Addressable_Struct(t *testing.T) {
 	p := &PersonPublic{}
 
-	//field by name only work on struct not pointer type so we should get Elem()
+	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(p).Elem()
 	name := GetFieldValue(v.FieldByName("Name"))
 	age := GetFieldValue(v.FieldByName("Age"))
@@ -162,7 +162,7 @@ func Test_Set_Field_For_Exported_Fields_And_Addressable_Struct(t *testing.T) {
 func Test_Set_Field_For_UnExported_Fields_And_Addressable_Struct(t *testing.T) {
 	p := &PersonPrivate{}
 
-	//field by name only work on struct not pointer type so we should get Elem()
+	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(p).Elem()
 	name := GetFieldValue(v.FieldByName("name"))
 	age := GetFieldValue(v.FieldByName("age"))
@@ -177,7 +177,7 @@ func Test_Set_Field_For_UnExported_Fields_And_Addressable_Struct(t *testing.T) {
 func Test_Set_Field_For_Exported_Fields_And_UnAddressable_Struct(t *testing.T) {
 	p := PersonPublic{}
 
-	//field by name only work on struct not pointer type so we should get Elem()
+	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(&p).Elem()
 	name := GetFieldValue(v.FieldByName("Name"))
 	age := GetFieldValue(v.FieldByName("Age"))
@@ -192,7 +192,7 @@ func Test_Set_Field_For_Exported_Fields_And_UnAddressable_Struct(t *testing.T) {
 func Test_Set_Field_For_UnExported_Fields_And_UnAddressable_Struct(t *testing.T) {
 	p := PersonPrivate{}
 
-	//field by name only work on struct not pointer type so we should get Elem()
+	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(&p).Elem()
 	name := GetFieldValue(v.FieldByName("name"))
 	age := GetFieldValue(v.FieldByName("age"))
@@ -219,7 +219,7 @@ func Test_Get_Unexported_Field_From_Method_And_UnAddressable_Struct(t *testing.T
 }
 
 func Test_Convert_NoPointer_Type_To_Pointer_Type_With_Addr(t *testing.T) {
-	//https://www.geeksforgeeks.org/reflect-addr-function-in-golang-with-examples/
+	// https://www.geeksforgeeks.org/reflect-addr-function-in-golang-with-examples/
 
 	p := PersonPrivate{name: "John", age: 20}
 	v := reflect.ValueOf(&p).Elem()

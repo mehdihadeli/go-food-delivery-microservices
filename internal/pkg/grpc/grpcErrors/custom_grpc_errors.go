@@ -9,14 +9,13 @@ import (
 )
 
 func NewValidationGrpcError(detail string, stackTrace string) GrpcErr {
-	validationError :=
-		&grpcErr{
-			Title:      constants.ErrBadRequestTitle,
-			Detail:     detail,
-			Status:     codes.InvalidArgument,
-			Timestamp:  time.Now(),
-			StackTrace: stackTrace,
-		}
+	validationError := &grpcErr{
+		Title:      constants.ErrBadRequestTitle,
+		Detail:     detail,
+		Status:     codes.InvalidArgument,
+		Timestamp:  time.Now(),
+		StackTrace: stackTrace,
+	}
 
 	return validationError
 }

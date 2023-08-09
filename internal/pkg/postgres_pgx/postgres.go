@@ -41,11 +41,11 @@ type Pgx struct {
 	DB              *sql.DB
 	SquirrelBuilder squirrel.StatementBuilderType
 	GoquBuilder     *goqu.SelectDataset
-	config          *PostgresPxgOptions
+	config          *PostgresPgxOptions
 }
 
 // NewPgx func for connection to PostgreSQL database.
-func NewPgx(cfg *PostgresPxgOptions) (*Pgx, error) {
+func NewPgx(cfg *PostgresPgxOptions) (*Pgx, error) {
 	if cfg.DBName == "" {
 		return nil, errors.New("DBName is required in the config.")
 	}
@@ -126,7 +126,7 @@ func (db *Pgx) Close() {
 	_ = db.DB.Close()
 }
 
-func createDB(cfg *PostgresPxgOptions) error {
+func createDB(cfg *PostgresPgxOptions) error {
 	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'
 	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,

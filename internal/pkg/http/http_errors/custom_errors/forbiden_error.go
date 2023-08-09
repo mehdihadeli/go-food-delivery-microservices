@@ -39,7 +39,7 @@ func (f *forbiddenError) IsForbiddenError() bool {
 
 func IsForbiddenError(err error) bool {
 	var forbiddenError ForbiddenError
-	//us, ok := grpc_errors.Cause(err).(ForbiddenError)
+	// us, ok := grpc_errors.Cause(err).(ForbiddenError)
 	if errors.As(err, &forbiddenError) {
 		return forbiddenError.IsForbiddenError()
 	}

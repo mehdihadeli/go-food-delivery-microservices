@@ -24,7 +24,7 @@ func (m Metadata) Keys() []string {
 	i := 0
 	r := make([]string, len(m))
 
-	for k, _ := range m {
+	for k := range m {
 		r[i] = k
 		i++
 	}

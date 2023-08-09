@@ -11,5 +11,5 @@ var MessagingTracer trace.Tracer
 func init() {
 	MessagingTracer = tracing.NewAppTracer(
 		"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging",
-	) //instrumentation name
+	) // instrumentation name
 }

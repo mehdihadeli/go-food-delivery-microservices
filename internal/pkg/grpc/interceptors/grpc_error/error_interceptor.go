@@ -17,14 +17,12 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
-
 		resp, err := handler(ctx, req)
 		if err != nil {
 			grpcErr := grpcErrors.ParseError(err)
 
 			if grpcErr != nil {
 				return nil, grpcErr.ToGrpcResponseErr()
-
 			} else {
 				prb := grpcErrors.NewInternalServerGrpcError(err.Error(), fmt.Sprintf("%+v\n", err))
 				return nil, prb.ToGrpcResponseErr()
@@ -44,13 +42,11 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		handler grpc.StreamHandler,
 	) error {
 		err := handler(srv, ss)
-
 		if err != nil {
 			grpcErr := grpcErrors.ParseError(err)
 
 			if grpcErr != nil {
 				return grpcErr.ToGrpcResponseErr()
-
 			} else {
 				prb := grpcErrors.NewInternalServerGrpcError(err.Error(), fmt.Sprintf("%+v\n", err))
 				return prb.ToGrpcResponseErr()

@@ -13,8 +13,8 @@ import (
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
 )
 
-//https://github.com/grpc/grpc/blob/master/doc/http-grpc-status-mapping.md
-//https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+// https://github.com/grpc/grpc/blob/master/doc/http-grpc-status-mapping.md
+// https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
 
 func ParseError(err error) GrpcErr {
 	customErr := customErrors.GetCustomError(err)

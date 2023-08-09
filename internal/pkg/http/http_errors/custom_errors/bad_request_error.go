@@ -39,7 +39,7 @@ func (b *badRequestError) IsBadRequestError() bool {
 
 func IsBadRequestError(err error) bool {
 	var badRequestError BadRequestError
-	//us, ok := grpc_errors.Cause(err).(BadRequestError)
+	// us, ok := grpc_errors.Cause(err).(BadRequestError)
 	if errors.As(err, &badRequestError) {
 		return badRequestError.IsBadRequestError()
 	}

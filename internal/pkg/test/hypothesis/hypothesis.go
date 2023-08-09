@@ -28,7 +28,6 @@ func (h *hypothesis[T]) Validate(ctx context.Context, message string, time time.
 		}
 		return true
 	}, time)
-
 	if err != nil {
 		assert.FailNowf(h.t, "hypothesis validation failed, %s", message)
 	}

@@ -39,7 +39,7 @@ func (c *conflictError) IsConflictError() bool {
 
 func IsConflictError(err error) bool {
 	var conflictError ConflictError
-	//us, ok := grpc_errors.Cause(err).(ConflictError)
+	// us, ok := grpc_errors.Cause(err).(ConflictError)
 	if errors.As(err, &conflictError) {
 		return conflictError.IsConflictError()
 	}

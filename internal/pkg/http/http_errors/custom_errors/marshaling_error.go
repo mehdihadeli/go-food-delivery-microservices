@@ -42,7 +42,7 @@ func (m *marshalingError) IsMarshalingError() bool {
 func IsMarshalingError(err error) bool {
 	var me MarshalingError
 
-	//us, ok := grpc_errors.Cause(err).(MarshalingError)
+	// us, ok := grpc_errors.Cause(err).(MarshalingError)
 	if errors.As(err, &me) {
 		return me.IsMarshalingError()
 	}

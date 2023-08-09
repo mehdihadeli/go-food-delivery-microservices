@@ -100,7 +100,7 @@ func GetFieldValueByName[T any](object T, name string) interface{} {
 func SetFieldValueByIndex[T any](object T, index int, value interface{}) {
 	v := reflect.ValueOf(&object).Elem()
 
-	//https://stackoverflow.com/questions/6395076/using-reflect-how-do-you-set-the-value-of-a-struct-field
+	// https://stackoverflow.com/questions/6395076/using-reflect-how-do-you-set-the-value-of-a-struct-field
 	if v.Kind() == reflect.Ptr {
 		val := v.Elem()
 		field := val.Field(index)
@@ -139,7 +139,7 @@ func SetFieldValueByIndex[T any](object T, index int, value interface{}) {
 func SetFieldValueByName[T any](object T, name string, value interface{}) {
 	v := reflect.ValueOf(&object).Elem()
 
-	//https://stackoverflow.com/questions/6395076/using-reflect-how-do-you-set-the-value-of-a-struct-field
+	// https://stackoverflow.com/questions/6395076/using-reflect-how-do-you-set-the-value-of-a-struct-field
 	if v.Kind() == reflect.Ptr {
 		val := v.Elem()
 		field := val.FieldByName(name)
@@ -211,7 +211,7 @@ func GetFieldValueFromMethodAndObject[T interface{}](object T, name string) refl
 			res := method.Call(nil)
 			return res[0]
 		} else {
-			//https://www.geeksforgeeks.org/reflect-addr-function-in-golang-with-examples/
+			// https://www.geeksforgeeks.org/reflect-addr-function-in-golang-with-examples/
 			pointerType := v.Addr()
 			method := pointerType.MethodByName(name)
 			res := method.Call(nil)
@@ -235,7 +235,7 @@ func GetFieldValueFromMethodAndReflectValue(val reflect.Value, name string) refl
 			res := method.Call(nil)
 			return res[0]
 		} else {
-			//https://www.geeksforgeeks.org/reflect-addr-function-in-golang-with-examples/
+			// https://www.geeksforgeeks.org/reflect-addr-function-in-golang-with-examples/
 			pointerType := val.Addr()
 			method := pointerType.MethodByName(name)
 			res := method.Call(nil)

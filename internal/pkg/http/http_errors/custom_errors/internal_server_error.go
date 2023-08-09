@@ -39,7 +39,7 @@ func (i *internalServerError) IsInternalServerError() bool {
 
 func IsInternalServerError(err error) bool {
 	var internalErr InternalServerError
-	//us, ok := grpc_errors.Cause(err).(InternalServerError)
+	// us, ok := grpc_errors.Cause(err).(InternalServerError)
 	if errors.As(err, &internalErr) {
 		return internalErr.IsInternalServerError()
 	}

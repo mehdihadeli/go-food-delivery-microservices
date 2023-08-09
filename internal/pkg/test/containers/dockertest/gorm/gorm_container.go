@@ -40,8 +40,8 @@ func (g *gormDockerTest) CreatingContainerOptions(
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
 ) (*gormPostgres.GormOptions, error) {
-	//https://github.com/ory/dockertest/blob/v3/examples/PostgreSQL.md
-	//https://github.com/bozd4g/fb.testcontainers
+	// https://github.com/ory/dockertest/blob/v3/examples/PostgreSQL.md
+	// https://github.com/bozd4g/fb.testcontainers
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)

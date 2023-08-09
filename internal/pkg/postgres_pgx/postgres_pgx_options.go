@@ -8,9 +8,9 @@ import (
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[PostgresPxgOptions]())
+var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[PostgresPgxOptions]())
 
-type PostgresPxgOptions struct {
+type PostgresPgxOptions struct {
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
 	User     string `mapstructure:"user"`
@@ -20,6 +20,6 @@ type PostgresPxgOptions struct {
 	LogLevel int    `mapstructure:"logLevel"`
 }
 
-func provideConfig(environment environemnt.Environment) (*PostgresPxgOptions, error) {
-	return config.BindConfigKey[*PostgresPxgOptions](optionName, environment)
+func provideConfig(environment environemnt.Environment) (*PostgresPgxOptions, error) {
+	return config.BindConfigKey[*PostgresPgxOptions](optionName, environment)
 }

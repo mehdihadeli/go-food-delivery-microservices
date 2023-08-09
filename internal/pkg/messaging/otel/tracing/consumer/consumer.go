@@ -18,12 +18,12 @@ import (
 	tracingHeaders "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/tracing_headers"
 )
 
-//https://devandchill.com/posts/2021/12/go-step-by-step-guide-for-implementing-tracing-on-a-microservices-architecture-2/2/
-//https://github.com/open-telemetry/opentelemetry-go-contrib/blob/e84d6d6575e3c3eabcf3204ac88550258673ed3c/instrumentation/github.com/Shopify/sarama/otelsarama/dispatcher.go
-//https://opentelemetry.io/docs/reference/specification/trace/semantic_conventions/messaging/
-//https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#messaging-attributes
-//https://opentelemetry.io/docs/instrumentation/go/manual/#semantic-attributes
-//https://trstringer.com/otel-part5-propagation/
+// https://devandchill.com/posts/2021/12/go-step-by-step-guide-for-implementing-tracing-on-a-microservices-architecture-2/2/
+// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/e84d6d6575e3c3eabcf3204ac88550258673ed3c/instrumentation/github.com/Shopify/sarama/otelsarama/dispatcher.go
+// https://opentelemetry.io/docs/reference/specification/trace/semantic_conventions/messaging/
+// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#messaging-attributes
+// https://opentelemetry.io/docs/instrumentation/go/manual/#semantic-attributes
+// https://trstringer.com/otel-part5-propagation/
 
 func StartConsumerSpan(
 	ctx context.Context,
@@ -40,7 +40,7 @@ func StartConsumerSpan(
 
 	opts := getTraceOptions(meta, payload, consumerTracingOptions)
 
-	//https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#span-name
+	// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#span-name
 	// SpanName = Destination Name + Operation Name
 	ctx, span := messageTracing.MessagingTracer.Start(
 		parentSpanContext,
@@ -81,8 +81,8 @@ func getTraceOptions(
 ) []trace.SpanStartOption {
 	correlationId := messageHeader.GetCorrelationId(*meta)
 
-	//https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#topic-with-multiple-consumers
-	//https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#batch-receiving
+	// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#topic-with-multiple-consumers
+	// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#batch-receiving
 	attrs := []attribute.KeyValue{
 		semconv.MessageIDKey.String(messageHeader.GetMessageId(*meta)),
 		semconv.MessagingConversationIDKey.String(correlationId),

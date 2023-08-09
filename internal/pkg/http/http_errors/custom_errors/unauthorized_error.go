@@ -39,7 +39,7 @@ func (u *unauthorizedError) IsUnAuthorizedError() bool {
 
 func IsUnAuthorizedError(err error) bool {
 	var unauthorizedError UnauthorizedError
-	//us, ok := grpc_errors.Cause(err).(UnauthorizedError)
+	// us, ok := grpc_errors.Cause(err).(UnauthorizedError)
 	if errors.As(err, &unauthorizedError) {
 		return unauthorizedError.IsUnAuthorizedError()
 	}

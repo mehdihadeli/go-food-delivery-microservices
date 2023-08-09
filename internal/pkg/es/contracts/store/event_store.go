@@ -12,7 +12,7 @@ import (
 )
 
 type EventStore interface {
-	//StreamExists Check if specific stream exists in the store
+	// StreamExists Check if specific stream exists in the store
 	StreamExists(streamName streamName.StreamName, ctx context.Context) (bool, error)
 
 	// ReadEventsFromStart Read events for existing stream and start position with specified events count.
@@ -22,7 +22,7 @@ type EventStore interface {
 		ctx context.Context,
 	) ([]*models.StreamEvent, error)
 
-	//ReadEvents Read events for a specific stream and position in forward mode with specified events count.
+	// ReadEvents Read events for a specific stream and position in forward mode with specified events count.
 	ReadEvents(
 		streamName streamName.StreamName,
 		readPosition readPosition.StreamReadPosition,
@@ -30,7 +30,7 @@ type EventStore interface {
 		ctx context.Context,
 	) ([]*models.StreamEvent, error)
 
-	//ReadEventsWithMaxCount Read events for a specific stream and position in forward mode with max count.
+	// ReadEventsWithMaxCount Read events for a specific stream and position in forward mode with max count.
 	ReadEventsWithMaxCount(
 		streamName streamName.StreamName,
 		readPosition readPosition.StreamReadPosition,

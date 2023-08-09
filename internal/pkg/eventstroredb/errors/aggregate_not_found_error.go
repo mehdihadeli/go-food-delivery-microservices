@@ -9,8 +9,8 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 )
 
-//https://klotzandrew.com/blog/error-handling-in-golang/
-//https://banzaicloud.com/blog/error-handling-go/
+// https://klotzandrew.com/blog/error-handling-in-golang/
+// https://banzaicloud.com/blog/error-handling-go/
 
 type aggregateNotFoundError struct {
 	customErrors.NotFoundError

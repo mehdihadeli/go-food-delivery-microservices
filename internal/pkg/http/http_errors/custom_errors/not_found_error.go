@@ -39,7 +39,7 @@ func (n *notFoundError) IsNotFoundError() bool {
 
 func IsNotFoundError(err error) bool {
 	var notFoundError NotFoundError
-	//us, ok := grpc_errors.Cause(err).(NotFoundError)
+	// us, ok := grpc_errors.Cause(err).(NotFoundError)
 	if errors.As(err, &notFoundError) {
 		return notFoundError.IsNotFoundError()
 	}

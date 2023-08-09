@@ -24,7 +24,7 @@ func NewBunDB(cfg *bun2.BunConfig) (*bun.DB, error) {
 		return nil, err
 	}
 
-	//https://bun.uptrace.dev/postgres/#pgdriver
+	// https://bun.uptrace.dev/postgres/#pgdriver
 	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.User,
 		cfg.Password,

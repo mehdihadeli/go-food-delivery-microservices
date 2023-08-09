@@ -9,8 +9,10 @@ type Worker interface {
 	Stop(ctx context.Context) error
 }
 
-type ExecutionFunc func(ctx context.Context) error
-type StopFunc func(ctx context.Context) error
+type (
+	ExecutionFunc func(ctx context.Context) error
+	StopFunc      func(ctx context.Context) error
+)
 
 type BackgroundWorker struct {
 	ctx           context.Context

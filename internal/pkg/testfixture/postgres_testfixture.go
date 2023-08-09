@@ -21,7 +21,7 @@ func RunPostgresFixture(db *sql.DB, fixturePaths []string, data map[string]inter
 		fixturePaths[i] = fmt.Sprintf("%v/%v", rootPath, filepath.ToSlash(fixturePaths[i]))
 	}
 
-	//https://github.com/go-testfixtures/testfixtures
+	// https://github.com/go-testfixtures/testfixtures
 	fixtures, err := testfixtures.New(
 		testfixtures.Database(db),
 		testfixtures.Dialect("postgres"),

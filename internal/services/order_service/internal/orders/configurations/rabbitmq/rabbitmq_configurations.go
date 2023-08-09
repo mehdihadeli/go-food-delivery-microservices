@@ -8,8 +8,8 @@ import (
 )
 
 func ConfigOrdersRabbitMQ(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
-	//add custom message type mappings
-	//utils.RegisterCustomMessageTypesToRegistrty(map[string]types.IMessage{"orderCreatedV1": &OrderCreatedV1{}})
+	// add custom message type mappings
+	// utils.RegisterCustomMessageTypesToRegistrty(map[string]types.IMessage{"orderCreatedV1": &OrderCreatedV1{}})
 
 	builder.AddProducer(
 		createOrderIntegrationEventsV1.OrderCreatedV1{},

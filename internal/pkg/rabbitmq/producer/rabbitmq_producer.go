@@ -134,7 +134,7 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		producerOptions,
 	)
 
-	//https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/go/publisher_confirms.go
+	// https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/go/publisher_confirms.go
 	if r.connection == nil {
 		return producer2.FinishProducerSpan(beforeProduceSpan, errors.New("connection is nil"))
 	}
@@ -170,7 +170,7 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		MessageId:       message.GeMessageId(),
 		Timestamp:       time.Now(),
 		Headers:         metadata.MetadataToMap(meta),
-		Type:            message.GetEventTypeName(), //typeMapper.GetTypeName(message) - just message type name not full type name because in other side package name for type could be different
+		Type:            message.GetEventTypeName(), // typeMapper.GetTypeName(message) - just message type name not full type name because in other side package name for type could be different
 		ContentType:     serializedObj.ContentType,
 		Body:            serializedObj.Data,
 		DeliveryMode:    producerConfiguration.DeliveryMode,

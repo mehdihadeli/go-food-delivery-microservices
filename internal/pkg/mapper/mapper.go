@@ -48,9 +48,11 @@ type typeMeta struct {
 
 type MapFunc[TSrc any, TDst any] func(TSrc) TDst
 
-var profiles = map[string][][2]string{}
-var maps = map[mappingsEntry]interface{}{}
-var mapperConfig *MapperConfig
+var (
+	profiles     = map[string][][2]string{}
+	maps         = map[mappingsEntry]interface{}{}
+	mapperConfig *MapperConfig
+)
 
 func init() {
 	mapperConfig = &MapperConfig{
@@ -332,7 +334,7 @@ func mapStructs[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 		var sourceFiledValue reflect.Value
 
 		if sourceField.Kind() != reflect.Invalid {
-			//var destinationFieldValue reflect.Value
+			// var destinationFieldValue reflect.Value
 			if !sourceField.CanInterface() {
 				if mapperConfig.MapUnexportedFields {
 					sourceFiledValue = reflectionHelper.GetFieldValue(sourceField)
@@ -430,7 +432,7 @@ func processValues[TDes any, TSrc any](src reflect.Value, dest reflect.Value) er
 	// if types are equal set dest value
 	if src.Type() == dest.Type() {
 		reflectionHelper.SetFieldValue(dest, src.Interface())
-		//dest.Set(src)
+		// dest.Set(src)
 		return nil
 	}
 

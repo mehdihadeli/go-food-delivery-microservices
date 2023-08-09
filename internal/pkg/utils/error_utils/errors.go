@@ -49,7 +49,7 @@ func ErrorsWithoutStack(err error, format bool) string {
 // StackTrace returns all stack traces with a string contains just stack trace levels for the given error
 func StackTrace(err error) string {
 	var stackTrace contracts.StackTracer
-	var stackStr = ""
+	stackStr := ""
 	for {
 		s, ok := err.(contracts.StackTracer)
 		stackTrace = s

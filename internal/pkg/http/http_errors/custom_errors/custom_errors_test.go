@@ -38,13 +38,12 @@ func Test_BadRequest_Err(t *testing.T) {
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
-		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
+		// https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
-		fmt.Println(errorUtils.ErrorsWithStack(err))           //write errorUtils messages with stacktrace
+		fmt.Println(errorUtils.ErrorsWithStack(err))           // write errorUtils messages with stacktrace
 	} else {
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false))
 	}
-
 }
 
 func Test_NotFound_Err(t *testing.T) {
@@ -66,9 +65,9 @@ func Test_NotFound_Err(t *testing.T) {
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
-		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
+		// https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
-		fmt.Println(errorUtils.ErrorsWithStack(err))           //write errorUtils messages with stacktrace
+		fmt.Println(errorUtils.ErrorsWithStack(err))           // write errorUtils messages with stacktrace
 	} else {
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false))
 	}
@@ -97,9 +96,9 @@ func Test_Domain_Err(t *testing.T) {
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
-		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
+		// https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
-		fmt.Println(errorUtils.ErrorsWithStack(err))           //write errorUtils messages with stacktrace
+		fmt.Println(errorUtils.ErrorsWithStack(err))           // write errorUtils messages with stacktrace
 	} else {
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false))
 	}
@@ -132,7 +131,7 @@ func Test_Application_Err(t *testing.T) {
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
-		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
+		// https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
 		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
@@ -159,7 +158,7 @@ func Test_Internal_Server_Error(t *testing.T) {
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
-		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
+		// https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
 		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
@@ -199,7 +198,7 @@ func Test_Marshaling_Error(t *testing.T) {
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
-		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
+		// https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
 		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
@@ -239,7 +238,7 @@ func Test_Validation_Error(t *testing.T) {
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
-		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
+		// https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
 		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
@@ -274,7 +273,7 @@ func Test_Conflict_Error(t *testing.T) {
 
 	var stackErr contracts.StackTracer
 	if ok := errors.As(err, &stackErr); ok {
-		//https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
+		// https://dave.cheney.net/2016/06/12/stack-traces-and-the-errors-package
 		fmt.Println(errorUtils.ErrorsWithoutStack(err, false)) // Just write errorUtils messages for
 		fmt.Println(errorUtils.ErrorsWithStack(err))
 	} else {
@@ -283,8 +282,8 @@ func Test_Conflict_Error(t *testing.T) {
 }
 
 func myfoo(e error) error {
-	//https://itnext.io/golang-error-handling-best-practice-a36f47b0b94c
-	//Note: Do not repeat Wrap, it will record redundancy call stacks, we usually care about root stack trace
+	// https://itnext.io/golang-error-handling-best-practice-a36f47b0b94c
+	// Note: Do not repeat Wrap, it will record redundancy call stacks, we usually care about root stack trace
 	return errors.WithMessage(e, "foo failed") // or grpc_errors.WrapIf()
 }
 
