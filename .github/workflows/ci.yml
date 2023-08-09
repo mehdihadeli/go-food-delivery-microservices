@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     if: |
       contains(github.event.commits[0].message, '[skip ci]') == false &&
       contains(github.event.commits[0].message, '[ci skip]') == false
@@ -26,17 +26,7 @@ jobs:
           go-version: 1.20.4
         id: go
 
-      - name: Cache go modules
-        id: cache
-        uses: actions/cache@preview
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
       - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
         run: make install-dependencies
 
         # https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
@@ -49,6 +39,7 @@ jobs:
       - name: Unit Tests
         run: make unit-test
 
+        # there are some problem with test-container library in the github-actions!! locally all tests will pass
       - name: Integration Tests
         run: make integration-test
 
