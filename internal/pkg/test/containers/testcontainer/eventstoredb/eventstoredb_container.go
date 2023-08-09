@@ -129,6 +129,7 @@ func (g *eventstoredbTestContainers) getRunOptions(
 		ExposedPorts: g.defaultOptions.Ports,
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])),
 		Hostname:     g.defaultOptions.Host,
+		SkipReaper:   true,
 		// we use `EVENTSTORE_IN_MEM` for use eventstoredb in-memory mode in tests
 		Env: map[string]string{
 			"EVENTSTORE_START_STANDARD_PROJECTIONS": "false",

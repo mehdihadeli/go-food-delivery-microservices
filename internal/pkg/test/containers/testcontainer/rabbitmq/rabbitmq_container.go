@@ -162,6 +162,7 @@ func (g *rabbitmqTestContainers) getRunOptions(
 		ExposedPorts: g.defaultOptions.Ports,
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])),
 		Hostname:     g.defaultOptions.Host,
+		SkipReaper:   true,
 		Env: map[string]string{
 			"RABBITMQ_DEFAULT_USER": g.defaultOptions.UserName,
 			"RABBITMQ_DEFAULT_PASS": g.defaultOptions.Password,

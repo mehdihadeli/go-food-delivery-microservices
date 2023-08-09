@@ -138,6 +138,7 @@ func (g *postgresPgxTestContainers) getRunOptions(
 		ExposedPorts: []string{g.defaultOptions.Port},
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)),
 		Hostname:     g.defaultOptions.Host,
+		SkipReaper:   true,
 		Env: map[string]string{
 			"POSTGRES_DB":       g.defaultOptions.Database,
 			"POSTGRES_PASSWORD": g.defaultOptions.Password,

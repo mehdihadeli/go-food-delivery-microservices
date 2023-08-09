@@ -122,6 +122,7 @@ func (g *redisTestContainers) getRunOptions(
 		ExposedPorts: []string{g.defaultOptions.Port},
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)),
 		Hostname:     g.defaultOptions.Host,
+		SkipReaper:   true,
 		Env:          map[string]string{},
 	}
 

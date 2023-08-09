@@ -134,6 +134,7 @@ func (g *mongoTestContainers) getRunOptions(
 		ExposedPorts: []string{g.defaultOptions.Port},
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)),
 		Hostname:     g.defaultOptions.Host,
+		SkipReaper:   true,
 		Env: map[string]string{
 			"MONGO_INITDB_ROOT_USERNAME": g.defaultOptions.UserName,
 			"MONGO_INITDB_ROOT_PASSWORD": g.defaultOptions.Password,
