@@ -20,7 +20,7 @@ jobs:
         # https://github.com/actions/setup-go/issues/326
       - uses: actions/setup-go@v3
         with:
-          go-version: 1.20.x
+          go-version: 1.20.4
 
       - name: Get dependencies
         run: make install-dependencies
