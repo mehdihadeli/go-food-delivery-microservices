@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v3
 
         # https://github.com/actions/setup-go/issues/326
+        # https://github.com/testcontainers/testcontainers-go/issues/1359
       - uses: actions/setup-go@v3
         with:
           go-version: 1.20.4

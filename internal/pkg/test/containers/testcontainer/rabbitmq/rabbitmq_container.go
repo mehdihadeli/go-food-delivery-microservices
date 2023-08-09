@@ -18,6 +18,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
+// https://github.com/testcontainers/testcontainers-go/issues/1359
+// https://github.com/testcontainers/testcontainers-go/issues/1249
+
 type rabbitmqTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.RabbitMQContainerOptions
