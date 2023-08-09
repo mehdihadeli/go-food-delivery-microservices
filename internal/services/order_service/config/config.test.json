@@ -5,13 +5,13 @@
   },
   "grpcOptions": {
     "name": "order_service",
-    "port": ":2300",
+    "port": ":3302",
     "host": "localhost",
     "development": true
   },
   "echoHttpOptions": {
     "name": "order_service",
-    "port": ":6100",
+    "port": ":6002",
     "development": true,
     "timeout": 30,
     "basePath": "/api/v1",

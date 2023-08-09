@@ -5,13 +5,13 @@
   },
   "grpcOptions": {
     "name": "catalogs_read_service",
-    "port": ":6004",
+    "port": ":3300",
     "host": "localhost",
     "development": true
   },
   "echoHttpOptions": {
     "name": "catalogs_read_service",
-    "port": ":5200",
+    "port": ":6000",
     "development": true,
     "timeout": 30,
     "basePath": "/api/v1",

@@ -5,7 +5,7 @@
   },
   "grpcOptions": {
     "name": "catalogs_write_service",
-    "port": ":6003",
+    "port": ":3301",
     "host": "localhost",
     "development": true
   },
