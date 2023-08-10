@@ -26,7 +26,7 @@ gofumpt -l -w .
 
 # https://github.com/incu6us/goimports-reviser
 # will do `gofmt` and `goimports` internally
-goimports-reviser ./... -rm-unused -set-alias -format -recursive
+goimports-reviser ./... -rm-unused -local -set-alias -format -recursive
 
 # https://github.com/segmentio/golines
 golines -m 120 -w --ignore-generated .
