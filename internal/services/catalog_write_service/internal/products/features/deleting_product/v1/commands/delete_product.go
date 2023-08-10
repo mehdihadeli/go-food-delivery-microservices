@@ -2,7 +2,6 @@ package commands
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/validator"
-
 	uuid "github.com/satori/go.uuid"
 )
 

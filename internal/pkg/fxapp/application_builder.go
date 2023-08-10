@@ -5,9 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go.uber.org/fx"
-
 	"github.com/spf13/viper"
+	"go.uber.org/fx"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"

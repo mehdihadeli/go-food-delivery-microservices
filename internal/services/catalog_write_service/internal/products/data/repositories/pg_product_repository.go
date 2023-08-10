@@ -4,25 +4,18 @@ import (
 	"context"
 	"fmt"
 
-	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres/repository"
-
-	"gorm.io/gorm"
-
+	"emperror.dev/errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
-
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres/repository"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-
-	"emperror.dev/errors"
-	uuid "github.com/satori/go.uuid"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	uuid "github.com/satori/go.uuid"
+	attribute2 "go.opentelemetry.io/otel/attribute"
+	"gorm.io/gorm"
 
+	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 )
 

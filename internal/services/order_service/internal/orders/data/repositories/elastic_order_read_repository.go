@@ -4,11 +4,10 @@ import (
 	"context"
 
 	"github.com/elastic/go-elasticsearch/v8"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"

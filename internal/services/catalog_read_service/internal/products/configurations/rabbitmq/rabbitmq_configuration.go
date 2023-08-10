@@ -2,7 +2,6 @@ package rabbitmq
 
 import (
 	"github.com/go-playground/validator"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"

@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/mehdihadeli/go-mediatr"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+	"github.com/mehdihadeli/go-mediatr"
+	"github.com/stretchr/testify/suite"
+
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
 	createOrderCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/dtos"

@@ -7,14 +7,13 @@ import (
 	"context"
 	"testing"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-mediatr"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products/v1/queries"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 type getProductsIntegrationTests struct {

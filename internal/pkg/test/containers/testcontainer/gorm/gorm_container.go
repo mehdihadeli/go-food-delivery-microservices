@@ -15,8 +15,7 @@ import (
 )
 
 // https://github.com/testcontainers/testcontainers-go/issues/1359
-//https://github.com/testcontainers/testcontainers-go/issues/1249
-
+// https://github.com/testcontainers/testcontainers-go/issues/1249
 type gormTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.PostgresContainerOptions

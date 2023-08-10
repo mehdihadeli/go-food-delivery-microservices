@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -18,9 +20,6 @@ import (
 	createProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
-
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 )
 
 type createProductHandlerUnitTests struct {

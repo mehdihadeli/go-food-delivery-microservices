@@ -6,7 +6,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/uptrace/bun/driver/pgdriver"
-
 	gormPostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 

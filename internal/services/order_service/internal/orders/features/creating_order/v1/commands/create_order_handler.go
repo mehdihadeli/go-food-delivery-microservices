@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	attribute2 "go.opentelemetry.io/otel/attribute"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"

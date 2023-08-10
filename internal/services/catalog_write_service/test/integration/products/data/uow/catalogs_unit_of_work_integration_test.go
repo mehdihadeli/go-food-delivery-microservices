@@ -10,6 +10,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,8 +19,6 @@ import (
 	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 // https://brunoscheufler.com/blog/2020-04-12-building-go-test-suites-using-testify

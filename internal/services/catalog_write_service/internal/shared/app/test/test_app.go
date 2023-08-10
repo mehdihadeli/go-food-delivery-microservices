@@ -6,8 +6,6 @@ import (
 	"testing"
 	"time"
 
-	gorm2 "gorm.io/gorm"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
@@ -18,6 +16,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/postgrespxg"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
+	gorm2 "gorm.io/gorm"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/configurations/catalogs"

@@ -7,11 +7,6 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
-	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
@@ -20,6 +15,11 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
+	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/mocks/testData"

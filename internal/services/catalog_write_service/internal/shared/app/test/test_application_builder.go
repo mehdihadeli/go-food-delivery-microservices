@@ -1,14 +1,13 @@
 package test
 
 import (
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/test"
 	"github.com/spf13/viper"
 	"go.uber.org/fx/fxtest"
 
 	constants2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/constants"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/test"
 )
 
 type CatalogsWriteTestApplicationBuilder struct {

@@ -8,10 +8,9 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
+	_ "github.com/uptrace/bun/driver/pgdriver"
 
 	bun2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/bun"
-	// loading bun's official Postgres driver.
-	_ "github.com/uptrace/bun/driver/pgdriver"
 )
 
 func NewBunDB(cfg *bun2.BunConfig) (*bun.DB, error) {

@@ -9,15 +9,14 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
-
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 type productMongoRepositoryTestSuite struct {

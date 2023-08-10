@@ -9,16 +9,15 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
+	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/suite"
 
 	externalEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/events/integration_events/external_events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
-	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 )
 
 type productCreatedIntegrationTests struct {

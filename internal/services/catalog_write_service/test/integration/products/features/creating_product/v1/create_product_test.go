@@ -10,6 +10,9 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	"github.com/mehdihadeli/go-mediatr"
 	"github.com/stretchr/testify/suite"
 
@@ -17,10 +20,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/dtos"
 	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/events/integration_events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
-
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 )
 
 type createProductIntegrationTests struct {

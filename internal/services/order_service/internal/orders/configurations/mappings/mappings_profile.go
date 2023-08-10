@@ -1,10 +1,10 @@
 package mappings
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"

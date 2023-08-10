@@ -1,9 +1,8 @@
 package getProductByIdQuery
 
 import (
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/validator"
+	uuid "github.com/satori/go.uuid"
 )
 
 // https://echo.labstack.com/guide/request/

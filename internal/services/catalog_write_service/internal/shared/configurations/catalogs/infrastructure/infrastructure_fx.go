@@ -2,10 +2,6 @@ package infrastructure
 
 import (
 	"github.com/go-playground/validator"
-	"go.uber.org/fx"
-
-	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/configurations/rabbitmq"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
@@ -14,6 +10,9 @@ import (
 	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
+	"go.uber.org/fx"
+
+	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/configurations/rabbitmq"
 )
 
 // https://pmihaylov.com/shared-components-go-microservices/

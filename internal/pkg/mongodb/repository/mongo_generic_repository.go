@@ -4,12 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/goccy/go-reflect"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
-
 	"emperror.dev/errors"
-
+	"github.com/goccy/go-reflect"
 	"github.com/iancoleman/strcase"
 	uuid "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"

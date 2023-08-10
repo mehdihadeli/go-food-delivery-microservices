@@ -6,6 +6,12 @@ import (
 	"testing"
 
 	"emperror.dev/errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,13 +23,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/app/test"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
-	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 type IntegrationTestSharedFixture struct {

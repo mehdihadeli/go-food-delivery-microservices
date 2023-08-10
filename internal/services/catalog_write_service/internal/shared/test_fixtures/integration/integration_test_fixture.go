@@ -8,6 +8,13 @@ import (
 	"emperror.dev/errors"
 	"github.com/brianvoe/gofakeit/v6"
 	_ "github.com/lib/pq"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/testfixture"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/suite"
@@ -21,14 +28,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/app/test"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/testfixture"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 type IntegrationTestSharedFixture struct {

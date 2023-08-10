@@ -2,9 +2,8 @@ package orders
 
 import (
 	"github.com/labstack/echo/v4"
-	echoSwagger "github.com/swaggo/echo-swagger"
-
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	echoSwagger "github.com/swaggo/echo-swagger"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/docs"
 )

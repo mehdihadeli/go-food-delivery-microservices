@@ -3,9 +3,8 @@ package repositories
 import (
 	"context"
 
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
 )

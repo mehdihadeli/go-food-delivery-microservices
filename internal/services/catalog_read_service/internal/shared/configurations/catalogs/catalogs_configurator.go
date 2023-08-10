@@ -5,13 +5,12 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/configurations/catalogs/infrastructure"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
-	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 )
 
 type CatalogsServiceConfigurator struct {
