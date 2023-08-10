@@ -22,12 +22,12 @@ gofumpt -l -w .
 # gofmt -w .
 
 # # https://pkg.go.dev/golang.org/x/tools/cmd/goimports
-# goimports  . -l -w
+# goimports -l -w .
 
 # https://github.com/incu6us/goimports-reviser
 # will do `gofmt` and `goimports` internally
-# goimports-reviser -rm-unused -set-alias -format -recursive ./...
+goimports-reviser ./... -rm-unused -set-alias -format -recursive
 
 # https://github.com/segmentio/golines
-golines .  -m 120 -w --ignore-generated
+golines -m 120 -w --ignore-generated .
 
