@@ -1,9 +1,10 @@
 # 🧺Go Ecommerce Microservices
 
-[![CI](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square)](https://github.com/mehdihadeli/store-golang-microservices/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mehdihadeli/store-golang-microservice)](https://goreportcard.com/report/github.com/mehdihadeli/store-golang-microservice)
-![Go Version](https://img.shields.io/badge/go%20version-%3E=1.20-61CFDD.svg?style=flat-square)
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod&style=flat-square&color=ff69b4)](https://gitpod.io/#https://github.com/mehdihadeli/store-golang-microservices)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mehdihadeli/go-ecommerce-microservices/ci.yml?label=CI&logo=github&style=for-the-badge)](https://github.com/mehdihadeli/go-ecommerce-microservices/actions/workflows/ci.yml)
+![Go Version](https://img.shields.io/badge/go%20version-%3E=1.20-61CFDD.svg?&style=for-the-badge)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?logoColor=white&style=for-the-badge)](http://commitizen.github.io/cz-cli/)
+
+[![Gitpod](https://img.shields.io/static/v1?style=for-the-badge&message=Open%20in%20Gitpod&color=222222&logo=Gitpod&logoColor=FFAE33&label=)](https://gitpod.io/#https://github.com/mehdihadeli/go-ecommerce-microservicess)
 
 > A practical e-commerce sample, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture** and **Dependency Injection**. For communication between independent services, We use asynchronous messaging with using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
 
@@ -37,7 +38,7 @@ For more advance projects, with two `microservices` and `modular monolith archit
 - ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL)
 - ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
 - ✅ Using `OpenTelemetry` for collection `Metrics` with using Prometheus and Grafana
-- ✅ Using `Unit Test` for testing small units with mocking dependent classes and using [Mockery](https://github.com/vektra/mockery) for mocking dependencies 
+- ✅ Using `Unit Test` for testing small units with mocking dependent classes and using [Mockery](https://github.com/vektra/mockery) for mocking dependencies
 - ✅ Using `End2End Test` and `Integration Test` for testing features with all of their real dependeinces using docker containers (cleanup tests) and [testcontainers-go](https://github.com/testcontainers/testcontainers-go) library
 - ✅ Using `Zap` and structured logging
 - ✅ Using `Viper` for configuration management
