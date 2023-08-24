@@ -37,7 +37,8 @@ For more advance projects, with two `microservices` and `modular monolith archit
 - ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL)
 - ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
 - ✅ Using `OpenTelemetry` for collection `Metrics` with using Prometheus and Grafana
-- ✅ Using `End2End Test` and `Integration Test` for testing some of the features with using docker containers (cleanup tests) and [testcontainers-go](https://github.com/testcontainers/testcontainers-go) library
+- ✅ Using Unit test for testing small units with mocking dependent classes and using [Mockery](https://github.com/vektra/mockery) for mocking dependencies 
+- ✅ Using `End2End Test` and `Integration Test` for testing features with all of its real dependeinces using docker containers (cleanup tests) and [testcontainers-go](https://github.com/testcontainers/testcontainers-go) library
 - ✅ Using `Zap` and structured logging
 - ✅ Using `Viper` for configuration management
 - ✅ Using docker and `docker-compose` for deployment
