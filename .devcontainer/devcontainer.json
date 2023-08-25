@@ -99,7 +99,7 @@
     "postCreateCommand": "go version",
     "features": {
         "ghcr.io/devcontainers/features/go:1": {
-            "version": "1.19"
+            "version": "1.20"
         },
         "ghcr.io/devcontainers/features/docker-from-docker:1": {
             "version": "latest"

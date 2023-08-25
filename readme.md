@@ -139,7 +139,13 @@ For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt), [golin
 
 ## Live Reloading In Development
 
-For live reloading in dev mode I use [air](https://github.com/cosmtrek/air) library
+For live reloading in dev mode I use [air](https://github.com/cosmtrek/air) library. for guid about using this tools you can [read this article](https://mainawycliffe.dev/blog/live-reloading-golang-using-air/).
+
+For running each microservice in `live reload mode`, inner each service folder type bellow command after [installing air](https://github.com/cosmtrek/air?ref=content.mainawycliffe.dev#via-go-install):
+
+```bash
+air
+```
 
 ## Contribution
 
