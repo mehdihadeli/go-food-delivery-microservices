@@ -45,6 +45,8 @@ For more advance projects, with two `microservices` and `modular monolith archit
 - ✅ Using docker and `docker-compose` for deployment
 - 🚧 Using `Domain Driven Design` in some of services like [Catalogs Write Service](services/catalogs/write_service/) and [Orders Service](services/catalogs/orders/)
 - 🚧 Using `Helm` and `Kubernetes` for deployment
+- 🚧 Using `Outbox Pattern` for all microservices for [Guaranteed Delivery](https://www.enterpriseintegrationpatterns.com/GuaranteedMessaging.html) or [At-least-once Delivery](https://www.cloudcomputingpatterns.org/at_least_once_delivery/)
+- 🚧 Using `Inbox Pattern` for handling [Idempotency](https://www.cloudcomputingpatterns.org/idempotent_processor/) in reciver side and [Exactly-once Delivery](https://www.cloudcomputingpatterns.org/exactly_once_delivery/)
 
 ## Technologies - Libraries
 
