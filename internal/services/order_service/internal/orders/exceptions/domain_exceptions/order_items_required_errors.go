@@ -11,7 +11,6 @@ type orderShopItemsRequiredError struct {
 
 type OrderShopItemsRequiredError interface {
 	customErrors.BadRequestError
-	IsOrderShopItemsRequiredError() bool
 }
 
 func NewOrderShopItemsRequiredError(message string) error {
@@ -24,14 +23,10 @@ func NewOrderShopItemsRequiredError(message string) error {
 	return errors.WithStackIf(br)
 }
 
-func (err *orderShopItemsRequiredError) IsOrderShopItemsRequiredError() bool {
-	return true
-}
-
 func IsOrderShopItemsRequiredError(err error) bool {
 	var os OrderShopItemsRequiredError
 	if errors.As(err, &os) {
-		return os.IsOrderShopItemsRequiredError()
+		return true
 	}
 
 	return false

@@ -13,7 +13,6 @@ type orderNotFoundError struct {
 
 type OrderNotFoundError interface {
 	customErrors.NotFoundError
-	IsOrderNotFoundError() bool
 }
 
 func NewOrderNotFoundError(id int) error {
@@ -26,14 +25,10 @@ func NewOrderNotFoundError(id int) error {
 	return errors.WithStackIf(br)
 }
 
-func (err *orderNotFoundError) IsOrderNotFoundError() bool {
-	return true
-}
-
 func IsOrderNotFoundError(err error) bool {
 	var os OrderNotFoundError
 	if errors.As(err, &os) {
-		return os.IsOrderNotFoundError()
+		return true
 	}
 
 	return false
