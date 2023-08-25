@@ -10,7 +10,6 @@ type invalidDeliveryAddressError struct {
 }
 type InvalidDeliveryAddressError interface {
 	customErrors.BadRequestError
-	IsInvalidDeliveryAddressError() bool
 }
 
 func NewInvalidDeliveryAddressError(message string) error {
@@ -23,14 +22,10 @@ func NewInvalidDeliveryAddressError(message string) error {
 	return errors.WithStackIf(br)
 }
 
-func (err *invalidDeliveryAddressError) IsInvalidDeliveryAddressError() bool {
-	return true
-}
-
 func IsInvalidDeliveryAddressError(err error) bool {
 	var ia InvalidDeliveryAddressError
 	if errors.As(err, &ia) {
-		return ia.IsInvalidDeliveryAddressError()
+		return true
 	}
 
 	return false

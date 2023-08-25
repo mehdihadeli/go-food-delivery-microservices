@@ -11,7 +11,6 @@ type invalidEmailAddressError struct {
 
 type InvalidEmailAddressError interface {
 	customErrors.BadRequestError
-	IsInvalidEmailAddressError() bool
 }
 
 func NewInvalidEmailAddressError(message string) error {
@@ -24,14 +23,10 @@ func NewInvalidEmailAddressError(message string) error {
 	return errors.WithStackIf(br)
 }
 
-func (err *invalidEmailAddressError) IsInvalidEmailAddressError() bool {
-	return true
-}
-
 func IsInvalidEmailAddressError(err error) bool {
 	var ie InvalidEmailAddressError
 	if errors.As(err, &ie) {
-		return ie.IsInvalidEmailAddressError()
+		return true
 	}
 
 	return false
