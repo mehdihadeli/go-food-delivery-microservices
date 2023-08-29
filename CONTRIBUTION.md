@@ -8,7 +8,7 @@ This is great that you'd like to contribute to this project. All change requests
 
 ## Conventional commits
 
-Our repository follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) specification. Releasing to GitHub and NuGet is done with the support of [semantic-release](https://semantic-release.gitbook.io/semantic-release/).
+Our repository follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) specification.
 
 Pull requests should have a title that follows the specification, otherwise, merging is blocked. If you are not familiar with the specification simply ask maintainers to modify. You can also use this cheatsheet if you want:
 
