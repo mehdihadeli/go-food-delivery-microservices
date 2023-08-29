@@ -1,10 +1,9 @@
 package createProductCommand
 
 import (
-	"time"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/validator"
+	validation "github.com/go-ozzo/ozzo-validation"
 	uuid "github.com/satori/go.uuid"
+	"time"
 )
 
 // https://echo.labstack.com/guide/request/
@@ -26,10 +25,19 @@ func NewCreateProduct(name string, description string, price float64) (*CreatePr
 		Price:       price,
 		CreatedAt:   time.Now(),
 	}
-	err := validator.Validate(command)
+	err := command.Validate()
 	if err != nil {
 		return nil, err
 	}
-
 	return command, nil
+}
+
+func (c *CreateProduct) Validate() error {
+	return validation.ValidateStruct(c,
+		validation.Field(&c.ProductID, validation.Required),
+		validation.Field(&c.Name, validation.Required, validation.Length(0, 255)),
+		validation.Field(&c.Description, validation.Required, validation.Length(0, 5000)),
+		validation.Field(&c.Price, validation.Required, validation.Min(0).Exclusive()),
+		validation.Field(&c.CreatedAt, validation.Required),
+	)
 }

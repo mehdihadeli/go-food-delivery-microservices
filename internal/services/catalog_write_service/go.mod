@@ -9,12 +9,13 @@ require (
 	emperror.dev/errors v0.8.1
 	github.com/brianvoe/gofakeit/v6 v6.18.0
 	github.com/gavv/httpexpect/v2 v2.3.1
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/goccy/go-json v0.10.2
 	github.com/iancoleman/strcase v0.2.0
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/lib/pq v1.10.9
-	github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg v0.0.0-00010101000000-000000000000
+	github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg v0.0.0-20230827180923-99c488ade993
 	github.com/mehdihadeli/go-mediatr v1.1.10
 	github.com/michaelklishin/rabbit-hole v1.5.0
 	github.com/satori/go.uuid v1.2.0
@@ -33,7 +34,6 @@ require (
 )
 
 require (
-	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/ClickHouse/ch-go v0.55.0 // indirect
 	github.com/ClickHouse/clickhouse-go/v2 v2.9.1 // indirect
@@ -194,7 +194,6 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/prometheus/client_golang v1.15.1 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
@@ -204,7 +203,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	golang.org/x/text v0.9.0 // indirect
-	google.golang.org/genproto v0.0.0-20230526161137-0005af68ea54 // indirect
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

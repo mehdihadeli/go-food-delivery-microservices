@@ -14,6 +14,9 @@ type GetProducts struct {
 func NewGetProducts(query *utils.ListQuery) (*GetProducts, error) {
 	q := &GetProducts{ListQuery: query}
 
+	// TODO
+	// since there is no validate tag on ListQuery,
+	// maybe we should just remove the next line ?
 	err := validator.Validate(q)
 	if err != nil {
 		return nil, err
