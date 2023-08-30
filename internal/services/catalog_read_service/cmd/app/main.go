@@ -18,6 +18,7 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+
 // https://github.com/swaggo/swag#how-to-use-it-with-gin
 
 // @contact.name Mehdi Hadeli
