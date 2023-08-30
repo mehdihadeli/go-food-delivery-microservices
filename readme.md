@@ -151,7 +151,7 @@ air
 
 ## Contribution
 
-The application is in development status. You are feel free to submit pull request or create the issue.
+The application is in development status. You are feel free to submit pull request or create the issue according [Contribution Guid](./CONTRIBUTION.md).
 
 ## License
 
