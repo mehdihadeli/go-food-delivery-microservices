@@ -88,7 +88,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
-	raw_connect(host, hostPort.Int())
+	rawConnect(host, hostPort.Int())
 
 	g.container = dbContainer
 
@@ -113,7 +113,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 	return option, nil
 }
 
-func raw_connect(host string, port int) {
+func rawConnect(host string, port int) {
 	timeout := time.Second
 	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, strconv.Itoa(port)), timeout)
 	if err != nil {
@@ -183,7 +183,7 @@ func (g *rabbitmqTestContainers) getRunOptions(
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: g.defaultOptions.Ports,
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])),
+		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])).WithPollInterval(2 * time.Second),
 		Hostname:     g.defaultOptions.Host,
 		Env: map[string]string{
 			"RABBITMQ_DEFAULT_USER": g.defaultOptions.UserName,
