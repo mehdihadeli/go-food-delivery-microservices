@@ -80,7 +80,7 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 		}
 
 		// Am I right?  this one is a validator.StructCtx with   ctx, can I just make it to query.Validate?
-		//if err := ep.Validator.StructCtx(ctx, query); err != nil {
+		// if err := ep.Validator.StructCtx(ctx, query); err != nil {
 		if err := query.Validate(); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,

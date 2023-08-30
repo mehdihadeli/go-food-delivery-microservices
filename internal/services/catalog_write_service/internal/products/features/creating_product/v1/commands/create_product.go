@@ -1,9 +1,10 @@
 package createProductCommand
 
 import (
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	uuid "github.com/satori/go.uuid"
-	"time"
 )
 
 // https://echo.labstack.com/guide/request/
