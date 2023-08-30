@@ -77,7 +77,9 @@ func (g *eventstoredbTestContainers) CreatingContainerOptions(
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		_ = dbContainer.Terminate(ctx)
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
 	})
 
 	option := &config.EventStoreDbOptions{

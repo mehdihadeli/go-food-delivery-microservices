@@ -69,7 +69,11 @@ func (g *mongoTestContainers) CreatingContainerOptions(
 	g.container = dbContainer
 
 	// Clean up the container after the test is complete
-	t.Cleanup(func() { _ = dbContainer.Terminate(ctx) })
+	t.Cleanup(func() {
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
 	option := &mongodb.MongoDbOptions{
 		User:     g.defaultOptions.UserName,
 		Password: g.defaultOptions.Password,

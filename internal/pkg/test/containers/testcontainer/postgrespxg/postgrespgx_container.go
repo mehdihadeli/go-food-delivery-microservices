@@ -71,7 +71,9 @@ func (g *postgresPgxTestContainers) CreatingContainerOptions(
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		_ = dbContainer.Terminate(ctx)
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
 	})
 
 	gormOptions := &postgres.PostgresPgxOptions{
