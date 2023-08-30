@@ -32,7 +32,7 @@ func NewUpdateProduct(productID uuid.UUID, name string, description string, pric
 }
 
 func (p *UpdateProduct) Validate() error {
-	return validation.ValidateStruct(p, validation.Field(p.ProductID, validation.Required),
+	return validation.ValidateStruct(p, validation.Field(&p.ProductID, validation.Required),
 		validation.Field(&p.Name, validation.Required, validation.Length(0, 255)),
 		validation.Field(&p.Description, validation.Required, validation.Length(0, 5000)),
 		validation.Field(&p.Price, validation.Required, validation.Min(0)),

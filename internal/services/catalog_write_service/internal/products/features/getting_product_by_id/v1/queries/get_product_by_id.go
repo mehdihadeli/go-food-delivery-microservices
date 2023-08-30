@@ -2,6 +2,7 @@ package getProductByIdQuery
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -23,5 +24,5 @@ func NewGetProductById(productId uuid.UUID) (*GetProductById, error) {
 }
 
 func (p *GetProductById) Validate() error {
-	return validation.ValidateStruct(p, validation.Field(&p.ProductID, validation.Required))
+	return validation.ValidateStruct(p, validation.Field(&p.ProductID, validation.Required, is.UUIDv4))
 }
