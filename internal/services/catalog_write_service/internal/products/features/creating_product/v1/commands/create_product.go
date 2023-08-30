@@ -37,7 +37,7 @@ func (c *CreateProduct) Validate() error {
 		validation.Field(&c.ProductID, validation.Required),
 		validation.Field(&c.Name, validation.Required, validation.Length(0, 255)),
 		validation.Field(&c.Description, validation.Required, validation.Length(0, 5000)),
-		validation.Field(&c.Price, validation.Required, validation.Min(0).Exclusive()),
+		validation.Field(&c.Price, validation.Required, validation.Min(0.0).Exclusive()),
 		validation.Field(&c.CreatedAt, validation.Required),
 	)
 }
