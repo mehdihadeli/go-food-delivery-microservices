@@ -1,21 +1,21 @@
 package customEcho
 
 import (
-	"context"
-	"fmt"
-	"strings"
+    "context"
+    "fmt"
+    "strings"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"go.opentelemetry.io/otel/metric"
+    "github.com/labstack/echo/v4"
+    "github.com/labstack/echo/v4/middleware"
+    "go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+    "go.opentelemetry.io/otel/metric"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
-	customHadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/log"
-	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
-	otelTracer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_tracer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
+    customHadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
+    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/log"
+    otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
+    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 )
 
 type echoHttpServer struct {
@@ -113,7 +113,7 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 
 	// log errors and information
 	s.echo.Use(log.EchoLogger(s.log))
-	s.echo.Use(otelTracer.Middleware(s.config.Name))
+	s.echo.Use(otelecho.Middleware(s.config.Name))
 	// Because we use metrics server middleware, if it is not available, our echo will not work.
 	if s.meter != nil {
 		s.echo.Use(otelMetrics.Middleware(s.meter, s.config.Name))

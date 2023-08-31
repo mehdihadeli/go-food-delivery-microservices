@@ -3,7 +3,10 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
+	"net"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
@@ -69,6 +72,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 	g.defaultOptions.HostPort = hostPort.Int()
+	t.Logf("rabbitmq host port is: %d", hostPort.Int())
 
 	// https://github.com/michaelklishin/rabbit-hole/issues/74
 	// get a free random host port for rabbitmq UI `Http Port`
@@ -84,11 +88,15 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
+	rawConnect(host, hostPort.Int())
+
 	g.container = dbContainer
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		_ = dbContainer.Terminate(ctx)
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
 	})
 
 	option := &config.RabbitmqOptions{
@@ -103,6 +111,18 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 	}
 
 	return option, nil
+}
+
+func rawConnect(host string, port int) {
+	timeout := time.Second
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, strconv.Itoa(port)), timeout)
+	if err != nil {
+		fmt.Println("RabbitMQ connecting error:", err)
+	}
+	if conn != nil {
+		defer conn.Close()
+		fmt.Println("Opened rabbitmq connection.", net.JoinHostPort(host, strconv.Itoa(port)))
+	}
 }
 
 func (g *rabbitmqTestContainers) Start(
@@ -163,9 +183,8 @@ func (g *rabbitmqTestContainers) getRunOptions(
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: g.defaultOptions.Ports,
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])),
+		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])).WithPollInterval(2 * time.Second),
 		Hostname:     g.defaultOptions.Host,
-		SkipReaper:   true,
 		Env: map[string]string{
 			"RABBITMQ_DEFAULT_USER": g.defaultOptions.UserName,
 			"RABBITMQ_DEFAULT_PASS": g.defaultOptions.Password,

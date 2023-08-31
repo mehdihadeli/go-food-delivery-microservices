@@ -8,7 +8,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
@@ -88,15 +88,14 @@ func getTraceOptions(
 	// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#batch-receiving
 	attrs := []attribute.KeyValue{
 		semconv.MessageIDKey.String(message.GeMessageId()),
-		semconv.MessagingConversationIDKey.String(correlationId),
+		semconv.MessagingMessageConversationID(correlationId),
 		attribute.Key(messageTracing.MessageType).String(message.GetEventTypeName()),
 		attribute.Key(messageTracing.MessageName).String(messageHeader.GetMessageName(*meta)),
 		attribute.Key(messageTracing.Payload).String(payload),
 		attribute.String(messageTracing.Headers, meta.ToJson()),
 		attribute.Key(tracing.Timestamp).Int64(time.Now().UnixMilli()),
-		semconv.MessagingDestinationKey.String(producerTracingOptions.Destination),
+		semconv.MessagingDestinationName(producerTracingOptions.Destination),
 		semconv.MessagingSystemKey.String(producerTracingOptions.MessagingSystem),
-		semconv.MessagingDestinationKindKey.String(producerTracingOptions.DestinationKind),
 		semconv.MessagingOperationKey.String("send"),
 	}
 
@@ -114,7 +113,7 @@ func getTraceOptions(
 func addAfterBaggage(ctx context.Context, message types.IMessage, meta *metadata.Metadata) context.Context {
 	correlationId := messageHeader.GetCorrelationId(*meta)
 
-	correlationIdBag, _ := baggage.NewMember(string(semconv.MessagingConversationIDKey), correlationId)
+	correlationIdBag, _ := baggage.NewMember(string(semconv.MessagingMessageConversationIDKey), correlationId)
 	messageIdBag, _ := baggage.NewMember(string(semconv.MessageIDKey), message.GeMessageId())
 	b, _ := baggage.New(correlationIdBag, messageIdBag)
 	ctx = baggage.ContextWithBaggage(ctx, b)

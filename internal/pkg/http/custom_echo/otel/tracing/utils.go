@@ -5,7 +5,7 @@ import (
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
@@ -21,7 +21,7 @@ func TraceHttpErrFromSpan(span trace.Span, err error) error {
 		span.SetAttributes(attribute.String(HttpErrorMessage, stackTraceError))
 		if customErrors.IsCustomError(err) {
 			httpError := problemDetails.ParseError(err)
-			span.SetAttributes(semconv.HTTPAttributesFromHTTPStatusCode(httpError.GetStatus())...)
+			span.SetAttributes(semconv.HTTPStatusCode(httpError.GetStatus()))
 		}
 		span.RecordError(err)
 	}
@@ -34,7 +34,7 @@ func TraceHttpErrFromSpanWithCode(span trace.Span, err error, code int) error {
 	if err != nil {
 		stackTraceError := errorUtils.ErrorsWithStack(err)
 		span.SetStatus(codes.Error, "")
-		span.SetAttributes(semconv.HTTPAttributesFromHTTPStatusCode(code)...)
+		span.SetAttributes(semconv.HTTPStatusCode(code))
 		span.SetAttributes(attribute.String(HttpErrorMessage, stackTraceError))
 		span.RecordError(err)
 	}

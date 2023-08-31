@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
@@ -72,7 +73,9 @@ func (g *gormTestContainers) CreatingContainerOptions(
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		_ = dbContainer.Terminate(ctx)
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
 	})
 
 	gormOptions := &gormPostgres.GormOptions{
@@ -139,7 +142,7 @@ func (g *gormTestContainers) getRunOptions(
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: []string{g.defaultOptions.Port},
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)),
+		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).WithPollInterval(2 * time.Second),
 		Hostname:     g.defaultOptions.Host,
 		SkipReaper:   true,
 		Env: map[string]string{

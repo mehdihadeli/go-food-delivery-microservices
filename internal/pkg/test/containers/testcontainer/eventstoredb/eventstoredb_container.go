@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/docker/go-connections/nat"
@@ -77,7 +78,9 @@ func (g *eventstoredbTestContainers) CreatingContainerOptions(
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		_ = dbContainer.Terminate(ctx)
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
 	})
 
 	option := &config.EventStoreDbOptions{
@@ -127,7 +130,7 @@ func (g *eventstoredbTestContainers) getRunOptions(
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: g.defaultOptions.Ports,
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])),
+		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])).WithPollInterval(2 * time.Second),
 		Hostname:     g.defaultOptions.Host,
 		SkipReaper:   true,
 		// we use `EVENTSTORE_IN_MEM` for use eventstoredb in-memory mode in tests
