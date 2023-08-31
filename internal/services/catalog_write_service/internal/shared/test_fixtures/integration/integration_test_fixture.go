@@ -8,6 +8,13 @@ import (
 	"emperror.dev/errors"
 	"github.com/brianvoe/gofakeit/v6"
 	_ "github.com/lib/pq"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/khaiql/dbcleaner.v2"
+	"gopkg.in/khaiql/dbcleaner.v2/engine"
+	"gorm.io/gorm"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -15,12 +22,6 @@ import (
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/testfixture"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/khaiql/dbcleaner.v2"
-	"gopkg.in/khaiql/dbcleaner.v2/engine"
-	"gorm.io/gorm"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
@@ -110,6 +111,14 @@ func (i *IntegrationTestSharedFixture) CleanupPostgresData() {
 
 // //////////////////////// Shared Hooks //////////////////////////////////
 func (i *IntegrationTestSharedFixture) SetupTest() {
+	i.Initialize()
+}
+
+func (i *IntegrationTestSharedFixture) TearDownTest() {
+	i.CleanupPostgresData()
+}
+
+func (i *IntegrationTestSharedFixture) Initialize() {
 	i.T().Log("SetupTest")
 
 	// seed data in each test
@@ -118,7 +127,7 @@ func (i *IntegrationTestSharedFixture) SetupTest() {
 	i.Items = res
 }
 
-func (i *IntegrationTestSharedFixture) TearDownTest() {
+func (i *IntegrationTestSharedFixture) Cleanup() {
 	i.T().Log("TearDownTest")
 	// cleanup test containers with their hooks
 	err := i.CleanupRabbitmqData()
