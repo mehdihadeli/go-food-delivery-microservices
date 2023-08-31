@@ -58,9 +58,8 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		query := queries.NewGetProductById(request.Id)
-
-		if err := ep.Validator.StructCtx(ctx, query); err != nil {
+		query, err := queries.NewGetProductById(request.Id)
+		if err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,
 				"[getProductByIdEndpoint_handler.StructCtx]  query validation failed",
