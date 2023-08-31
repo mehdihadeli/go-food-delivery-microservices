@@ -8,7 +8,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/baggage"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
@@ -85,7 +85,7 @@ func getTraceOptions(
 	// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#batch-receiving
 	attrs := []attribute.KeyValue{
 		semconv.MessageIDKey.String(messageHeader.GetMessageId(*meta)),
-		semconv.MessagingConversationIDKey.String(correlationId),
+		semconv.MessagingMessageConversationID(correlationId),
 		semconv.MessagingOperationReceive,
 		attribute.Key(tracing.TraceId).String(tracingHeaders.GetTracingTraceId(*meta)),
 		attribute.Key(tracing.Traceparent).String(tracingHeaders.GetTracingTraceparent(*meta)),
@@ -95,9 +95,8 @@ func getTraceOptions(
 		attribute.Key(messageTracing.MessageName).String(messageHeader.GetMessageName(*meta)),
 		attribute.Key(messageTracing.Payload).String(payload),
 		attribute.String(messageTracing.Headers, meta.ToJson()),
-		semconv.MessagingDestinationKey.String(consumerTracingOptions.Destination),
+		semconv.MessagingDestinationName(consumerTracingOptions.Destination),
 		semconv.MessagingSystemKey.String(consumerTracingOptions.MessagingSystem),
-		semconv.MessagingDestinationKindKey.String(consumerTracingOptions.DestinationKind),
 	}
 
 	if consumerTracingOptions.OtherAttributes != nil && len(consumerTracingOptions.OtherAttributes) > 0 {
@@ -114,7 +113,7 @@ func getTraceOptions(
 func addAfterBaggage(ctx context.Context, meta *metadata.Metadata) context.Context {
 	correlationId := messageHeader.GetCorrelationId(*meta)
 
-	correlationIdBag, _ := baggage.NewMember(string(semconv.MessagingConversationIDKey), correlationId)
+	correlationIdBag, _ := baggage.NewMember(string(semconv.MessagingMessageConversationIDKey), correlationId)
 	messageIdBag, _ := baggage.NewMember(string(semconv.MessageIDKey), messageHeader.GetMessageId(*meta))
 	b, _ := baggage.New(correlationIdBag, messageIdBag)
 	ctx = baggage.ContextWithBaggage(ctx, b)

@@ -11,7 +11,7 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 	uuid "github.com/satori/go.uuid"
 	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
@@ -117,7 +117,7 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		DestinationKind: "exchange",
 		Destination:     exchange,
 		OtherAttributes: []attribute.KeyValue{
-			semconv.MessagingRabbitmqRoutingKeyKey.String(routingKey),
+			semconv.MessagingRabbitmqDestinationRoutingKey(routingKey),
 		},
 	}
 

@@ -16,7 +16,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
@@ -92,7 +92,7 @@ func (o *TracingOpenTelemetry) configTracerProvider() error {
 		sampler = tracesdk.NeverSample()
 	}
 
-	// https://github.com/open-telemetry/opentelemetry-go/blob/b2246d58650bc6db04459353843250ee3bba77fc/example/fib/main.go#L45
+	// https://github.com/open-telemetry/opentelemetry-go/blob/main/example/fib/main.go#L44
 	// Ensure default SDK resources and the required service name are set.
 	r, err := resource.Merge(
 		resource.Default(),

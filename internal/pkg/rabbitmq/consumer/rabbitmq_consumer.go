@@ -13,7 +13,7 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
@@ -291,7 +291,7 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 		DestinationKind: "queue",
 		Destination:     r.rabbitmqConsumerOptions.QueueOptions.Name,
 		OtherAttributes: []attribute.KeyValue{
-			semconv.MessagingRabbitmqRoutingKeyKey.String(delivery.RoutingKey),
+			semconv.MessagingRabbitmqDestinationRoutingKey(delivery.RoutingKey),
 		},
 	}
 	ctx, beforeConsumeSpan := consumeTracing.StartConsumerSpan(
