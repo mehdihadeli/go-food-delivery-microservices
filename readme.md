@@ -33,7 +33,7 @@ For more advance projects, with two `microservices` and `modular monolith archit
 - ✅ Using `Dependency Injection` and `Inversion of Control`on top of [uber-go/fx](https://github.com/uber-go/fx) library
 - ✅ Using RESTFul api with [Echo](https://github.com/labstack/echo) framework and using swagger with [swaggo/swag](https://github.com/swaggo/swag) library
 - ✅ Using gRpc for internal service communication
-- ✅ Using [go-playground/validator](https://github.com/go-playground/validator) for validating input data in the REST and gRpc
+- ✅ Using [go-playground/validator](https://github.com/go-playground/validator) and [go-ozzo/ozzo-validation](https://github.com/go-ozzo/ozzo-validation) for validating input data in the REST and gRpc
 - ✅ Using `Postgres` and `EventStoreDB` for write databases with fully supports transactions(ACID)
 - ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL)
 - ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
@@ -71,6 +71,7 @@ For more advance projects, with two `microservices` and `modular monolith archit
 - ✔️ **[`go-redis/redis`](https://github.com/go-redis/redis)** - Type-safe Redis client for Golang
 - ✔️ **[`go-gorm/gorm`](https://github.com/go-gorm/gorm)** - The fantastic ORM library for Golang, aims to be developer friendly
 - ✔️ **[`go-playground/validator`](https://github.com/go-playground/validator)** - Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving
+- ✔️ **[`go-ozzo/ozzo-validation`](https://github.com/go-ozzo/ozzo-validation)** - Validate data of different types include, provide a rich set of validation rules right out of box.
 - ✔️ **[`spf13/viper`](https://github.com/spf13/viper)** - Go configuration with fangs
 - ✔️ **[`caarlos0/env`](https://github.com/caarlos0/env)** - A simple and zero-dependencies library to parse environment variables into structs.
 - ✔️ **[`joho/godotenv`](https://github.com/joho/godotenv)** - A Go port of Ruby's dotenv library (Loads environment variables from .env files)

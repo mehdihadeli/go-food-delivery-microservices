@@ -1,8 +1,8 @@
 package queries
 
 import (
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/validator"
 )
 
 type SearchProducts struct {
@@ -16,10 +16,14 @@ func NewSearchProducts(searchText string, query *utils.ListQuery) (*SearchProduc
 		ListQuery:  query,
 	}
 
-	err := validator.Validate(command)
+	err := command.Validate()
 	if err != nil {
 		return nil, err
 	}
 
 	return command, nil
+}
+
+func (p *SearchProducts) Validate() error {
+	return validation.ValidateStruct(p, validation.Field(&p.SearchText, validation.Required))
 }

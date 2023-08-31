@@ -62,8 +62,8 @@ func (c *productDeletedConsumer) Handle(
 		return err
 	}
 
-	command := commands.NewDeleteProduct(productUUID)
-	if err := c.validator.StructCtx(ctx, command); err != nil {
+	command, err := commands.NewDeleteProduct(productUUID)
+	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(
 			err,
 			"[productDeletedConsumer_Handle.StructCtx] command validation failed",

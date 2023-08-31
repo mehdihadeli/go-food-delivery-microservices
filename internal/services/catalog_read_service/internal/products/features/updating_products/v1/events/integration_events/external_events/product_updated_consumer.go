@@ -62,13 +62,13 @@ func (c *productUpdatedConsumer) Handle(
 		return err
 	}
 
-	command := commands.NewUpdateProduct(
+	command, err := commands.NewUpdateProduct(
 		productUUID,
 		message.Name,
 		message.Description,
 		message.Price,
 	)
-	if err := c.validator.StructCtx(ctx, command); err != nil {
+	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(
 			err,
 			"[updateProductConsumer_Consume.StructCtx] command validation failed",

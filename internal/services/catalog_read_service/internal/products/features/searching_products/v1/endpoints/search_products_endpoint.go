@@ -79,7 +79,7 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 			ListQuery:  request.ListQuery,
 		}
 
-		if err := ep.Validator.StructCtx(ctx, query); err != nil {
+		if err := query.Validate(); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,
 				"[searchProductsEndpoint_handler.StructCtx]  query validation failed",

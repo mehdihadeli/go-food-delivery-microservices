@@ -3,7 +3,8 @@ package commands
 import (
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/validator"
+	validation "github.com/go-ozzo/ozzo-validation"
+
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -32,10 +33,19 @@ func NewCreateProduct(
 		Price:       price,
 		CreatedAt:   createdAt,
 	}
-	err := validator.Validate(command)
+	err := command.Validate()
 	if err != nil {
 		return nil, err
 	}
 
 	return command, nil
+}
+
+func (p *CreateProduct) Validate() error {
+	return validation.ValidateStruct(p, validation.Field(&p.Id, validation.Required),
+		validation.Field(&p.ProductId, validation.Required),
+		validation.Field(&p.Name, validation.Required, validation.Length(3, 250)),
+		validation.Field(&p.Description, validation.Required, validation.Length(3, 500)),
+		validation.Field(&p.Price, validation.Required),
+		validation.Field(&p.CreatedAt, validation.Required))
 }

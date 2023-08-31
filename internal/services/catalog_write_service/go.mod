@@ -9,6 +9,7 @@ require (
 	emperror.dev/errors v0.8.1
 	github.com/brianvoe/gofakeit/v6 v6.18.0
 	github.com/gavv/httpexpect/v2 v2.3.1
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/goccy/go-json v0.10.2
 	github.com/iancoleman/strcase v0.2.0
@@ -33,7 +34,6 @@ require (
 )
 
 require (
-	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/ClickHouse/ch-go v0.55.0 // indirect
 	github.com/ClickHouse/clickhouse-go/v2 v2.9.1 // indirect
@@ -48,6 +48,7 @@ require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/alexflint/go-filemutex v1.1.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a // indirect
 	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/caarlos0/env/v8 v8.0.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
@@ -194,7 +195,6 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/prometheus/client_golang v1.15.1 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
@@ -204,7 +204,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	golang.org/x/text v0.9.0 // indirect
-	google.golang.org/genproto v0.0.0-20230526161137-0005af68ea54 // indirect
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
