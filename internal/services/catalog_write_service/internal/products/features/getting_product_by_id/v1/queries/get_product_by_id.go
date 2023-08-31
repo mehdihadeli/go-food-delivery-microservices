@@ -1,7 +1,8 @@
 package getProductByIdQuery
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/validator"
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -14,10 +15,14 @@ type GetProductById struct {
 
 func NewGetProductById(productId uuid.UUID) (*GetProductById, error) {
 	query := &GetProductById{ProductID: productId}
-	err := validator.Validate(query)
+	err := query.Validate()
 	if err != nil {
 		return nil, err
 	}
 
 	return query, nil
+}
+
+func (p *GetProductById) Validate() error {
+	return validation.ValidateStruct(p, validation.Field(&p.ProductID, validation.Required, is.UUIDv4))
 }

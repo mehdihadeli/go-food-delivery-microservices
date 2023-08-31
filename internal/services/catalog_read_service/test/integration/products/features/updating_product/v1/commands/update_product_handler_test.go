@@ -34,12 +34,13 @@ func (c *updateProductIntegrationTests) Test_Update_Product_Command_Handler() {
 	productId, err := uuid.FromString(c.Items[0].ProductId)
 	c.Require().NoError(err)
 
-	command := commands.NewUpdateProduct(
+	command, err := commands.NewUpdateProduct(
 		productId,
 		gofakeit.Name(),
 		gofakeit.AdjectiveDescriptive(),
 		gofakeit.Price(150, 6000),
 	)
+	c.Require().NoError(err)
 
 	result, err := mediatr.Send[*commands.UpdateProduct, *mediatr.Unit](ctx, command)
 	c.Require().NoError(err)

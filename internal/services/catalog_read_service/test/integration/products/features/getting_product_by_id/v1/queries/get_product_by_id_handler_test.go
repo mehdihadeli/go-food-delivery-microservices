@@ -33,8 +33,8 @@ func (c *getProductByIdIntegrationTests) Test_Get_Product_By_Id_Query_Handler() 
 	ctx := context.Background()
 	id, err := uuid.FromString(c.Items[0].Id)
 	c.Require().NoError(err)
-
-	query := queries.NewGetProductById(id)
+	query, err := queries.NewGetProductById(id)
+	c.Require().NoError(err)
 	result, err := mediatr.Send[*queries.GetProductById, *dtos.GetProductByIdResponseDto](
 		ctx,
 		query,
@@ -42,4 +42,10 @@ func (c *getProductByIdIntegrationTests) Test_Get_Product_By_Id_Query_Handler() 
 
 	c.NotNil(result.Product)
 	c.Equal(result.Product.Id, id.String())
+}
+
+func (c *getProductByIdIntegrationTests) Test_Should_Return_Error_For_Not_Valid_ID() {
+	query, err := queries.NewGetProductById(uuid.UUID{})
+	c.Assert().Nil(query)
+	c.Require().Error(err)
 }

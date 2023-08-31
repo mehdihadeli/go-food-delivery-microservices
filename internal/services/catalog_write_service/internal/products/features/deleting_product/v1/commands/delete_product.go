@@ -1,7 +1,8 @@
 package commands
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/validator"
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -11,10 +12,14 @@ type DeleteProduct struct {
 
 func NewDeleteProduct(productID uuid.UUID) (*DeleteProduct, error) {
 	command := &DeleteProduct{ProductID: productID}
-	err := validator.Validate(command)
+	err := command.Validate()
 	if err != nil {
 		return nil, err
 	}
 
 	return command, nil
+}
+
+func (p *DeleteProduct) Validate() error {
+	return validation.ValidateStruct(p, validation.Field(&p.ProductID, validation.Required), validation.Field(&p.ProductID, is.UUIDv4))
 }
