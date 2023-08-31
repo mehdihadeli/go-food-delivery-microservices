@@ -115,7 +115,7 @@ func (i *IntegrationTestSharedFixture) SetupTest() {
 }
 
 func (i *IntegrationTestSharedFixture) TearDownTest() {
-	i.CleanupPostgresData()
+	i.Cleanup()
 }
 
 func (i *IntegrationTestSharedFixture) Initialize() {
