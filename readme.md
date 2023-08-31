@@ -1,7 +1,7 @@
 # 🧺Go Ecommerce Microservices
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mehdihadeli/go-ecommerce-microservices/ci.yml?label=CI&logo=github&style=for-the-badge)](https://github.com/mehdihadeli/go-ecommerce-microservices/actions/workflows/ci.yml)
-![Go Version](https://img.shields.io/badge/go%20version-%3E=1.20-61CFDD.svg?&style=for-the-badge)
+![Go Version](https://img.shields.io/badge/go%20version-%3E=1.21-61CFDD.svg?&style=for-the-badge)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?logoColor=white&style=for-the-badge)](http://commitizen.github.io/cz-cli/)
 
 [![Gitpod](https://img.shields.io/static/v1?style=for-the-badge&message=Open%20in%20Gitpod&color=222222&logo=Gitpod&logoColor=FFAE33&label=)](https://gitpod.io/#https://github.com/mehdihadeli/go-ecommerce-microservicess)
