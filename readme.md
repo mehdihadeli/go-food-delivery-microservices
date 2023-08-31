@@ -34,6 +34,7 @@ For more advance projects, with two `microservices` and `modular monolith archit
 - ✅ Using RESTFul api with [Echo](https://github.com/labstack/echo) framework and using swagger with [swaggo/swag](https://github.com/swaggo/swag) library
 - ✅ Using gRpc for internal service communication
 - ✅ Using [go-playground/validator](https://github.com/go-playground/validator) for validating input data in the REST and gRpc
+- ✅ Using [go-ozzo/ozzo-validation](https://github.com/go-ozzo/ozzo-validation) for validating input data in the REST and gRpc (in services for now)
 - ✅ Using `Postgres` and `EventStoreDB` for write databases with fully supports transactions(ACID)
 - ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL)
 - ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
