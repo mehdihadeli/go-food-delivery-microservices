@@ -7,7 +7,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
-	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	"go.uber.org/fx"
@@ -24,7 +23,6 @@ var Module = fx.Module(
 	customEcho.Module,
 	grpc.Module,
 	gormPostgres.Module,
-	postgres.Module,
 	otel.Module,
 	rabbitmq.ModuleFunc(
 		func() configurations.RabbitMQConfigurationBuilderFuc {
