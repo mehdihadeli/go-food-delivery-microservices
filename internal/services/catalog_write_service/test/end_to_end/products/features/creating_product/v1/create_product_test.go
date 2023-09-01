@@ -20,7 +20,7 @@ type createProductE2ETest struct {
 	*integration.IntegrationTestSharedFixture
 }
 
-func TestCreateProductE2E(t *testing.T) {
+func TestCreateProductEndToEnd(t *testing.T) {
 	suite.Run(
 		t,
 		&createProductE2ETest{
@@ -30,6 +30,8 @@ func TestCreateProductE2E(t *testing.T) {
 }
 
 func (c *createProductE2ETest) Test_Should_Return_Created_Status_With_Valid_Input() {
+	ctx := context.Background()
+
 	request := dtos.CreateProductRequestDto{
 		Description: gofakeit.AdjectiveDescriptive(),
 		Price:       gofakeit.Price(100, 1000),
@@ -40,7 +42,7 @@ func (c *createProductE2ETest) Test_Should_Return_Created_Status_With_Valid_Inpu
 	expect := httpexpect.New(c.T(), c.BaseAddress)
 
 	expect.POST("products").
-		// WithContext(context.Background()).
+		WithContext(ctx).
 		WithJSON(request).
 		Expect().
 		Status(http.StatusCreated)
@@ -48,6 +50,8 @@ func (c *createProductE2ETest) Test_Should_Return_Created_Status_With_Valid_Inpu
 
 // Input validations
 func (c *createProductE2ETest) Test_Should_Return_Bad_Request_Status_With_Invalid_Price_Input() {
+	ctx := context.Background()
+
 	request := dtos.CreateProductRequestDto{
 		Description: gofakeit.AdjectiveDescriptive(),
 		Price:       0,
@@ -58,7 +62,7 @@ func (c *createProductE2ETest) Test_Should_Return_Bad_Request_Status_With_Invali
 	expect := httpexpect.New(c.T(), c.BaseAddress)
 
 	expect.POST("products").
-		WithContext(context.Background()).
+		WithContext(ctx).
 		WithJSON(request).
 		Expect().
 		Status(http.StatusBadRequest)

@@ -18,7 +18,7 @@ type getOrderByIdE2ETest struct {
 	*integration.IntegrationTestSharedFixture
 }
 
-func TestGetProductByIdE2E(t *testing.T) {
+func TestGetProductByIdEndToEnd(t *testing.T) {
 	suite.Run(
 		t,
 		&getOrderByIdE2ETest{

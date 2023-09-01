@@ -22,7 +22,7 @@ type createOrderE2ETest struct {
 	*integration.IntegrationTestSharedFixture
 }
 
-func TestCreateProductE2E(t *testing.T) {
+func TestCreateProductEndToEnd(t *testing.T) {
 	suite.Run(
 		t,
 		&createOrderE2ETest{

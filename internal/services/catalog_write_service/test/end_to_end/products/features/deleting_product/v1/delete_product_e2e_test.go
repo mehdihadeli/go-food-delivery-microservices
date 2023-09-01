@@ -20,7 +20,7 @@ type deleteProductE2ETest struct {
 	*integration.IntegrationTestSharedFixture
 }
 
-func TestDeleteProductE2E(t *testing.T) {
+func TestDeleteProductEndToEnd(t *testing.T) {
 	suite.Run(
 		t,
 		&deleteProductE2ETest{

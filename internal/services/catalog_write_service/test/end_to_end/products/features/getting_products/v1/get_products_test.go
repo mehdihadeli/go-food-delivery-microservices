@@ -14,20 +14,20 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
 )
 
-type getProductsE2ETest struct {
+type getAllProductsE2ETest struct {
 	*integration.IntegrationTestSharedFixture
 }
 
-func TestGetProductsE2e(t *testing.T) {
+func TestGetAllProductsEndToEnd(t *testing.T) {
 	suite.Run(
 		t,
-		&getProductsE2ETest{
+		&getAllProductsE2ETest{
 			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
 		},
 	)
 }
 
-func (c *getProductsE2ETest) Test_Should_Return_Ok_Status() {
+func (c *getAllProductsE2ETest) Test_Should_Return_Ok_Status() {
 	ctx := context.Background()
 
 	// create httpexpect instance

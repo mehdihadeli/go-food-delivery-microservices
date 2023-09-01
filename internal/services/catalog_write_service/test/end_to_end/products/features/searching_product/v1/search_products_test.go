@@ -19,7 +19,7 @@ type searchProductsE2ETest struct {
 	*integration.IntegrationTestSharedFixture
 }
 
-func TestCreateProductE2e(t *testing.T) {
+func TestSearchProductEndToEnd(t *testing.T) {
 	suite.Run(
 		t,
 		&searchProductsE2ETest{
