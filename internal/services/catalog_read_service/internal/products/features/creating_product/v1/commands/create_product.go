@@ -4,7 +4,6 @@ import (
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation"
-
 	uuid "github.com/satori/go.uuid"
 )
 

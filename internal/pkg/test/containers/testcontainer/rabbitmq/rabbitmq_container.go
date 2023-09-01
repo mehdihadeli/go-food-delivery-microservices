@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -92,13 +93,6 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 
 	g.container = dbContainer
 
-	// Clean up the container after the test is complete
-	t.Cleanup(func() {
-		if err := dbContainer.Terminate(ctx); err != nil {
-			t.Fatalf("failed to terminate container: %s", err)
-		}
-	})
-
 	option := &config.RabbitmqOptions{
 		RabbitmqHostOptions: &config.RabbitmqHostOptions{
 			UserName:    g.defaultOptions.UserName,
@@ -152,7 +146,10 @@ func (g *rabbitmqTestContainers) Start(
 }
 
 func (g *rabbitmqTestContainers) Cleanup(ctx context.Context) error {
-	return g.container.Terminate(ctx)
+	if err := g.container.Terminate(ctx); err != nil {
+		return errors.WrapIf(err, "failed to terminate container: %s")
+	}
+	return nil
 }
 
 func (g *rabbitmqTestContainers) getRunOptions(
@@ -183,7 +180,7 @@ func (g *rabbitmqTestContainers) getRunOptions(
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: g.defaultOptions.Ports,
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])).WithPollInterval(2 * time.Second),
+		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])),
 		Hostname:     g.defaultOptions.Host,
 		Env: map[string]string{
 			"RABBITMQ_DEFAULT_USER": g.defaultOptions.UserName,

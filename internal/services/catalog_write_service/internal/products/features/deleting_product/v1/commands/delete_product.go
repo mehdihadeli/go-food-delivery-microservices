@@ -21,5 +21,9 @@ func NewDeleteProduct(productID uuid.UUID) (*DeleteProduct, error) {
 }
 
 func (p *DeleteProduct) Validate() error {
-	return validation.ValidateStruct(p, validation.Field(&p.ProductID, validation.Required), validation.Field(&p.ProductID, is.UUIDv4))
+	return validation.ValidateStruct(
+		p,
+		validation.Field(&p.ProductID, validation.Required),
+		validation.Field(&p.ProductID, is.UUIDv4),
+	)
 }

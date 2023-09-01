@@ -4,22 +4,21 @@
 package uow
 
 import (
-    "context"
-    "testing"
-    "time"
+	"context"
+	"testing"
+	"time"
 
-    "emperror.dev/errors"
-    "github.com/brianvoe/gofakeit/v6"
-    uuid "github.com/satori/go.uuid"
-    "github.com/stretchr/testify/assert"
-    "github.com/stretchr/testify/require"
-    "github.com/stretchr/testify/suite"
+	"emperror.dev/errors"
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-
-    data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
 )
 
 // https://brunoscheufler.com/blog/2020-04-12-building-go-test-suites-using-testify

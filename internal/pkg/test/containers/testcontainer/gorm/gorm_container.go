@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -71,13 +72,6 @@ func (g *gormTestContainers) CreatingContainerOptions(
 
 	g.container = dbContainer
 
-	// Clean up the container after the test is complete
-	t.Cleanup(func() {
-		if err := dbContainer.Terminate(ctx); err != nil {
-			t.Fatalf("failed to terminate container: %s", err)
-		}
-	})
-
 	gormOptions := &gormPostgres.GormOptions{
 		Port:     g.defaultOptions.HostPort,
 		Host:     host,
@@ -105,7 +99,10 @@ func (g *gormTestContainers) Start(
 }
 
 func (g *gormTestContainers) Cleanup(ctx context.Context) error {
-	return g.container.Terminate(ctx)
+	if err := g.container.Terminate(ctx); err != nil {
+		return errors.WrapIf(err, "failed to terminate container: %s")
+	}
+	return nil
 }
 
 func (g *gormTestContainers) getRunOptions(
@@ -133,18 +130,17 @@ func (g *gormTestContainers) getRunOptions(
 		}
 	}
 
-	//hostFreePort, err := freeport.GetFreePort()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//g.defaultOptions.HostPort = hostFreePort
+	// var strategies []wait.Strategy
+	// strategies = []wait.Strategy{}
+	// deadline := 60 * time.Second
 
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: []string{g.defaultOptions.Port},
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).WithPollInterval(2 * time.Second),
-		Hostname:     g.defaultOptions.Host,
-		SkipReaper:   true,
+		WaitingFor: wait.ForLog("database system is ready to accept connections").
+			WithOccurrence(2).
+			WithStartupTimeout(5 * time.Second),
+		Cmd: []string{"postgres", "-c", "fsync=off"},
 		Env: map[string]string{
 			"POSTGRES_DB":       g.defaultOptions.Database,
 			"POSTGRES_PASSWORD": g.defaultOptions.Password,

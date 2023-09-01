@@ -8,13 +8,6 @@ import (
 	"emperror.dev/errors"
 	"github.com/brianvoe/gofakeit/v6"
 	_ "github.com/lib/pq"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/khaiql/dbcleaner.v2"
-	"gopkg.in/khaiql/dbcleaner.v2/engine"
-	"gorm.io/gorm"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -22,6 +15,11 @@ import (
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/testfixture"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/suite"
+	"gopkg.in/khaiql/dbcleaner.v2"
+	"gorm.io/gorm"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
@@ -57,17 +55,11 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
 		result.RabbitmqOptions.RabbitmqHostOptions.Password)
 
-	// https://github.com/khaiql/dbcleaner
-	postgresEngine := engine.NewPostgresEngine(result.GormOptions.Dns())
-	postgresCleaner := dbcleaner.New()
-	postgresCleaner.SetEngine(postgresEngine)
-
 	shared := &IntegrationTestSharedFixture{
 		Log:                  result.Logger,
 		Container:            result.Container,
 		Cfg:                  result.Cfg,
 		RabbitmqCleaner:      rmqc,
-		DbCleaner:            postgresCleaner,
 		ProductRepository:    result.ProductRepository,
 		CatalogUnitOfWorks:   result.CatalogUnitOfWorks,
 		Bus:                  result.Bus,
@@ -115,7 +107,7 @@ func (i *IntegrationTestSharedFixture) SetupTest() {
 }
 
 func (i *IntegrationTestSharedFixture) TearDownTest() {
-	i.CleanupPostgresData()
+	i.Cleanup()
 }
 
 func (i *IntegrationTestSharedFixture) Initialize() {
