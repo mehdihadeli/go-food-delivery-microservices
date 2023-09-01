@@ -131,6 +131,7 @@ func (i *IntegrationTestSharedFixture) Cleanup() {
 }
 
 func seedData(gormDB *gorm.DB) ([]*models.Product, error) {
+	// migration will do in app configuration
 	// seed data
 	err := gormDB.CreateInBatches(testData.Products, len(testData.Products)).Error
 	if err != nil {
