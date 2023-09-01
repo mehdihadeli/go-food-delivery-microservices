@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-redis/redis/v8"
 	"github.com/testcontainers/testcontainers-go"
@@ -68,9 +69,6 @@ func (g *redisTestContainers) CreatingContainerOptions(
 
 	g.container = dbContainer
 
-	// Clean up the container after the test is complete
-	t.Cleanup(func() { _ = dbContainer.Terminate(ctx) })
-
 	reidsOptions := &redis2.RedisOptions{
 		Database: g.defaultOptions.Database,
 		Host:     host,
@@ -96,7 +94,10 @@ func (g *redisTestContainers) Start(
 }
 
 func (g *redisTestContainers) Cleanup(ctx context.Context) error {
-	return g.container.Terminate(ctx)
+	if err := g.container.Terminate(ctx); err != nil {
+		return errors.WrapIf(err, "failed to terminate container: %s")
+	}
+	return nil
 }
 
 func (g *redisTestContainers) getRunOptions(
@@ -123,7 +124,6 @@ func (g *redisTestContainers) getRunOptions(
 		ExposedPorts: []string{g.defaultOptions.Port},
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).WithPollInterval(2 * time.Second),
 		Hostname:     g.defaultOptions.Host,
-		SkipReaper:   true,
 		Env:          map[string]string{},
 	}
 

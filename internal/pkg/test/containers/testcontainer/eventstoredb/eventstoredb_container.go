@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
@@ -76,13 +77,6 @@ func (g *eventstoredbTestContainers) CreatingContainerOptions(
 
 	g.container = dbContainer
 
-	// Clean up the container after the test is complete
-	t.Cleanup(func() {
-		if err := dbContainer.Terminate(ctx); err != nil {
-			t.Fatalf("failed to terminate container: %s", err)
-		}
-	})
-
 	option := &config.EventStoreDbOptions{
 		Host:     host,
 		TcpPort:  g.defaultOptions.TcpPort,
@@ -105,7 +99,10 @@ func (g *eventstoredbTestContainers) Start(
 }
 
 func (g *eventstoredbTestContainers) Cleanup(ctx context.Context) error {
-	return g.container.Terminate(ctx)
+	if err := g.container.Terminate(ctx); err != nil {
+		return errors.WrapIf(err, "failed to terminate container: %s")
+	}
+	return nil
 }
 
 func (g *eventstoredbTestContainers) getRunOptions(
@@ -132,7 +129,6 @@ func (g *eventstoredbTestContainers) getRunOptions(
 		ExposedPorts: g.defaultOptions.Ports,
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])).WithPollInterval(2 * time.Second),
 		Hostname:     g.defaultOptions.Host,
-		SkipReaper:   true,
 		// we use `EVENTSTORE_IN_MEM` for use eventstoredb in-memory mode in tests
 		Env: map[string]string{
 			"EVENTSTORE_START_STANDARD_PROJECTIONS": "false",

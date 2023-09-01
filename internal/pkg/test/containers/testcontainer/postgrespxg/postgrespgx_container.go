@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -70,13 +71,6 @@ func (g *postgresPgxTestContainers) CreatingContainerOptions(
 
 	g.container = dbContainer
 
-	// Clean up the container after the test is complete
-	t.Cleanup(func() {
-		if err := dbContainer.Terminate(ctx); err != nil {
-			t.Fatalf("failed to terminate container: %s", err)
-		}
-	})
-
 	gormOptions := &postgres.PostgresPgxOptions{
 		Port:     g.defaultOptions.HostPort,
 		Host:     host,
@@ -104,7 +98,10 @@ func (g *postgresPgxTestContainers) Start(
 }
 
 func (g *postgresPgxTestContainers) Cleanup(ctx context.Context) error {
-	return g.container.Terminate(ctx)
+	if err := g.container.Terminate(ctx); err != nil {
+		return errors.WrapIf(err, "failed to terminate container: %s")
+	}
+	return nil
 }
 
 func (g *postgresPgxTestContainers) getRunOptions(
