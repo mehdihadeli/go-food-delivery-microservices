@@ -105,7 +105,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	)
 
 	// we need a longer timout for up and running our testcontainers
-	duration := time.Second * 120
+	duration := time.Second * 300
 
 	// short timeout for handling start hooks and setup dependencies
 	startCtx, cancel := context.WithTimeout(context.Background(), duration)
