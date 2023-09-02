@@ -98,12 +98,6 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 
 	isConnectable := IsConnectable(host, hostPort.Int(), t)
 	if isConnectable == false {
-		if dbContainer.IsRunning() {
-			if err := dbContainer.Terminate(ctx); err != nil {
-				t.Fatalf("failed to terminate container: %s", err)
-			}
-		}
-
 		return g.CreatingContainerOptions(context.Background(), t, options...)
 	}
 

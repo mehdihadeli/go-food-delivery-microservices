@@ -239,6 +239,11 @@ func (r *rabbitmqBus) ConnectConsumerHandler(
 }
 
 func (r *rabbitmqBus) Start(ctx context.Context) error {
+	r.logger.Infof(
+		"rabbitmq is running on host: %s",
+		r.rabbitmqConnection.Raw().LocalAddr().String(),
+	)
+
 	for messageType, consumers := range r.messageTypeConsumers {
 		name := typeMapper.GetTypeNameByType(messageType)
 		r.logger.Info(fmt.Sprintf("consuming message type %s", name))
