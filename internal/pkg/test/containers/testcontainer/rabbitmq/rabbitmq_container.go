@@ -104,7 +104,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 			}
 		}
 
-		return g.CreatingContainerOptions(ctx, t, options...)
+		return g.CreatingContainerOptions(context.Background(), t, options...)
 	}
 
 	g.container = dbContainer
@@ -156,6 +156,11 @@ func (g *rabbitmqTestContainers) Start(
 	if err != nil {
 		return nil, err
 	}
+
+	t.Logf(
+		"rabbitmq connection is on host: %s",
+		rabbitHostOptions.AmqpEndPoint(),
+	)
 
 	mqBus, err := bus2.NewRabbitmqBus(
 		&config.RabbitmqOptions{RabbitmqHostOptions: rabbitHostOptions},
