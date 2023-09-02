@@ -137,17 +137,17 @@ func (g *gormTestContainers) getRunOptions(
 		}
 	}
 
-	// var strategies []wait.Strategy
-	// strategies = []wait.Strategy{}
-	// deadline := 60 * time.Second
+	var strategies []wait.Strategy
+	strategies = []wait.Strategy{wait.ForLog("database system is ready to accept connections").
+		WithOccurrence(2).
+		WithStartupTimeout(5 * time.Second)}
+	deadline := 120 * time.Second
 
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: []string{g.defaultOptions.Port},
-		WaitingFor: wait.ForLog("database system is ready to accept connections").
-			WithOccurrence(2).
-			WithStartupTimeout(5 * time.Second),
-		Cmd: []string{"postgres", "-c", "fsync=off"},
+		WaitingFor:   wait.ForAll(strategies...).WithDeadline(deadline),
+		Cmd:          []string{"postgres", "-c", "fsync=off"},
 		Env: map[string]string{
 			"POSTGRES_DB":       g.defaultOptions.Database,
 			"POSTGRES_PASSWORD": g.defaultOptions.Password,

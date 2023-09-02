@@ -115,9 +115,9 @@ func (c *internalConnection) connect() error {
 
 	go func() {
 		defer errorUtils.HandlePanic()
-		<-notifyClose // Listen to NotifyClose
+		chanErr := <-notifyClose // Listen to NotifyClose
 		c.isConnected = false
-		c.errConnectionChan <- errors.New("Connection Closed")
+		c.errConnectionChan <- errors.WrapIf(chanErr, "rabbitmq Connection Closed with an error.")
 	}()
 
 	return nil

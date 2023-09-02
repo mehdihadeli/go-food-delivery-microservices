@@ -3,13 +3,11 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
-	"net"
-	"strconv"
 	"testing"
-	"time"
 
 	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
+	"github.com/rabbitmq/amqp091-go"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 
@@ -69,8 +67,10 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		if err := dbContainer.Terminate(ctx); err != nil {
-			t.Fatalf("failed to terminate container: %s", err)
+		if dbContainer.IsRunning() {
+			if err := dbContainer.Terminate(ctx); err != nil {
+				t.Fatalf("failed to terminate container: %s", err)
+			}
 		}
 	})
 
@@ -96,7 +96,16 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
-	rawConnect(host, hostPort.Int())
+	isConnectable := IsConnectable(host, hostPort.Int(), t)
+	if isConnectable == false {
+		if dbContainer.IsRunning() {
+			if err := dbContainer.Terminate(ctx); err != nil {
+				t.Fatalf("failed to terminate container: %s", err)
+			}
+		}
+
+		return g.CreatingContainerOptions(ctx, t, options...)
+	}
 
 	g.container = dbContainer
 
@@ -112,16 +121,27 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 	return option, nil
 }
 
-func rawConnect(host string, port int) {
-	timeout := time.Second
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, strconv.Itoa(port)), timeout)
+func IsConnectable(host string, port int, t *testing.T) bool {
+	conn, err := amqp091.Dial(fmt.Sprintf("amqp://%s:%s@%s:%d", "guest", "guest", host, port))
 	if err != nil {
-		fmt.Println("RabbitMQ connecting error:", err)
+		t.Errorf(
+			fmt.Sprintf(
+				"Error in creating rabbitmq connection with %s",
+				fmt.Sprintf("amqp://%s:%s@%s:%d", "guest", "guest", host, port),
+			),
+		)
+
+		return false
 	}
 	if conn != nil {
+		t.Logf(
+			"Opened rabbitmq connection on host: %s",
+			fmt.Sprintf("amqp://%s:%s@%s:%d", "guest", "guest", host, port),
+		)
 		defer conn.Close()
-		fmt.Println("Opened rabbitmq connection.", net.JoinHostPort(host, strconv.Itoa(port)))
 	}
+
+	return true
 }
 
 func (g *rabbitmqTestContainers) Start(
