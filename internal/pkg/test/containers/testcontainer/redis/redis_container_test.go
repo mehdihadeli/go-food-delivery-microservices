@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Redis_Container(t *testing.T) {
+func Test_Custom_Redis_Container(t *testing.T) {
 	redis, err := NewRedisTestContainers().Start(context.Background(), t)
 	require.NoError(t, err)
 

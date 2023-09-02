@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_EventStoreDB_Container(t *testing.T) {
+func Test_Custom_EventStoreDB_Container(t *testing.T) {
 	esdbInstance, err := NewEventstoreDBTestContainers().Start(context.Background(), t)
 	require.NoError(t, err)
 

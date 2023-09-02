@@ -15,7 +15,7 @@ import (
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 )
 
-func Test_Gorm_Container(t *testing.T) {
+func Test_Custom_Gorm_Container(t *testing.T) {
 	ctx := context.Background()
 
 	gorm, err := NewGormTestContainers().Start(ctx, t)

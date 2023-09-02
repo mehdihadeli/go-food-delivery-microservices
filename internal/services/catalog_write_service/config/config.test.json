@@ -50,7 +50,7 @@
     "sslMode": false
   },
   "rabbitmqOptions": {
-    "autoStart": true,
+    "autoStart": false,
     "rabbitmqHostOptions": {
       "userName": "guest",
       "password": "guest",

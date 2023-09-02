@@ -19,7 +19,7 @@ import (
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 )
 
-func Test_RabbitMQ_Container(t *testing.T) {
+func Test_Custom_RabbitMQ_Container(t *testing.T) {
 	ctx := context.Background()
 	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
 	defaultLogger.SetupDefaultLogger()

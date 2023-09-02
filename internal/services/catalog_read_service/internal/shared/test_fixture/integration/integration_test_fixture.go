@@ -112,9 +112,6 @@ func cleanupCollections(db *mongo.Client, collections []string, databaseName str
 }
 
 // //////////////////////// Shared Hooks //////////////////////////////////
-func (i *IntegrationTestSharedFixture) SetupSuite() {
-}
-
 func (i *IntegrationTestSharedFixture) SetupTest() {
 	i.T().Log("SetupTest")
 
@@ -137,6 +134,9 @@ func (i *IntegrationTestSharedFixture) TearDownTest() {
 }
 
 func (i *IntegrationTestSharedFixture) TearDownSuite() {
+}
+
+func (i *IntegrationTestSharedFixture) SetupSuite() {
 }
 
 func seedData(db *mongo.Client, databaseName string) ([]*models.Product, error) {

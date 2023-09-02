@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Mongo_Container(t *testing.T) {
+func Test_Custom_Mongo_Container(t *testing.T) {
 	mongo, err := NewMongoTestContainers().Start(context.Background(), t)
 	require.NoError(t, err)
 

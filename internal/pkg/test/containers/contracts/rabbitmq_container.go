@@ -36,7 +36,7 @@ type RabbitMQContainer interface {
 		ctx context.Context,
 		t *testing.T,
 		options ...*RabbitMQContainerOptions,
-	) (*config.RabbitmqOptions, error)
+	) (*config.RabbitmqHostOptions, error)
 
 	Cleanup(ctx context.Context) error
 }

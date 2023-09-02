@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_Gorm_Container(t *testing.T) {
+func Test_Custom_PostgresPgx_Container(t *testing.T) {
 	gorm, err := NewPostgresPgxContainers().Start(context.Background(), t)
 	require.NoError(t, err)
 

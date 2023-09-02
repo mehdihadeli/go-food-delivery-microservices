@@ -69,7 +69,7 @@ func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer_Should_Co
 	// check for consuming `ProductCreatedV1` message, with a new consumer
 	hypothesis, err := messaging.ShouldConsumeNewConsumer[*externalEvents.ProductCreatedV1](c.Bus)
 
-	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually
+	// in test mode we set rabbitmq `AutoStart=false` configuration in rabbitmqOptions, so we should run rabbitmq bus manually
 	c.Bus.Start(context.Background())
 	time.Sleep(1 * time.Second)
 	defer c.Bus.Stop()
@@ -96,7 +96,7 @@ func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer_Should_Co
 func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer() {
 	ctx := context.Background()
 
-	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually
+	// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
 	c.Bus.Start(context.Background())
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(1 * time.Second)

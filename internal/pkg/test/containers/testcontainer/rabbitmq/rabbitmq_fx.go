@@ -9,6 +9,9 @@ import (
 
 var RabbitmqContainerOptionsDecorator = func(t *testing.T, ctx context.Context) interface{} {
 	return func(c *config.RabbitmqOptions) (*config.RabbitmqOptions, error) {
-		return NewRabbitMQTestContainers().CreatingContainerOptions(ctx, t)
+		rabbitmqHostOptions, err := NewRabbitMQTestContainers().CreatingContainerOptions(ctx, t)
+		c.RabbitmqHostOptions = rabbitmqHostOptions
+
+		return c, err
 	}
 }

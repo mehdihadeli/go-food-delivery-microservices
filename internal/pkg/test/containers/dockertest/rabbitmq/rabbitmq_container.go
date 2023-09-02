@@ -28,7 +28,7 @@ func (g *rabbitmqDockerTest) CreatingContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.RabbitMQContainerOptions,
-) (*config.RabbitmqOptions, error) {
+) (*config.RabbitmqHostOptions, error) {
 	return nil, nil
 }
 

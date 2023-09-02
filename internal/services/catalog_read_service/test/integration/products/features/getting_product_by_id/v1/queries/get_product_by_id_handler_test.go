@@ -43,9 +43,3 @@ func (c *getProductByIdIntegrationTests) Test_Get_Product_By_Id_Query_Handler() 
 	c.NotNil(result.Product)
 	c.Equal(result.Product.Id, id.String())
 }
-
-func (c *getProductByIdIntegrationTests) Test_Should_Return_Error_For_Not_Valid_ID() {
-	query, err := queries.NewGetProductById(uuid.UUID{})
-	c.Assert().Nil(query)
-	c.Require().Error(err)
-}

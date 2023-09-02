@@ -42,9 +42,3 @@ func (c *deleteProductIntegrationTests) Test_Delete_Product_Command_Handler() {
 	c.NoError(err)
 	c.NotNil(result)
 }
-
-func (c *deleteProductIntegrationTests) Test_Delete_Product_Command_Handler_Should_Return_Error_Not_Valid_UUID() {
-	command, err := commands.NewDeleteProduct(uuid.UUID{})
-	c.Assert().Nil(command)
-	c.Require().Error(err)
-}

@@ -42,5 +42,6 @@ func (h *RabbitmqHostOptions) HttpEndPoint() string {
 }
 
 func ProvideConfig(environment environemnt.Environment) (*RabbitmqOptions, error) {
-	return config.BindConfigKey[*RabbitmqOptions](optionName, environment)
+	cfg, err := config.BindConfigKey[*RabbitmqOptions](optionName, environment)
+	return cfg, err
 }

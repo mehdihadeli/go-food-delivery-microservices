@@ -51,7 +51,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.RabbitMQContainerOptions,
-) (*config.RabbitmqOptions, error) {
+) (*config.RabbitmqHostOptions, error) {
 	// https://github.com/testcontainers/testcontainers-go
 	// https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
 	containerReq := g.getRunOptions(options...)
@@ -67,12 +67,12 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
-	//// Clean up the container after the test is complete
-	//t.Cleanup(func() {
-	//	if err := dbContainer.Terminate(ctx); err != nil {
-	//		t.Fatalf("failed to terminate container: %s", err)
-	//	}
-	//})
+	// Clean up the container after the test is complete
+	t.Cleanup(func() {
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
 
 	// get a free random host port for rabbitmq `Tcp Port`
 	hostPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[0]))
@@ -100,15 +100,13 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 
 	g.container = dbContainer
 
-	option := &config.RabbitmqOptions{
-		RabbitmqHostOptions: &config.RabbitmqHostOptions{
-			UserName:    g.defaultOptions.UserName,
-			Password:    g.defaultOptions.Password,
-			HostName:    host,
-			VirtualHost: g.defaultOptions.VirtualHost,
-			Port:        g.defaultOptions.HostPort,
-			HttpPort:    g.defaultOptions.HttpPort,
-		},
+	option := &config.RabbitmqHostOptions{
+		UserName:    g.defaultOptions.UserName,
+		Password:    g.defaultOptions.Password,
+		HostName:    host,
+		VirtualHost: g.defaultOptions.VirtualHost,
+		Port:        g.defaultOptions.HostPort,
+		HttpPort:    g.defaultOptions.HttpPort,
 	}
 
 	return option, nil
@@ -134,13 +132,13 @@ func (g *rabbitmqTestContainers) Start(
 	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
 	options ...*contracts.RabbitMQContainerOptions,
 ) (bus.Bus, error) {
-	rabbitOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	rabbitHostOptions, err := g.CreatingContainerOptions(ctx, t, options...)
 	if err != nil {
 		return nil, err
 	}
 
 	mqBus, err := bus2.NewRabbitmqBus(
-		rabbitOptions,
+		&config.RabbitmqOptions{RabbitmqHostOptions: rabbitHostOptions},
 		serializer,
 		logger,
 		rabbitmqBuilderFunc,

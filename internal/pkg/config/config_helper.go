@@ -46,6 +46,10 @@ func BindConfigKey[T any](configKey string, environments ...environemnt.Environm
 
 	cfg := typeMapper.GenericInstanceByT[T]()
 
+	// this should set before reading config values from json file
+	// https://github.com/mcuadros/go-defaults
+	defaults.SetDefaults(cfg)
+
 	// https://github.com/spf13/viper/issues/390#issuecomment-718756752
 	viper.SetConfigName(fmt.Sprintf("config.%s", environment))
 	viper.AddConfigPath(configPath)
@@ -71,9 +75,6 @@ func BindConfigKey[T any](configKey string, environments ...environemnt.Environm
 	if err := env.Parse(cfg); err != nil {
 		fmt.Printf("%+v\n", err)
 	}
-
-	// https://github.com/mcuadros/go-defaults
-	defaults.SetDefaults(cfg)
 
 	return cfg, nil
 }
