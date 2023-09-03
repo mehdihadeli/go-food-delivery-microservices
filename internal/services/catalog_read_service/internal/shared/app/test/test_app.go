@@ -51,6 +51,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	// ref: https://github.com/uber-go/fx/blob/master/app_test.go
 	appBuilder := NewCatalogsReadTestApplicationBuilder(t)
 	appBuilder.ProvideModule(catalogs2.CatalogsServiceModule)
+
 	// replace real options with docker container options for testing
 	appBuilder.Decorate(rabbitmq.RabbitmqContainerOptionsDecorator(t, lifetimeCtx))
 	appBuilder.Decorate(mongo2.MongoContainerOptionsDecorator(t, lifetimeCtx))

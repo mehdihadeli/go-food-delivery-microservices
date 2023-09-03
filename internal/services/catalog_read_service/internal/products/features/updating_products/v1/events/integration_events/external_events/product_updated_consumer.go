@@ -71,7 +71,7 @@ func (c *productUpdatedConsumer) Handle(
 	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(
 			err,
-			"[updateProductConsumer_Consume.StructCtx] command validation failed",
+			"[updateProductConsumer_Consume.NewValidationErrorWrap] command validation failed",
 		)
 		c.logger.Errorf(
 			fmt.Sprintf(

@@ -54,7 +54,7 @@ func (c *createProductE2ETest) Test_Should_Return_Bad_Request_Status_With_Invali
 
 	request := dtos.CreateProductRequestDto{
 		Description: gofakeit.AdjectiveDescriptive(),
-		Price:       0,
+		Price:       0.0,
 		Name:        gofakeit.Name(),
 	}
 

@@ -45,6 +45,7 @@ type TestAppResult struct {
 	MongoClient          *mongo.Client
 	EsdbClient           *esdb.Client
 	MongoDbOptions       *mongodb.MongoDbOptions
+	GrpcClient           grpc.GrpcClient
 }
 
 func NewTestApp() *TestApp {
@@ -100,6 +101,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 				OrdersServiceClient: ordersService.NewOrdersServiceClient(
 					grpcClient.GetGrpcConnection(),
 				),
+				GrpcClient: grpcClient,
 			}
 		},
 	)
@@ -114,6 +116,10 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	if err != nil {
 		os.Exit(1)
 	}
+
+	//// waiting for grpc endpoint becomes ready in the given timeout
+	//err = result.GrpcClient.WaitForAvailableConnection()
+	//require.NoError(t, err)
 
 	t.Cleanup(func() {
 		// short timeout for handling stop hooks
