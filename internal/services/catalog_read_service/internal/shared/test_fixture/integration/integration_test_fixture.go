@@ -69,48 +69,6 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 	return shared
 }
 
-func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
-	// https://github.com/michaelklishin/rabbit-hole
-	// Get all queues
-	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
-	if err != nil {
-		return err
-	}
-
-	// clear each queue
-	for _, queue := range queues {
-		_, err = i.RabbitmqCleaner.PurgeQueue(
-			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
-			queue.Name,
-		)
-		i.Require().NoError(err)
-	}
-
-	return nil
-}
-
-func (i *IntegrationTestSharedFixture) CleanupMongoData() {
-	collections := []string{"products"}
-	err := cleanupCollections(i.mongoClient, collections, i.MongoOptions.Database)
-	i.Require().NoError(err)
-}
-
-func cleanupCollections(db *mongo.Client, collections []string, databaseName string) error {
-	database := db.Database(databaseName)
-	ctx := context.Background()
-
-	// Iterate over the collections and delete all collections
-	for _, collection := range collections {
-		collection := database.Collection(collection)
-
-		err := collection.Drop(ctx)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // //////////////////////// Shared Hooks //////////////////////////////////
 func (i *IntegrationTestSharedFixture) SetupTest() {
 	i.T().Log("SetupTest")
@@ -160,4 +118,46 @@ func seedData(db *mongo.Client, databaseName string) ([]*models.Product, error) 
 		nil,
 	)
 	return result.Items, nil
+}
+
+func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
+	// https://github.com/michaelklishin/rabbit-hole
+	// Get all queues
+	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
+	if err != nil {
+		return err
+	}
+
+	// clear each queue
+	for _, queue := range queues {
+		_, err = i.RabbitmqCleaner.PurgeQueue(
+			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
+			queue.Name,
+		)
+		i.Require().NoError(err)
+	}
+
+	return nil
+}
+
+func (i *IntegrationTestSharedFixture) CleanupMongoData() {
+	collections := []string{"products"}
+	err := cleanupCollections(i.mongoClient, collections, i.MongoOptions.Database)
+	i.Require().NoError(err)
+}
+
+func cleanupCollections(db *mongo.Client, collections []string, databaseName string) error {
+	database := db.Database(databaseName)
+	ctx := context.Background()
+
+	// Iterate over the collections and delete all collections
+	for _, collection := range collections {
+		collection := database.Collection(collection)
+
+		err := collection.Drop(ctx)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -39,12 +39,6 @@ func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer_Should_Co
 	// check for consuming `ProductCreatedV1` message with existing consumer
 	hypothesis := messaging.ShouldConsume[*externalEvents.ProductCreatedV1](ctx, c.Bus, nil)
 
-	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually
-	c.Bus.Start(context.Background())
-	time.Sleep(1 * time.Second)
-	defer c.Bus.Stop()
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-
 	err := c.Bus.PublishMessage(
 		ctx,
 		&externalEvents.ProductCreatedV1{
@@ -71,9 +65,8 @@ func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer_Should_Co
 
 	// in test mode we set rabbitmq `AutoStart=false` configuration in rabbitmqOptions, so we should run rabbitmq bus manually
 	c.Bus.Start(context.Background())
-	time.Sleep(1 * time.Second)
-	defer c.Bus.Stop()
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+	time.Sleep(1 * time.Second)
 
 	err = c.Bus.PublishMessage(
 		ctx,
@@ -95,12 +88,6 @@ func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer_Should_Co
 
 func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer() {
 	ctx := context.Background()
-
-	// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
-	c.Bus.Start(context.Background())
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-	defer c.Bus.Stop()
 
 	pid := uuid.NewV4().String()
 	productCreated := &externalEvents.ProductCreatedV1{
@@ -127,4 +114,23 @@ func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer() {
 	c.NoError(err)
 	c.NotNil(p)
 	c.Equal(pid, p.ProductId)
+}
+
+func (c *productCreatedIntegrationTests) SetupSuite() {
+	// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
+	c.Bus.Start(context.Background())
+	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+	time.Sleep(1 * time.Second)
+}
+
+func (c *productCreatedIntegrationTests) BeforeTest(suiteName, testName string) {
+	if testName == "Test_Product_Created_Consumer_Should_Consume_Product_Created_With_New_Consumer" {
+		c.Bus.Stop()
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func (c *productCreatedIntegrationTests) TearDownSuite() {
+	c.Bus.Stop()
+	time.Sleep(1 * time.Second)
 }

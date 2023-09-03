@@ -38,12 +38,6 @@ func (c *productUpdatedIntegrationTests) Test_Product_Updated_Consumer_Should_Co
 	// check for consuming `ProductUpdatedV1` message with existing consumer
 	hypothesis := messaging.ShouldConsume[*externalEvents.ProductUpdatedV1](ctx, c.Bus, nil)
 
-	// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
-	c.Bus.Start(context.Background())
-	time.Sleep(1 * time.Second)
-	defer c.Bus.Stop()
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-
 	err := c.Bus.PublishMessage(
 		ctx,
 		&externalEvents.ProductUpdatedV1{
@@ -68,11 +62,12 @@ func (c *productUpdatedIntegrationTests) Test_Product_Updated_Consumer_Should_Co
 	// check for consuming `ProductUpdatedV1` message, with a new consumer
 	hypothesis, err := messaging.ShouldConsumeNewConsumer[*externalEvents.ProductUpdatedV1](c.Bus)
 
-	// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
-	c.Bus.Start(context.Background())
-	time.Sleep(1 * time.Second)
-	defer c.Bus.Stop()
+	// at first, we should add new consumer to rabbitmq bus then start the broker, because we can't add new consumer after start.
+	// we should also turn off consumer in `BeforeTest` for this test
+	c.Bus.Start(ctx)
+
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+	time.Sleep(1 * time.Second)
 
 	err = c.Bus.PublishMessage(
 		ctx,
@@ -94,12 +89,6 @@ func (c *productUpdatedIntegrationTests) Test_Product_Updated_Consumer_Should_Co
 
 func (c *productUpdatedIntegrationTests) Test_Product_Updated_Consumer() {
 	ctx := context.Background()
-
-	// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
-	c.Bus.Start(context.Background())
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-	defer c.Bus.Stop()
 
 	productUpdated := &externalEvents.ProductUpdatedV1{
 		Message:     types.NewMessage(uuid.NewV4().String()),
@@ -124,4 +113,23 @@ func (c *productUpdatedIntegrationTests) Test_Product_Updated_Consumer() {
 	c.NotNil(p)
 	c.Equal(productUpdated.Name, p.Name)
 	c.Equal(productUpdated.ProductId, p.ProductId)
+}
+
+func (c *productUpdatedIntegrationTests) SetupSuite() {
+	// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
+	c.Bus.Start(context.Background())
+	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+	time.Sleep(1 * time.Second)
+}
+
+func (c *productUpdatedIntegrationTests) BeforeTest(suiteName, testName string) {
+	if testName == "Test_Product_Updated_Consumer_Should_Consume_Product_Created_With_New_Consumer" {
+		c.Bus.Stop()
+		time.Sleep(1 * time.Second)
+	}
+}
+
+func (c *productUpdatedIntegrationTests) TearDownSuite() {
+	c.Bus.Stop()
+	time.Sleep(1 * time.Second)
 }

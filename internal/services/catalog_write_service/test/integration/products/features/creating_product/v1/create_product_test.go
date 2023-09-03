@@ -136,7 +136,6 @@ func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With
 
 func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker() {
 	ctx := context.Background()
-	defer c.Bus.Stop()
 
 	// check for consuming `ProductCreatedV1` message, with a new consumer
 	hypothesis, err := messaging.ShouldConsumeNewConsumer[*integrationEvents.ProductCreatedV1](
@@ -171,6 +170,7 @@ func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With
 func (c *createProductIntegrationTests) BeforeTest(suiteName, testName string) {
 	if testName == "Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker" {
 		c.Bus.Stop()
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -188,4 +188,5 @@ func (c *createProductIntegrationTests) SetupSuite() {
 
 func (c *createProductIntegrationTests) TearDownSuite() {
 	c.Bus.Stop()
+	time.Sleep(1 * time.Second)
 }

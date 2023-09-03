@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"emperror.dev/errors"
+	"github.com/rabbitmq/amqp091-go"
 	"github.com/solsw/go2linq/v2"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
@@ -302,7 +303,9 @@ func (r *rabbitmqBus) Stop() error {
 	waitGroup.Wait()
 
 	err := r.rabbitmqConnection.Close()
-
+	if err == amqp091.ErrClosed {
+		return nil
+	}
 	return err
 }
 
