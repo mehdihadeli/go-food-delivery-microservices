@@ -46,7 +46,7 @@ func (g *grpcClient) Close() error {
 }
 
 func (g *grpcClient) WaitForAvailableConnection() error {
-	timeout := time.Second * 10
+	timeout := time.Second * 20
 
 	err := waitUntilConditionMet(func() bool {
 		return g.conn.GetState() == connectivity.Ready
