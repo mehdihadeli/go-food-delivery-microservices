@@ -18,6 +18,7 @@ type internalConnection struct {
 	errConnectionChan chan error
 	errChannelChan    chan error
 	reconnectedChan   chan struct{}
+	stopped           bool
 }
 
 type IConnection interface {
@@ -57,6 +58,7 @@ func NewRabbitMQConnection(cfg *config.RabbitmqOptions) (IConnection, error) {
 }
 
 func (c *internalConnection) Close() error {
+	c.stopped = true
 	return c.Connection.Close()
 }
 
@@ -101,7 +103,7 @@ func (c *internalConnection) connect() error {
 		return errors.WrapIf(
 			err,
 			fmt.Sprintf(
-				"Error in creating rabbitmq connection with %s",
+				"Error in connecting to rabbitmq with host: %s",
 				c.cfg.RabbitmqHostOptions.AmqpEndPoint(),
 			),
 		)
@@ -128,10 +130,11 @@ func (c *internalConnection) handleReconnecting() {
 	for {
 		select {
 		case err := <-c.errConnectionChan:
-			if err != nil {
+			if err != nil && c.stopped == false {
 				defaultLogger.Logger.Info("Rabbitmq Connection Reconnecting started")
 				err := c.connect()
 				if err != nil {
+					defaultLogger.Logger.Error(fmt.Sprintf("Error in reconnecting, %s", err))
 					continue
 				}
 				defaultLogger.Logger.Info("Rabbitmq Connection Reconnected")

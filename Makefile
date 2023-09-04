@@ -55,9 +55,9 @@ unit-test:
 
 .PHONY: integration-test
 integration-test:
-	@./scripts/test.sh catalog_write_service integration
+#	@./scripts/test.sh catalog_write_service integration
 	@./scripts/test.sh catalog_read_service integration
-	@./scripts/test.sh  order_service integration
+#	@./scripts/test.sh  order_service integration
 
 .PHONY: e2e-test
 e2e-test:

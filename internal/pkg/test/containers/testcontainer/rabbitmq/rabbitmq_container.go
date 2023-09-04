@@ -117,7 +117,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 
 func IsConnectable(host string, port int, t *testing.T) bool {
 	conn, err := amqp091.Dial(fmt.Sprintf("amqp://%s:%s@%s:%d", "guest", "guest", host, port))
-	if err != nil {
+	if err != nil || (conn != nil && conn.IsClosed()) {
 		t.Errorf(
 			fmt.Sprintf(
 				"Error in creating rabbitmq connection with %s",
@@ -126,8 +126,7 @@ func IsConnectable(host string, port int, t *testing.T) bool {
 		)
 
 		return false
-	}
-	if conn != nil {
+	} else {
 		t.Logf(
 			"Opened rabbitmq connection on host: %s",
 			fmt.Sprintf("amqp://%s:%s@%s:%d", "guest", "guest", host, port),
