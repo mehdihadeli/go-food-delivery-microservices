@@ -18,11 +18,12 @@ type internalConnection struct {
 	errConnectionChan chan error
 	errChannelChan    chan error
 	reconnectedChan   chan struct{}
-	stopped           bool
+	stoppedManually   bool
 }
 
 type IConnection interface {
 	IsClosed() bool
+	IsClosedManually() bool
 	IsConnected() bool
 	// Channel gets a new channel on this internalConnection
 	Channel() (*amqp091.Channel, error)
@@ -58,8 +59,12 @@ func NewRabbitMQConnection(cfg *config.RabbitmqOptions) (IConnection, error) {
 }
 
 func (c *internalConnection) Close() error {
-	c.stopped = true
+	c.stoppedManually = true
 	return c.Connection.Close()
+}
+
+func (c *internalConnection) IsClosedManually() bool {
+	return c.stoppedManually
 }
 
 func (c *internalConnection) IsConnected() bool {
@@ -130,7 +135,7 @@ func (c *internalConnection) handleReconnecting() {
 	for {
 		select {
 		case err := <-c.errConnectionChan:
-			if err != nil && c.stopped == false {
+			if err != nil && c.stoppedManually == false {
 				defaultLogger.Logger.Info("Rabbitmq Connection Reconnecting started")
 				err := c.connect()
 				if err != nil {
