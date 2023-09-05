@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
@@ -71,6 +72,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 			if err := dbContainer.Terminate(ctx); err != nil {
 				t.Fatalf("failed to terminate container: %s", err)
 			}
+			time.Sleep(time.Second * 1)
 		}
 	})
 

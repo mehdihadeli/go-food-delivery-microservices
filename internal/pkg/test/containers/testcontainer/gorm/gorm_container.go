@@ -63,6 +63,7 @@ func (g *gormTestContainers) CreatingContainerOptions(
 		if err := dbContainer.Terminate(ctx); err != nil {
 			t.Fatalf("failed to terminate container: %s", err)
 		}
+		time.Sleep(time.Second * 1)
 	})
 
 	// get a free random host hostPort

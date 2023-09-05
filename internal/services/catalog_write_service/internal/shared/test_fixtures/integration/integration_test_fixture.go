@@ -101,26 +101,16 @@ func (i *IntegrationTestSharedFixture) CleanupPostgresData() {
 	}
 }
 
-// //////////////////////// Shared Hooks //////////////////////////////////
-func (i *IntegrationTestSharedFixture) SetupTest() {
-	i.Initialize()
-}
-
-func (i *IntegrationTestSharedFixture) TearDownTest() {
-	i.Cleanup()
-}
-
 func (i *IntegrationTestSharedFixture) Initialize() {
-	i.T().Log("SetupTest")
-
 	// seed data in each test
 	res, err := seedData(i.Gorm)
 	i.Require().NoError(err)
 	i.Items = res
+
+	i.T().Log("Initialize integration fixtures was successful")
 }
 
 func (i *IntegrationTestSharedFixture) Cleanup() {
-	i.T().Log("TearDownTest")
 	// cleanup test containers with their hooks
 	err := i.CleanupRabbitmqData()
 	if err != nil {
@@ -128,6 +118,7 @@ func (i *IntegrationTestSharedFixture) Cleanup() {
 	}
 
 	i.CleanupPostgresData()
+	i.T().Log("Cleanup integration fixtures was successful")
 }
 
 func seedData(gormDB *gorm.DB) ([]*models.Product, error) {
@@ -187,4 +178,17 @@ func seedAndMigration(gormDB *gorm.DB) ([]*models.Product, error) {
 		gormDB,
 	)
 	return result.Items, nil
+}
+
+// //////////////////////// Shared Hooks //////////////////////////////////
+func (i *IntegrationTestSharedFixture) SetupTest() {
+	i.T().Log("SetupTest started")
+
+	i.Initialize()
+}
+
+func (i *IntegrationTestSharedFixture) TearDownTest() {
+	i.T().Log("TearDownTest started")
+
+	i.Cleanup()
 }
