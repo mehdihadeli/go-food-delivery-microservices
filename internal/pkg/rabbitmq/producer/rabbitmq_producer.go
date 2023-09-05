@@ -139,11 +139,6 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		return producer2.FinishProducerSpan(beforeProduceSpan, errors.New("connection is nil"))
 	}
 
-	if r.connection.IsClosedManually() {
-		r.logger.Info("connection closed manually.")
-		return nil
-	}
-
 	if r.connection.IsClosed() {
 		return producer2.FinishProducerSpan(
 			beforeProduceSpan,
