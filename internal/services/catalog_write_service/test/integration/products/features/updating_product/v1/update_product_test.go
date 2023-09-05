@@ -187,6 +187,6 @@ func (c *updateProductIntegrationTests) SetupSuite() {
 }
 
 func (c *updateProductIntegrationTests) TearDownSuite() {
-	c.Bus.Stop()
-	time.Sleep(1 * time.Second)
+	// c.Bus.Stop()
+	// time.Sleep(1 * time.Second)
 }

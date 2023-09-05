@@ -209,5 +209,6 @@ func (c *createOrderIntegrationTests) SetupSuite() {
 }
 
 func (c *createOrderIntegrationTests) TearDownSuite() {
-	c.Bus.Stop()
+	// c.Bus.Stop()
+	// time.Sleep(1 * time.Second)
 }
