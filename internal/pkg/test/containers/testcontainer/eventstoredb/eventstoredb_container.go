@@ -55,12 +55,12 @@ func (g *eventstoredbTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
-	//// Clean up the container after the test is complete
-	//t.Cleanup(func() {
-	//	if err := dbContainer.Terminate(ctx); err != nil {
-	//		t.Fatalf("failed to terminate container: %s", err)
-	//	}
-	//})
+	// Clean up the container after the test is complete
+	t.Cleanup(func() {
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
 
 	// get a free random host port for http and grpc port for eventstoredb
 	httpPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[0]))
