@@ -208,7 +208,7 @@ func (r *rabbitMQConsumer) Start(ctx context.Context) error {
 					ch.NotifyClose(chClosedCh)
 				case msg, ok := <-msgs:
 					if !ok {
-						r.logger.Error("consumer connection dropped")
+						r.logger.Info("consumer connection dropped")
 						return
 					}
 

@@ -21,6 +21,7 @@ type RabbitmqOptions struct {
 	Persisted           bool
 	AppId               string
 	AutoStart           bool `mapstructure:"autoStart"           default:"true"`
+	Reconnecting        bool `mapstructure:"reconnecting"        default:"true"`
 }
 
 type RabbitmqHostOptions struct {

@@ -29,6 +29,7 @@
   },
   "rabbitmqOptions": {
     "autoStart": false,
+    "reconnecting": false,
     "rabbitmqHostOptions": {
       "userName": "guest",
       "password": "guest",

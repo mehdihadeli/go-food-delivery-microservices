@@ -51,7 +51,9 @@ func NewRabbitMQConnection(cfg *config.RabbitmqOptions) (IConnection, error) {
 		return nil, err
 	}
 
-	go c.handleReconnecting()
+	if cfg.Reconnecting {
+		go c.handleReconnecting()
+	}
 
 	return c, err
 }
