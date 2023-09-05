@@ -66,6 +66,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 	}
 
 	//// Clean up the container after the test is complete
+	//// TODO
 	//t.Cleanup(func() {
 	//	if dbContainer.IsRunning() {
 	//		if err := dbContainer.Terminate(ctx); err != nil {
