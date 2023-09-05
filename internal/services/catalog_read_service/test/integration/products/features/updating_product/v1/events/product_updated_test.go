@@ -130,6 +130,7 @@ func (c *productUpdatedIntegrationTests) BeforeTest(suiteName, testName string) 
 }
 
 func (c *productUpdatedIntegrationTests) TearDownSuite() {
+	// stop the consumers
 	c.Bus.Stop()
 	time.Sleep(2 * time.Second)
 }
