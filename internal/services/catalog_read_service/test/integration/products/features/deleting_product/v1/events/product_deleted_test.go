@@ -109,7 +109,7 @@ func (c *productDeletedIntegrationTests) SetupSuite() {
 	// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
 	c.Bus.Start(context.Background())
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 }
 
 func (c *productDeletedIntegrationTests) BeforeTest(suiteName, testName string) {
@@ -120,6 +120,8 @@ func (c *productDeletedIntegrationTests) BeforeTest(suiteName, testName string) 
 }
 
 func (c *productDeletedIntegrationTests) TearDownSuite() {
+	c.T().Log("TearDownSuite started")
+
 	c.Bus.Stop()
 	time.Sleep(2 * time.Second)
 }

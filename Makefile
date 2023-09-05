@@ -55,15 +55,15 @@ unit-test:
 
 .PHONY: integration-test
 integration-test:
-#	@./scripts/test.sh catalog_write_service integration
+	@./scripts/test.sh catalog_write_service integration
 	@./scripts/test.sh catalog_read_service integration
-#	@./scripts/test.sh  order_service integration
+	@./scripts/test.sh  order_service integration
 
 .PHONY: e2e-test
 e2e-test:
-#	@./scripts/test.sh catalog_write_service e2e
+	@./scripts/test.sh catalog_write_service e2e
 	@./scripts/test.sh catalog_read_service e2e
-#	@./scripts/test.sh  order_service e2e
+	@./scripts/test.sh  order_service e2e
 
 #.PHONY: load-test
 #load-test:

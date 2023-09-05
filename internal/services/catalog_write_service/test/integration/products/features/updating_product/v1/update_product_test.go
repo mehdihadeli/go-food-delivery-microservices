@@ -167,7 +167,7 @@ func (c *updateProductIntegrationTests) Test_Should_Consume_Product_Updated_With
 func (c *updateProductIntegrationTests) BeforeTest(suiteName, testName string) {
 	if testName == "Test_Should_Consume_Product_Updated_With_New_Consumer_From_Broker" {
 		c.Bus.Stop()
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
 

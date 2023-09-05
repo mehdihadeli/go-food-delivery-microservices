@@ -126,11 +126,13 @@ func (c *productCreatedIntegrationTests) SetupSuite() {
 func (c *productCreatedIntegrationTests) BeforeTest(suiteName, testName string) {
 	if testName == "Test_Product_Created_Consumer_Should_Consume_Product_Created_With_New_Consumer" {
 		c.Bus.Stop()
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
 
 func (c *productCreatedIntegrationTests) TearDownSuite() {
+	c.T().Log("TearDownSuite started")
+
 	// stop the consumers
 	c.Bus.Stop()
 	time.Sleep(2 * time.Second)

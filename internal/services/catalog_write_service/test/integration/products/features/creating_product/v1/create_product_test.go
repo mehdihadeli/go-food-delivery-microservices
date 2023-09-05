@@ -170,7 +170,7 @@ func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With
 func (c *createProductIntegrationTests) BeforeTest(suiteName, testName string) {
 	if testName == "Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker" {
 		c.Bus.Stop()
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 	}
 }
 

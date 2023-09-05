@@ -193,6 +193,7 @@ func (c *createOrderIntegrationTests) Test_Should_Consume_Order_Created_With_New
 func (c *createOrderIntegrationTests) BeforeTest(suiteName, testName string) {
 	if testName == "Test_Should_Consume_Order_Created_With_New_Consumer_From_Broker" {
 		c.Bus.Stop()
+		time.Sleep(2 * time.Second)
 	}
 }
 
@@ -209,6 +210,8 @@ func (c *createOrderIntegrationTests) SetupSuite() {
 }
 
 func (c *createOrderIntegrationTests) TearDownSuite() {
-	// c.Bus.Stop()
-	// time.Sleep(1 * time.Second)
+	c.T().Log("TearDownSuite started")
+
+	c.Bus.Stop()
+	time.Sleep(2 * time.Second)
 }
