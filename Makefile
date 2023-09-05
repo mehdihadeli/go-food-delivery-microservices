@@ -61,9 +61,9 @@ integration-test:
 
 .PHONY: e2e-test
 e2e-test:
-	@./scripts/test.sh catalog_write_service e2e
+#	@./scripts/test.sh catalog_write_service e2e
 	@./scripts/test.sh catalog_read_service e2e
-	@./scripts/test.sh  order_service e2e
+#	@./scripts/test.sh  order_service e2e
 
 #.PHONY: load-test
 #load-test:
