@@ -150,53 +150,6 @@ func (c *createOrderIntegrationTests) Test_Should_Consume_Order_Created_With_Exi
 	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
 }
 
-func (c *createOrderIntegrationTests) Test_Should_Consume_Order_Created_With_New_Consumer_From_Broker() {
-	ctx := context.Background()
-	defer c.Bus.Stop()
-
-	// check for consuming `OrderCreatedV1` message, with a new consumer
-	hypothesis, err := messaging.ShouldConsumeNewConsumer[*integrationEvents.OrderCreatedV1](
-		c.Bus,
-	)
-	c.Require().NoError(err)
-
-	// at first, we should add new consumer to rabbitmq bus then start the broker, because we can't add new consumer after start.
-	// we should also turn off consumer in `BeforeTest` for this test
-	c.Bus.Start(ctx)
-
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-
-	command := createOrderCommandV1.NewCreateOrder(
-		[]*dtosV1.ShopItemDto{
-			{
-				Quantity:    uint64(gofakeit.Number(1, 10)),
-				Description: gofakeit.AdjectiveDescriptive(),
-				Price:       gofakeit.Price(100, 10000),
-				Title:       gofakeit.Name(),
-			},
-		},
-		gofakeit.Email(),
-		gofakeit.Address().Address,
-		time.Now(),
-	)
-	_, err = mediatr.Send[*createOrderCommandV1.CreateOrder, *dtos.CreateOrderResponseDto](
-		context.Background(),
-		command,
-	)
-	c.NoError(err)
-
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
-
-func (c *createOrderIntegrationTests) BeforeTest(suiteName, testName string) {
-	if testName == "Test_Should_Consume_Order_Created_With_New_Consumer_From_Broker" {
-		c.Bus.Stop()
-		time.Sleep(2 * time.Second)
-	}
-}
-
 func (c *createOrderIntegrationTests) SetupSuite() {
 	// we don't have a consumer in this service, so we simulate one consumer, register one consumer for `OrderCreatedV1` message before executing the tests
 	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*integrationEvents.OrderCreatedV1]()

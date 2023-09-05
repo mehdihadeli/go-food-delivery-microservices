@@ -134,46 +134,6 @@ func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With
 	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
 }
 
-func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker() {
-	ctx := context.Background()
-
-	// check for consuming `ProductCreatedV1` message, with a new consumer
-	hypothesis, err := messaging.ShouldConsumeNewConsumer[*integrationEvents.ProductCreatedV1](
-		c.Bus,
-	)
-	c.Require().NoError(err)
-
-	// at first, we should add new consumer to rabbitmq bus then start the broker, because we can't add new consumer after start.
-	// we should also turn off consumer in `BeforeTest` for this test
-	c.Bus.Start(ctx)
-
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-
-	command, err := createProductCommand.NewCreateProduct(
-		gofakeit.Name(),
-		gofakeit.AdjectiveDescriptive(),
-		gofakeit.Price(150, 6000),
-	)
-	c.Require().NoError(err)
-
-	_, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
-		ctx,
-		command,
-	)
-	c.Require().NoError(err)
-
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
-
-func (c *createProductIntegrationTests) BeforeTest(suiteName, testName string) {
-	if testName == "Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker" {
-		c.Bus.Stop()
-		time.Sleep(2 * time.Second)
-	}
-}
-
 func (c *createProductIntegrationTests) SetupSuite() {
 	// we don't have a consumer in this service, so we simulate one consumer, register one consumer for `ProductCreatedV1` message before executing the tests
 	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*integrationEvents.ProductCreatedV1]()

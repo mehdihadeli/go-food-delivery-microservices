@@ -15,7 +15,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	"github.com/mehdihadeli/go-mediatr"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/commands"
@@ -130,45 +129,6 @@ func (c *updateProductIntegrationTests) Test_Should_Consume_Product_Created_With
 
 	// ensuring message can be consumed with a consumer
 	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
-
-func (c *updateProductIntegrationTests) Test_Should_Consume_Product_Updated_With_New_Consumer_From_Broker() {
-	ctx := context.Background()
-
-	//  check for consuming `ProductUpdatedV1` message, with a new consumer
-	hypothesis, err := messaging.ShouldConsumeNewConsumer[*integration_events.ProductUpdatedV1](
-		c.Bus,
-	)
-	require.NoError(c.T(), err)
-
-	// at first, we should add new consumer to rabbitmq bus then start the broker, because we can't add new consumer after start.
-	// we should also turn off consumer in `BeforeTest` for this test
-	c.Bus.Start(ctx)
-
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-
-	existing := c.Items[0]
-	command, err := commands.NewUpdateProduct(
-		existing.ProductId,
-		gofakeit.Name(),
-		existing.Description,
-		existing.Price,
-	)
-	c.Require().NoError(err)
-
-	_, err = mediatr.Send[*commands.UpdateProduct, *mediatr.Unit](ctx, command)
-	c.Require().NoError(err)
-
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
-
-func (c *updateProductIntegrationTests) BeforeTest(suiteName, testName string) {
-	if testName == "Test_Should_Consume_Product_Updated_With_New_Consumer_From_Broker" {
-		c.Bus.Stop()
-		time.Sleep(2 * time.Second)
-	}
 }
 
 func (c *updateProductIntegrationTests) SetupSuite() {

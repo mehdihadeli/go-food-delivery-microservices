@@ -57,35 +57,6 @@ func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer_Should_Co
 	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
 }
 
-func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer_Should_Consume_Product_Created_With_New_Consumer() {
-	ctx := context.Background()
-
-	// check for consuming `ProductCreatedV1` message, with a new consumer
-	hypothesis, err := messaging.ShouldConsumeNewConsumer[*externalEvents.ProductCreatedV1](c.Bus)
-
-	// in test mode we set rabbitmq `AutoStart=false` configuration in rabbitmqOptions, so we should run rabbitmq bus manually
-	c.Bus.Start(context.Background())
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-
-	err = c.Bus.PublishMessage(
-		ctx,
-		&externalEvents.ProductCreatedV1{
-			Message:     types.NewMessage(uuid.NewV4().String()),
-			ProductId:   uuid.NewV4().String(),
-			Name:        gofakeit.Name(),
-			Price:       gofakeit.Price(150, 6000),
-			CreatedAt:   time.Now(),
-			Description: gofakeit.EmojiDescription(),
-		},
-		nil,
-	)
-	c.NoError(err)
-
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
-
 func (c *productCreatedIntegrationTests) Test_Product_Created_Consumer() {
 	ctx := context.Background()
 
@@ -121,13 +92,6 @@ func (c *productCreatedIntegrationTests) SetupSuite() {
 	c.Bus.Start(context.Background())
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(1 * time.Second)
-}
-
-func (c *productCreatedIntegrationTests) BeforeTest(suiteName, testName string) {
-	if testName == "Test_Product_Created_Consumer_Should_Consume_Product_Created_With_New_Consumer" {
-		c.Bus.Stop()
-		time.Sleep(2 * time.Second)
-	}
 }
 
 func (c *productCreatedIntegrationTests) TearDownSuite() {

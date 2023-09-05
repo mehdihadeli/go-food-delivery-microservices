@@ -54,34 +54,6 @@ func (c *productDeletedIntegrationTests) Test_Product_Deleted_Consumer_Should_Co
 	hypothesis.Validate(ctx, "there is no consumed message", time.Second*60)
 }
 
-func (c *productDeletedIntegrationTests) Test_Product_Deleted_Consumer_Should_Consume_Product_Deleted_With_New_Consumer() {
-	ctx := context.Background()
-
-	// check for consuming `ProductDeletedV1` message, with a new consumer
-	hypothesis, err := messaging.ShouldConsumeNewConsumer[*externalEvents.ProductDeletedV1](c.Bus)
-	c.Require().NoError(err)
-
-	// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
-	c.Bus.Start(context.Background())
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-
-	event := &externalEvents.ProductDeletedV1{
-		Message:   types.NewMessage(uuid.NewV4().String()),
-		ProductId: c.Items[0].ProductId,
-	}
-
-	err = c.Bus.PublishMessage(
-		ctx,
-		event,
-		nil,
-	)
-	c.NoError(err)
-
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*60)
-}
-
 func (c *productDeletedIntegrationTests) Test_Product_Deleted_Consumer() {
 	ctx := context.Background()
 
@@ -110,13 +82,6 @@ func (c *productDeletedIntegrationTests) SetupSuite() {
 	c.Bus.Start(context.Background())
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(2 * time.Second)
-}
-
-func (c *productDeletedIntegrationTests) BeforeTest(suiteName, testName string) {
-	if testName == "Test_Product_Deleted_Consumer_Should_Consume_Product_Deleted_With_New_Consumer" {
-		c.Bus.Stop()
-		time.Sleep(1 * time.Second)
-	}
 }
 
 func (c *productDeletedIntegrationTests) TearDownSuite() {

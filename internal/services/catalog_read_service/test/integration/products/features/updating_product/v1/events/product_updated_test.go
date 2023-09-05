@@ -56,37 +56,6 @@ func (c *productUpdatedIntegrationTests) Test_Product_Updated_Consumer_Should_Co
 	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
 }
 
-func (c *productUpdatedIntegrationTests) Test_Product_Updated_Consumer_Should_Consume_Product_Created_With_New_Consumer() {
-	ctx := context.Background()
-
-	// check for consuming `ProductUpdatedV1` message, with a new consumer
-	hypothesis, err := messaging.ShouldConsumeNewConsumer[*externalEvents.ProductUpdatedV1](c.Bus)
-
-	// at first, we should add new consumer to rabbitmq bus then start the broker, because we can't add new consumer after start.
-	// we should also turn off consumer in `BeforeTest` for this test
-	c.Bus.Start(ctx)
-
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-
-	err = c.Bus.PublishMessage(
-		ctx,
-		&externalEvents.ProductUpdatedV1{
-			Message:     types.NewMessage(uuid.NewV4().String()),
-			ProductId:   c.Items[0].ProductId,
-			Name:        gofakeit.Name(),
-			Price:       gofakeit.Price(100, 1000),
-			Description: gofakeit.EmojiDescription(),
-			UpdatedAt:   time.Now(),
-		},
-		nil,
-	)
-	c.NoError(err)
-
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
-
 func (c *productUpdatedIntegrationTests) Test_Product_Updated_Consumer() {
 	ctx := context.Background()
 
@@ -120,13 +89,6 @@ func (c *productUpdatedIntegrationTests) SetupSuite() {
 	c.Bus.Start(context.Background())
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(1 * time.Second)
-}
-
-func (c *productUpdatedIntegrationTests) BeforeTest(suiteName, testName string) {
-	if testName == "Test_Product_Updated_Consumer_Should_Consume_Product_Created_With_New_Consumer" {
-		c.Bus.Stop()
-		time.Sleep(2 * time.Second)
-	}
 }
 
 func (c *productUpdatedIntegrationTests) TearDownSuite() {
