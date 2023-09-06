@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -101,6 +102,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	defer cancel()
 	err := testApp.Start(startCtx)
 	if err != nil {
+		t.Log(fmt.Sprintf("Error starting, err: %v", err))
 		os.Exit(1)
 	}
 
@@ -113,7 +115,8 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 		stopCtx, cancel := context.WithTimeout(context.Background(), duration)
 		defer cancel()
 
-		_ = testApp.Stop(stopCtx)
+		err = testApp.Stop(stopCtx)
+		require.NoError(t, err)
 	})
 
 	return

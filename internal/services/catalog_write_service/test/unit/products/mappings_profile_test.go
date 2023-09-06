@@ -1,4 +1,7 @@
-package mappings
+//go:build unit
+// +build unit
+
+package products
 
 import (
 	"testing"
