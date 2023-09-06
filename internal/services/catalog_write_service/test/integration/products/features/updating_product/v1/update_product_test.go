@@ -149,5 +149,5 @@ func (c *updateProductIntegrationTests) SetupSuite() {
 func (c *updateProductIntegrationTests) TearDownSuite() {
 	c.T().Log("TearDownSuite started")
 	c.Bus.Stop()
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 }

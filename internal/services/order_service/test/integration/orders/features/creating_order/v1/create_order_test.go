@@ -166,5 +166,5 @@ func (c *createOrderIntegrationTests) TearDownSuite() {
 	c.T().Log("TearDownSuite started")
 
 	c.Bus.Stop()
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 }
