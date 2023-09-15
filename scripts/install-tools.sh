@@ -42,6 +42,8 @@ npm install -g @openapitools/openapi-generator-cli
 # https://vektra.github.io/mockery/latest/installation/
 go install github.com/vektra/mockery/v2@latest
 
+go install github.com/onsi/ginkgo/v2/ginkgo@latest
+
 OS="$(uname -s)"
 
 if [[ "$OS" == "Linux" ]]; then

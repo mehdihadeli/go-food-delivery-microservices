@@ -13,7 +13,7 @@ import (
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
-	"github.com/stretchr/testify/suite"
+	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.opentelemetry.io/otel/trace"
@@ -26,7 +26,6 @@ import (
 )
 
 type IntegrationTestSharedFixture struct {
-	suite.Suite
 	Cfg                    *config.Config
 	Log                    logger.Logger
 	Bus                    bus.Bus
@@ -46,10 +45,12 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 	result := test.NewTestApp().Run(t)
 
 	// https://github.com/michaelklishin/rabbit-hole
-	rmqc, _ := rabbithole.NewClient(
+	rmqc, err := rabbithole.NewClient(
 		fmt.Sprintf(result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint()),
 		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
 		result.RabbitmqOptions.RabbitmqHostOptions.Password)
+
+	require.NoError(t, err)
 
 	shared := &IntegrationTestSharedFixture{
 		Log:                    result.Logger,
@@ -69,32 +70,28 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 	return shared
 }
 
-// //////////////////////// Shared Hooks //////////////////////////////////
-func (i *IntegrationTestSharedFixture) SetupTest() {
-	i.T().Log("SetupTest")
+func (i *IntegrationTestSharedFixture) InitializeTest() {
+	i.Log.Info("InitializeTest started")
 
 	// seed data in each test
 	res, err := seedData(i.mongoClient, i.MongoOptions.Database)
-	i.Require().NoError(err)
+	if err != nil {
+		i.Log.Fatal(err)
+	}
 	i.Items = res
 }
 
-func (i *IntegrationTestSharedFixture) TearDownTest() {
-	i.T().Log("TearDownTest")
+func (i *IntegrationTestSharedFixture) DisposeTest() {
+	i.Log.Info("DisposeTest started")
 
 	// cleanup test containers with their hooks
-	err := i.CleanupRabbitmqData()
-	if err != nil {
-		i.Require().NoError(err)
+	if err := i.cleanupRabbitmqData(); err != nil {
+		i.Log.Fatal(err)
 	}
 
-	i.CleanupMongoData()
-}
-
-func (i *IntegrationTestSharedFixture) TearDownSuite() {
-}
-
-func (i *IntegrationTestSharedFixture) SetupSuite() {
+	if err := i.cleanupMongoData(); err != nil {
+		i.Log.Fatal(err)
+	}
 }
 
 func seedData(db *mongo.Client, databaseName string) ([]*models.Product, error) {
@@ -120,7 +117,7 @@ func seedData(db *mongo.Client, databaseName string) ([]*models.Product, error) 
 	return result.Items, nil
 }
 
-func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
+func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 	// https://github.com/michaelklishin/rabbit-hole
 	// Get all queues
 	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
@@ -134,16 +131,16 @@ func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
 			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
 			queue.Name,
 		)
-		i.Require().NoError(err)
+		return err
 	}
 
 	return nil
 }
 
-func (i *IntegrationTestSharedFixture) CleanupMongoData() {
+func (i *IntegrationTestSharedFixture) cleanupMongoData() error {
 	collections := []string{"products"}
 	err := cleanupCollections(i.mongoClient, collections, i.MongoOptions.Database)
-	i.Require().NoError(err)
+	return err
 }
 
 func cleanupCollections(db *mongo.Client, collections []string, databaseName string) error {

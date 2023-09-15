@@ -17,7 +17,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/suite"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/khaiql/dbcleaner.v2"
 	"gorm.io/gorm"
 
@@ -30,7 +30,6 @@ import (
 )
 
 type IntegrationTestSharedFixture struct {
-	suite.Suite
 	Cfg                  *config.AppOptions
 	Log                  logger.Logger
 	Bus                  bus.Bus
@@ -50,10 +49,12 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 	result := test.NewTestApp().Run(t)
 
 	// https://github.com/michaelklishin/rabbit-hole
-	rmqc, _ := rabbithole.NewClient(
+	rmqc, err := rabbithole.NewClient(
 		fmt.Sprintf(result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint()),
 		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
 		result.RabbitmqOptions.RabbitmqHostOptions.Password)
+
+	require.NoError(t, err)
 
 	shared := &IntegrationTestSharedFixture{
 		Log:                  result.Logger,
@@ -72,7 +73,31 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 	return shared
 }
 
-func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
+func (i *IntegrationTestSharedFixture) InitializeTest() {
+	i.Log.Info("InitializeTest started")
+
+	// seed data in each test
+	res, err := seedData(i.Gorm)
+	if err != nil {
+		i.Log.Fatal(err)
+	}
+	i.Items = res
+}
+
+func (i *IntegrationTestSharedFixture) DisposeTest() {
+	i.Log.Info("DisposeTest started")
+
+	// cleanup test containers with their hooks
+	if err := i.cleanupRabbitmqData(); err != nil {
+		i.Log.Fatal(err)
+	}
+
+	if err := i.cleanupPostgresData(); err != nil {
+		i.Log.Fatal(err)
+	}
+}
+
+func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 	// https://github.com/michaelklishin/rabbit-hole
 	// Get all queues
 	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
@@ -86,39 +111,20 @@ func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
 			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
 			queue.Name,
 		)
-		i.Require().NoError(err)
+		return err
 	}
 
 	return nil
 }
 
-func (i *IntegrationTestSharedFixture) CleanupPostgresData() {
+func (i *IntegrationTestSharedFixture) cleanupPostgresData() error {
 	tables := []string{"products"}
 	// Iterate over the tables and delete all records
 	for _, table := range tables {
 		err := i.Gorm.Exec("DELETE FROM " + table).Error
-		i.Require().NoError(err)
+		return err
 	}
-}
-
-func (i *IntegrationTestSharedFixture) Initialize() {
-	// seed data in each test
-	res, err := seedData(i.Gorm)
-	i.Require().NoError(err)
-	i.Items = res
-
-	i.T().Log("Initialize integration fixtures was successful")
-}
-
-func (i *IntegrationTestSharedFixture) Cleanup() {
-	// cleanup test containers with their hooks
-	err := i.CleanupRabbitmqData()
-	if err != nil {
-		i.Require().NoError(err)
-	}
-
-	i.CleanupPostgresData()
-	i.T().Log("Cleanup integration fixtures was successful")
+	return nil
 }
 
 func seedData(gormDB *gorm.DB) ([]*models.Product, error) {
@@ -178,17 +184,4 @@ func seedAndMigration(gormDB *gorm.DB) ([]*models.Product, error) {
 		gormDB,
 	)
 	return result.Items, nil
-}
-
-// //////////////////////// Shared Hooks //////////////////////////////////
-func (i *IntegrationTestSharedFixture) SetupTest() {
-	i.T().Log("SetupTest started")
-
-	i.Initialize()
-}
-
-func (i *IntegrationTestSharedFixture) TearDownTest() {
-	i.T().Log("TearDownTest started")
-
-	i.Cleanup()
 }

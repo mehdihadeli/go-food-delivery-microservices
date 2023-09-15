@@ -12,27 +12,32 @@ import (
 	"github.com/gavv/httpexpect/v2"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	uuid "github.com/satori/go.uuid"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/dtos"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
 )
 
 var integrationFixture *integration.IntegrationTestSharedFixture
 
-func TestCreateProductEndpoint(t *testing.T) {
+func TestUpdateProductEndpoint(t *testing.T) {
 	RegisterFailHandler(Fail)
 	integrationFixture = integration.NewIntegrationTestSharedFixture(t)
-	RunSpecs(t, "CreateProduct Endpoint EndToEnd Tests")
+	RunSpecs(t, "UpdateProduct Endpoint EndToEnd Tests")
 }
 
-var _ = Describe("CreateProduct Feature", func() {
-	var ctx context.Context
+var _ = Describe("UpdateProductE2ETest Suite", func() {
+	var (
+		ctx context.Context
+		id  uuid.UUID
+	)
 
 	_ = BeforeEach(func() {
 		ctx = context.Background()
 
 		By("Seeding the required data")
 		integrationFixture.InitializeTest()
+		id = integrationFixture.Items[0].ProductId
 	})
 
 	_ = AfterEach(func() {
@@ -40,14 +45,13 @@ var _ = Describe("CreateProduct Feature", func() {
 		integrationFixture.DisposeTest()
 	})
 
-	// "Scenario" step for testing the create product API with valid input
-	Describe("Create new product return created status with valid input", func() {
+	// "Scenario" step for testing the update product API with valid input
+	Describe("Update product with valid input returns NoContent status", func() {
 		// "When" step
-		When("A valid request is made to create a product", func() {
+		When("A valid request is made to update a product", func() {
 			// "Then" step
-			It("Should returns a StatusCreated response", func() {
-				// Generate a valid request
-				request := dtos.CreateProductRequestDto{
+			It("Should return a NoContent status", func() {
+				request := dtos.UpdateProductRequestDto{
 					Description: gofakeit.AdjectiveDescriptive(),
 					Price:       gofakeit.Price(100, 1000),
 					Name:        gofakeit.Name(),
@@ -55,33 +59,38 @@ var _ = Describe("CreateProduct Feature", func() {
 
 				// Create an HTTPExpect instance and make the request
 				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
-				expect.POST("products").
-					WithContext(ctx).
+				expect.PUT("products/{id}").
+					WithPath("id", id.String()).
 					WithJSON(request).
+					WithContext(ctx).
 					Expect().
-					Status(http.StatusCreated)
+					Status(http.StatusNoContent)
 			})
 		})
 	})
 
-	// "Scenario" step for testing the create product API with invalid price input
-	Describe("Create product returns a BadRequest status with invalid price input", func() {
+	// "Scenario" step for testing the update product API with invalid input
+	Describe("Update product returns BadRequest with invalid input", func() {
+		BeforeEach(func() {
+			// Get a valid product ID from your test data
+			id = uuid.NewV4()
+		})
 		// "When" step
-		When("An invalid request is made with a zero price", func() {
+		When("An invalid request is made to update a product", func() {
 			// "Then" step
 			It("Should return a BadRequest status", func() {
-				// Generate an invalid request with zero price
-				request := dtos.CreateProductRequestDto{
+				request := dtos.UpdateProductRequestDto{
 					Description: gofakeit.AdjectiveDescriptive(),
-					Price:       0.0,
+					Price:       0,
 					Name:        gofakeit.Name(),
 				}
 
 				// Create an HTTPExpect instance and make the request
 				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
-				expect.POST("products").
-					WithContext(ctx).
+				expect.PUT("products/{id}").
+					WithPath("id", id.String()).
 					WithJSON(request).
+					WithContext(context.Background()).
 					Expect().
 					Status(http.StatusBadRequest)
 			})

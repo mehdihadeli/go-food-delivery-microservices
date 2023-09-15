@@ -64,13 +64,13 @@ func (o OrderGrpcServiceServer) CreateOrder(
 		return nil, err
 	}
 
-	command := createOrderCommandV1.NewCreateOrder(
+	command, err := createOrderCommandV1.NewCreateOrder(
 		shopItemsDtos,
 		req.AccountEmail,
 		req.DeliveryAddress,
 		req.DeliveryTime.AsTime(),
 	)
-	if err := o.validator.StructCtx(ctx, command); err != nil {
+	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(
 			err,
 			"[OrderGrpcServiceServer_CreateOrder.StructCtx] command validation failed",
@@ -127,8 +127,8 @@ func (o OrderGrpcServiceServer) GetOrderByID(
 		return nil, badRequestErr
 	}
 
-	query := getOrderByIdQueryV1.NewGetOrderById(orderIdUUID)
-	if err := o.validator.StructCtx(ctx, query); err != nil {
+	query, err := getOrderByIdQueryV1.NewGetOrderById(orderIdUUID)
+	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(
 			err,
 			"[OrderGrpcServiceServer_GetOrderByID.StructCtx] query validation failed",

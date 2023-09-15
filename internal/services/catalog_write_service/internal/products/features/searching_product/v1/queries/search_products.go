@@ -6,7 +6,7 @@ import (
 )
 
 type SearchProducts struct {
-	SearchText string `validate:"required"`
+	SearchText string
 	*utils.ListQuery
 }
 

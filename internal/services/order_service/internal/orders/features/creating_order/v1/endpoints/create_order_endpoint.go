@@ -55,13 +55,13 @@ func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		command := createOrderCommandV1.NewCreateOrder(
+		command, err := createOrderCommandV1.NewCreateOrder(
 			request.ShopItems,
 			request.AccountEmail,
 			request.DeliveryAddress,
 			time.Time(request.DeliveryTime),
 		)
-		if err := ep.Validator.StructCtx(ctx, command); err != nil {
+		if err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,
 				"[createOrderEndpoint_handler.StructCtx] command validation failed",

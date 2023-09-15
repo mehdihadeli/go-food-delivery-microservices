@@ -150,6 +150,7 @@ linters:
   enable:
     # Enable by default see in https://golangci-lint.run/usage/linters/#enabled-by-default-linters
     - deadcode
+    - ginkgolinter
     - errcheck
     - gosimple
     - govet

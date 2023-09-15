@@ -18,13 +18,13 @@ import (
 
 var integrationFixture *integration.IntegrationTestSharedFixture
 
-func TestGetProductByIdEndpoint(t *testing.T) {
+func TestDeleteProductEndpoint(t *testing.T) {
 	RegisterFailHandler(Fail)
 	integrationFixture = integration.NewIntegrationTestSharedFixture(t)
-	RunSpecs(t, "GetProductById Endpoint EndToEnd Tests")
+	RunSpecs(t, "DeleteProduct Endpoint EndToEnd Tests")
 }
 
-var _ = Describe("Get Product By Id Feature", func() {
+var _ = Describe("Delete Product Feature", func() {
 	var (
 		ctx context.Context
 		id  uuid.UUID
@@ -44,36 +44,39 @@ var _ = Describe("Get Product By Id Feature", func() {
 		integrationFixture.DisposeTest()
 	})
 
-	// "Scenario" step for testing the get product by ID API with a valid ID
-	Describe("Get product by ID with a valid ID returns ok status", func() {
+	// "Scenario" step for testing the delete product API with valid input
+	Describe("Delete product with valid input returns NoContent status", func() {
 		// "When" step
-		When("A valid request is made with a valid ID", func() {
+		When("A valid request is made to delete a product", func() {
 			// "Then" step
-			It("Should return an OK status", func() {
+			It("Should return a NoContent status", func() {
+				// Create an HTTPExpect instance and make the request
 				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
-				expect.GET("products/{id}").
-					WithPath("id", id).
+				expect.DELETE("products/{id}").
 					WithContext(ctx).
+					WithPath("id", id.String()).
 					Expect().
-					Status(http.StatusOK)
+					Status(http.StatusNoContent)
 			})
 		})
 	})
 
-	// "Scenario" step for testing the get product by ID API with a valid ID
-	Describe("Get product by ID with a invalid ID returns NotFound status", func() {
+	// "Scenario" step for testing the delete product API with invalid ID
+	Describe("Delete product with with invalid ID returns NotFound status", func() {
 		BeforeEach(func() {
 			// Generate an invalid UUID
 			id = uuid.NewV4()
 		})
+
+		// "When" step
 		When("An invalid request is made with an invalid ID", func() {
 			// "Then" step
 			It("Should return a NotFound status", func() {
 				// Create an HTTPExpect instance and make the request
 				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
-				expect.GET("products/{id}").
-					WithPath("id", id.String()).
+				expect.DELETE("products/{id}").
 					WithContext(ctx).
+					WithPath("id", id.String()).
 					Expect().
 					Status(http.StatusNotFound)
 			})
