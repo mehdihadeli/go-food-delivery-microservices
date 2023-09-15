@@ -138,7 +138,51 @@ Keeping such a split works great with CQRS. It segregates our operations and sli
 
 ## Formatting
 
-For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt), [golines](https://github.com/segmentio/golines) and [golangci-lint](https://golangci-lint.run/usage/integrations/#goland) in my GoLand. you can do this formatting automatically by [this guide](https://github.com/mvdan/gofumpt#goland).
+For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt), [goimports-reviser](https://github.com/incu6us/goimports-reviser), [golines](https://github.com/segmentio/golines) and [golangci-lint](https://golangci-lint.run/usage/integrations/#goland) in my GoLand and for each package, there is a guide for how to set it up in your IDE, for example. [here](https://github.com/incu6us/goimports-reviser#configuration) is the configuration for goimports-reviser. 
+
+Also you can control this formatting with husky automaticly before any commit by installing [husky](https://github.com/typicode/husky) in your dev environemt:
+
+1. Install Tools:
+``` bash
+make install-tools
+```
+
+2. Install NPM:
+
+```bash
+npm init
+```
+
+3. Install Husky:
+
+```bash
+npm install husky --save-dev
+```
+
+4. Add `prepare` command for installing and activating `husky hooks` and `restoring` our installed [dotnet tools](.config/dotnet-tools.json) in the previous step to the [package.json](package.json) file:
+
+```bash
+npm pkg set scripts.prepare="husky install && dotnet tool restore"
+```
+
+5. Create the Husky folder:
+
+```bash
+mkdir .husky
+```
+
+6. Link Husky and formatting tools:
+
+```bash
+npx husky add .husky/pre-commit "make format && git add -A ."
+npx husky add .husky/pre-commit "make lint && git add -A ."
+```
+
+6. Activate and installing all husky hooks with this command:
+
+```bash
+npm run prepare
+```
 
 ## Live Reloading In Development
 
