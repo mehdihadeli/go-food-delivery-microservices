@@ -159,10 +159,10 @@ npm init
 npm install husky --save-dev
 ```
 
-4. Add `prepare` command for installing and activating `husky hooks` and `restoring` our installed [dotnet tools](.config/dotnet-tools.json) in the previous step to the [package.json](package.json) file:
+4. Add `prepare` command for installing and activating `husky hooks` that we will add in the next steps, in the [package.json](package.json) file:
 
 ```bash
-npm pkg set scripts.prepare="husky install && dotnet tool restore"
+npm pkg set scripts.prepare="husky install"
 ```
 
 5. Create the Husky folder:
@@ -171,7 +171,7 @@ npm pkg set scripts.prepare="husky install && dotnet tool restore"
 mkdir .husky
 ```
 
-6. Link Husky and formatting tools:
+6. Adding hooks for linting and formatting before commit:
 
 ```bash
 npx husky add .husky/pre-commit "make format && git add -A ."
