@@ -138,9 +138,11 @@ Keeping such a split works great with CQRS. It segregates our operations and sli
 
 ## Formatting
 
+In this app I use [Conventional Commit](https://www.conventionalcommits.org/en/) and for enforcing its rule I use [conventional-changelog/commitlint](https://github.com/conventional-changelog/commitlint) and [typicode/husky](https://github.com/typicode/husky) with a pre-commit hook. For read more about its setup see [commitlint docs](https://github.com/conventional-changelog/commitlint#getting-started) and [this article](https://betterprogramming.pub/how-to-lint-commit-messages-with-husky-and-commitlint-b51d20a5e514) and [this article](https://www.code4it.dev/blog/conventional-commit-with-githooks).
+
 For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt), [goimports-reviser](https://github.com/incu6us/goimports-reviser), [golines](https://github.com/segmentio/golines) and [golangci-lint](https://golangci-lint.run/usage/integrations/#goland) in my GoLand and for each package, there is a guide for how to set it up in your IDE, for example. [here](https://github.com/incu6us/goimports-reviser#configuration) is the configuration for goimports-reviser. 
 
-Also you can control this formatting with husky automaticly before any commit by installing [husky](https://github.com/typicode/husky) in your dev environemt:
+Also you can control this formatting with `husky` automaticly before any commit by installing [husky](https://github.com/typicode/husky) in your dev environemt:
 
 1. Install Tools:
 ``` bash
@@ -153,32 +155,50 @@ make install-tools
 npm init
 ```
 
-3. Install Husky:
+3. Install CommitLint:
+
+```bash
+npm install --save-dev @commitlint/config-conventional @commitlint/cli
+```
+
+4. Create the `commitlint.config.js` file with this content:
+
+```js
+module.exports = { extends: '@commitlint/config-conventional']};
+```
+
+5. Install Husky:
 
 ```bash
 npm install husky --save-dev
 ```
 
-4. Add `prepare` command for installing and activating `husky hooks` that we will add in the next steps, in the [package.json](package.json) file:
+6. Add `prepare` command for installing and activating `husky hooks` that we will add in the next steps, in the [package.json](package.json) file:
 
 ```bash
 npm pkg set scripts.prepare="husky install"
 ```
 
-5. Create the Husky folder:
+7. Create the Husky folder:
 
 ```bash
 mkdir .husky
 ```
 
-6. Adding hooks for linting and formatting before commit:
+8. Adding hooks for linting and formatting before commit:
 
 ```bash
 npx husky add .husky/pre-commit "make format && git add -A ."
 npx husky add .husky/pre-commit "make lint && git add -A ."
 ```
 
-7. Activate and installing all husky hooks with this command:
+9. Adding CommitLint to the husky before commit:
+
+```bash
+npx husky add .husky/commit-msg 'npx --no -- commitlint --edit ${1}'
+```
+
+10. Activate and installing all husky hooks with this command:
 
 ```bash
 npm run prepare
