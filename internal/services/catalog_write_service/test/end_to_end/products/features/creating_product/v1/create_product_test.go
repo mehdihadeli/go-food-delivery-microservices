@@ -26,7 +26,10 @@ func TestCreateProductEndpoint(t *testing.T) {
 }
 
 var _ = Describe("CreateProduct Feature", func() {
-	var ctx context.Context
+	var (
+		ctx     context.Context
+		request *dtos.CreateProductRequestDto
+	)
 
 	_ = BeforeEach(func() {
 		ctx = context.Background()
@@ -42,17 +45,18 @@ var _ = Describe("CreateProduct Feature", func() {
 
 	// "Scenario" step for testing the create product API with valid input
 	Describe("Create new product return created status with valid input", func() {
+		BeforeEach(func() {
+			// Generate a valid request
+			request = &dtos.CreateProductRequestDto{
+				Description: gofakeit.AdjectiveDescriptive(),
+				Price:       gofakeit.Price(100, 1000),
+				Name:        gofakeit.Name(),
+			}
+		})
 		// "When" step
 		When("A valid request is made to create a product", func() {
 			// "Then" step
 			It("Should returns a StatusCreated response", func() {
-				// Generate a valid request
-				request := dtos.CreateProductRequestDto{
-					Description: gofakeit.AdjectiveDescriptive(),
-					Price:       gofakeit.Price(100, 1000),
-					Name:        gofakeit.Name(),
-				}
-
 				// Create an HTTPExpect instance and make the request
 				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
 				expect.POST("products").
@@ -66,17 +70,18 @@ var _ = Describe("CreateProduct Feature", func() {
 
 	// "Scenario" step for testing the create product API with invalid price input
 	Describe("Create product returns a BadRequest status with invalid price input", func() {
+		BeforeEach(func() {
+			// Generate an invalid request with zero price
+			request = &dtos.CreateProductRequestDto{
+				Description: gofakeit.AdjectiveDescriptive(),
+				Price:       0.0,
+				Name:        gofakeit.Name(),
+			}
+		})
 		// "When" step
 		When("An invalid request is made with a zero price", func() {
 			// "Then" step
 			It("Should return a BadRequest status", func() {
-				// Generate an invalid request with zero price
-				request := dtos.CreateProductRequestDto{
-					Description: gofakeit.AdjectiveDescriptive(),
-					Price:       0.0,
-					Name:        gofakeit.Name(),
-				}
-
 				// Create an HTTPExpect instance and make the request
 				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
 				expect.POST("products").

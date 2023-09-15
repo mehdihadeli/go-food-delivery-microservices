@@ -2,10 +2,10 @@ package products
 
 import (
 	"github.com/labstack/echo/v4"
-	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"go.uber.org/fx"
 
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/repositories"
 	createProductV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/endpoints"
 	deleteProductV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1/endpoints"

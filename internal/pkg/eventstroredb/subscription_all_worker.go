@@ -7,6 +7,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+
 	"github.com/mehdihadeli/go-mediatr"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es"

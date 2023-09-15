@@ -2,7 +2,6 @@ package domainEvent
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/value_objects"
 )
 

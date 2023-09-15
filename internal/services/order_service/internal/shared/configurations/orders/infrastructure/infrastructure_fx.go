@@ -2,6 +2,8 @@ package infrastructure
 
 import (
 	"github.com/go-playground/validator"
+	"go.uber.org/fx"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/elasticsearch"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
@@ -11,8 +13,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
-	"go.uber.org/fx"
-
 	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/configurations/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/params"
 )

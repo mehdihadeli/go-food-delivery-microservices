@@ -1,8 +1,9 @@
 package params
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/projection"
 	"go.uber.org/fx"
+
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/projection"
 )
 
 type OrderProjectionParams struct {

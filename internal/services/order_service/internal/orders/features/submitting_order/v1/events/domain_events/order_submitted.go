@@ -3,8 +3,9 @@ package domainEvents
 import (
 	"fmt"
 
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	uuid "github.com/satori/go.uuid"
+
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 )
 
 type OrderSubmittedV1 struct {

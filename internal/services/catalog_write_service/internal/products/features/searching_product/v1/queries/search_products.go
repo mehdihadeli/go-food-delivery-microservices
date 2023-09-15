@@ -2,6 +2,7 @@ package queries
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 

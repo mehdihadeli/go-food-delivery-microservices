@@ -2,12 +2,12 @@ package orders
 
 import (
 	"github.com/labstack/echo/v4"
+	"go.uber.org/fx"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/data/repositories"
 	createOrderV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/endpoints"
 	getOrderByIdV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/getting_order_by_id/v1/endpoints"

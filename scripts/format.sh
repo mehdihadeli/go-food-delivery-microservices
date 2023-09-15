@@ -15,9 +15,6 @@ elif [ -n "$service"  ]; then
     cd "./internal/services/$service"
 fi
 
-# https://github.com/mvdan/gofumpt
-gofumpt -l -w .
-
 # https://golang.org/cmd/gofmt/
 # gofmt -w .
 
@@ -25,10 +22,15 @@ gofumpt -l -w .
 # goimports -l -w .
 
 # https://github.com/incu6us/goimports-reviser
-# will do `gofmt` and `goimports` internally
-# -rm-unused, -set-alias have some errors
-goimports-reviser -local -format -recursive ./...
+# https://github.com/incu6us/goimports-reviser/issues/118
+# https://github.com/incu6us/goimports-reviser/issues/88
+# will do `gofmt` internally if we use -format
+# -rm-unused, -set-alias have some errors ---> goimports-reviser -rm-unused -set-alias -format -recursive ./...
+goimports-reviser -company-prefixes "github.com/mehdihadeli" -project-name "github.com/mehdihadeli/go-ecommerce-microservices" -imports-order "std,general,company,project" -recursive ./...
 
 # https://github.com/segmentio/golines
+# # will do `gofmt` internally
 golines -m 120 -w --ignore-generated .
 
+# https://github.com/mvdan/gofumpt
+gofumpt -l -w .

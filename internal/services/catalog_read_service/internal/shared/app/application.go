@@ -1,11 +1,11 @@
 package app
 
 import (
+	"go.uber.org/fx"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/configurations/catalogs"
 )
 

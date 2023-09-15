@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dto/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"

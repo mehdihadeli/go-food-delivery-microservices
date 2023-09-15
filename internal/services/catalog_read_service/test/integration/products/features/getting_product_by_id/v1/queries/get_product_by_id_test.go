@@ -7,9 +7,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mehdihadeli/go-mediatr"
 	uuid "github.com/satori/go.uuid"
 	. "github.com/smartystreets/goconvey/convey"
+
+	"github.com/mehdihadeli/go-mediatr"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/queries"

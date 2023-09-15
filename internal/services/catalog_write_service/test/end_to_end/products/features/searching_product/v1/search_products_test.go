@@ -56,15 +56,3 @@ var _ = Describe("SearchProductsE2ETest Suite", func() {
 		})
 	})
 })
-
-//func (c *searchProductsE2ETest) Test_Should_Return_Ok_Status() {
-//	ctx := context.Background()
-//	// create httpexpect instance
-//	expect := httpexpect.New(c.T(), c.BaseAddress)
-//
-//	expect.GET("products/search").
-//		WithContext(ctx).
-//		WithQuery("search", testData.Products[0].Name).
-//		Expect().
-//		Status(http.StatusOK)
-//}

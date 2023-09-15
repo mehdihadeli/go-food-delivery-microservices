@@ -28,8 +28,9 @@ func TestUpdateProductEndpoint(t *testing.T) {
 
 var _ = Describe("UpdateProductE2ETest Suite", func() {
 	var (
-		ctx context.Context
-		id  uuid.UUID
+		ctx     context.Context
+		id      uuid.UUID
+		request *dtos.UpdateProductRequestDto
 	)
 
 	_ = BeforeEach(func() {
@@ -47,16 +48,18 @@ var _ = Describe("UpdateProductE2ETest Suite", func() {
 
 	// "Scenario" step for testing the update product API with valid input
 	Describe("Update product with valid input returns NoContent status", func() {
+		BeforeEach(func() {
+			request = &dtos.UpdateProductRequestDto{
+				Description: gofakeit.AdjectiveDescriptive(),
+				Price:       gofakeit.Price(100, 1000),
+				Name:        gofakeit.Name(),
+			}
+		})
+
 		// "When" step
 		When("A valid request is made to update a product", func() {
 			// "Then" step
 			It("Should return a NoContent status", func() {
-				request := dtos.UpdateProductRequestDto{
-					Description: gofakeit.AdjectiveDescriptive(),
-					Price:       gofakeit.Price(100, 1000),
-					Name:        gofakeit.Name(),
-				}
-
 				// Create an HTTPExpect instance and make the request
 				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
 				expect.PUT("products/{id}").
@@ -74,17 +77,16 @@ var _ = Describe("UpdateProductE2ETest Suite", func() {
 		BeforeEach(func() {
 			// Get a valid product ID from your test data
 			id = uuid.NewV4()
+			request = &dtos.UpdateProductRequestDto{
+				Description: gofakeit.AdjectiveDescriptive(),
+				Price:       0,
+				Name:        gofakeit.Name(),
+			}
 		})
 		// "When" step
 		When("An invalid request is made to update a product", func() {
 			// "Then" step
 			It("Should return a BadRequest status", func() {
-				request := dtos.UpdateProductRequestDto{
-					Description: gofakeit.AdjectiveDescriptive(),
-					Price:       0,
-					Name:        gofakeit.Name(),
-				}
-
 				// Create an HTTPExpect instance and make the request
 				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
 				expect.PUT("products/{id}").

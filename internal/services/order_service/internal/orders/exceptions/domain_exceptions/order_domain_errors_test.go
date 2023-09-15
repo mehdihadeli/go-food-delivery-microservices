@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
 	"github.com/stretchr/testify/assert"
+
+	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
 )
 
 func Test_Order_Shop_Items_Required_Error(t *testing.T) {

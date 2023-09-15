@@ -2,6 +2,8 @@ package infrastructure
 
 import (
 	"github.com/go-playground/validator"
+	"go.uber.org/fx"
+
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
@@ -13,8 +15,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
-	"go.uber.org/fx"
-
 	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/configurations/rabbitmq"
 )
 
