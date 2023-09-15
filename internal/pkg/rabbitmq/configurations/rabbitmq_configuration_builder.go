@@ -3,7 +3,7 @@
 package configurations
 
 import (
-	"github.com/solsw/go2linq/v2"
+	"github.com/solsw/go2linq/v3"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	consumerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"

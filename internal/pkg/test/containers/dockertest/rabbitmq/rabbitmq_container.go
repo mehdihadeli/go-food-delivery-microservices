@@ -16,6 +16,7 @@ import (
 	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
@@ -83,18 +84,25 @@ func (g *rabbitmqDockerTest) Start(
 
 	var mqBus bus.Bus
 	if err = pool.Retry(func() error {
-		mqBus, err = bus2.NewRabbitmqBus(
-			&config.RabbitmqOptions{
-				RabbitmqHostOptions: &config.RabbitmqHostOptions{
-					UserName:    g.defaultOptions.UserName,
-					Password:    g.defaultOptions.Password,
-					HostName:    g.defaultOptions.Host,
-					VirtualHost: g.defaultOptions.VirtualHost,
-					Port:        g.defaultOptions.HostPort,
-				},
+		config := &config.RabbitmqOptions{
+			RabbitmqHostOptions: &config.RabbitmqHostOptions{
+				UserName:    g.defaultOptions.UserName,
+				Password:    g.defaultOptions.Password,
+				HostName:    g.defaultOptions.Host,
+				VirtualHost: g.defaultOptions.VirtualHost,
+				Port:        g.defaultOptions.HostPort,
 			},
+		}
+		conn, err := types.NewRabbitMQConnection(config)
+		if err != nil {
+			return err
+		}
+
+		mqBus, err = bus2.NewRabbitmqBus(
+			config,
 			serializer,
 			logger,
+			conn,
 			rabbitmqBuilderFunc)
 		if err != nil {
 			return err

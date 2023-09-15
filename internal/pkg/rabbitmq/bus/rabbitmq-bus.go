@@ -1,5 +1,3 @@
-//go:build go1.18
-
 package bus
 
 import (
@@ -9,7 +7,7 @@ import (
 	"sync"
 
 	"emperror.dev/errors"
-	"github.com/solsw/go2linq/v2"
+	"github.com/solsw/go2linq/v3"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
