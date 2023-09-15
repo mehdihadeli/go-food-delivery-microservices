@@ -178,7 +178,7 @@ npx husky add .husky/pre-commit "make format && git add -A ."
 npx husky add .husky/pre-commit "make lint && git add -A ."
 ```
 
-6. Activate and installing all husky hooks with this command:
+7. Activate and installing all husky hooks with this command:
 
 ```bash
 npm run prepare
