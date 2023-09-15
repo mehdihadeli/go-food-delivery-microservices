@@ -140,6 +140,8 @@ Keeping such a split works great with CQRS. It segregates our operations and sli
 
 In this app I use [Conventional Commit](https://www.conventionalcommits.org/en/) and for enforcing its rule I use [conventional-changelog/commitlint](https://github.com/conventional-changelog/commitlint) and [typicode/husky](https://github.com/typicode/husky) with a pre-commit hook. For read more about its setup see [commitlint docs](https://github.com/conventional-changelog/commitlint#getting-started) and [this article](https://betterprogramming.pub/how-to-lint-commit-messages-with-husky-and-commitlint-b51d20a5e514) and [this article](https://www.code4it.dev/blog/conventional-commit-with-githooks).
 
+For applying [golangci-lint](https://github.com/golangci/golangci-lint) in IDE level I use [intellij-plugin-golangci-lint](https://github.com/xxpxxxxp/intellij-plugin-golangci-lint) plugin.
+
 For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt), [goimports-reviser](https://github.com/incu6us/goimports-reviser), [golines](https://github.com/segmentio/golines) and [golangci-lint](https://golangci-lint.run/usage/integrations/#goland) in my GoLand and for each package, there is a guide for how to set it up in your IDE, for example. [here](https://github.com/incu6us/goimports-reviser#configuration) is the configuration for goimports-reviser. 
 
 Also you can control this formatting with `husky` automaticly before any commit by installing [husky](https://github.com/typicode/husky) in your dev environemt:
