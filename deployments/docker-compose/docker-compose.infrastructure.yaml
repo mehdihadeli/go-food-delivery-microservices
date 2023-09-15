@@ -13,8 +13,8 @@ services:
       # volumes:
       #   - rabbitmq:/var/lib/rabbitmq
     networks:
-      - store
-      
+      - ecommerce
+
   prometheus:
     image: prom/prometheus:latest
     pull_policy: if_not_present
@@ -28,7 +28,7 @@ services:
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     networks:
-      - store
+      - ecommerce
 
   node_exporter:
     container_name: node_exporter
@@ -36,9 +36,9 @@ services:
     restart: on-failure
     image: prom/node-exporter
     ports:
-      - '9101:9100'
+      - "9101:9100"
     networks:
-      - store
+      - ecommerce
 
   grafana:
     container_name: grafana
@@ -48,7 +48,7 @@ services:
     ports:
       - ${GRAFANA_HOST_PORT:-3000}:${GRAFANA_PORT:-3000}
     networks:
-      - store
+      - ecommerce
 
   postgres:
     image: postgres:latest
@@ -62,7 +62,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
     networks:
-      - store
+      - ecommerce
 
   # https://developer.redis.com/howtos/quick-start
   # redis-stack is a image with redis modules enabled like JSON module
@@ -74,7 +74,7 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - store
+      - ecommerce
 
   # zookeeper:
   #   image: confluentinc/cp-zookeeper:7.0.1
@@ -87,7 +87,7 @@ services:
   #     ZOOKEEPER_CLIENT_PORT: 2181
   #     ZOOKEEPER_TICK_TIME: 2000
   #   networks:
-  #     - store
+  #     - ecommerce
 
   # kafka:
   #   image: confluentinc/cp-kafka:7.0.1
@@ -107,7 +107,7 @@ services:
   #     ADVERTISED_HOST_NAME: kafka
   #     KAFKA_ADVERTISED_HOSTNAME: 127.0.0.1
   #   networks:
-  #     - store
+  #     - ecommerce
 
   # kafka-ui:
   #   image: provectuslabs/kafka-ui
@@ -142,7 +142,7 @@ services:
     ports:
       - ${MONGO_HOST_PORT:-27017}:${MONGO_PORT:-27017}
     networks:
-      - store
+      - ecommerce
 
   jaeger:
     container_name: jaeger
@@ -154,7 +154,7 @@ services:
       - "14268:14268"
       - "14250:14250"
     networks:
-      - store
+      - ecommerce
 
   zipkin:
     image: openzipkin/zipkin:latest
@@ -164,7 +164,7 @@ services:
     ports:
       - "9411:9411"
     networks:
-      - store
+      - ecommerce
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib-dev:latest
@@ -173,17 +173,17 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
-      - "1888:1888"   # pprof extension
-      - "8888:8888"   # Prometheus metrics exposed by the collector
-      - "8889:8889"   # Prometheus exporter metrics
+      - "1888:1888" # pprof extension
+      - "8888:8888" # Prometheus metrics exposed by the collector
+      - "8889:8889" # Prometheus exporter metrics
       - "13133:13133" # health_check extension
-      - "4317:4317"   # OTLP gRPC receiver
+      - "4317:4317" # OTLP gRPC receiver
       - "55679:55679" # zpages extension
     depends_on:
       - jaeger
       - zipkin
     networks:
-      - store
+      - ecommerce
 
   # https://developers.eventstore.com/server/v21.10/installation.html#insecure-single-node
   # https://hub.docker.com/r/eventstore/eventstore/tags
@@ -215,7 +215,7 @@ services:
         source: eventstore-volume-logs
         target: /var/log/eventstore
     networks:
-      - store
+      - ecommerce
 
   # elasticsearch:
   #   container_name: elastic_search
@@ -237,7 +237,7 @@ services:
   #     - ${ELASTIC_HOST_PORT:-9200}:${ELASTIC_PORT:-9200}
   #     - 9300:9300
   #   networks:
-  #     - store
+  #     - ecommerce
 
   # kibana:
   #   image: kibana:8.5.2
@@ -248,16 +248,15 @@ services:
   #   ports:
   #     - ${KIBANA_HOST_PORT:-5601}:${KIBANA_PORT:-5601}
   #   networks:
-  #     - store
+  #     - ecommerce
   #   depends_on:
   #     - elasticsearch
-  
+
 volumes:
   eventstore-volume-data:
   eventstore-volume-logs:
   elastic-data:
 
-
 networks:
-  store:
-    name: store
+  ecommerce:
+    name: ecommerce

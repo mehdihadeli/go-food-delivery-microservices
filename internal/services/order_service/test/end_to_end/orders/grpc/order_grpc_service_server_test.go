@@ -26,13 +26,13 @@ package grpc
 //	fixture := e2e.NewE2ETestFixture()
 //
 //	// https://pkg.go.dev/testing@master#hdr-Subtests_and_Sub_benchmarks
-//	t.Run("GRPC", func(t *testing.T) {
+//	t.Register("GRPC", func(t *testing.T) {
 //		// Before running the tests
 //		orderGrpcService := NewOrderGrpcService(fixture.InfrastructureConfigurations, fixture.OrdersMetrics, fixture.Bus)
 //		ordersService.RegisterOrdersServiceServer(fixture.GrpcServer.GetCurrentGrpcServer(), orderGrpcService)
 //
 //		ctx := fixture.Ctx
-//		fixture.Run()
+//		fixture.Register()
 //
 //		orderServiceClient := ordersService.NewOrdersServiceClient(fixture.GrpcClient.GetGrpcConnection())
 //
@@ -42,7 +42,7 @@ package grpc
 //			OrdersServiceClient: orderServiceClient,
 //		}
 //
-//		// Run Tests
+//		// Register Tests
 //		orderGrpcServiceTests.Test_GetOrder_By_Id(ctx)
 //		orderGrpcServiceTests.Test_Create_Order(ctx)
 //		orderGrpcServiceTests.Test_GetOrders(ctx)

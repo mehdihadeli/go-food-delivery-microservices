@@ -20,6 +20,9 @@ go install github.com/segmentio/golines@latest
 # https://golangci-lint.run/usage/install/#install-from-source
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
+# https://github.com/dominikh/go-tools
+go install honnef.co/go/tools/cmd/staticcheck@latest
+
 go install google.golang.org/protobuf/proto@latest
 
 # https://dev.to/techschoolguru/how-to-define-a-protobuf-message-and-generate-go-code-4g4e

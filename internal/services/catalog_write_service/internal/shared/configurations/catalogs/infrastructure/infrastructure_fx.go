@@ -7,6 +7,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
@@ -31,6 +32,7 @@ var Module = fx.Module(
 			}
 		},
 	),
+	health.Module,
 
 	// Other provides
 	fx.Provide(validator.New),

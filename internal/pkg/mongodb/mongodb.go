@@ -31,15 +31,8 @@ func NewMongoDB(cfg *MongoDbOptions) (*mongo.Client, error) {
 		opt = opt.SetAuth(options.Credential{Username: cfg.User, Password: cfg.Password})
 	}
 
-	client, err := mongo.NewClient(opt)
-	if err != nil {
-		return nil, err
-	}
-
 	ctx := context.Background()
-	if err := client.Connect(ctx); err != nil {
-		return nil, err
-	}
+	client, err := mongo.Connect(ctx, opt)
 
 	if err := client.Ping(ctx, nil); err != nil {
 		return nil, err

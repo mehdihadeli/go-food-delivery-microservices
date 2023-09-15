@@ -5,8 +5,8 @@ import (
 	"go.uber.org/fx"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
@@ -25,7 +25,6 @@ var Module = fx.Module(
 	core.Module,
 	customEcho.Module,
 	grpc.Module,
-	gormPostgres.Module,
 	mongodb.Module,
 	otel.Module,
 	redis.Module,
@@ -36,6 +35,7 @@ var Module = fx.Module(
 			}
 		},
 	),
+	health.Module,
 
 	// Other provides
 	fx.Provide(validator.New),

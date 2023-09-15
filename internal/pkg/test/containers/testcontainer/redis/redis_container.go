@@ -8,7 +8,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 
@@ -92,7 +92,7 @@ func (g *redisTestContainers) Start(
 ) (redis.UniversalClient, error) {
 	redisOptions, err := g.CreatingContainerOptions(ctx, t, options...)
 
-	db := redis2.NewUniversalRedisClient(redisOptions)
+	db := redis2.NewRedisClient(redisOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -129,9 +129,10 @@ func (g *redisTestContainers) getRunOptions(
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: []string{g.defaultOptions.Port},
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).WithPollInterval(2 * time.Second),
-		Hostname:     g.defaultOptions.Host,
-		Env:          map[string]string{},
+		WaitingFor: wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).
+			WithPollInterval(2 * time.Second),
+		Hostname: g.defaultOptions.Host,
+		Env:      map[string]string{},
 	}
 
 	return containerReq

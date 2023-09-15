@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"emperror.dev/errors"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	attribute2 "go.opentelemetry.io/otel/attribute"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"

@@ -52,6 +52,7 @@ func NewRabbitmqBus(
 	cfg *config.RabbitmqOptions,
 	serializer serializer.EventSerializer,
 	logger logger.Logger,
+	connection types2.IConnection,
 	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
 ) (RabbitmqBus, error) {
 	builder := configurations.NewRabbitMQConfigurationBuilder()
@@ -61,11 +62,6 @@ func NewRabbitmqBus(
 
 	rabbitmqConfiguration := builder.Build()
 
-	conn, err := types2.NewRabbitMQConnection(cfg)
-	if err != nil {
-		return nil, err
-	}
-
 	rabbitBus := &rabbitmqBus{
 		logger:                logger,
 		serializer:            serializer,
@@ -73,7 +69,7 @@ func NewRabbitmqBus(
 		rabbitmqConfig:        cfg,
 		rabbitmqConfigBuilder: builder,
 		messageTypeConsumers:  map[reflect.Type][]consumer.Consumer{},
-		rabbitmqConnection:    conn,
+		rabbitmqConnection:    connection,
 	}
 
 	producersConfiguration := go2linq.ToMapMust(

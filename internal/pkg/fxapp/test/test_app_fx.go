@@ -37,7 +37,7 @@ func CreateFxTestApp(
 
 	duration := 60 * time.Second
 
-	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Run`
+	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Register`
 	fxApp := fxtest.New(
 		tb,
 		fx.StartTimeout(duration),

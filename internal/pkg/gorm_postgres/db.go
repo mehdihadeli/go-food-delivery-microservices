@@ -43,6 +43,8 @@ func NewGorm(cfg *GormOptions) (*gorm.DB, error) {
 	return gormDb, nil
 }
 
+func NewSQLDB(orm *gorm.DB) (*sql.DB, error) { return orm.DB() }
+
 func createDB(cfg *GormOptions) error {
 	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'
 	datasource := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",

@@ -8,6 +8,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/elasticsearch"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
@@ -42,6 +43,7 @@ var Module = fx.Module(
 			}
 		},
 	),
+	health.Module,
 
 	// Other provides
 	fx.Provide(validator.New),

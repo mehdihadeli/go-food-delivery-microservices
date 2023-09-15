@@ -8,6 +8,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/constants"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/problemDetails"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
@@ -18,7 +19,7 @@ func TraceHttpErrFromSpan(span trace.Span, err error) error {
 	if err != nil {
 		stackTraceError := errorUtils.ErrorsWithStack(err)
 		span.SetStatus(codes.Error, "")
-		span.SetAttributes(attribute.String(HttpErrorMessage, stackTraceError))
+		span.SetAttributes(attribute.String(constants.Otel.HttpErrorMessage, stackTraceError))
 		if customErrors.IsCustomError(err) {
 			httpError := problemDetails.ParseError(err)
 			span.SetAttributes(semconv.HTTPStatusCode(httpError.GetStatus()))
@@ -35,7 +36,7 @@ func TraceHttpErrFromSpanWithCode(span trace.Span, err error, code int) error {
 		stackTraceError := errorUtils.ErrorsWithStack(err)
 		span.SetStatus(codes.Error, "")
 		span.SetAttributes(semconv.HTTPStatusCode(code))
-		span.SetAttributes(attribute.String(HttpErrorMessage, stackTraceError))
+		span.SetAttributes(attribute.String(constants.Otel.HttpErrorMessage, stackTraceError))
 		span.RecordError(err)
 	}
 
@@ -50,7 +51,7 @@ func TraceHttpErrFromContext(ctx context.Context, err error) error {
 	if err != nil {
 		stackTraceError := errorUtils.ErrorsWithStack(err)
 		span.SetStatus(codes.Error, "")
-		span.SetAttributes(attribute.String(HttpErrorMessage, stackTraceError))
+		span.SetAttributes(attribute.String(constants.Otel.HttpErrorMessage, stackTraceError))
 		span.RecordError(err)
 	}
 

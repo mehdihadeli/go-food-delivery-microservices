@@ -2,15 +2,18 @@ package rabbitmq
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/fx"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 )
 
 // ModuleFunc provided to fxlog
@@ -24,14 +27,20 @@ var ModuleFunc = func(rabbitMQConfigurationConstructor interface{}) fx.Option {
 		fx.Provide(
 			config.ProvideConfig,
 		),
+		fx.Provide(types.NewRabbitMQConnection),
 		fx.Provide(fx.Annotate(
 			bus.NewRabbitmqBus,
-			fx.ParamTags(``, ``, ``, `optional:"true"`),
+			fx.ParamTags(``, ``, ``, ``, `optional:"true"`),
 			fx.As(new(producer.Producer)),
 			fx.As(new(bus2.Bus)),
 			fx.As(new(bus.RabbitmqBus)),
 		)),
 		fx.Provide(rabbitMQConfigurationConstructor),
+		fx.Provide(fx.Annotate(
+			NewRabbitMQHealthChecker,
+			fx.As(new(health.Health)),
+			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
+		)),
 		// - execute after registering all of our provided
 		// - they execute by their orders
 		// - invokes always execute its func compare to provides that only run when we request for them.

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -16,12 +16,11 @@ const (
 	writeTimeout    = 3 * time.Second
 	minIdleConns    = 20
 	poolTimeout     = 6 * time.Second
-	idleTimeout     = 12 * time.Second
 )
 
-func NewUniversalRedisClient(cfg *RedisOptions) redis.UniversalClient {
-	universalClient := redis.NewUniversalClient(&redis.UniversalOptions{
-		Addrs:           []string{fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)},
+func NewRedisClient(cfg *RedisOptions) *redis.Client {
+	universalClient := redis.NewClient(&redis.Options{
+		Addr:            fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
 		Password:        cfg.Password, // no password set
 		DB:              cfg.Database, // use defaultLogger Database
 		MaxRetries:      maxRetries,
@@ -33,7 +32,6 @@ func NewUniversalRedisClient(cfg *RedisOptions) redis.UniversalClient {
 		PoolSize:        cfg.PoolSize,
 		MinIdleConns:    minIdleConns,
 		PoolTimeout:     poolTimeout,
-		IdleTimeout:     idleTimeout,
 	})
 
 	return universalClient

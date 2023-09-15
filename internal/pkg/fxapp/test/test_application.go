@@ -61,7 +61,7 @@ func (a *testApplication) RegisterHook(function interface{}) {
 }
 
 func (a *testApplication) Run() {
-	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Run`
+	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Register`
 	fxTestApp := CreateFxTestApp(
 		a.tb,
 		a.provides,
@@ -78,7 +78,7 @@ func (a *testApplication) Run() {
 }
 
 func (a *testApplication) Start(ctx context.Context) error {
-	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Run`
+	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Register`
 	fxApp := CreateFxTestApp(a.tb, a.provides, a.decorates, a.invokes, a.options, a.logger, a.env)
 	a.fxtestApp = fxApp
 

@@ -18,6 +18,7 @@ import (
 	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
@@ -157,10 +158,17 @@ func (g *rabbitmqTestContainers) Start(
 		rabbitHostOptions.AmqpEndPoint(),
 	)
 
+	rabbitmqConfig := &config.RabbitmqOptions{RabbitmqHostOptions: rabbitHostOptions}
+	conn, err := types.NewRabbitMQConnection(rabbitmqConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	mqBus, err := bus2.NewRabbitmqBus(
-		&config.RabbitmqOptions{RabbitmqHostOptions: rabbitHostOptions},
+		rabbitmqConfig,
 		serializer,
 		logger,
+		conn,
 		rabbitmqBuilderFunc,
 	)
 	if err != nil {

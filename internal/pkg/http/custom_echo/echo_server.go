@@ -108,6 +108,10 @@ func (s *echoHttpServer) GracefulShutdown(ctx context.Context) error {
 func (s *echoHttpServer) SetupDefaultMiddlewares() {
 	// set error handler
 	s.echo.HTTPErrorHandler = func(err error, c echo.Context) {
+		// bypass notfound favicon endpoint and its error
+		if c.Request().URL.Path == "/favicon.ico" {
+			return
+		}
 		customHadnlers.ProblemHandlerFunc(err, c, s.log)
 	}
 

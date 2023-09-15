@@ -143,7 +143,7 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 		})
 	}
 
-	//c.Run("Handle_Should_Get_Product_Successfully", func() {
+	//c.Register("Handle_Should_Get_Product_Successfully", func() {
 	//	// create new mocks or clear mocks before executing
 	//	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
 	//	c.getProductByIdHandler = NewGetProductByIdHandler(c.Log, c.Cfg, c.ProductRepository)
@@ -162,7 +162,7 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 	//	c.Equal(product.Name, dto.Product.Name)
 	//})
 	//
-	//c.Run("Handle_Should_Return_NotFound_Error_For_NotFound_Item", func() {
+	//c.Register("Handle_Should_Return_NotFound_Error_For_NotFound_Item", func() {
 	//	// create new mocks or clear mocks before executing
 	//	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
 	//	c.getProductByIdHandler = NewGetProductByIdHandler(c.Log, c.Cfg, c.ProductRepository)
@@ -184,7 +184,7 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 	//	c.ProductRepository.AssertNumberOfCalls(c.T(), "GetProductById", 1)
 	//})
 	//
-	//c.Run("Handle_Should_Return_Error_For_Error_In_Mapping", func() {
+	//c.Register("Handle_Should_Return_Error_For_Error_In_Mapping", func() {
 	//	// create new mocks or clear mocks before executing
 	//	c.UnitTestMockFixture = unit_test.NewUnitTestMockFixture(c.T())
 	//	c.getProductByIdHandler = NewGetProductByIdHandler(c.Log, c.Cfg, c.ProductRepository)
