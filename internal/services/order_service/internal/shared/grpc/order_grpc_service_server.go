@@ -4,15 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"emperror.dev/errors"
-	"github.com/go-playground/validator"
-	uuid "github.com/satori/go.uuid"
-	"go.opentelemetry.io/otel/attribute"
-	api "go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
-
-	"github.com/mehdihadeli/go-mediatr"
-
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
@@ -28,6 +19,14 @@ import (
 	getOrdersQueryV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/getting_orders/v1/queries"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/contracts"
 	grpcOrderService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/grpc/genproto"
+
+	"emperror.dev/errors"
+	"github.com/go-playground/validator"
+	"github.com/mehdihadeli/go-mediatr"
+	uuid "github.com/satori/go.uuid"
+	"go.opentelemetry.io/otel/attribute"
+	api "go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type OrderGrpcServiceServer struct {

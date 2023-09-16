@@ -85,6 +85,7 @@ lint:
 	@./scripts/lint.sh order_service
 	@./scripts/lint.sh pkg
 
+
 #.PHONY: c4
 #c4:
 #	cd tools/c4 && go mod tidy && sh generate.sh

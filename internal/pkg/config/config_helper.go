@@ -5,14 +5,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+
 	"emperror.dev/errors"
 	"github.com/caarlos0/env/v8"
 	"github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
 func BindConfig[T any](environments ...environemnt.Environment) (T, error) {

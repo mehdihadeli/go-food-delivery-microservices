@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"reflect"
 
-	"emperror.dev/errors"
-	"github.com/go-playground/validator"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+
+	"emperror.dev/errors"
+	"github.com/go-playground/validator"
 )
 
 type ProblemDetailParser struct {

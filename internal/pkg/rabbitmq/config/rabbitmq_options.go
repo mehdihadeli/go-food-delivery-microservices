@@ -1,19 +1,15 @@
-//go:build go1.18
-
 package config
 
 import (
 	"fmt"
 	"time"
 
-	"github.com/iancoleman/strcase"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
-)
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[RabbitmqOptions]())
+	"github.com/iancoleman/strcase"
+)
 
 type RabbitmqOptions struct {
 	RabbitmqHostOptions *RabbitmqHostOptions `mapstructure:"rabbitmqHostOptions"`
@@ -43,6 +39,8 @@ func (h *RabbitmqHostOptions) HttpEndPoint() string {
 }
 
 func ProvideConfig(environment environemnt.Environment) (*RabbitmqOptions, error) {
+	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[RabbitmqOptions]())
 	cfg, err := config.BindConfigKey[*RabbitmqOptions](optionName, environment)
+
 	return cfg, err
 }

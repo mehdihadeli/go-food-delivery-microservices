@@ -3,9 +3,9 @@ package grpcErrors
 import (
 	"time"
 
-	"google.golang.org/grpc/codes"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+
+	"google.golang.org/grpc/codes"
 )
 
 func NewValidationGrpcError(detail string, stackTrace string) GrpcErr {

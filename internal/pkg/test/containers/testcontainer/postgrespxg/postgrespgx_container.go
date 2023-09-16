@@ -6,13 +6,13 @@ import (
 	"testing"
 	"time"
 
+	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
 	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-
-	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 // https://github.com/testcontainers/testcontainers-go/issues/1359

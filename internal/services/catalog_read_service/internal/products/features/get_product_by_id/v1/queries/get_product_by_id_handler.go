@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
@@ -15,6 +13,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/dto"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
+
+	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 type GetProductByIdHandler struct {
@@ -45,10 +45,13 @@ func (q *GetProductByIdHandler) Handle(
 	ctx, span := q.tracer.Start(ctx, "getProductByIdHandler.Handle")
 	span.SetAttributes(attribute.Object("Query", query))
 	span.SetAttributes(attribute2.String("Id", query.Id.String()))
-	defer span.End()
+
+	redisProduct, err := q.redisRepository.GetProductById(ctx, query.Id.String())
 
 	var product *models.Product
-	redisProduct, err := q.redisRepository.GetProductById(ctx, query.Id.String())
+
+	defer span.End()
+
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(
 			span,
@@ -73,7 +76,7 @@ func (q *GetProductByIdHandler) Handle(
 		if mongoProduct == nil {
 			mongoProduct, err = q.mongoRepository.GetProductByProductId(ctx, query.Id.String())
 		}
-		if mongoProduct == nil {
+		if err == nil {
 			return nil, nil
 		}
 

@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 )
 
 // Module provided to fxlog

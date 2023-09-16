@@ -3,11 +3,11 @@ package json
 import (
 	"log"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
+
 	"github.com/TylerBrock/colorjson"
 	"github.com/goccy/go-json"
 	"github.com/mitchellh/mapstructure"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 )
 
 type jsonSerializer struct{}

@@ -5,13 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"emperror.dev/errors"
-	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/ahmetb/go-linq/v3"
-	uuid "github.com/satori/go.uuid"
-	attribute2 "go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
@@ -25,6 +18,13 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+
+	"emperror.dev/errors"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/ahmetb/go-linq/v3"
+	uuid "github.com/satori/go.uuid"
+	attribute2 "go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type esdbAggregateStore[T models.IHaveEventSourcedAggregate] struct {

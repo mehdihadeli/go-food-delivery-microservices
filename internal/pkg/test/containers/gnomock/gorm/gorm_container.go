@@ -5,13 +5,13 @@ import (
 	"log"
 	"testing"
 
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
 	"emperror.dev/errors"
 	"github.com/orlangure/gnomock"
 	"github.com/orlangure/gnomock/preset/postgres"
 	"gorm.io/gorm"
-
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 type gnoMockGormContainer struct {

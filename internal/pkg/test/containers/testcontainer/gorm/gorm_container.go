@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
 	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"gorm.io/gorm"
-
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 // https://github.com/testcontainers/testcontainers-go/issues/1359

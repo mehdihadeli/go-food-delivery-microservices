@@ -7,10 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -24,6 +20,10 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	catalogs2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/configurations/catalogs"
+
+	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type TestApp struct{}

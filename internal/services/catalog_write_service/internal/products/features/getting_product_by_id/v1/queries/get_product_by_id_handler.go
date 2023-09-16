@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
@@ -15,6 +13,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
 	dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dto/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_product_by_id/v1/dtos"
+
+	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 type GetProductByIdHandler struct {

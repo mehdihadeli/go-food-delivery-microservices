@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"go.uber.org/fx"
 )
 
 // Module provided to fxlog

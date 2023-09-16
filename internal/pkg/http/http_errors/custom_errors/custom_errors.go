@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"emperror.dev/errors"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
+
+	"emperror.dev/errors"
 )
 
 // https://klotzandrew.com/blog/error-handling-in-golang

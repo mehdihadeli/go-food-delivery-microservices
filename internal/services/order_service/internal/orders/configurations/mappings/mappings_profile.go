@@ -1,8 +1,6 @@
 package mappings
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
@@ -10,6 +8,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/value_objects"
 	grpcOrderService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/grpc/genproto"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func ConfigureOrdersMappings() error {

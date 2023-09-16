@@ -1,9 +1,6 @@
 package orders
 
 import (
-	"github.com/labstack/echo/v4"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
@@ -14,6 +11,9 @@ import (
 	getOrdersV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/getting_orders/v1/endpoints"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/projections"
+
+	"github.com/labstack/echo/v4"
+	"go.uber.org/fx"
 )
 
 var Module = fx.Module(

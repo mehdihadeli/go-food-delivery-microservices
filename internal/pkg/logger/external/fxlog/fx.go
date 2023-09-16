@@ -3,10 +3,10 @@ package fxlog
 import (
 	"strings"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 )
 
 var FxLogger = fx.WithLogger(func(logger logger.Logger) fxevent.Logger {

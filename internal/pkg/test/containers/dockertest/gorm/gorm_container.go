@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"testing"
 
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/phayes/freeport"
 	"gorm.io/gorm"
-
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 type gormDockerTest struct {

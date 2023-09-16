@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
+	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
 	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
 	"github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-
-	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 type redisTestContainers struct {

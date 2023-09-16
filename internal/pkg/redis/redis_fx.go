@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/redis/go-redis/v9"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
+	"github.com/redis/go-redis/v9"
+	"go.uber.org/fx"
 )
 
 // Module provided to fxlog

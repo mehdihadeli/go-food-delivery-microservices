@@ -1,10 +1,10 @@
 package integrationEvents
 
 import (
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type OrderCreatedV1 struct {

@@ -1,8 +1,6 @@
 package rabbitmq
 
 import (
-	"github.com/go-playground/validator"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
@@ -11,6 +9,8 @@ import (
 	createProductExternalEventV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/events/integration_events/external_events"
 	deleteProductExternalEventV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/deleting_products/v1/events/integration_events/external_events"
 	updateProductExternalEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/updating_products/v1/events/integration_events/external_events"
+
+	"github.com/go-playground/validator"
 )
 
 func ConfigProductsRabbitMQ(

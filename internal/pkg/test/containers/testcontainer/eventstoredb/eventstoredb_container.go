@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 type eventstoredbTestContainers struct {

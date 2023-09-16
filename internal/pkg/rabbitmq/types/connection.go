@@ -3,12 +3,12 @@ package types
 import (
 	"fmt"
 
-	"emperror.dev/errors"
-	"github.com/rabbitmq/amqp091-go"
-
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+
+	"emperror.dev/errors"
+	"github.com/rabbitmq/amqp091-go"
 )
 
 type internalConnection struct {

@@ -1,10 +1,10 @@
 package domain
 
 import (
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/events"
 	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type IDomainEvent interface {

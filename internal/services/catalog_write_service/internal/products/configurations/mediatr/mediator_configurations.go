@@ -1,8 +1,6 @@
 package mediatr
 
 import (
-	"github.com/mehdihadeli/go-mediatr"
-
 	logger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
@@ -17,6 +15,8 @@ import (
 	searchProductsDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/searching_product/v1/dtos"
 	searchProductsQueryV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/searching_product/v1/queries"
 	updateProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/commands"
+
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 func ConfigProductsMediator(

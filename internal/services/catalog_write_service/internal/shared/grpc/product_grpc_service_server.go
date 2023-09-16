@@ -4,14 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"emperror.dev/errors"
-	uuid "github.com/satori/go.uuid"
-	attribute2 "go.opentelemetry.io/otel/attribute"
-	api "go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
-
-	"github.com/mehdihadeli/go-mediatr"
-
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
@@ -23,6 +15,13 @@ import (
 	updateProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/contracts"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
+
+	"emperror.dev/errors"
+	"github.com/mehdihadeli/go-mediatr"
+	uuid "github.com/satori/go.uuid"
+	attribute2 "go.opentelemetry.io/otel/attribute"
+	api "go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var grpcMetricsAttr = api.WithAttributes(

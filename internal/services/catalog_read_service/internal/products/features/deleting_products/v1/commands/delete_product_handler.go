@@ -4,15 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
-	"github.com/mehdihadeli/go-mediatr"
-
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
+
+	"github.com/mehdihadeli/go-mediatr"
+	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 type DeleteProductCommand struct {
@@ -43,9 +42,10 @@ func (c *DeleteProductCommand) Handle(
 	ctx, span := c.tracer.Start(ctx, "DeleteProductCommand.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductId.String()))
 	span.SetAttributes(attribute.Object("Command", command))
+	product, err := c.mongoRepository.GetProductByProductId(ctx, command.ProductId.String())
+
 	defer span.End()
 
-	product, err := c.mongoRepository.GetProductByProductId(ctx, command.ProductId.String())
 	if err != nil {
 		return nil, tracing.TraceErrFromSpan(
 			span,

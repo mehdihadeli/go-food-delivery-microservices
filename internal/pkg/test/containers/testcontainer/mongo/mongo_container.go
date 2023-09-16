@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
 	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/mongo"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 type mongoTestContainers struct {

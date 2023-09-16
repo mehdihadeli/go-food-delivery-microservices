@@ -5,17 +5,18 @@ import (
 	"log"
 	"testing"
 
-	_ "github.com/lib/pq" // postgres driver
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
-	"gorm.io/gorm"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	gorm2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
+
+	_ "github.com/lib/pq" // postgres driver
 )
 
 // Product is a domain_events entity

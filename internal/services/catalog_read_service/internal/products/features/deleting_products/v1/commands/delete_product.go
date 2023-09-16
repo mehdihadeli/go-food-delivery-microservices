@@ -15,6 +15,7 @@ func NewDeleteProduct(productId uuid.UUID) (*DeleteProduct, error) {
 	if err := delProduct.Validate(); err != nil {
 		return nil, err
 	}
+
 	return delProduct, nil
 }
 

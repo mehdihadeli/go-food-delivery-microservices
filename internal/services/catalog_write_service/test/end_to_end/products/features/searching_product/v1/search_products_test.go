@@ -8,12 +8,13 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gavv/httpexpect/v2"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+
+	"github.com/gavv/httpexpect/v2"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var integrationFixture *integration.IntegrationTestSharedFixture

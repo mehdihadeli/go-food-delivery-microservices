@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"gorm.io/gorm"
-
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+
+	"gorm.io/gorm"
 )
 
 type PostgresContainerOptions struct {

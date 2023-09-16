@@ -1,10 +1,10 @@
 package zap
 
 import (
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
+
+	"go.uber.org/fx"
 )
 
 // Module provided to fxlog

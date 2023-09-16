@@ -1,9 +1,9 @@
 package serializer
 
 import (
-	"emperror.dev/errors"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
+
+	"emperror.dev/errors"
 )
 
 type MetadataSerializer interface {

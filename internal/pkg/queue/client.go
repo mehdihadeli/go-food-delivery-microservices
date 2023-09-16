@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
+
 	"github.com/hibiken/asynq"
 	"go.uber.org/fx"
-
-	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
 )
 
 func NewClient(config *redis2.RedisOptions) *asynq.Client {

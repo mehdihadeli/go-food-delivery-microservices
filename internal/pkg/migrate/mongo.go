@@ -6,12 +6,12 @@ import (
 	"path/filepath"
 	"runtime"
 
+	mongodb2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
+
 	"emperror.dev/errors"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mongodb"
 	"go.uber.org/zap"
-
-	mongodb2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
 )
 
 func (config *MigrationConfig) Migrate(ctx context.Context) error {

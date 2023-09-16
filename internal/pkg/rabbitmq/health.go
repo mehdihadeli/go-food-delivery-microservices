@@ -3,10 +3,10 @@ package rabbitmq
 import (
 	"context"
 
-	"emperror.dev/errors"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
+
+	"emperror.dev/errors"
 )
 
 type gormHealthChecker struct {

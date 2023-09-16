@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+
 	"github.com/goccy/go-reflect"
 	"github.com/stretchr/testify/assert"
-
-	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 )
 
 type Hypothesis[T any] interface {

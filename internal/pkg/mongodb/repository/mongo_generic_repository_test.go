@@ -5,17 +5,17 @@ import (
 	"log"
 	"testing"
 
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	mongo2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/mongo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
+
 	"emperror.dev/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
 )
 
 type grpcClient struct {

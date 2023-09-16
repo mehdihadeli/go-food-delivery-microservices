@@ -5,10 +5,12 @@ import (
 	"log"
 	"os"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
+
 	"emperror.dev/errors"
 	"go.opentelemetry.io/contrib/propagators/ot"
 	"go.opentelemetry.io/otel"
-	_ "go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -18,8 +20,7 @@ import (
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
-	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
+	_ "go.opentelemetry.io/otel"
 )
 
 // https://opentelemetry.io/docs/reference/specification/

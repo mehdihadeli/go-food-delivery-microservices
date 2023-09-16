@@ -1,11 +1,11 @@
 package test
 
 import (
-	"go.uber.org/fx/fxtest"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
+
+	"go.uber.org/fx/fxtest"
 )
 
 type TestApplicationBuilder struct {

@@ -1,9 +1,6 @@
 package configurations
 
 import (
-	"github.com/go-playground/validator"
-	googleGrpc "google.golang.org/grpc"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	grpcServer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
@@ -18,6 +15,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/grpc"
 	ordersservice "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/grpc/genproto"
+
+	"github.com/go-playground/validator"
+	googleGrpc "google.golang.org/grpc"
 )
 
 type OrdersModuleConfigurator struct {

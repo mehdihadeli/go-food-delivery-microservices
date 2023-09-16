@@ -5,9 +5,6 @@ import (
 	"testing"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
@@ -17,6 +14,9 @@ import (
 	consumerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Custom_RabbitMQ_Container(t *testing.T) {

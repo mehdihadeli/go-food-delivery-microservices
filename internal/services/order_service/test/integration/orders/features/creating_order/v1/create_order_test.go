@@ -8,12 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-
-	"github.com/mehdihadeli/go-mediatr"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/hypothesis"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
@@ -23,6 +17,12 @@ import (
 	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/events/integration_events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/test_fixtures/integration"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/go-mediatr"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var integrationFixture *integration.IntegrationTestSharedFixture

@@ -4,11 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"emperror.dev/errors"
-	uuid "github.com/satori/go.uuid"
-	attribute2 "go.opentelemetry.io/otel/attribute"
-	"gorm.io/gorm"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres/repository"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -17,6 +12,11 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
+
+	"emperror.dev/errors"
+	uuid "github.com/satori/go.uuid"
+	attribute2 "go.opentelemetry.io/otel/attribute"
+	"gorm.io/gorm"
 )
 
 type postgresProductRepository struct {

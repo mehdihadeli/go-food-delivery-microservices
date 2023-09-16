@@ -32,8 +32,7 @@ func NewCreateProduct(
 		Price:       price,
 		CreatedAt:   createdAt,
 	}
-	err := command.Validate()
-	if err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 

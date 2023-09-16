@@ -5,12 +5,6 @@ import (
 	"fmt"
 	"math"
 
-	"emperror.dev/errors"
-	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/ahmetb/go-linq/v3"
-	attribute2 "go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
 	appendResult "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/append_result"
@@ -22,6 +16,12 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+
+	"emperror.dev/errors"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/ahmetb/go-linq/v3"
+	attribute2 "go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // https://developers.eventstore.com/clients/grpc/reading-events.html#reading-from-a-stream

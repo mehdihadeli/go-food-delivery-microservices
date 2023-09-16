@@ -1,9 +1,9 @@
 package testData
 
 import (
-	"github.com/brianvoe/gofakeit/v6"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
+
+	"github.com/brianvoe/gofakeit/v6"
 )
 
 var Orders = []*read_models.OrderReadModel{

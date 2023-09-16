@@ -6,12 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"emperror.dev/errors"
-	"github.com/docker/go-connections/nat"
-	"github.com/rabbitmq/amqp091-go"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
@@ -20,6 +14,12 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
+	"emperror.dev/errors"
+	"github.com/docker/go-connections/nat"
+	"github.com/rabbitmq/amqp091-go"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 // https://github.com/testcontainers/testcontainers-go/issues/1359

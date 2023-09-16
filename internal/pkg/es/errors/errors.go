@@ -3,9 +3,9 @@ package errors
 import (
 	"fmt"
 
-	"emperror.dev/errors"
-
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+
+	"emperror.dev/errors"
 )
 
 var (

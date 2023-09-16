@@ -8,16 +8,17 @@ import (
 	"testing"
 	"time"
 
-	"emperror.dev/errors"
-	"github.com/brianvoe/gofakeit/v6"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+
+	"emperror.dev/errors"
+	"github.com/brianvoe/gofakeit/v6"
+	uuid "github.com/satori/go.uuid"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var integrationFixture *integration.IntegrationTestSharedFixture

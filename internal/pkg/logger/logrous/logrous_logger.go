@@ -4,14 +4,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/nolleh/caption_json_formatter"
-	"github.com/sirupsen/logrus"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
+
+	"github.com/nolleh/caption_json_formatter"
+	"github.com/sirupsen/logrus"
 )
 
 type logrusLogger struct {

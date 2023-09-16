@@ -3,9 +3,9 @@ package mongodb
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/mongo"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type mongoHealthChecker struct {

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
@@ -14,6 +12,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
+
+	"go.uber.org/fx"
 )
 
 // ModuleFunc provided to fxlog

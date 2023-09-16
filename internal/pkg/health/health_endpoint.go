@@ -3,9 +3,9 @@ package health
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+
+	"github.com/labstack/echo/v4"
 )
 
 type HealthCheckEndpoint struct {

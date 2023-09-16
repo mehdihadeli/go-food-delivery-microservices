@@ -5,9 +5,6 @@ package aggregate
 import (
 	"time"
 
-	"github.com/goccy/go-json"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
@@ -19,6 +16,9 @@ import (
 	createOrderDomainEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/events/domain_events"
 	updateOrderDomainEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/updating_shopping_card/v1/events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/value_objects"
+
+	"github.com/goccy/go-json"
+	uuid "github.com/satori/go.uuid"
 )
 
 type Order struct {

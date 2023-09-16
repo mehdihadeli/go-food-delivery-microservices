@@ -7,14 +7,14 @@ import (
 	"context"
 	"testing"
 
-	uuid "github.com/satori/go.uuid"
-	. "github.com/smartystreets/goconvey/convey"
-
-	"github.com/mehdihadeli/go-mediatr"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/queries"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+
+	"github.com/mehdihadeli/go-mediatr"
+	uuid "github.com/satori/go.uuid"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGetProductById(t *testing.T) {

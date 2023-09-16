@@ -3,9 +3,9 @@ package gormPostgres
 import (
 	"fmt"
 
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
+
+	"go.uber.org/fx"
 )
 
 // Module provided to fxlog

@@ -10,16 +10,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
-	uuid "github.com/satori/go.uuid"
-	. "github.com/smartystreets/goconvey/convey"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 	externalEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/events/integration_events/external_events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+
+	"github.com/brianvoe/gofakeit/v6"
+	uuid "github.com/satori/go.uuid"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestProductCreatedConsumer(t *testing.T) {

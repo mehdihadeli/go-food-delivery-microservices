@@ -5,15 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"emperror.dev/errors"
-	"github.com/brianvoe/gofakeit/v6"
-	_ "github.com/lib/pq"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
-	"gopkg.in/khaiql/dbcleaner.v2"
-	"gorm.io/gorm"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -27,6 +18,16 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/app/test"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
+
+	"emperror.dev/errors"
+	"github.com/brianvoe/gofakeit/v6"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/require"
+	"gopkg.in/khaiql/dbcleaner.v2"
+	"gorm.io/gorm"
+
+	_ "github.com/lib/pq"
 )
 
 type IntegrationTestSharedFixture struct {

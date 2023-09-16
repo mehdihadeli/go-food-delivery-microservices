@@ -1,9 +1,6 @@
 package products
 
 import (
-	"github.com/labstack/echo/v4"
-	"go.uber.org/fx"
-
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/repositories"
@@ -14,6 +11,9 @@ import (
 	searchProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/searching_product/v1/endpoints"
 	updateProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/endpoints"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc"
+
+	"github.com/labstack/echo/v4"
+	"go.uber.org/fx"
 )
 
 var Module = fx.Module(

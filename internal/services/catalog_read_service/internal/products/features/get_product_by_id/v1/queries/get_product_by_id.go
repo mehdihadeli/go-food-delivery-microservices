@@ -15,6 +15,7 @@ func NewGetProductById(id uuid.UUID) (*GetProductById, error) {
 	if err := product.Validate(); err != nil {
 		return nil, err
 	}
+
 	return product, nil
 }
 

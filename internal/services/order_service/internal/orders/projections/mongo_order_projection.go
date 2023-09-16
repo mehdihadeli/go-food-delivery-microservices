@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"emperror.dev/errors"
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
@@ -20,6 +17,9 @@ import (
 	createOrderDomainEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/events/domain_events"
 	createOrderIntegrationEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/events/integration_events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
+
+	"emperror.dev/errors"
+	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 type mongoOrderProjection struct {

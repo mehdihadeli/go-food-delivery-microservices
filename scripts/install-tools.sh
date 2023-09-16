@@ -8,6 +8,9 @@ set -e
 # https://github.com/incu6us/goimports-reviser
 go install -v github.com/incu6us/goimports-reviser/v3@latest
 
+# https://github.com/daixiang0/gci
+go install github.com/daixiang0/gci@latest
+
 # https://pkg.go.dev/golang.org/x/tools/cmd/goimports
 go install golang.org/x/tools/cmd/goimports@latest
 
@@ -19,6 +22,8 @@ go install github.com/segmentio/golines@latest
 
 # https://golangci-lint.run/usage/install/#install-from-source
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+go install github.com/mgechev/revive@latest
 
 # https://github.com/dominikh/go-tools
 go install honnef.co/go/tools/cmd/staticcheck@latest
@@ -65,6 +70,7 @@ if [[ "$OS" == "Linux" ]]; then
     echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
     sudo apt-get update
     sudo apt-get install k6
+    sudo apt install diffutils
 
     # https://grpc.io/docs/protoc-installation/
     apt install -y protobuf-compiler
@@ -84,6 +90,8 @@ elif [[ "$OS" == "MINGW"* || "$OS" == "MSYS"* ]]; then
      # https://community.chocolatey.org/packages/protoc
      # https://grpc.io/docs/protoc-installation/
      choco install protoc
+
+     choco install diffutils
 else
     echo "Unsupported operating system: $OS"
     exit 1

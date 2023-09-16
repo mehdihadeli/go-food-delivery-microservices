@@ -6,11 +6,11 @@ package commands
 import (
 	"testing"
 
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/stretchr/testify/suite"
-
 	createProductCommand "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/stretchr/testify/suite"
 )
 
 type createProductUnitTests struct {

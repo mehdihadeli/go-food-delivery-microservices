@@ -3,11 +3,11 @@ package fxapp
 import (
 	"context"
 
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
+	"go.uber.org/fx"
 )
 
 type application struct {

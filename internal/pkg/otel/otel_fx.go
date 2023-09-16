@@ -4,15 +4,15 @@ import (
 	"context"
 	"net/http"
 
-	"emperror.dev/errors"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
+
+	"emperror.dev/errors"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/fx"
 )
 
 // Module provided to fxlog

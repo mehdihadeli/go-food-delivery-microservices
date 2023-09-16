@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/araddon/dateparse"
-
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+
+	"github.com/araddon/dateparse"
 )
 
 // CustomTime provides an example of how to declare a new time Type with a custom formatter.

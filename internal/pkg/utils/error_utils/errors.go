@@ -5,10 +5,10 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"emperror.dev/errors"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/contracts"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+
+	"emperror.dev/errors"
 )
 
 // CheckErrMessages check for specific messages contains in the error

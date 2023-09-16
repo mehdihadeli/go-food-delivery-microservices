@@ -1,9 +1,9 @@
 package params
 
 import (
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
+
+	"go.uber.org/fx"
 )
 
 type ProductsEndpointsParams struct {

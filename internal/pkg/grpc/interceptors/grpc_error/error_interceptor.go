@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"google.golang.org/grpc"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/grpcErrors"
+
+	"google.golang.org/grpc"
 )
 
 // UnaryServerInterceptor returns a problem-detail error to client

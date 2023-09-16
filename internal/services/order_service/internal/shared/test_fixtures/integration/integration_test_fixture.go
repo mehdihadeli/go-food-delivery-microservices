@@ -5,12 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"emperror.dev/errors"
-	"github.com/EventStore/EventStore-Client-Go/esdb"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
@@ -27,6 +21,12 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/app/test"
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/contracts"
 	ordersService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/grpc/genproto"
+
+	"emperror.dev/errors"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (

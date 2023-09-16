@@ -3,13 +3,13 @@ package test
 import (
 	"time"
 
-	"go.uber.org/fx"
-	"go.uber.org/fx/fxtest"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
+
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
 )
 
 func CreateFxTestApp(

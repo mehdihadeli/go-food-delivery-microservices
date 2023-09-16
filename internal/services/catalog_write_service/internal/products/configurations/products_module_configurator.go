@@ -1,8 +1,6 @@
 package configurations
 
 import (
-	googleGrpc "google.golang.org/grpc"
-
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	grpcServer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -14,6 +12,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc"
 	productsservice "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
+
+	googleGrpc "google.golang.org/grpc"
 )
 
 type ProductsModuleConfigurator struct {

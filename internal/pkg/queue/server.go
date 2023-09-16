@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hibiken/asynq"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
+
+	"github.com/hibiken/asynq"
+	"go.uber.org/fx"
 )
 
 func NewServeMux() *asynq.ServeMux {

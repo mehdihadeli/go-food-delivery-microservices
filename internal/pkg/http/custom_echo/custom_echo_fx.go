@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
+	"go.uber.org/fx"
 )
 
 // Module provided to fxlog

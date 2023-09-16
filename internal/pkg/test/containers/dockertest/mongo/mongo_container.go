@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"go.mongodb.org/mongo-driver/mongo"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 type mongoDockerTest struct {

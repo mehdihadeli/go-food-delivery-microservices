@@ -3,10 +3,10 @@ package es
 import (
 	"context"
 
-	"emperror.dev/errors"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
+
+	"emperror.dev/errors"
 )
 
 type projectionPublisher struct {
