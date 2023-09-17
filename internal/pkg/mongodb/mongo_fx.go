@@ -12,11 +12,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// Module provided to fxlog
-// https://uber-go.github.io/fx/modules.html
-var Module = fx.Module(
-	"mongofx",
-	fx.Provide(
+var (
+	mongoProviders = fx.Provide( //nolint:gochecknoglobals
 		provideConfig,
 		NewMongoDB,
 		fx.Annotate(
@@ -24,8 +21,17 @@ var Module = fx.Module(
 			fx.As(new(health.Health)),
 			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
 		),
-	),
-	fx.Invoke(registerHooks),
+	)
+
+	mongoInvokes = fx.Invoke(registerHooks) //nolint:gochecknoglobals
+
+	// Module provided to fxlog
+	// https://uber-go.github.io/fx/modules.html
+	Module = fx.Module( //nolint:gochecknoglobals
+		"mongofx",
+		mongoProviders,
+		mongoInvokes,
+	)
 )
 
 func registerHooks(lc fx.Lifecycle, client *mongo.Client, logger logger.Logger) {
@@ -34,6 +40,7 @@ func registerHooks(lc fx.Lifecycle, client *mongo.Client, logger logger.Logger) 
 			err := client.Ping(ctx, nil)
 			if err != nil {
 				logger.Error("failed to ping mongo", zap.Error(err))
+
 				return err
 			}
 

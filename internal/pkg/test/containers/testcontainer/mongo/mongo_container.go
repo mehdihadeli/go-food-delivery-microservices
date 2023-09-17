@@ -17,6 +17,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const (
+	connectTimeout  = 60 * time.Second
+	maxConnIdleTime = 3 * time.Minute
+	minPoolSize     = 20
+	maxPoolSize     = 300
+)
+
 type mongoTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.MongoContainerOptions
@@ -164,8 +171,21 @@ func (g *mongoTestContainers) getRunOptions(
 func isConnectable(ctx context.Context, t *testing.T, mongoOptions *contracts.MongoContainerOptions) bool {
 	t.Helper()
 
-	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", mongoOptions.Host, mongoOptions.HostPort))
-	mongoClient, err := mongo.Connect(ctx, clientOptions)
+	uriAddress := fmt.Sprintf(
+		"mongodb://%s:%s@%s:%d",
+		mongoOptions.UserName,
+		mongoOptions.Password,
+		mongoOptions.Host,
+		mongoOptions.HostPort,
+	)
+	opt := options.Client().ApplyURI(uriAddress).
+		SetConnectTimeout(connectTimeout).
+		SetMaxConnIdleTime(maxConnIdleTime).
+		SetMinPoolSize(minPoolSize).
+		SetMaxPoolSize(maxPoolSize)
+	opt = opt.SetAuth(options.Credential{Username: mongoOptions.UserName, Password: mongoOptions.Password})
+
+	mongoClient, err := mongo.Connect(ctx, opt)
 
 	defer mongoClient.Disconnect(ctx)
 

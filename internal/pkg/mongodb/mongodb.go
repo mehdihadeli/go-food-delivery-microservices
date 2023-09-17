@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	connectTimeout  = 30 * time.Second
+	connectTimeout  = 60 * time.Second
 	maxConnIdleTime = 3 * time.Minute
 	minPoolSize     = 20
 	maxPoolSize     = 300
@@ -21,8 +21,8 @@ const (
 
 // NewMongoDB Create new MongoDB client
 func NewMongoDB(cfg *MongoDbOptions) (*mongo.Client, error) {
-	uriAddres := fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port)
-	opt := options.Client().ApplyURI(uriAddres).
+	uriAddress := fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port)
+	opt := options.Client().ApplyURI(uriAddress).
 		SetConnectTimeout(connectTimeout).
 		SetMaxConnIdleTime(maxConnIdleTime).
 		SetMinPoolSize(minPoolSize).
@@ -34,8 +34,7 @@ func NewMongoDB(cfg *MongoDbOptions) (*mongo.Client, error) {
 
 	ctx := context.Background()
 	client, err := mongo.Connect(ctx, opt)
-
-	if err := client.Ping(ctx, nil); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
