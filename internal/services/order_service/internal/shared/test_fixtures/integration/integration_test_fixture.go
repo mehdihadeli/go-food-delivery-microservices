@@ -15,7 +15,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/app/test"
@@ -24,6 +23,7 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/brianvoe/gofakeit/v6"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -151,9 +151,47 @@ func seedReadModelData(
 	databaseName string,
 ) ([]*read_models.OrderReadModel, error) {
 	ctx := context.Background()
+
+	orders := []*read_models.OrderReadModel{
+		{
+			Id:              gofakeit.UUID(),
+			OrderId:         gofakeit.UUID(),
+			ShopItems:       generateShopItems(),
+			AccountEmail:    gofakeit.Email(),
+			DeliveryAddress: gofakeit.Address().Address,
+			CancelReason:    gofakeit.Sentence(5),
+			TotalPrice:      gofakeit.Float64Range(10, 100),
+			DeliveredTime:   gofakeit.Date(),
+			Paid:            gofakeit.Bool(),
+			Submitted:       gofakeit.Bool(),
+			Completed:       gofakeit.Bool(),
+			Canceled:        gofakeit.Bool(),
+			PaymentId:       gofakeit.UUID(),
+			CreatedAt:       gofakeit.Date(),
+			UpdatedAt:       gofakeit.Date(),
+		},
+		{
+			Id:              gofakeit.UUID(),
+			OrderId:         gofakeit.UUID(),
+			ShopItems:       generateShopItems(),
+			AccountEmail:    gofakeit.Email(),
+			DeliveryAddress: gofakeit.Address().Address,
+			CancelReason:    gofakeit.Sentence(5),
+			TotalPrice:      gofakeit.Float64Range(10, 100),
+			DeliveredTime:   gofakeit.Date(),
+			Paid:            gofakeit.Bool(),
+			Submitted:       gofakeit.Bool(),
+			Completed:       gofakeit.Bool(),
+			Canceled:        gofakeit.Bool(),
+			PaymentId:       gofakeit.UUID(),
+			CreatedAt:       gofakeit.Date(),
+			UpdatedAt:       gofakeit.Date(),
+		},
+	}
+
 	//// https://go.dev/doc/faq#convert_slice_of_interface
-	data := make([]interface{}, len(testData.Orders))
-	for i, v := range testData.Orders {
+	data := make([]interface{}, len(orders))
+	for i, v := range orders {
 		data[i] = v
 	}
 
@@ -170,4 +208,21 @@ func seedReadModelData(
 		nil,
 	)
 	return result.Items, nil
+}
+
+func generateShopItems() []*read_models.ShopItemReadModel {
+	var shopItems []*read_models.ShopItemReadModel
+
+	for i := 0; i < 3; i++ {
+		shopItem := &read_models.ShopItemReadModel{
+			Title:       gofakeit.Word(),
+			Description: gofakeit.Sentence(3),
+			Quantity:    uint64(gofakeit.UintRange(1, 100)),
+			Price:       gofakeit.Float64Range(1, 50),
+		}
+
+		shopItems = append(shopItems, shopItem)
+	}
+
+	return shopItems
 }
