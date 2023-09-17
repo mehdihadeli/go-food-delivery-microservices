@@ -33,7 +33,7 @@ type rabbitmqTestContainers struct {
 func NewRabbitMQTestContainers() contracts.RabbitMQContainer {
 	return &rabbitmqTestContainers{
 		defaultOptions: &contracts.RabbitMQContainerOptions{
-			Ports:       []string{"5672/tcp", "15672/tcp", "15671/tcp", "25672/tcp", "5671/tcp"},
+			Ports:       []string{"5672/tcp", "15672/tcp"},
 			Host:        "localhost",
 			VirtualHost: "/",
 			UserName:    "guest",
@@ -69,12 +69,10 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		if dbContainer.IsRunning() {
-			if err := dbContainer.Terminate(ctx); err != nil {
-				t.Fatalf("failed to terminate container: %s", err)
-			}
-			time.Sleep(time.Second * 1)
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
 		}
+		time.Sleep(time.Second * 1)
 	})
 
 	// get a free random host port for rabbitmq `Tcp Port`
@@ -231,7 +229,6 @@ func isConnectable(t *testing.T, options *contracts.RabbitMQContainerOptions) bo
 }
 
 func logError(t *testing.T, userName string, password string, host string, hostPort int) {
-	t.Helper()
 	t.Errorf(
 		fmt.Sprintf(
 			"Error in creating rabbitmq connection with %s",

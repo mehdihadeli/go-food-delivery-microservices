@@ -23,6 +23,28 @@ import (
 type rabbitmqDockerTest struct {
 	resource       *dockertest.Resource
 	defaultOptions *contracts.RabbitMQContainerOptions
+	pool           *dockertest.Pool
+}
+
+func NewRabbitMQDockerTest() contracts.RabbitMQContainer {
+	pool, err := dockertest.NewPool("")
+	if err != nil {
+		log.Fatalf("Could not connect to docker: %s", err)
+	}
+
+	return &rabbitmqDockerTest{
+		defaultOptions: &contracts.RabbitMQContainerOptions{
+			Ports:       []string{"5672", "15672"},
+			Host:        "localhost",
+			VirtualHost: "",
+			UserName:    "dockertest",
+			Password:    "dockertest",
+			Tag:         "management",
+			ImageName:   "rabbitmq",
+			Name:        "rabbitmq-dockertest",
+		},
+		pool: pool,
+	}
 }
 
 func (g *rabbitmqDockerTest) CreatingContainerOptions(
@@ -30,26 +52,10 @@ func (g *rabbitmqDockerTest) CreatingContainerOptions(
 	t *testing.T,
 	options ...*contracts.RabbitMQContainerOptions,
 ) (*config.RabbitmqHostOptions, error) {
-	return nil, nil
-}
-
-func (g *rabbitmqDockerTest) Start(
-	ctx context.Context,
-	t *testing.T,
-	serializer serializer.EventSerializer,
-	logger logger.Logger,
-	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
-	options ...*contracts.RabbitMQContainerOptions,
-) (bus.Bus, error) {
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
-	}
-
 	runOptions := g.getRunOptions(options...)
 
 	// pull mongodb docker image for version 5.0
-	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
+	resource, err := g.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
 		// set AutoRemove to true so that stopped container goes away by itself
 		config.AutoRemove = true
 		config.RestartPolicy = docker.RestartPolicy{
@@ -65,33 +71,41 @@ func (g *rabbitmqDockerTest) Start(
 	) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
 
 	g.resource = resource
-	i, err := strconv.Atoi(
+	hostPort, err := strconv.Atoi(
 		resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Ports[0])),
 	) // 5672
-	g.defaultOptions.HostPort = i
+	g.defaultOptions.HostPort = hostPort
 
 	t.Cleanup(func() { _ = resource.Close() })
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				_ = resource.Close()
-				return
-			}
-		}
-	}()
+	opt := &config.RabbitmqHostOptions{
+		UserName:    g.defaultOptions.UserName,
+		Password:    g.defaultOptions.Password,
+		HostName:    g.defaultOptions.Host,
+		VirtualHost: g.defaultOptions.VirtualHost,
+		Port:        g.defaultOptions.HostPort,
+	}
+
+	return opt, nil
+}
+
+func (g *rabbitmqDockerTest) Start(
+	ctx context.Context,
+	t *testing.T,
+	serializer serializer.EventSerializer,
+	logger logger.Logger,
+	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
+	options ...*contracts.RabbitMQContainerOptions,
+) (bus.Bus, error) {
+	rabbitmqHostOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	if err != nil {
+		return nil, err
+	}
 
 	var mqBus bus.Bus
-	if err = pool.Retry(func() error {
+	if err := g.pool.Retry(func() error {
 		config := &config.RabbitmqOptions{
-			RabbitmqHostOptions: &config.RabbitmqHostOptions{
-				UserName:    g.defaultOptions.UserName,
-				Password:    g.defaultOptions.Password,
-				HostName:    g.defaultOptions.Host,
-				VirtualHost: g.defaultOptions.VirtualHost,
-				Port:        g.defaultOptions.HostPort,
-			},
+			RabbitmqHostOptions: rabbitmqHostOptions,
 		}
 		conn, err := types.NewRabbitMQConnection(config)
 		if err != nil {
@@ -118,23 +132,7 @@ func (g *rabbitmqDockerTest) Start(
 }
 
 func (g *rabbitmqDockerTest) Cleanup(ctx context.Context) error {
-	// TODO implement me
-	panic("implement me")
-}
-
-func NewRabbitMQDockerTest() contracts.RabbitMQContainer {
-	return &rabbitmqDockerTest{
-		defaultOptions: &contracts.RabbitMQContainerOptions{
-			Ports:       []string{"5672", "15672"},
-			Host:        "localhost",
-			VirtualHost: "",
-			UserName:    "dockertest",
-			Password:    "dockertest",
-			Tag:         "management",
-			ImageName:   "rabbitmq",
-			Name:        "rabbitmq-dockertest",
-		},
-	}
+	return nil
 }
 
 func (g *rabbitmqDockerTest) getRunOptions(

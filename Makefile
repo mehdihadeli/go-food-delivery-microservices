@@ -49,14 +49,14 @@ proto:
 
 .PHONY: unit-test
 unit-test:
-	@./scripts/test.sh catalog_write_service unit
 	@./scripts/test.sh catalog_read_service unit
+	@./scripts/test.sh catalog_write_service unit
 	@./scripts/test.sh  order_service unit
 
 .PHONY: integration-test
 integration-test:
-	@./scripts/test.sh catalog_write_service integration
 	@./scripts/test.sh catalog_read_service integration
+	@./scripts/test.sh catalog_write_service integration
 	@./scripts/test.sh  order_service integration
 
 .PHONY: e2e-test
