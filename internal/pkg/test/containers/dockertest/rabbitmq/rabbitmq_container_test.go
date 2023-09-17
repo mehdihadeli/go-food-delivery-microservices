@@ -25,7 +25,9 @@ func Test_RabbitMQ_Container(t *testing.T) {
 	defaultLogger.SetupDefaultLogger()
 	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
 
-	rabbitmq, err := NewRabbitMQDockerTest().Start(ctx, t, eventSerializer, defaultLogger.Logger, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+	rabbitmq, err := NewRabbitMQDockerTest(
+		defaultLogger.Logger,
+	).Start(ctx, t, eventSerializer, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
 		builder.AddConsumer(ProducerConsumerMessage{},
 			func(consumerBuilder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
 				consumerBuilder.WithHandlers(

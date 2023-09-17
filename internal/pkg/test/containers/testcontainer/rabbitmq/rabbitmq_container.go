@@ -16,6 +16,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/testcontainers/testcontainers-go"
@@ -28,9 +29,10 @@ import (
 type rabbitmqTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.RabbitMQContainerOptions
+	logger         logger.Logger
 }
 
-func NewRabbitMQTestContainers() contracts.RabbitMQContainer {
+func NewRabbitMQTestContainers(l logger.Logger) contracts.RabbitMQContainer {
 	return &rabbitmqTestContainers{
 		defaultOptions: &contracts.RabbitMQContainerOptions{
 			Ports:       []string{"5672/tcp", "15672/tcp"},
@@ -44,6 +46,7 @@ func NewRabbitMQTestContainers() contracts.RabbitMQContainer {
 			ImageName:   "rabbitmq",
 			Name:        "rabbitmq-testcontainers",
 		},
+		logger: l,
 	}
 }
 
@@ -69,7 +72,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 
 	// Clean up the container after the test is complete
 	t.Cleanup(func() {
-		if err := dbContainer.Terminate(ctx); err != nil {
+		if terr := dbContainer.Terminate(ctx); terr != nil {
 			t.Fatalf("failed to terminate container: %s", err)
 		}
 		time.Sleep(time.Second * 1)
@@ -81,7 +84,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 	g.defaultOptions.HostPort = hostPort.Int()
-	t.Logf("rabbitmq host port is: %d", hostPort.Int())
+	g.logger.Infof("rabbitmq host port is: %d", hostPort.Int())
 
 	// https://github.com/michaelklishin/rabbit-hole/issues/74
 	// get a free random host port for rabbitmq UI `Http Port`
@@ -90,14 +93,14 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 	g.defaultOptions.HttpPort = uiHttpPort.Int()
-	t.Logf("rabbitmq ui port is: %d", uiHttpPort.Int())
+	g.logger.Infof("rabbitmq ui port is: %d", uiHttpPort.Int())
 
 	host, err := dbContainer.Host(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	isConnectable := isConnectable(t, g.defaultOptions)
+	isConnectable := IsConnectable(g.logger, g.defaultOptions)
 	if !isConnectable {
 		return g.CreatingContainerOptions(context.Background(), t, options...)
 	}
@@ -120,7 +123,6 @@ func (g *rabbitmqTestContainers) Start(
 	ctx context.Context,
 	t *testing.T,
 	serializer serializer.EventSerializer,
-	logger logger.Logger,
 	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
 	options ...*contracts.RabbitMQContainerOptions,
 ) (bus.Bus, error) {
@@ -129,7 +131,7 @@ func (g *rabbitmqTestContainers) Start(
 		return nil, err
 	}
 
-	t.Logf(
+	g.logger.Infof(
 		"rabbitmq connection is on host: %s",
 		rabbitHostOptions.AmqpEndPoint(),
 	)
@@ -143,7 +145,7 @@ func (g *rabbitmqTestContainers) Start(
 	mqBus, err := bus2.NewRabbitmqBus(
 		rabbitmqConfig,
 		serializer,
-		logger,
+		g.logger,
 		conn,
 		rabbitmqBuilderFunc,
 	)
@@ -186,12 +188,14 @@ func (g *rabbitmqTestContainers) getRunOptions(
 			g.defaultOptions.Tag = option.Tag
 		}
 	}
-
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: g.defaultOptions.Ports,
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])),
-		Hostname:     g.defaultOptions.Host,
+		HostConfigModifier: func(hostConfig *container.HostConfig) {
+			hostConfig.AutoRemove = true
+		},
+		Hostname: g.defaultOptions.Host,
 		Env: map[string]string{
 			"RABBITMQ_DEFAULT_USER": g.defaultOptions.UserName,
 			"RABBITMQ_DEFAULT_PASS": g.defaultOptions.Password,
@@ -201,14 +205,12 @@ func (g *rabbitmqTestContainers) getRunOptions(
 	return containerReq
 }
 
-func isConnectable(t *testing.T, options *contracts.RabbitMQContainerOptions) bool {
-	t.Helper()
-
+func IsConnectable(logger logger.Logger, options *contracts.RabbitMQContainerOptions) bool {
 	conn, err := amqp091.Dial(
 		fmt.Sprintf("amqp://%s:%s@%s:%d", options.UserName, options.Password, options.Host, options.HostPort),
 	)
 	if err != nil {
-		logError(t, options.UserName, options.Password, options.Host, options.HostPort)
+		logError(logger, options.UserName, options.Password, options.Host, options.HostPort)
 
 		return false
 	}
@@ -216,23 +218,24 @@ func isConnectable(t *testing.T, options *contracts.RabbitMQContainerOptions) bo
 	defer conn.Close()
 
 	if err != nil || (conn != nil && conn.IsClosed()) {
-		logError(t, options.UserName, options.Password, options.Host, options.HostPort)
+		logError(logger, options.UserName, options.Password, options.Host, options.HostPort)
 
 		return false
 	}
-	t.Logf(
-		"Opened rabbitmq connection on host: %s",
-		fmt.Sprintf("amqp://%s:%s@%s:%d", options.UserName, options.Password, options.Host, options.HostPort),
+	logger.Infof(
+		"Opened rabbitmq connection on host: amqp://%s:%s@%s:%d",
+		options.UserName,
+		options.Password,
+		options.Host,
+		options.HostPort,
 	)
 
 	return true
 }
 
-func logError(t *testing.T, userName string, password string, host string, hostPort int) {
-	t.Errorf(
-		fmt.Sprintf(
-			"Error in creating rabbitmq connection with %s",
-			fmt.Sprintf("amqp://%s:%s@%s:%d", userName, password, host, hostPort),
-		),
+func logError(logger logger.Logger, userName string, password string, host string, hostPort int) {
+	// we should not use `t.Error` or `t.Errorf` for logging errors because it will `fail` our test at the end and, we just should use logs without error like log.Error (not log.Fatal)
+	logger.Errorf(
+		"Error in creating rabbitmq connection with host: amqp://%s:%s@%s:%d", userName, password, host, hostPort,
 	)
 }

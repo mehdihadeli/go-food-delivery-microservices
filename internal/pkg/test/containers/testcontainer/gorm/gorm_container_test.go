@@ -6,6 +6,7 @@ import (
 	"time"
 
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/stretchr/testify/assert"
@@ -17,8 +18,9 @@ import (
 
 func Test_Custom_Gorm_Container(t *testing.T) {
 	ctx := context.Background()
+	defaultLogger.SetupDefaultLogger()
 
-	gorm, err := NewGormTestContainers().Start(ctx, t)
+	gorm, err := NewGormTestContainers(defaultLogger.Logger).Start(ctx, t)
 	require.NoError(t, err)
 
 	assert.NotNil(t, gorm)

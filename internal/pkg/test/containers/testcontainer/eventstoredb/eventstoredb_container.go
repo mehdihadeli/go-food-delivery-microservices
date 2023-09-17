@@ -8,6 +8,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
@@ -20,9 +21,10 @@ import (
 type eventstoredbTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.EventstoreDBContainerOptions
+	logger         logger.Logger
 }
 
-func NewEventstoreDBTestContainers() contracts.EventstoreDBContainer {
+func NewEventstoreDBTestContainers(l logger.Logger) contracts.EventstoreDBContainer {
 	return &eventstoredbTestContainers{
 		defaultOptions: &contracts.EventstoreDBContainerOptions{
 			Ports:   []string{"2113/tcp", "1113/tcp"},
@@ -34,6 +36,7 @@ func NewEventstoreDBTestContainers() contracts.EventstoreDBContainer {
 			ImageName: "eventstore/eventstore",
 			Name:      "eventstoredb-testcontainers",
 		},
+		logger: l,
 	}
 }
 
@@ -68,7 +71,7 @@ func (g *eventstoredbTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 	g.defaultOptions.HttpPort = httpPort.Int()
-	t.Logf("eventstoredb http and grpc port is: %d", httpPort.Int())
+	g.logger.Infof("eventstoredb http and grpc port is: %d", httpPort.Int())
 
 	// get a free random host port for tcp port eventstoredb
 	tcpPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[1]))

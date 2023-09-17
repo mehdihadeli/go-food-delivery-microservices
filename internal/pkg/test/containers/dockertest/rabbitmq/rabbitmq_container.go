@@ -18,15 +18,17 @@ import (
 
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
+	"github.com/rabbitmq/amqp091-go"
 )
 
 type rabbitmqDockerTest struct {
 	resource       *dockertest.Resource
 	defaultOptions *contracts.RabbitMQContainerOptions
 	pool           *dockertest.Pool
+	logger         logger.Logger
 }
 
-func NewRabbitMQDockerTest() contracts.RabbitMQContainer {
+func NewRabbitMQDockerTest(logger logger.Logger) contracts.RabbitMQContainer {
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
@@ -43,7 +45,8 @@ func NewRabbitMQDockerTest() contracts.RabbitMQContainer {
 			ImageName:   "rabbitmq",
 			Name:        "rabbitmq-dockertest",
 		},
-		pool: pool,
+		logger: logger,
+		pool:   pool,
 	}
 }
 
@@ -74,9 +77,19 @@ func (g *rabbitmqDockerTest) CreatingContainerOptions(
 	hostPort, err := strconv.Atoi(
 		resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Ports[0])),
 	) // 5672
+	httpPort, err := strconv.Atoi(
+		resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Ports[1])),
+	) // 15672
+
 	g.defaultOptions.HostPort = hostPort
+	g.defaultOptions.HttpPort = httpPort
 
 	t.Cleanup(func() { _ = resource.Close() })
+
+	isConnectable := isConnectable(g.logger, g.defaultOptions)
+	if !isConnectable {
+		return g.CreatingContainerOptions(context.Background(), t, options...)
+	}
 
 	opt := &config.RabbitmqHostOptions{
 		UserName:    g.defaultOptions.UserName,
@@ -84,6 +97,7 @@ func (g *rabbitmqDockerTest) CreatingContainerOptions(
 		HostName:    g.defaultOptions.Host,
 		VirtualHost: g.defaultOptions.VirtualHost,
 		Port:        g.defaultOptions.HostPort,
+		HttpPort:    g.defaultOptions.HttpPort,
 	}
 
 	return opt, nil
@@ -93,7 +107,6 @@ func (g *rabbitmqDockerTest) Start(
 	ctx context.Context,
 	t *testing.T,
 	serializer serializer.EventSerializer,
-	logger logger.Logger,
 	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
 	options ...*contracts.RabbitMQContainerOptions,
 ) (bus.Bus, error) {
@@ -115,7 +128,7 @@ func (g *rabbitmqDockerTest) Start(
 		mqBus, err = bus2.NewRabbitmqBus(
 			config,
 			serializer,
-			logger,
+			g.logger,
 			conn,
 			rabbitmqBuilderFunc)
 		if err != nil {
@@ -124,7 +137,7 @@ func (g *rabbitmqDockerTest) Start(
 
 		return nil
 	}); err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
+		g.logger.Errorf("Could not connect to docker: %s", err)
 		return nil, err
 	}
 
@@ -172,4 +185,39 @@ func (g *rabbitmqDockerTest) getRunOptions(
 	}
 
 	return runOptions
+}
+
+func isConnectable(logger logger.Logger, options *contracts.RabbitMQContainerOptions) bool {
+	conn, err := amqp091.Dial(
+		fmt.Sprintf("amqp://%s:%s@%s:%d", options.UserName, options.Password, options.Host, options.HostPort),
+	)
+	if err != nil {
+		logError(logger, options.UserName, options.Password, options.Host, options.HostPort)
+
+		return false
+	}
+
+	defer conn.Close()
+
+	if err != nil || (conn != nil && conn.IsClosed()) {
+		logError(logger, options.UserName, options.Password, options.Host, options.HostPort)
+
+		return false
+	}
+	logger.Infof(
+		"Opened rabbitmq connection on host: %s",
+		fmt.Sprintf("amqp://%s:%s@%s:%d", options.UserName, options.Password, options.Host, options.HostPort),
+	)
+
+	return true
+}
+
+func logError(logger logger.Logger, userName string, password string, host string, hostPort int) {
+	// we should not use `t.Error` or `t.Errorf` for logging errors because it will `fail` our test at the end and, we just should use logs without error like log.Error (not log.Fatal)
+	logger.Errorf(
+		fmt.Sprintf(
+			"Error in creating rabbitmq connection with %s",
+			fmt.Sprintf("amqp://%s:%s@%s:%d", userName, password, host, hostPort),
+		),
+	)
 }

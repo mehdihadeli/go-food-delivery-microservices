@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 
@@ -19,9 +20,10 @@ import (
 type redisTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.RedisContainerOptions
+	logger         logger.Logger
 }
 
-func NewRedisTestContainers() contracts.RedisContainer {
+func NewRedisTestContainers(l logger.Logger) contracts.RedisContainer {
 	return &redisTestContainers{
 		defaultOptions: &contracts.RedisContainerOptions{
 			Port:      "6379/tcp",
@@ -32,6 +34,7 @@ func NewRedisTestContainers() contracts.RedisContainer {
 			ImageName: "redis",
 			Name:      "redis-testcontainers",
 		},
+		logger: l,
 	}
 }
 
@@ -74,7 +77,7 @@ func (g *redisTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
-	isConnectable := isConnectable(ctx, t, g.defaultOptions)
+	isConnectable := isConnectable(ctx, g.logger, g.defaultOptions)
 	if !isConnectable {
 		return g.CreatingContainerOptions(context.Background(), t, options...)
 	}
@@ -144,9 +147,7 @@ func (g *redisTestContainers) getRunOptions(
 	return containerReq
 }
 
-func isConnectable(ctx context.Context, t *testing.T, options *contracts.RedisContainerOptions) bool {
-	t.Helper()
-
+func isConnectable(ctx context.Context, logger logger.Logger, options *contracts.RedisContainerOptions) bool {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%d", options.Host, options.HostPort),
 	})
@@ -155,18 +156,15 @@ func isConnectable(ctx context.Context, t *testing.T, options *contracts.RedisCo
 
 	err := redisClient.Ping(ctx).Err()
 	if err != nil {
-		t.Errorf(
-			fmt.Sprintf(
-				"Error in creating redis connection with %s",
-				fmt.Sprintf("%s:%d", options.Host, options.HostPort),
-			),
-		)
+		// we should not use `t.Error` or `t.Errorf` for logging errors because it will `fail` our test at the end and, we just should use logs without error like log.Error (not log.Fatal)
+		logger.Errorf(
+			"Error in creating redis connection with %s:%d", options.Host, options.HostPort)
 
 		return false
 	}
-	t.Logf(
-		"Opened redis connection on host: %s",
-		fmt.Sprintf("%s:%d", options.Host, options.HostPort),
+
+	logger.Infof(
+		"Opened redis connection on host: %s:%d", options.Host, options.HostPort,
 	)
 
 	return true

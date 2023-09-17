@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 
@@ -20,9 +21,10 @@ import (
 type postgresPgxTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.PostgresContainerOptions
+	logger         logger.Logger
 }
 
-func NewPostgresPgxContainers() contracts.PostgresPgxContainer {
+func NewPostgresPgxContainers(l logger.Logger) contracts.PostgresPgxContainer {
 	return &postgresPgxTestContainers{
 		defaultOptions: &contracts.PostgresContainerOptions{
 			Database:  "test_db",
@@ -34,6 +36,7 @@ func NewPostgresPgxContainers() contracts.PostgresPgxContainer {
 			ImageName: "postgres",
 			Name:      "postgresql-testcontainer",
 		},
+		logger: l,
 	}
 }
 

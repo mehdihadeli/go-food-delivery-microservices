@@ -8,6 +8,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	gorm2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
@@ -429,7 +430,9 @@ func setupGenericGormRepositoryWithDataModel(
 	ctx context.Context,
 	t *testing.T,
 ) (data.GenericRepositoryWithDataModel[*ProductGorm, *Product], error) {
-	db, err := gorm2.NewGormTestContainers().Start(ctx, t)
+	defaultLogger.SetupDefaultLogger()
+
+	db, err := gorm2.NewGormTestContainers(defaultLogger.Logger).Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
@@ -443,7 +446,9 @@ func setupGenericGormRepositoryWithDataModel(
 }
 
 func setupGenericGormRepository(ctx context.Context, t *testing.T) (data.GenericRepository[*ProductGorm], error) {
-	db, err := gorm2.NewGormTestContainers().Start(ctx, t)
+	defaultLogger.SetupDefaultLogger()
+
+	db, err := gorm2.NewGormTestContainers(defaultLogger.Logger).Start(ctx, t)
 
 	err = seedAndMigration(ctx, db)
 	if err != nil {

@@ -7,9 +7,11 @@ import (
 	"time"
 
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -22,9 +24,10 @@ import (
 type gormTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.PostgresContainerOptions
+	logger         logger.Logger
 }
 
-func NewGormTestContainers() contracts.GormContainer {
+func NewGormTestContainers(l logger.Logger) contracts.GormContainer {
 	return &gormTestContainers{
 		defaultOptions: &contracts.PostgresContainerOptions{
 			Database:  "test_db",
@@ -36,6 +39,7 @@ func NewGormTestContainers() contracts.GormContainer {
 			ImageName: "postgres",
 			Name:      "postgresql-testcontainer",
 		},
+		logger: l,
 	}
 }
 
@@ -79,7 +83,7 @@ func (g *gormTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
-	isConnectable := isConnectable(ctx, t, g.defaultOptions)
+	isConnectable := isConnectable(ctx, g.logger, g.defaultOptions)
 	if !isConnectable {
 		return g.CreatingContainerOptions(context.Background(), t, options...)
 	}
@@ -154,6 +158,9 @@ func (g *gormTestContainers) getRunOptions(
 		ExposedPorts: []string{g.defaultOptions.Port},
 		WaitingFor:   wait.ForAll(strategies...).WithDeadline(deadline),
 		Cmd:          []string{"postgres", "-c", "fsync=off"},
+		HostConfigModifier: func(hostConfig *container.HostConfig) {
+			hostConfig.AutoRemove = true
+		},
 		Env: map[string]string{
 			"POSTGRES_DB":       g.defaultOptions.Database,
 			"POSTGRES_PASSWORD": g.defaultOptions.Password,
@@ -164,9 +171,11 @@ func (g *gormTestContainers) getRunOptions(
 	return containerReq
 }
 
-func isConnectable(ctx context.Context, t *testing.T, postgresOptions *contracts.PostgresContainerOptions) bool {
-	t.Helper()
-
+func isConnectable(
+	ctx context.Context,
+	logger logger.Logger,
+	postgresOptions *contracts.PostgresContainerOptions,
+) bool {
 	orm, err := gorm.Open(
 		postgres.Open(
 			fmt.Sprintf(
@@ -184,14 +193,14 @@ func isConnectable(ctx context.Context, t *testing.T, postgresOptions *contracts
 		},
 	)
 	if err != nil {
-		logError(t, postgresOptions.Host, postgresOptions.HostPort)
+		logError(logger, postgresOptions.Host, postgresOptions.HostPort)
 
 		return false
 	}
 
 	db, err := orm.DB()
 	if err != nil {
-		logError(t, postgresOptions.Host, postgresOptions.HostPort)
+		logError(logger, postgresOptions.Host, postgresOptions.HostPort)
 
 		return false
 	}
@@ -200,24 +209,18 @@ func isConnectable(ctx context.Context, t *testing.T, postgresOptions *contracts
 
 	err = db.PingContext(ctx)
 	if err != nil {
-		logError(t, postgresOptions.Host, postgresOptions.HostPort)
+		logError(logger, postgresOptions.Host, postgresOptions.HostPort)
 
 		return false
 	}
-	t.Logf(
-		"Opened postgres connection on host: %s",
-		fmt.Sprintf("%s:%d", postgresOptions.Host, postgresOptions.HostPort),
-	)
+
+	logger.Infof(
+		"Opened postgres connection on host: %s:%d", postgresOptions.Host, postgresOptions.HostPort)
 
 	return true
 }
 
-func logError(t *testing.T, host string, hostPort int) {
-	t.Helper()
-	t.Errorf(
-		fmt.Sprintf(
-			"Error in creating postgres connection with %s",
-			fmt.Sprintf("%s:%d", host, hostPort),
-		),
-	)
+func logError(logger logger.Logger, host string, hostPort int) {
+	// we should not use `t.Error` or `t.Errorf` for logging errors because it will `fail` our test at the end and, we just should use logs without error like log.Error (not log.Fatal)
+	logger.Errorf("Error in creating postgres connection with %s:%d", host, hostPort)
 }

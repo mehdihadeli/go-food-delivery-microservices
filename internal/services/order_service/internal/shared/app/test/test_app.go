@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -116,7 +115,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	defer cancel()
 	err := testApp.Start(startCtx)
 	if err != nil {
-		t.Log(fmt.Sprintf("Error starting, err: %v", err))
+		t.Errorf("Error starting, err: %v", err)
 		os.Exit(1)
 	}
 

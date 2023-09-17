@@ -6,10 +6,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -27,9 +29,10 @@ const (
 type mongoTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.MongoContainerOptions
+	logger         logger.Logger
 }
 
-func NewMongoTestContainers() contracts.MongoContainer {
+func NewMongoTestContainers(l logger.Logger) contracts.MongoContainer {
 	return &mongoTestContainers{
 		defaultOptions: &contracts.MongoContainerOptions{
 			Database:  "test_db",
@@ -41,6 +44,7 @@ func NewMongoTestContainers() contracts.MongoContainer {
 			ImageName: "mongo",
 			Name:      "mongo-testcontainer",
 		},
+		logger: l,
 	}
 }
 
@@ -83,7 +87,7 @@ func (g *mongoTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
-	isConnectable := isConnectable(ctx, t, g.defaultOptions)
+	isConnectable := isConnectable(ctx, g.logger, g.defaultOptions)
 	if !isConnectable {
 		return g.CreatingContainerOptions(context.Background(), t, options...)
 	}
@@ -158,7 +162,9 @@ func (g *mongoTestContainers) getRunOptions(
 		ExposedPorts: []string{g.defaultOptions.Port},
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).WithPollInterval(2 * time.Second),
 		Hostname:     g.defaultOptions.Host,
-		SkipReaper:   true,
+		HostConfigModifier: func(hostConfig *container.HostConfig) {
+			hostConfig.AutoRemove = true
+		},
 		Env: map[string]string{
 			"MONGO_INITDB_ROOT_USERNAME": g.defaultOptions.UserName,
 			"MONGO_INITDB_ROOT_PASSWORD": g.defaultOptions.Password,
@@ -168,9 +174,7 @@ func (g *mongoTestContainers) getRunOptions(
 	return containerReq
 }
 
-func isConnectable(ctx context.Context, t *testing.T, mongoOptions *contracts.MongoContainerOptions) bool {
-	t.Helper()
-
+func isConnectable(ctx context.Context, logger logger.Logger, mongoOptions *contracts.MongoContainerOptions) bool {
 	uriAddress := fmt.Sprintf(
 		"mongodb://%s:%s@%s:%d",
 		mongoOptions.UserName,
@@ -190,31 +194,26 @@ func isConnectable(ctx context.Context, t *testing.T, mongoOptions *contracts.Mo
 	defer mongoClient.Disconnect(ctx)
 
 	if err != nil {
-		logError(t, mongoOptions.Host, mongoOptions.HostPort)
+		logError(logger, mongoOptions.Host, mongoOptions.HostPort)
 
 		return false
 	}
 
 	err = mongoClient.Ping(ctx, nil)
 	if err != nil {
-		logError(t, mongoOptions.Host, mongoOptions.HostPort)
+		logError(logger, mongoOptions.Host, mongoOptions.HostPort)
 
 		return false
 	}
-	t.Logf(
-		"Opened mongodb connection on host: %s",
-		fmt.Sprintf("%s:%d", mongoOptions.Host, mongoOptions.HostPort),
-	)
+	logger.Infof(
+		"Opened mongodb connection on host: %s:%d", mongoOptions.Host, mongoOptions.HostPort)
 
 	return true
 }
 
-func logError(t *testing.T, host string, hostPort int) {
-	t.Helper()
-	t.Errorf(
-		fmt.Sprintf(
-			"Error in creating mongodb connection with %s",
-			fmt.Sprintf("%s:%d", host, hostPort),
-		),
+func logError(logger logger.Logger, host string, hostPort int) {
+	// we should not use `t.Error` or `t.Errorf` for logging errors because it will `fail` our test at the end and, we just should use logs without error like log.Error (not log.Fatal)
+	logger.Errorf(
+		"Error in creating mongodb connection with %s:%d", host, hostPort,
 	)
 }
