@@ -14,6 +14,7 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type mongoTestContainers struct {
@@ -75,6 +76,11 @@ func (g *mongoTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
+	isConnectable := isConnectable(ctx, t, g.defaultOptions)
+	if !isConnectable {
+		return g.CreatingContainerOptions(context.Background(), t, options...)
+	}
+
 	g.container = dbContainer
 
 	option := &mongodb.MongoDbOptions{
@@ -111,6 +117,7 @@ func (g *mongoTestContainers) Cleanup(ctx context.Context) error {
 	if err := g.container.Terminate(ctx); err != nil {
 		return errors.WrapIf(err, "failed to terminate container: %s")
 	}
+
 	return nil
 }
 
@@ -152,4 +159,42 @@ func (g *mongoTestContainers) getRunOptions(
 	}
 
 	return containerReq
+}
+
+func isConnectable(ctx context.Context, t *testing.T, mongoOptions *contracts.MongoContainerOptions) bool {
+	t.Helper()
+
+	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%d", mongoOptions.Host, mongoOptions.HostPort))
+	mongoClient, err := mongo.Connect(ctx, clientOptions)
+
+	defer mongoClient.Disconnect(ctx)
+
+	if err != nil {
+		logError(t, mongoOptions.Host, mongoOptions.HostPort)
+
+		return false
+	}
+
+	err = mongoClient.Ping(ctx, nil)
+	if err != nil {
+		logError(t, mongoOptions.Host, mongoOptions.HostPort)
+
+		return false
+	}
+	t.Logf(
+		"Opened mongodb connection on host: %s",
+		fmt.Sprintf("%s:%d", mongoOptions.Host, mongoOptions.HostPort),
+	)
+
+	return true
+}
+
+func logError(t *testing.T, host string, hostPort int) {
+	t.Helper()
+	t.Errorf(
+		fmt.Sprintf(
+			"Error in creating mongodb connection with %s",
+			fmt.Sprintf("%s:%d", host, hostPort),
+		),
+	)
 }

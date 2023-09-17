@@ -7,6 +7,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 )
@@ -31,6 +32,7 @@ var Module = fx.Module("redisfx",
 		),
 		provideConfig),
 	fx.Invoke(registerHooks),
+	fx.Invoke(EnableTracing),
 )
 
 func registerHooks(lc fx.Lifecycle, client redis.UniversalClient, logger logger.Logger) {
@@ -48,4 +50,8 @@ func registerHooks(lc fx.Lifecycle, client redis.UniversalClient, logger logger.
 			return nil
 		},
 	})
+}
+
+func EnableTracing(redis *redis.Client) error {
+	return redisotel.InstrumentTracing(redis)
 }

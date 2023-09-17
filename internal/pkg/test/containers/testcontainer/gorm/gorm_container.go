@@ -13,6 +13,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -78,6 +79,11 @@ func (g *gormTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
+	isConnectable := isConnectable(ctx, t, g.defaultOptions)
+	if !isConnectable {
+		return g.CreatingContainerOptions(context.Background(), t, options...)
+	}
+
 	g.container = dbContainer
 
 	gormOptions := &gormPostgres.GormOptions{
@@ -138,8 +144,7 @@ func (g *gormTestContainers) getRunOptions(
 		}
 	}
 
-	var strategies []wait.Strategy
-	strategies = []wait.Strategy{wait.ForLog("database system is ready to accept connections").
+	strategies := []wait.Strategy{wait.ForLog("database system is ready to accept connections").
 		WithOccurrence(2).
 		WithStartupTimeout(5 * time.Second)}
 	deadline := 120 * time.Second
@@ -157,4 +162,62 @@ func (g *gormTestContainers) getRunOptions(
 	}
 
 	return containerReq
+}
+
+func isConnectable(ctx context.Context, t *testing.T, postgresOptions *contracts.PostgresContainerOptions) bool {
+	t.Helper()
+
+	orm, err := gorm.Open(
+		postgres.Open(
+			fmt.Sprintf(
+				"postgres://%s:%s@%s:%d/postgres?sslmode=disable",
+				postgresOptions.UserName,
+				postgresOptions.Password,
+				postgresOptions.Host,
+				postgresOptions.HostPort,
+			),
+		),
+		&gorm.Config{
+			PrepareStmt:              true,
+			SkipDefaultTransaction:   true,
+			DisableNestedTransaction: true,
+		},
+	)
+	if err != nil {
+		logError(t, postgresOptions.Host, postgresOptions.HostPort)
+
+		return false
+	}
+
+	db, err := orm.DB()
+	if err != nil {
+		logError(t, postgresOptions.Host, postgresOptions.HostPort)
+
+		return false
+	}
+
+	defer db.Close()
+
+	err = db.PingContext(ctx)
+	if err != nil {
+		logError(t, postgresOptions.Host, postgresOptions.HostPort)
+
+		return false
+	}
+	t.Logf(
+		"Opened postgres connection on host: %s",
+		fmt.Sprintf("%s:%d", postgresOptions.Host, postgresOptions.HostPort),
+	)
+
+	return true
+}
+
+func logError(t *testing.T, host string, hostPort int) {
+	t.Helper()
+	t.Errorf(
+		fmt.Sprintf(
+			"Error in creating postgres connection with %s",
+			fmt.Sprintf("%s:%d", host, hostPort),
+		),
+	)
 }

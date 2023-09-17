@@ -74,6 +74,11 @@ func (g *redisTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
+	isConnectable := isConnectable(ctx, t, g.defaultOptions)
+	if !isConnectable {
+		return g.CreatingContainerOptions(context.Background(), t, options...)
+	}
+
 	g.container = dbContainer
 
 	reidsOptions := &redis2.RedisOptions{
@@ -104,6 +109,7 @@ func (g *redisTestContainers) Cleanup(ctx context.Context) error {
 	if err := g.container.Terminate(ctx); err != nil {
 		return errors.WrapIf(err, "failed to terminate container: %s")
 	}
+
 	return nil
 }
 
@@ -136,4 +142,32 @@ func (g *redisTestContainers) getRunOptions(
 	}
 
 	return containerReq
+}
+
+func isConnectable(ctx context.Context, t *testing.T, options *contracts.RedisContainerOptions) bool {
+	t.Helper()
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%d", options.Host, options.HostPort),
+	})
+
+	defer redisClient.Close()
+
+	err := redisClient.Ping(ctx).Err()
+	if err != nil {
+		t.Errorf(
+			fmt.Sprintf(
+				"Error in creating redis connection with %s",
+				fmt.Sprintf("%s:%d", options.Host, options.HostPort),
+			),
+		)
+
+		return false
+	}
+	t.Logf(
+		"Opened redis connection on host: %s",
+		fmt.Sprintf("%s:%d", options.Host, options.HostPort),
+	)
+
+	return true
 }

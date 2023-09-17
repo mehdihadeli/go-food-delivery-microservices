@@ -99,8 +99,8 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
-	isConnectable := IsConnectable(host, hostPort.Int(), t)
-	if isConnectable == false {
+	isConnectable := isConnectable(t, g.defaultOptions)
+	if !isConnectable {
 		return g.CreatingContainerOptions(context.Background(), t, options...)
 	}
 
@@ -116,28 +116,6 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 	}
 
 	return option, nil
-}
-
-func IsConnectable(host string, port int, t *testing.T) bool {
-	conn, err := amqp091.Dial(fmt.Sprintf("amqp://%s:%s@%s:%d", "guest", "guest", host, port))
-	if err != nil || (conn != nil && conn.IsClosed()) {
-		t.Errorf(
-			fmt.Sprintf(
-				"Error in creating rabbitmq connection with %s",
-				fmt.Sprintf("amqp://%s:%s@%s:%d", "guest", "guest", host, port),
-			),
-		)
-
-		return false
-	} else {
-		t.Logf(
-			"Opened rabbitmq connection on host: %s",
-			fmt.Sprintf("amqp://%s:%s@%s:%d", "guest", "guest", host, port),
-		)
-		defer conn.Close()
-	}
-
-	return true
 }
 
 func (g *rabbitmqTestContainers) Start(
@@ -182,6 +160,7 @@ func (g *rabbitmqTestContainers) Cleanup(ctx context.Context) error {
 	if err := g.container.Terminate(ctx); err != nil {
 		return errors.WrapIf(err, "failed to terminate container: %s")
 	}
+
 	return nil
 }
 
@@ -222,4 +201,41 @@ func (g *rabbitmqTestContainers) getRunOptions(
 	}
 
 	return containerReq
+}
+
+func isConnectable(t *testing.T, options *contracts.RabbitMQContainerOptions) bool {
+	t.Helper()
+
+	conn, err := amqp091.Dial(
+		fmt.Sprintf("amqp://%s:%s@%s:%d", options.UserName, options.Password, options.Host, options.HostPort),
+	)
+	if err != nil {
+		logError(t, options.UserName, options.Password, options.Host, options.HostPort)
+
+		return false
+	}
+
+	defer conn.Close()
+
+	if err != nil || (conn != nil && conn.IsClosed()) {
+		logError(t, options.UserName, options.Password, options.Host, options.HostPort)
+
+		return false
+	}
+	t.Logf(
+		"Opened rabbitmq connection on host: %s",
+		fmt.Sprintf("amqp://%s:%s@%s:%d", options.UserName, options.Password, options.Host, options.HostPort),
+	)
+
+	return true
+}
+
+func logError(t *testing.T, userName string, password string, host string, hostPort int) {
+	t.Helper()
+	t.Errorf(
+		fmt.Sprintf(
+			"Error in creating rabbitmq connection with %s",
+			fmt.Sprintf("amqp://%s:%s@%s:%d", userName, password, host, hostPort),
+		),
+	)
 }
