@@ -140,12 +140,10 @@ require (
 	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/rabbitmq/amqp091-go v1.8.1 // indirect
 	github.com/redis/go-redis/v9 v9.0.3 // indirect
+	github.com/samber/lo v1.38.1 // indirect
 	github.com/sanity-io/litter v1.5.5 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/solsw/collate v0.3.0 // indirect
-	github.com/solsw/generichelper v0.6.1 // indirect
-	github.com/solsw/go2linq/v3 v3.0.0-alpha.3 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

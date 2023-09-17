@@ -76,8 +76,8 @@ func (q *GetProductByIdHandler) Handle(
 		if mongoProduct == nil {
 			mongoProduct, err = q.mongoRepository.GetProductByProductId(ctx, query.Id.String())
 		}
-		if err == nil {
-			return nil, nil
+		if err != nil {
+			return nil, err
 		}
 
 		product = mongoProduct

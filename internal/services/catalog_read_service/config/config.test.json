@@ -67,7 +67,7 @@
       "url": "http://localhost:9411/api/v2/spans"
     },
     "otelMetricsOptions": {
-      "port": ":3002",
+      "port": ":2002",
       "metricsRoutePath": "/metrics",
       "name": "catalogs-read-service"
     }

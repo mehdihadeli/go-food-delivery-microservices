@@ -133,13 +133,11 @@ require (
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/rabbitmq/amqp091-go v1.8.1 // indirect
 	github.com/redis/go-redis/v9 v9.0.3 // indirect
+	github.com/samber/lo v1.38.1 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/solsw/collate v0.3.0 // indirect
-	github.com/solsw/generichelper v0.6.1 // indirect
-	github.com/solsw/go2linq/v3 v3.0.0-alpha.3 // indirect
 	github.com/streadway/amqp v1.1.0 // indirect
 	github.com/stretchr/objx v0.5.1 // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
