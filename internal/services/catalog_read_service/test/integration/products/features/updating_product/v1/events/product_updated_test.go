@@ -29,13 +29,13 @@ func TestProductUpdatedConsumer(t *testing.T) {
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(1 * time.Second)
 
-	Convey("Product Created Consumer Feature", t, func() {
+	Convey("Product Created Feature", t, func() {
 		ctx := context.Background()
 		integrationTestSharedFixture.InitializeTest()
 
 		// https://specflow.org/learn/gherkin/#learn-gherkin
 		// scenario
-		Convey("Consuming ProductUpdated Event", func() {
+		Convey("Consume ProductUpdated event by consumer", func() {
 			hypothesis := messaging.ShouldConsume[*externalEvents.ProductUpdatedV1](
 				ctx,
 				integrationTestSharedFixture.Bus,
@@ -51,15 +51,33 @@ func TestProductUpdatedConsumer(t *testing.T) {
 				UpdatedAt:   time.Now(),
 			}
 
-			Convey("When a ProductUpdated event published", func() {
+			Convey("When a ProductUpdated event consumed", func() {
 				err := integrationTestSharedFixture.Bus.PublishMessage(ctx, fakeUpdateProduct, nil)
 				So(err, ShouldBeNil)
 
 				Convey("Then it should consume the ProductUpdated event", func() {
 					hypothesis.Validate(ctx, "there is no consumed message", 30*time.Second)
 				})
+			})
+		})
 
-				Convey("And it should update product in the database", func() {
+		// https://specflow.org/learn/gherkin/#learn-gherkin
+		// scenario
+		Convey("Update product in mongo database when a ProductDeleted event consumed", func() {
+			fakeUpdateProduct := &externalEvents.ProductUpdatedV1{
+				Message:     types.NewMessage(uuid.NewV4().String()),
+				ProductId:   integrationTestSharedFixture.Items[0].ProductId,
+				Name:        gofakeit.Name(),
+				Price:       gofakeit.Price(100, 1000),
+				Description: gofakeit.EmojiDescription(),
+				UpdatedAt:   time.Now(),
+			}
+
+			Convey("When a ProductUpdated event consumed", func() {
+				err := integrationTestSharedFixture.Bus.PublishMessage(ctx, fakeUpdateProduct, nil)
+				So(err, ShouldBeNil)
+
+				Convey("It should update product in the mongo database", func() {
 					ctx := context.Background()
 					productUpdated := &externalEvents.ProductUpdatedV1{
 						Message:     types.NewMessage(uuid.NewV4().String()),
@@ -80,6 +98,7 @@ func TestProductUpdatedConsumer(t *testing.T) {
 							ctx,
 							integrationTestSharedFixture.Items[0].ProductId,
 						)
+
 						return product != nil && product.Name == productUpdated.Name
 					})
 

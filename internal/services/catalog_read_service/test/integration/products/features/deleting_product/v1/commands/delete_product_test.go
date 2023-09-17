@@ -26,7 +26,7 @@ func TestDeleteProduct(t *testing.T) {
 		// https://specflow.org/learn/gherkin/#learn-gherkin
 		// scenario
 		Convey("Deleting an existing product from the database", func() {
-			Convey("Given an existing product in the system", func() {
+			Convey("Given an existing product in the mongo database", func() {
 				productId, err := uuid.FromString(integrationTestSharedFixture.Items[0].ProductId)
 				So(err, ShouldBeNil)
 
@@ -39,7 +39,7 @@ func TestDeleteProduct(t *testing.T) {
 						command,
 					)
 
-					Convey("Then the product should be deleted successfully", func() {
+					Convey("Then the product should be deleted successfully in mongo database", func() {
 						So(err, ShouldBeNil)
 						So(result, ShouldNotBeNil)
 

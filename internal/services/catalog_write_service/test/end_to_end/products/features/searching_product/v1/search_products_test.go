@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
 
 	"github.com/gavv/httpexpect/v2"
@@ -25,7 +24,7 @@ func TestSearchProductsEndpoint(t *testing.T) {
 	RunSpecs(t, "SearchProducts Endpoint EndToEnd Tests")
 }
 
-var _ = Describe("SearchProductsE2ETest Suite", func() {
+var _ = Describe("Search Products Feature", func() {
 	var ctx context.Context
 
 	_ = BeforeEach(func() {
@@ -50,7 +49,7 @@ var _ = Describe("SearchProductsE2ETest Suite", func() {
 				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
 				expect.GET("products/search").
 					WithContext(ctx).
-					WithQuery("search", testData.Products[0].Name).
+					WithQuery("search", integrationFixture.Items[0].Name).
 					Expect().
 					Status(http.StatusOK)
 			})

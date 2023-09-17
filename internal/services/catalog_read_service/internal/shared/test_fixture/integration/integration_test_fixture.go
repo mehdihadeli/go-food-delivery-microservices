@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -13,12 +14,13 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/app/test"
 
 	"emperror.dev/errors"
+	"github.com/brianvoe/gofakeit/v6"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
+	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -96,9 +98,29 @@ func (i *IntegrationTestSharedFixture) DisposeTest() {
 
 func seedData(db *mongo.Client, databaseName string) ([]*models.Product, error) {
 	ctx := context.Background()
+
+	products := []*models.Product{
+		{
+			Id:          uuid.NewV4().String(),
+			ProductId:   uuid.NewV4().String(),
+			Name:        gofakeit.Name(),
+			CreatedAt:   time.Now(),
+			Description: gofakeit.AdjectiveDescriptive(),
+			Price:       gofakeit.Price(100, 1000),
+		},
+		{
+			Id:          uuid.NewV4().String(),
+			ProductId:   uuid.NewV4().String(),
+			Name:        gofakeit.Name(),
+			CreatedAt:   time.Now(),
+			Description: gofakeit.AdjectiveDescriptive(),
+			Price:       gofakeit.Price(100, 1000),
+		},
+	}
+
 	//// https://go.dev/doc/faq#convert_slice_of_interface
-	data := make([]interface{}, len(testData.Products))
-	for i, v := range testData.Products {
+	data := make([]interface{}, len(products))
+	for i, v := range products {
 		data[i] = v
 	}
 

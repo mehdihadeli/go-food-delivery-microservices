@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
@@ -14,7 +15,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/app/test"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
@@ -129,13 +129,30 @@ func (i *IntegrationTestSharedFixture) cleanupPostgresData() error {
 }
 
 func seedData(gormDB *gorm.DB) ([]*models.Product, error) {
+	products := []*models.Product{
+		{
+			ProductId:   uuid.NewV4(),
+			Name:        gofakeit.Name(),
+			CreatedAt:   time.Now(),
+			Description: gofakeit.AdjectiveDescriptive(),
+			Price:       gofakeit.Price(100, 1000),
+		},
+		{
+			ProductId:   uuid.NewV4(),
+			Name:        gofakeit.Name(),
+			CreatedAt:   time.Now(),
+			Description: gofakeit.AdjectiveDescriptive(),
+			Price:       gofakeit.Price(100, 1000),
+		},
+	}
+
 	// migration will do in app configuration
 	// seed data
-	err := gormDB.CreateInBatches(testData.Products, len(testData.Products)).Error
+	err := gormDB.CreateInBatches(products, len(products)).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "error in seed database")
 	}
-	return testData.Products, nil
+	return products, nil
 }
 
 func seedAndMigration(gormDB *gorm.DB) ([]*models.Product, error) {

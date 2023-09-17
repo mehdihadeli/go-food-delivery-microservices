@@ -31,14 +31,14 @@ func TestProductCreatedConsumer(t *testing.T) {
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(1 * time.Second)
 
-	Convey("Product Created Consumer Feature", t, func() {
+	Convey("Product Created Feature", t, func() {
 		// will execute with each subtest
 		integrationTestSharedFixture.InitializeTest()
 		ctx := context.Background()
 
 		// https://specflow.org/learn/gherkin/#learn-gherkin
 		// scenario
-		Convey("Consuming CreatedProduct Event", func() {
+		Convey("Consume ProductCreated event by consumer", func() {
 			fakeProduct := &externalEvents.ProductCreatedV1{
 				Message:     types.NewMessage(uuid.NewV4().String()),
 				ProductId:   uuid.NewV4().String(),
@@ -53,15 +53,31 @@ func TestProductCreatedConsumer(t *testing.T) {
 				nil,
 			)
 
-			Convey("When a ProductCreated event published", func() {
+			Convey("When a ProductCreated event consumed", func() {
 				err := integrationTestSharedFixture.Bus.PublishMessage(ctx, fakeProduct, nil)
 				So(err, ShouldBeNil)
 
 				Convey("Then it should consume the ProductCreated event", func() {
 					hypothesis.Validate(ctx, "there is no consumed message", 30*time.Second)
 				})
+			})
+		})
 
-				Convey("And it should store product in the database", func() {
+		Convey("Create product in mongo database when a ProductCreated event consumed", func() {
+			fakeProduct := &externalEvents.ProductCreatedV1{
+				Message:     types.NewMessage(uuid.NewV4().String()),
+				ProductId:   uuid.NewV4().String(),
+				Name:        gofakeit.FirstName(),
+				Price:       gofakeit.Price(150, 6000),
+				CreatedAt:   time.Now(),
+				Description: gofakeit.EmojiDescription(),
+			}
+
+			Convey("When a ProductCreated event consumed", func() {
+				err := integrationTestSharedFixture.Bus.PublishMessage(ctx, fakeProduct, nil)
+				So(err, ShouldBeNil)
+
+				Convey("It should store product in the mongo database", func() {
 					ctx := context.Background()
 					pid := uuid.NewV4().String()
 					productCreated := &externalEvents.ProductCreatedV1{
@@ -80,6 +96,7 @@ func TestProductCreatedConsumer(t *testing.T) {
 
 					err = testUtils.WaitUntilConditionMet(func() bool {
 						product, err = integrationTestSharedFixture.ProductRepository.GetProductByProductId(ctx, pid)
+
 						return err == nil && product != nil
 					})
 

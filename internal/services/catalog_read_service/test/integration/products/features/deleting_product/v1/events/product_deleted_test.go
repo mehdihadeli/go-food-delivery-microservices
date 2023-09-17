@@ -28,14 +28,14 @@ func TestProductDeleted(t *testing.T) {
 	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
 	time.Sleep(1 * time.Second)
 
-	Convey("Product Deleted Consumer Feature", t, func() {
+	Convey("Product Deleted Feature", t, func() {
 		ctx := context.Background()
 		// will execute with each subtest
 		integrationTestSharedFixture.InitializeTest()
 
 		// https://specflow.org/learn/gherkin/#learn-gherkin
 		// scenario
-		Convey("Consuming ProductDeleted Event", func() {
+		Convey("Consume ProductDeleted event by consumer", func() {
 			event := &externalEvents.ProductDeletedV1{
 				Message:   types.NewMessage(uuid.NewV4().String()),
 				ProductId: integrationTestSharedFixture.Items[0].ProductId,
@@ -47,7 +47,7 @@ func TestProductDeleted(t *testing.T) {
 				nil,
 			)
 
-			Convey("When a ProductDeleted event published", func() {
+			Convey("When a ProductDeleted event consumed", func() {
 				err := integrationTestSharedFixture.Bus.PublishMessage(
 					ctx,
 					event,
@@ -58,7 +58,26 @@ func TestProductDeleted(t *testing.T) {
 				Convey("Then it should consume the ProductDeleted event", func() {
 					hypothesis.Validate(ctx, "there is no consumed message", 30*time.Second)
 				})
-				Convey("And it should delete product from the database", func() {
+			})
+		})
+
+		// https://specflow.org/learn/gherkin/#learn-gherkin
+		// scenario
+		Convey("Delete product in mongo database when a ProductDeleted event consumed", func() {
+			event := &externalEvents.ProductDeletedV1{
+				Message:   types.NewMessage(uuid.NewV4().String()),
+				ProductId: integrationTestSharedFixture.Items[0].ProductId,
+			}
+
+			Convey("When a ProductDeleted event consumed", func() {
+				err := integrationTestSharedFixture.Bus.PublishMessage(
+					ctx,
+					event,
+					nil,
+				)
+				So(err, ShouldBeNil)
+
+				Convey("It should delete product in the mongo database", func() {
 					ctx := context.Background()
 
 					productDeleted := &externalEvents.ProductDeletedV1{

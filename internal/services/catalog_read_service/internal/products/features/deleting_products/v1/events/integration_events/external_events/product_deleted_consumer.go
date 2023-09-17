@@ -80,20 +80,5 @@ func (c *productDeletedConsumer) Handle(
 
 	_, err = mediatr.Send[*commands.DeleteProduct, *mediatr.Unit](ctx, command)
 
-	if err != nil {
-		err = errors.WithMessage(
-			err,
-			"[productDeletedConsumer_Handle.Send] error in sending DeleteProduct",
-		)
-		c.logger.Errorw(
-			fmt.Sprintf(
-				"[productDeletedConsumer_Handle.Send] id: {%s}, err: {%v}",
-				command.ProductId,
-				messageTracing.TraceMessagingErrFromSpan(span, err),
-			),
-			logger.Fields{"Id": command.ProductId},
-		)
-	}
-
-	return nil
+	return err
 }
