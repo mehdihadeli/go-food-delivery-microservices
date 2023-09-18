@@ -28,7 +28,7 @@ var Module = fx.Module(
 	grpc.Module,
 	mongodb.Module,
 	elasticsearch.Module,
-	eventstroredb.Module(
+	eventstroredb.ModuleFunc(
 		func(params params.OrderProjectionParams) eventstroredb.ProjectionBuilderFuc {
 			return func(builder eventstroredb.ProjectionsBuilder) {
 				builder.AddProjections(params.Projections)

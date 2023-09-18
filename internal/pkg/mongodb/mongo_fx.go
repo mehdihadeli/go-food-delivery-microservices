@@ -13,6 +13,14 @@ import (
 )
 
 var (
+	// Module provided to fxlog
+	// https://uber-go.github.io/fx/modules.html
+	Module = fx.Module( //nolint:gochecknoglobals
+		"mongofx",
+		mongoProviders,
+		mongoInvokes,
+	)
+
 	mongoProviders = fx.Provide( //nolint:gochecknoglobals
 		provideConfig,
 		NewMongoDB,
@@ -24,14 +32,6 @@ var (
 	)
 
 	mongoInvokes = fx.Invoke(registerHooks) //nolint:gochecknoglobals
-
-	// Module provided to fxlog
-	// https://uber-go.github.io/fx/modules.html
-	Module = fx.Module( //nolint:gochecknoglobals
-		"mongofx",
-		mongoProviders,
-		mongoInvokes,
-	)
 )
 
 func registerHooks(lc fx.Lifecycle, client *mongo.Client, logger logger.Logger) {

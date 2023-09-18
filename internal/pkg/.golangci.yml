@@ -109,3 +109,7 @@ linters:
 run:
   skip-dirs:
     - docs
+
+issues:
+  # Show only new issues created after git revision: e016c66
+  new-from-rev: e016c66

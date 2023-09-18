@@ -16,17 +16,24 @@ import (
 	"go.uber.org/fx"
 )
 
-// ModuleFunc provided to fxlog
-// https://uber-go.github.io/fx/modules.html
-var ModuleFunc = func(rabbitMQConfigurationConstructor interface{}) fx.Option {
-	return fx.Module(
-		"rabbitmqfx",
-		// - order is not important in provide
-		// - provide can have parameter and will resolve if registered
-		// - execute its func only if it requested
-		fx.Provide(
-			config.ProvideConfig,
-		),
+var (
+	// ModuleFunc provided to fxlog
+	// https://uber-go.github.io/fx/modules.html
+	ModuleFunc = func(rabbitMQConfigurationConstructor interface{}) fx.Option { //nolint:gochecknoglobals
+		return fx.Module(
+			"rabbitmqfx",
+			fx.Provide(rabbitMQConfigurationConstructor),
+			rabbitmqProviders,
+			rabbitmqInvokes,
+		)
+	}
+
+	// - order is not important in provide
+	// - provide can have parameter and will resolve if registered
+	// - execute its func only if it requested
+	rabbitmqProviders = fx.Options(fx.Provide( //nolint:gochecknoglobals
+		config.ProvideConfig,
+	),
 		fx.Provide(types.NewRabbitMQConnection),
 		fx.Provide(fx.Annotate(
 			bus.NewRabbitmqBus,
@@ -35,19 +42,18 @@ var ModuleFunc = func(rabbitMQConfigurationConstructor interface{}) fx.Option {
 			fx.As(new(bus2.Bus)),
 			fx.As(new(bus.RabbitmqBus)),
 		)),
-		fx.Provide(rabbitMQConfigurationConstructor),
 		fx.Provide(fx.Annotate(
 			NewRabbitMQHealthChecker,
 			fx.As(new(health.Health)),
 			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
-		)),
-		// - execute after registering all of our provided
-		// - they execute by their orders
-		// - invokes always execute its func compare to provides that only run when we request for them.
-		// - return value will be discarded and can not be provided
-		fx.Invoke(registerHooks),
-	)
-}
+		)))
+
+	// - execute after registering all of our provided
+	// - they execute by their orders
+	// - invokes always execute its func compare to provides that only run when we request for them.
+	// - return value will be discarded and can not be provided
+	rabbitmqInvokes = fx.Options(fx.Invoke(registerHooks)) //nolint:gochecknoglobals
+)
 
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`
 func registerHooks(

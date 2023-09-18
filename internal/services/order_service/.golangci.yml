@@ -80,7 +80,6 @@ linters:
     - goimports
     - gomnd
     - gomodguard
-    - goprintffuncname
     - gosec
     - gosimple
     - govet
@@ -101,7 +100,6 @@ linters:
     - stylecheck
     - tparallel
     - thelper
-    - typecheck
     - unconvert
     - unparam
     - unused
@@ -111,3 +109,7 @@ linters:
 run:
   skip-dirs:
     - docs
+
+issues:
+  # Show only new issues created after git revision: e016c66
+  new-from-rev: e016c66

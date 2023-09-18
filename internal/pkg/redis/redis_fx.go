@@ -12,15 +12,17 @@ import (
 	"go.uber.org/fx"
 )
 
-// Module provided to fxlog
-// https://uber-go.github.io/fx/modules.html
-var Module = fx.Module("redisfx",
-	fx.Provide(
+var (
+	// Module provided to fxlog
+	// https://uber-go.github.io/fx/modules.html
+	Module = fx.Module("redisfx", redisProviders, redisInvokes) //nolint:gochecknoglobals
+
+	redisProviders = fx.Options(fx.Provide( //nolint:gochecknoglobals
 		NewRedisClient,
 		func(client *redis.Client) redis.UniversalClient {
 			return client
 		},
-		// will create new instance of redis client
+		//// will create new instance of redis client instead of reusing current instance of `redis.Client`
 		//fx.Annotate(
 		//	NewRedisClient,
 		//	fx.As(new(redis.UniversalClient)),
@@ -30,9 +32,10 @@ var Module = fx.Module("redisfx",
 			fx.As(new(health.Health)),
 			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
 		),
-		provideConfig),
-	fx.Invoke(registerHooks),
-	fx.Invoke(EnableTracing),
+		provideConfig))
+
+	redisInvokes = fx.Options(fx.Invoke(registerHooks), //nolint:gochecknoglobals
+		fx.Invoke(EnableTracing))
 )
 
 func registerHooks(lc fx.Lifecycle, client redis.UniversalClient, logger logger.Logger) {
