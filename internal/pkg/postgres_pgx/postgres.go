@@ -9,13 +9,14 @@ import (
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
-	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/zapadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"go.uber.org/zap"
+
+	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 )
 
 // Ref:https://github.com/henvic/pgxtutorial

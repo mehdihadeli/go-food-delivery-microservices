@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type ProductRepository interface {

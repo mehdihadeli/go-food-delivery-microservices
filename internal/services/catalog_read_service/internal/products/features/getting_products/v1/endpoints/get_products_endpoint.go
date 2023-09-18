@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"emperror.dev/errors"
-	"github.com/labstack/echo/v4"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
-	"github.com/mehdihadeli/go-mediatr"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/getting_products/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/getting_products/v1/queries"
+
+	"emperror.dev/errors"
+	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type getProductsEndpoint struct {

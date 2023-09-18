@@ -8,53 +8,76 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/mehdihadeli/go-mediatr"
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/go-mediatr"
+	uuid "github.com/satori/go.uuid"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-type createProductIntegrationTests struct {
-	*integration.IntegrationTestSharedFixture
-}
+func TestCreateProduct(t *testing.T) {
+	integrationTestSharedFixture := integration.NewIntegrationTestSharedFixture(t)
 
-func TestCreateProductIntegration(t *testing.T) {
-	suite.Run(
-		t,
-		&createProductIntegrationTests{
-			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
-		},
-	)
-}
+	Convey("Creating Product Feature", t, func() {
+		ctx := context.Background()
+		integrationTestSharedFixture.InitializeTest()
 
-func (c *createProductIntegrationTests) Test_Should_Create_New_Product_To_DB() {
-	ctx := context.Background()
-	command, err := commands.NewCreateProduct(
-		uuid.NewV4().String(),
-		gofakeit.Name(),
-		gofakeit.AdjectiveDescriptive(),
-		gofakeit.Price(150, 6000),
-		time.Now(),
-	)
-	c.Require().NoError(err)
+		// https://specflow.org/learn/gherkin/#learn-gherkin
+		// scenario
+		Convey(
+			"Creating a new product and saving it to the database for a none-existing product",
+			func() {
+				Convey("Given new product doesn't exists in the system", func() {
+					command, err := commands.NewCreateProduct(
+						uuid.NewV4().String(),
+						gofakeit.Name(),
+						gofakeit.AdjectiveDescriptive(),
+						gofakeit.Price(150, 6000),
+						time.Now(),
+					)
+					So(err, ShouldBeNil)
 
-	result, err := mediatr.Send[*commands.CreateProduct, *dtos.CreateProductResponseDto](
-		ctx,
-		command,
-	)
-	c.Require().NoError(err)
+					Convey(
+						"When the CreateProduct command is executed and product doesn't exists",
+						func() {
+							result, err := mediatr.Send[*commands.CreateProduct, *dtos.CreateProductResponseDto](
+								ctx,
+								command,
+							)
 
-	c.Assert().NotNil(result)
-	c.Assert().Equal(command.Id, result.Id)
+							Convey("Then the product should be created successfully", func() {
+								So(err, ShouldBeNil)
+								So(result, ShouldNotBeNil)
 
-	createdProduct, err := c.ProductRepository.GetProductById(
-		ctx,
-		result.Id,
-	)
-	c.Require().NoError(err)
-	c.Assert().NotNil(createdProduct)
+								Convey(
+									"And the product ID should not be empty and same as commandId",
+									func() {
+										So(result.Id, ShouldEqual, command.Id)
+
+										Convey(
+											"And product detail should be retrievable from the database",
+											func() {
+												createdProduct, err := integrationTestSharedFixture.ProductRepository.GetProductById(
+													ctx,
+													result.Id,
+												)
+												So(err, ShouldBeNil)
+												So(createdProduct, ShouldNotBeNil)
+											},
+										)
+									},
+								)
+							})
+						},
+					)
+				})
+			},
+		)
+
+		integrationTestSharedFixture.DisposeTest()
+	})
 }

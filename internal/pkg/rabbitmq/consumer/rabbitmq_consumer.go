@@ -1,5 +1,3 @@
-//go:build go1.18
-
 package consumer
 
 import (
@@ -7,13 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"time"
-
-	"emperror.dev/errors"
-	"github.com/ahmetb/go-linq/v3"
-	"github.com/avast/retry-go"
-	"github.com/rabbitmq/amqp091-go"
-	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
@@ -27,6 +18,13 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/rabbitmqErrors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+
+	"emperror.dev/errors"
+	"github.com/ahmetb/go-linq/v3"
+	"github.com/avast/retry-go"
+	"github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 )
 
 const (
@@ -208,7 +206,7 @@ func (r *rabbitMQConsumer) Start(ctx context.Context) error {
 					ch.NotifyClose(chClosedCh)
 				case msg, ok := <-msgs:
 					if !ok {
-						r.logger.Error("consumer connection dropped")
+						r.logger.Info("consumer connection dropped")
 						return
 					}
 

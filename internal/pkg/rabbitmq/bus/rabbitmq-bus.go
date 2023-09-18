@@ -1,5 +1,3 @@
-//go:build go1.18
-
 package bus
 
 import (
@@ -7,9 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"sync"
-
-	"emperror.dev/errors"
-	"github.com/solsw/go2linq/v2"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
@@ -28,6 +23,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/rabbitmqErrors"
 	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+
+	"emperror.dev/errors"
+	"github.com/samber/lo"
 )
 
 type RabbitmqBus interface {
@@ -52,6 +50,7 @@ func NewRabbitmqBus(
 	cfg *config.RabbitmqOptions,
 	serializer serializer.EventSerializer,
 	logger logger.Logger,
+	connection types2.IConnection,
 	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
 ) (RabbitmqBus, error) {
 	builder := configurations.NewRabbitMQConfigurationBuilder()
@@ -60,12 +59,6 @@ func NewRabbitmqBus(
 	}
 
 	rabbitmqConfiguration := builder.Build()
-
-	conn, err := types2.NewRabbitMQConnection(cfg)
-	if err != nil {
-		return nil, err
-	}
-
 	rabbitBus := &rabbitmqBus{
 		logger:                logger,
 		serializer:            serializer,
@@ -73,24 +66,28 @@ func NewRabbitmqBus(
 		rabbitmqConfig:        cfg,
 		rabbitmqConfigBuilder: builder,
 		messageTypeConsumers:  map[reflect.Type][]consumer.Consumer{},
-		rabbitmqConnection:    conn,
+		rabbitmqConnection:    connection,
 	}
 
-	producersConfiguration := go2linq.ToMapMust(
-		go2linq.NewEnSlice(rabbitBus.rabbitmqConfiguration.ProducersConfigurations...),
-		func(source *producerConfigurations.RabbitMQProducerConfiguration) string {
-			return source.ProducerMessageType.String()
+	producersConfigurationMap := make(map[string]*producerConfigurations.RabbitMQProducerConfiguration)
+	lo.ForEach(
+		rabbitBus.rabbitmqConfiguration.ProducersConfigurations,
+		func(config *producerConfigurations.RabbitMQProducerConfiguration, index int) {
+			key := config.ProducerMessageType.String()
+			producersConfigurationMap[key] = config
 		},
 	)
 
-	consumersConfiguration := go2linq.ToMapMust(
-		go2linq.NewEnSlice(rabbitBus.rabbitmqConfiguration.ConsumersConfigurations...),
-		func(source *consumerConfigurations.RabbitMQConsumerConfiguration) string {
-			return source.ConsumerMessageType.String()
+	consumersConfigurationMap := make(map[string]*consumerConfigurations.RabbitMQConsumerConfiguration)
+	lo.ForEach(
+		rabbitBus.rabbitmqConfiguration.ConsumersConfigurations,
+		func(config *consumerConfigurations.RabbitMQConsumerConfiguration, index int) {
+			key := config.ConsumerMessageType.String()
+			consumersConfigurationMap[key] = config
 		},
 	)
 
-	for _, consumerConfiguration := range consumersConfiguration {
+	for _, consumerConfiguration := range consumersConfigurationMap {
 		mqConsumer, err := consumer2.NewRabbitMQConsumer(
 			rabbitBus.rabbitmqConnection,
 			consumerConfiguration,
@@ -116,7 +113,7 @@ func NewRabbitmqBus(
 
 	mqProducer, err := producer2.NewRabbitMQProducer(
 		rabbitBus.rabbitmqConnection,
-		producersConfiguration,
+		producersConfigurationMap,
 		rabbitBus.logger,
 		rabbitBus.serializer,
 		// IsProduced Notification
@@ -239,6 +236,11 @@ func (r *rabbitmqBus) ConnectConsumerHandler(
 }
 
 func (r *rabbitmqBus) Start(ctx context.Context) error {
+	r.logger.Infof(
+		"rabbitmq is running on host: %s",
+		r.rabbitmqConnection.Raw().LocalAddr().String(),
+	)
+
 	for messageType, consumers := range r.messageTypeConsumers {
 		name := typeMapper.GetTypeNameByType(messageType)
 		r.logger.Info(fmt.Sprintf("consuming message type %s", name))
@@ -296,9 +298,12 @@ func (r *rabbitmqBus) Stop() error {
 	}
 	waitGroup.Wait()
 
-	err := r.rabbitmqConnection.Close()
+	//err := r.rabbitmqConnection.Close()
+	//if err == amqp091.ErrClosed {
+	//	return nil
+	//}
 
-	return err
+	return nil
 }
 
 func (r *rabbitmqBus) PublishMessage(

@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
@@ -19,8 +15,13 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	consumerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
 	producerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/configurations"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_AddRabbitMQ(t *testing.T) {
@@ -32,14 +33,18 @@ func Test_AddRabbitMQ(t *testing.T) {
 	defaultLogger2.SetupDefaultLogger()
 	serializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
 
-	b, err := NewRabbitmqBus(&config.RabbitmqOptions{
+	rabbitmqOptions := &config.RabbitmqOptions{
 		RabbitmqHostOptions: &config.RabbitmqHostOptions{
 			UserName: "guest",
 			Password: "guest",
 			HostName: "localhost",
 			Port:     5672,
 		},
-	}, serializer, defaultLogger2.Logger,
+	}
+	conn, err := types.NewRabbitMQConnection(rabbitmqOptions)
+	require.NoError(t, err)
+
+	b, err := NewRabbitmqBus(rabbitmqOptions, serializer, defaultLogger2.Logger, conn,
 		func(builder configurations.RabbitMQConfigurationBuilder) {
 			builder.AddProducer(
 				ProducerConsumerMessage{},
@@ -154,13 +159,12 @@ func (p Pipeline1) Handle(
 ) error {
 	fmt.Println("PipelineBehaviourTest.Handled")
 
-	fmt.Println(
-		fmt.Sprintf("pipeline got a message with id '%s'", consumerContext.Message().GeMessageId()),
-	)
+	fmt.Printf("pipeline got a message with id '%s'", consumerContext.Message().GeMessageId())
 
 	err := next()
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

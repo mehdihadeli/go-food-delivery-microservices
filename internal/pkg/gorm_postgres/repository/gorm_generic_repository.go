@@ -5,11 +5,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"emperror.dev/errors"
-	"github.com/iancoleman/strcase"
-	uuid "github.com/satori/go.uuid"
-	"gorm.io/gorm"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
@@ -18,6 +13,11 @@ import (
 	reflectionHelper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/reflection_helper"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+
+	"emperror.dev/errors"
+	"github.com/iancoleman/strcase"
+	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 // gorm generic repository

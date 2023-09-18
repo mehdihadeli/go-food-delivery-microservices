@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 )
 
 type grpcErr struct {

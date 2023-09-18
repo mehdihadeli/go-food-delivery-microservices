@@ -1,17 +1,20 @@
-package mappings
+//go:build unit
+// +build unit
+
+package products
 
 import (
 	"testing"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/suite"
-
 	dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dto/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
+
+	"github.com/brianvoe/gofakeit/v6"
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/suite"
 )
 
 type mappingProfileUnitTests struct {

@@ -4,37 +4,43 @@ import (
 	"context"
 	"time"
 
-	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"go.uber.org/fx"
 )
 
-// Module provided to fxlog
-// https://uber-go.github.io/fx/modules.html
-var Module = func(projectionBuilderConstructor interface{}) fx.Option {
-	return fx.Module(
-		"eventstoredbfx",
-		// - order is not important in provide
-		// - provide can have parameter and will resolve if registered
-		// - execute its func only if it requested
-		fx.Provide(
-			config.ProvideConfig,
-			NewEsdbSerializer,
-			NewEventStoreDB,
-			NewEventStoreDbEventStore,
-			NewEsdbSubscriptionCheckpointRepository,
-			NewEsdbSubscriptionAllWorker,
-		),
-		fx.Provide(projectionBuilderConstructor),
-		// - execute after registering all of our provided
-		// - they execute by their orders
-		// - invokes always execute its func compare to provides that only run when we request for them.
-		// - return value will be discarded and can not be provided
-		fx.Invoke(registerHooks),
-	)
-}
+var (
+	// ModuleFunc provided to fxlog
+	// https://uber-go.github.io/fx/modules.html
+	ModuleFunc = func(projectionBuilderConstructor interface{}) fx.Option { //nolint:gochecknoglobals
+		return fx.Module(
+			"eventstoredbfx",
+			fx.Provide(projectionBuilderConstructor),
+			eventstoreProviders,
+			eventstoreInvokes,
+		)
+	}
+
+	// - order is not important in provide
+	// - provide can have parameter and will resolve if registered
+	// - execute its func only if it requested
+	eventstoreProviders = fx.Options(fx.Provide( //nolint:gochecknoglobals
+		config.ProvideConfig,
+		NewEsdbSerializer,
+		NewEventStoreDB,
+		NewEventStoreDbEventStore,
+		NewEsdbSubscriptionCheckpointRepository,
+		NewEsdbSubscriptionAllWorker,
+	))
+
+	// FiberInvokes - execute after registering all of our provided
+	// - they execute by their orders
+	// - invokes always execute its func compare to provides that only run when we request for them.
+	// - return value will be discarded and can not be provided
+	eventstoreInvokes = fx.Options(fx.Invoke(registerHooks)) //nolint:gochecknoglobals
+)
 
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`
 func registerHooks(

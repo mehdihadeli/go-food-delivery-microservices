@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+
 	"emperror.dev/errors"
 	"gorm.io/gorm"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 // Ref: https://dev.to/rafaelgfirmino/pagination-using-gorm-scopes-3k5f

@@ -5,10 +5,10 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 )
 
 type Environment string

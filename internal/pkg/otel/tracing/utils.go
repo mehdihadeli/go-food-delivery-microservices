@@ -4,14 +4,14 @@ import (
 	"context"
 	"reflect"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
+	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+
 	"github.com/ahmetb/go-linq/v3"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	trace2 "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
 )
 
 type traceContextKeyType int

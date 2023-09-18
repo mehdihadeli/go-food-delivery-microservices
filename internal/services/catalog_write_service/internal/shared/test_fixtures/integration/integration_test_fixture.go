@@ -4,16 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
-
-	"emperror.dev/errors"
-	"github.com/brianvoe/gofakeit/v6"
-	_ "github.com/lib/pq"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/suite"
-	"gopkg.in/khaiql/dbcleaner.v2"
-	"gopkg.in/khaiql/dbcleaner.v2/engine"
-	"gorm.io/gorm"
+	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
@@ -22,17 +13,24 @@ import (
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/testfixture"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/app/test"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
+
+	"emperror.dev/errors"
+	"github.com/brianvoe/gofakeit/v6"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/require"
+	"gopkg.in/khaiql/dbcleaner.v2"
+	"gorm.io/gorm"
+
+	_ "github.com/lib/pq"
 )
 
 type IntegrationTestSharedFixture struct {
-	suite.Suite
 	Cfg                  *config.AppOptions
 	Log                  logger.Logger
 	Bus                  bus.Bus
@@ -52,22 +50,18 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 	result := test.NewTestApp().Run(t)
 
 	// https://github.com/michaelklishin/rabbit-hole
-	rmqc, _ := rabbithole.NewClient(
+	rmqc, err := rabbithole.NewClient(
 		fmt.Sprintf(result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint()),
 		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
 		result.RabbitmqOptions.RabbitmqHostOptions.Password)
 
-	// https://github.com/khaiql/dbcleaner
-	postgresEngine := engine.NewPostgresEngine(result.GormOptions.Dns())
-	postgresCleaner := dbcleaner.New()
-	postgresCleaner.SetEngine(postgresEngine)
+	require.NoError(t, err)
 
 	shared := &IntegrationTestSharedFixture{
 		Log:                  result.Logger,
 		Container:            result.Container,
 		Cfg:                  result.Cfg,
 		RabbitmqCleaner:      rmqc,
-		DbCleaner:            postgresCleaner,
 		ProductRepository:    result.ProductRepository,
 		CatalogUnitOfWorks:   result.CatalogUnitOfWorks,
 		Bus:                  result.Bus,
@@ -80,7 +74,31 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 	return shared
 }
 
-func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
+func (i *IntegrationTestSharedFixture) InitializeTest() {
+	i.Log.Info("InitializeTest started")
+
+	// seed data in each test
+	res, err := seedData(i.Gorm)
+	if err != nil {
+		i.Log.Fatal(err)
+	}
+	i.Items = res
+}
+
+func (i *IntegrationTestSharedFixture) DisposeTest() {
+	i.Log.Info("DisposeTest started")
+
+	// cleanup test containers with their hooks
+	if err := i.cleanupRabbitmqData(); err != nil {
+		i.Log.Fatal(err)
+	}
+
+	if err := i.cleanupPostgresData(); err != nil {
+		i.Log.Fatal(err)
+	}
+}
+
+func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 	// https://github.com/michaelklishin/rabbit-hole
 	// Get all queues
 	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
@@ -94,57 +112,47 @@ func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
 			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
 			queue.Name,
 		)
-		i.Require().NoError(err)
+		return err
 	}
 
 	return nil
 }
 
-func (i *IntegrationTestSharedFixture) CleanupPostgresData() {
+func (i *IntegrationTestSharedFixture) cleanupPostgresData() error {
 	tables := []string{"products"}
 	// Iterate over the tables and delete all records
 	for _, table := range tables {
 		err := i.Gorm.Exec("DELETE FROM " + table).Error
-		i.Require().NoError(err)
+		return err
 	}
-}
-
-// //////////////////////// Shared Hooks //////////////////////////////////
-func (i *IntegrationTestSharedFixture) SetupTest() {
-	i.Initialize()
-}
-
-func (i *IntegrationTestSharedFixture) TearDownTest() {
-	i.Cleanup()
-}
-
-func (i *IntegrationTestSharedFixture) Initialize() {
-	i.T().Log("SetupTest")
-
-	// seed data in each test
-	res, err := seedData(i.Gorm)
-	i.Require().NoError(err)
-	i.Items = res
-}
-
-func (i *IntegrationTestSharedFixture) Cleanup() {
-	i.T().Log("TearDownTest")
-	// cleanup test containers with their hooks
-	err := i.CleanupRabbitmqData()
-	if err != nil {
-		i.Require().NoError(err)
-	}
-
-	i.CleanupPostgresData()
+	return nil
 }
 
 func seedData(gormDB *gorm.DB) ([]*models.Product, error) {
+	products := []*models.Product{
+		{
+			ProductId:   uuid.NewV4(),
+			Name:        gofakeit.Name(),
+			CreatedAt:   time.Now(),
+			Description: gofakeit.AdjectiveDescriptive(),
+			Price:       gofakeit.Price(100, 1000),
+		},
+		{
+			ProductId:   uuid.NewV4(),
+			Name:        gofakeit.Name(),
+			CreatedAt:   time.Now(),
+			Description: gofakeit.AdjectiveDescriptive(),
+			Price:       gofakeit.Price(100, 1000),
+		},
+	}
+
+	// migration will do in app configuration
 	// seed data
-	err := gormDB.CreateInBatches(testData.Products, len(testData.Products)).Error
+	err := gormDB.CreateInBatches(products, len(products)).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "error in seed database")
 	}
-	return testData.Products, nil
+	return products, nil
 }
 
 func seedAndMigration(gormDB *gorm.DB) ([]*models.Product, error) {

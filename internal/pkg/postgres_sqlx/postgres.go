@@ -11,9 +11,10 @@ import (
 	"emperror.dev/errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
-	_ "github.com/jackc/pgx/v4/stdlib" // load pgx driver for PostgreSQL
 	"github.com/jmoiron/sqlx"
 	"github.com/uptrace/bun/driver/pgdriver"
+
+	_ "github.com/jackc/pgx/v4/stdlib" // load pgx driver for PostgreSQL
 )
 
 type Sqlx struct {

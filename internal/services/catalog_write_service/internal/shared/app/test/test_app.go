@@ -14,14 +14,14 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/postgrespxg"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
-	gorm2 "gorm.io/gorm"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/configurations/catalogs"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
+
+	"github.com/stretchr/testify/require"
+	gorm2 "gorm.io/gorm"
 )
 
 type TestApp struct{}
@@ -38,6 +38,7 @@ type TestAppResult struct {
 	ProductRepository    data.ProductRepository
 	Gorm                 *gorm2.DB
 	ProductServiceClient productsService.ProductsServiceClient
+	GrpcClient           grpc.GrpcClient
 }
 
 func NewTestApp() *TestApp {
@@ -50,9 +51,9 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	// ref: https://github.com/uber-go/fx/blob/master/app_test.go
 	appBuilder := NewCatalogsWriteTestApplicationBuilder(t)
 	appBuilder.ProvideModule(catalogs.CatalogsServiceModule)
+
 	appBuilder.Decorate(rabbitmq.RabbitmqContainerOptionsDecorator(t, lifetimeCtx))
 	appBuilder.Decorate(gorm.GormContainerOptionsDecorator(t, lifetimeCtx))
-	appBuilder.Decorate(postgrespxg.PostgresPgxContainerOptionsDecorator(t, lifetimeCtx))
 
 	testApp := appBuilder.Build()
 
@@ -72,6 +73,8 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 			echoOptions *config3.EchoHttpOptions,
 			grpcClient grpc.GrpcClient,
 		) {
+			grpcConnection := grpcClient.GetGrpcConnection()
+
 			result = &TestAppResult{
 				Bus:                bus,
 				Cfg:                cfg,
@@ -84,27 +87,35 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 				Gorm:               gorm,
 				EchoHttpOptions:    echoOptions,
 				ProductServiceClient: productsService.NewProductsServiceClient(
-					grpcClient.GetGrpcConnection(),
+					grpcConnection,
 				),
+				GrpcClient: grpcClient,
 			}
 		},
 	)
-	duration := time.Second * 20
+	// we need a longer timout for up and running our testcontainers
+	duration := time.Second * 300
 
 	// short timeout for handling start hooks and setup dependencies
 	startCtx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
 	err := testApp.Start(startCtx)
 	if err != nil {
+		t.Errorf("Error starting, err: %v", err)
 		os.Exit(1)
 	}
+
+	// waiting for grpc endpoint becomes ready in the given timeout
+	err = result.GrpcClient.WaitForAvailableConnection()
+	require.NoError(t, err)
 
 	t.Cleanup(func() {
 		// short timeout for handling stop hooks
 		stopCtx, cancel := context.WithTimeout(context.Background(), duration)
 		defer cancel()
 
-		_ = testApp.Stop(stopCtx)
+		err = testApp.Stop(stopCtx)
+		require.NoError(t, err)
 	})
 
 	return

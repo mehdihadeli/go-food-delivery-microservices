@@ -5,7 +5,6 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
 )
 

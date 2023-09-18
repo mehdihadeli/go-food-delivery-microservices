@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"time"
 
-	"emperror.dev/errors"
-	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/mehdihadeli/go-mediatr"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/projection"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+
+	"emperror.dev/errors"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type esdbSubscriptionAllWorker struct {

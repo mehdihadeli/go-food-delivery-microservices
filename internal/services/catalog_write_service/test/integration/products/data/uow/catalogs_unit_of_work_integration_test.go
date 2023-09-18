@@ -4,134 +4,177 @@
 package uow
 
 import (
-    "context"
-    "testing"
-    "time"
+	"context"
+	"testing"
+	"time"
 
-    "emperror.dev/errors"
-    "github.com/brianvoe/gofakeit/v6"
-    uuid "github.com/satori/go.uuid"
-    "github.com/stretchr/testify/assert"
-    "github.com/stretchr/testify/require"
-    "github.com/stretchr/testify/suite"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	"emperror.dev/errors"
+	"github.com/brianvoe/gofakeit/v6"
+	uuid "github.com/satori/go.uuid"
 
-    data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-// https://brunoscheufler.com/blog/2020-04-12-building-go-test-suites-using-testify
+var integrationFixture *integration.IntegrationTestSharedFixture
 
-// Define the custom testify suite
-type catalogsUnitOfWorkTestSuite struct {
-	*integration.IntegrationTestSharedFixture
+func TestUnitOfWork(t *testing.T) {
+	RegisterFailHandler(Fail)
+	integrationFixture = integration.NewIntegrationTestSharedFixture(t)
+	RunSpecs(t, "CatalogsUnitOfWork Integration Tests")
 }
 
-func TestCatalogsUnitOfWorkTestSuite(t *testing.T) {
-	suite.Run(
-		t,
-		&catalogsUnitOfWorkTestSuite{
-			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
-		},
+var _ = Describe("CatalogsUnitOfWork Feature", func() {
+	// Define variables to hold repository and product data
+	var (
+		ctx      context.Context
+		err      error
+		products *utils.ListResult[*models.Product]
 	)
-}
 
-func (p *catalogsUnitOfWorkTestSuite) Test_Catalogs_Unit_Of_Work() {
-	ctx := context.Background()
+	_ = BeforeEach(func() {
+		ctx = context.Background()
+		By("Seeding the required data")
+		integrationFixture.InitializeTest()
+	})
 
-	p.T().Run("Should_Rollback_On_Error", func(t *testing.T) {
-		err := p.CatalogUnitOfWorks.Do(ctx, func(catalogContext data2.CatalogContext) error {
-			_, err := catalogContext.Products().CreateProduct(ctx,
-				&models.Product{
-					Name:        gofakeit.Name(),
-					Description: gofakeit.AdjectiveDescriptive(),
-					ProductId:   uuid.NewV4(),
-					Price:       gofakeit.Price(100, 1000),
-					CreatedAt:   time.Now(),
+	_ = AfterEach(func() {
+		By("Cleanup test data")
+		integrationFixture.DisposeTest()
+	})
+
+	// "Scenario" step for testing a UnitOfWork action that should roll back on error
+	Describe("Rollback on error", func() {
+		// "When" step
+		When("The UnitOfWork Do executed and there is an error in the execution", func() {
+			It("Should roll back the changes and not affect the database", func() {
+				err = integrationFixture.CatalogUnitOfWorks.Do(ctx, func(catalogContext data2.CatalogContext) error {
+					_, err := catalogContext.Products().CreateProduct(ctx,
+						&models.Product{
+							Name:        gofakeit.Name(),
+							Description: gofakeit.AdjectiveDescriptive(),
+							ProductId:   uuid.NewV4(),
+							Price:       gofakeit.Price(100, 1000),
+							CreatedAt:   time.Now(),
+						})
+					Expect(err).NotTo(HaveOccurred()) // Successful product creation
+
+					return errors.New("error rollback")
 				})
-			require.NoError(t, err)
-			return errors.New("error rollback")
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError(ContainSubstring("error rollback")))
+
+				products, err := integrationFixture.ProductRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
+				Expect(err).To(BeNil())
+
+				Expect(len(products.Items)).To(Equal(2)) // Ensure no changes in the database
+			})
 		})
-		require.ErrorContains(t, err, "error rollback")
-
-		products, err := p.ProductRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
-		require.NoError(t, err)
-
-		assert.Equal(t, 2, len(products.Items))
 	})
 
-	p.T().Run("Should_Rollback_On_Panic", func(t *testing.T) {
-		err := p.CatalogUnitOfWorks.Do(ctx, func(catalogContext data2.CatalogContext) error {
-			_, err := catalogContext.Products().CreateProduct(ctx,
-				&models.Product{
-					Name:        gofakeit.Name(),
-					Description: gofakeit.AdjectiveDescriptive(),
-					ProductId:   uuid.NewV4(),
-					Price:       gofakeit.Price(100, 1000),
-					CreatedAt:   time.Now(),
+	// "Scenario" step for testing a UnitOfWork action that should rollback on panic
+	Describe("Rollback on panic", func() {
+		// "When" step
+		When("The UnitOfWork Do executed and there is an panic in the execution", func() {
+			It("Should roll back the changes and not affect the database", func() {
+				err = integrationFixture.CatalogUnitOfWorks.Do(ctx, func(catalogContext data2.CatalogContext) error {
+					_, err := catalogContext.Products().CreateProduct(ctx,
+						&models.Product{
+							Name:        gofakeit.Name(),
+							Description: gofakeit.AdjectiveDescriptive(),
+							ProductId:   uuid.NewV4(),
+							Price:       gofakeit.Price(100, 1000),
+							CreatedAt:   time.Now(),
+						})
+					Expect(err).To(BeNil()) // Successful product creation
+
+					panic(errors.New("panic rollback"))
 				})
-			require.NoError(t, err)
-			panic(errors.New("panic rollback"))
+				Expect(err).To(HaveOccurred())
 
-			return err
+				products, err = integrationFixture.ProductRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
+				Expect(err).To(BeNil())
+
+				Expect(len(products.Items)).To(Equal(2)) // Ensure no changes in the database
+			})
 		})
-		require.Error(t, err)
-
-		products, err := p.ProductRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
-		require.NoError(t, err)
-
-		assert.Equal(t, 2, len(products.Items))
 	})
 
-	p.T().Run("Should_Rollback_On_Context_Canceled", func(t *testing.T) {
-		cancelCtx, cancel := context.WithCancel(ctx)
+	// "Scenario" step for testing a UnitOfWork action that should rollback when the context is canceled
+	Describe("Cancelling the context", func() {
+		// "When" step
+		When("the UnitOfWork Do executed and cancel the context", func() {
+			It("Should roll back the changes and not affect the database", func() {
+				cancelCtx, cancel := context.WithCancel(ctx)
 
-		err := p.CatalogUnitOfWorks.Do(cancelCtx, func(catalogContext data2.CatalogContext) error {
-			_, err := catalogContext.Products().CreateProduct(ctx, &models.Product{
-				Name:        gofakeit.Name(),
-				Description: gofakeit.AdjectiveDescriptive(),
-				ProductId:   uuid.NewV4(),
-				Price:       gofakeit.Price(100, 1000),
-				CreatedAt:   time.Now(),
+				err := integrationFixture.CatalogUnitOfWorks.Do(
+					cancelCtx,
+					func(catalogContext data2.CatalogContext) error {
+						_, err := catalogContext.Products().CreateProduct(ctx,
+							&models.Product{
+								Name:        gofakeit.Name(),
+								Description: gofakeit.AdjectiveDescriptive(),
+								ProductId:   uuid.NewV4(),
+								Price:       gofakeit.Price(100, 1000),
+								CreatedAt:   time.Now(),
+							})
+						Expect(err).To(BeNil()) // Successful product creation
+
+						_, err = catalogContext.Products().CreateProduct(ctx,
+							&models.Product{
+								Name:        gofakeit.Name(),
+								Description: gofakeit.AdjectiveDescriptive(),
+								ProductId:   uuid.NewV4(),
+								Price:       gofakeit.Price(100, 1000),
+								CreatedAt:   time.Now(),
+							})
+						Expect(err).To(BeNil()) // Successful product creation
+
+						cancel() // Cancel the context
+
+						return err
+					},
+				)
+				Expect(err).To(HaveOccurred())
+
+				// Validate that changes are rolled back in the database
+				products, err := integrationFixture.ProductRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
+				Expect(err).To(BeNil())
+				Expect(len(products.Items)).To(Equal(2)) // Ensure no changes in the database
 			})
-			require.NoError(t, err)
-
-			_, err = catalogContext.Products().CreateProduct(ctx, &models.Product{
-				Name:        gofakeit.Name(),
-				Description: gofakeit.AdjectiveDescriptive(),
-				ProductId:   uuid.NewV4(),
-				Price:       gofakeit.Price(100, 1000),
-				CreatedAt:   time.Now(),
-			})
-			require.NoError(t, err)
-			cancel()
-
-			return err
 		})
-
-		products, err := p.ProductRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
-		require.NoError(t, err)
-
-		assert.Equal(t, 2, len(products.Items))
 	})
 
-	p.T().Run("Should_Commit_On_Success", func(t *testing.T) {
-		err := p.CatalogUnitOfWorks.Do(ctx, func(catalogContext data2.CatalogContext) error {
-			_, err := catalogContext.Products().CreateProduct(ctx, &models.Product{
-				Name:        gofakeit.Name(),
-				Description: gofakeit.AdjectiveDescriptive(),
-				ProductId:   uuid.NewV4(),
-				Price:       gofakeit.Price(100, 1000),
-				CreatedAt:   time.Now(),
-			})
-			return err
-		})
-		require.NoError(t, err)
-		products, err := p.ProductRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
-		require.NoError(t, err)
+	// "Scenario" step for testing a UnitOfWork action that should commit on success
+	Describe("Commit on success", func() {
+		// "When" step
+		When("the UnitOfWork Do executed and operation was successfull", func() {
+			It("Should commit the changes to the database", func() {
+				err := integrationFixture.CatalogUnitOfWorks.Do(ctx, func(catalogContext data2.CatalogContext) error {
+					_, err := catalogContext.Products().CreateProduct(ctx,
+						&models.Product{
+							Name:        gofakeit.Name(),
+							Description: gofakeit.AdjectiveDescriptive(),
+							ProductId:   uuid.NewV4(),
+							Price:       gofakeit.Price(100, 1000),
+							CreatedAt:   time.Now(),
+						})
+					Expect(err).To(BeNil()) // Successful product creation
 
-		assert.Equal(t, 3, len(products.Items))
+					return err
+				})
+				Expect(err).To(BeNil()) // No error indicates success
+
+				// Validate that changes are committed in the database
+				products, err := integrationFixture.ProductRepository.GetAllProducts(ctx, utils.NewListQuery(10, 1))
+				Expect(err).To(BeNil())
+				Expect(len(products.Items)).To(Equal(3)) // Ensure changes in the database
+			})
+		})
 	})
-}
+})

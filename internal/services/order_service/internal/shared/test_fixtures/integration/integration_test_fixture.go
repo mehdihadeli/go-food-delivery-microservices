@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	"emperror.dev/errors"
-	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
@@ -15,19 +13,20 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	rabbithole "github.com/michaelklishin/rabbit-hole"
-	"github.com/stretchr/testify/suite"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/app/test"
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/contracts"
 	ordersService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/grpc/genproto"
+
+	"emperror.dev/errors"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/brianvoe/gofakeit/v6"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -35,7 +34,6 @@ const (
 )
 
 type IntegrationTestSharedFixture struct {
-	suite.Suite
 	OrderAggregateStore  store.AggregateStore[*aggregate.Order]
 	OrderMongoRepository repositories.OrderMongoRepository
 	OrdersMetrics        contracts2.OrdersMetrics
@@ -82,7 +80,31 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 	return shared
 }
 
-func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
+func (i *IntegrationTestSharedFixture) InitializeTest() {
+	i.Log.Info("InitializeTest started")
+
+	// seed data in each test
+	res, err := seedReadModelData(i.mongoClient, i.MongoDbOptions.Database)
+	if err != nil {
+		i.Log.Fatal(err)
+	}
+	i.Items = res
+}
+
+func (i *IntegrationTestSharedFixture) DisposeTest() {
+	i.Log.Info("DisposeTest started")
+
+	// cleanup test containers with their hooks
+	if err := i.cleanupRabbitmqData(); err != nil {
+		i.Log.Fatal(err)
+	}
+
+	if err := i.cleanupMongoData(); err != nil {
+		i.Log.Fatal(err)
+	}
+}
+
+func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 	// https://github.com/michaelklishin/rabbit-hole
 	// Get all queues
 	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
@@ -96,16 +118,16 @@ func (i *IntegrationTestSharedFixture) CleanupRabbitmqData() error {
 			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
 			queue.Name,
 		)
-		i.Require().NoError(err)
+		return err
 	}
 
 	return nil
 }
 
-func (i *IntegrationTestSharedFixture) CleanupMongoData() {
+func (i *IntegrationTestSharedFixture) cleanupMongoData() error {
 	collections := []string{orderCollection}
 	err := cleanupCollections(i.mongoClient, collections, i.MongoDbOptions.Database)
-	i.Require().NoError(err)
+	return err
 }
 
 func cleanupCollections(db *mongo.Client, collections []string, databaseName string) error {
@@ -124,36 +146,52 @@ func cleanupCollections(db *mongo.Client, collections []string, databaseName str
 	return nil
 }
 
-// //////////////////////// Shared Hooks //////////////////////////////////
-func (i *IntegrationTestSharedFixture) SetupTest() {
-	i.T().Log("SetupTest")
-
-	// seed data in each test
-	res, err := seedReadModelData(i.mongoClient, i.MongoDbOptions.Database)
-	i.Require().NoError(err)
-	i.Items = res
-}
-
-func (i *IntegrationTestSharedFixture) TearDownTest() {
-	i.T().Log("TearDownTest")
-
-	// cleanup test containers with their hooks
-	err := i.CleanupRabbitmqData()
-	if err != nil {
-		i.Require().NoError(err)
-	}
-
-	i.CleanupMongoData()
-}
-
 func seedReadModelData(
 	db *mongo.Client,
 	databaseName string,
 ) ([]*read_models.OrderReadModel, error) {
 	ctx := context.Background()
+
+	orders := []*read_models.OrderReadModel{
+		{
+			Id:              gofakeit.UUID(),
+			OrderId:         gofakeit.UUID(),
+			ShopItems:       generateShopItems(),
+			AccountEmail:    gofakeit.Email(),
+			DeliveryAddress: gofakeit.Address().Address,
+			CancelReason:    gofakeit.Sentence(5),
+			TotalPrice:      gofakeit.Float64Range(10, 100),
+			DeliveredTime:   gofakeit.Date(),
+			Paid:            gofakeit.Bool(),
+			Submitted:       gofakeit.Bool(),
+			Completed:       gofakeit.Bool(),
+			Canceled:        gofakeit.Bool(),
+			PaymentId:       gofakeit.UUID(),
+			CreatedAt:       gofakeit.Date(),
+			UpdatedAt:       gofakeit.Date(),
+		},
+		{
+			Id:              gofakeit.UUID(),
+			OrderId:         gofakeit.UUID(),
+			ShopItems:       generateShopItems(),
+			AccountEmail:    gofakeit.Email(),
+			DeliveryAddress: gofakeit.Address().Address,
+			CancelReason:    gofakeit.Sentence(5),
+			TotalPrice:      gofakeit.Float64Range(10, 100),
+			DeliveredTime:   gofakeit.Date(),
+			Paid:            gofakeit.Bool(),
+			Submitted:       gofakeit.Bool(),
+			Completed:       gofakeit.Bool(),
+			Canceled:        gofakeit.Bool(),
+			PaymentId:       gofakeit.UUID(),
+			CreatedAt:       gofakeit.Date(),
+			UpdatedAt:       gofakeit.Date(),
+		},
+	}
+
 	//// https://go.dev/doc/faq#convert_slice_of_interface
-	data := make([]interface{}, len(testData.Orders))
-	for i, v := range testData.Orders {
+	data := make([]interface{}, len(orders))
+	for i, v := range orders {
 		data[i] = v
 	}
 
@@ -170,4 +208,21 @@ func seedReadModelData(
 		nil,
 	)
 	return result.Items, nil
+}
+
+func generateShopItems() []*read_models.ShopItemReadModel {
+	var shopItems []*read_models.ShopItemReadModel
+
+	for i := 0; i < 3; i++ {
+		shopItem := &read_models.ShopItemReadModel{
+			Title:       gofakeit.Word(),
+			Description: gofakeit.Sentence(3),
+			Quantity:    uint64(gofakeit.UintRange(1, 100)),
+			Price:       gofakeit.Float64Range(1, 50),
+		}
+
+		shopItems = append(shopItems, shopItem)
+	}
+
+	return shopItems
 }

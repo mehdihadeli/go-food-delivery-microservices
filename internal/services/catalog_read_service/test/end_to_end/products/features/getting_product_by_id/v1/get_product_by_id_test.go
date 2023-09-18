@@ -8,35 +8,37 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gavv/httpexpect/v2"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+
+	"github.com/gavv/httpexpect/v2"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-type getProductByIdE2ETest struct {
-	*integration.IntegrationTestSharedFixture
-}
+func TestGetProductById(t *testing.T) {
+	e2eFixture := integration.NewIntegrationTestSharedFixture(t)
 
-func TestGetProductByIdE2E(t *testing.T) {
-	suite.Run(
-		t,
-		&getProductByIdE2ETest{
-			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
-		},
-	)
-}
+	Convey("Get Product By Id Feature", t, func() {
+		e2eFixture.InitializeTest()
 
-func (c *getProductByIdE2ETest) Test_Should_Return_Ok_Status_With_Valid_Id() {
-	ctx := context.Background()
+		ctx := context.Background()
+		id := e2eFixture.Items[0].Id
 
-	expect := httpexpect.New(c.T(), c.BaseAddress)
+		// "Scenario" step for testing the get product by ID API with a valid ID
+		Convey("Get product by ID with a valid ID returns ok status", func() {
+			Convey("When A valid request is made with a valid ID", func() {
+				expect := httpexpect.New(t, e2eFixture.BaseAddress)
 
-	id := c.Items[0].Id
+				Convey("Then the response status should be OK", func() {
+					expect.GET("products/{id}").
+						WithPath("id", id).
+						WithContext(ctx).
+						Expect().
+						Status(http.StatusOK)
+				})
+			})
+		})
 
-	expect.GET("products/{id}").
-		WithPath("id", id).
-		WithContext(ctx).
-		Expect().
-		Status(http.StatusOK)
+		e2eFixture.DisposeTest()
+	})
 }

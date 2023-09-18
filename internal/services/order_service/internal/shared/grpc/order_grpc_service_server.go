@@ -4,20 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"emperror.dev/errors"
-	"github.com/go-playground/validator"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	attribute2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	"github.com/mehdihadeli/go-mediatr"
-	uuid "github.com/satori/go.uuid"
-	"go.opentelemetry.io/otel/attribute"
-	api "go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
-
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
 	createOrderCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/commands"
 	createOrderDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/dtos"
@@ -27,6 +19,14 @@ import (
 	getOrdersQueryV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/getting_orders/v1/queries"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/contracts"
 	grpcOrderService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/grpc/genproto"
+
+	"emperror.dev/errors"
+	"github.com/go-playground/validator"
+	"github.com/mehdihadeli/go-mediatr"
+	uuid "github.com/satori/go.uuid"
+	"go.opentelemetry.io/otel/attribute"
+	api "go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type OrderGrpcServiceServer struct {
@@ -64,13 +64,13 @@ func (o OrderGrpcServiceServer) CreateOrder(
 		return nil, err
 	}
 
-	command := createOrderCommandV1.NewCreateOrder(
+	command, err := createOrderCommandV1.NewCreateOrder(
 		shopItemsDtos,
 		req.AccountEmail,
 		req.DeliveryAddress,
 		req.DeliveryTime.AsTime(),
 	)
-	if err := o.validator.StructCtx(ctx, command); err != nil {
+	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(
 			err,
 			"[OrderGrpcServiceServer_CreateOrder.StructCtx] command validation failed",
@@ -127,8 +127,8 @@ func (o OrderGrpcServiceServer) GetOrderByID(
 		return nil, badRequestErr
 	}
 
-	query := getOrderByIdQueryV1.NewGetOrderById(orderIdUUID)
-	if err := o.validator.StructCtx(ctx, query); err != nil {
+	query, err := getOrderByIdQueryV1.NewGetOrderById(orderIdUUID)
+	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(
 			err,
 			"[OrderGrpcServiceServer_GetOrderByID.StructCtx] query validation failed",

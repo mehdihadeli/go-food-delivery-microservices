@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
 	config4 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
@@ -20,13 +19,15 @@ import (
 	mongo2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/mongo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/redis"
-	"go.mongodb.org/mongo-driver/mongo"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/configurations/orders"
 	ordersService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/grpc/genproto"
+
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type TestApp struct{}
@@ -45,6 +46,7 @@ type TestAppResult struct {
 	MongoClient          *mongo.Client
 	EsdbClient           *esdb.Client
 	MongoDbOptions       *mongodb.MongoDbOptions
+	GrpcClient           grpc.GrpcClient
 }
 
 func NewTestApp() *TestApp {
@@ -100,25 +102,34 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 				OrdersServiceClient: ordersService.NewOrdersServiceClient(
 					grpcClient.GetGrpcConnection(),
 				),
+				GrpcClient: grpcClient,
 			}
 		},
 	)
-	duration := time.Second * 20
+
+	// we need a longer timout for up and running our testcontainers
+	duration := time.Second * 300
 
 	// short timeout for handling start hooks and setup dependencies
 	startCtx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
 	err := testApp.Start(startCtx)
 	if err != nil {
+		t.Errorf("Error starting, err: %v", err)
 		os.Exit(1)
 	}
+
+	//// waiting for grpc endpoint becomes ready in the given timeout
+	//err = result.GrpcClient.WaitForAvailableConnection()
+	//require.NoError(t, err)
 
 	t.Cleanup(func() {
 		// short timeout for handling stop hooks
 		stopCtx, cancel := context.WithTimeout(context.Background(), duration)
 		defer cancel()
 
-		_ = testApp.Stop(stopCtx)
+		err = testApp.Stop(stopCtx)
+		require.NoError(t, err)
 	})
 
 	return

@@ -2,3 +2,4 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 make format && git add -A .
+#make lint && git add -A .

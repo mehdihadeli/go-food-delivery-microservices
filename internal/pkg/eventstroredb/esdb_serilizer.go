@@ -4,12 +4,6 @@ import (
 	"io"
 	"strings"
 
-	"emperror.dev/errors"
-	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/ahmetb/go-linq/v3"
-	"github.com/gofrs/uuid"
-	uuid2 "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
@@ -20,6 +14,12 @@ import (
 	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
 	esErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/errors"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+
+	"emperror.dev/errors"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/ahmetb/go-linq/v3"
+	"github.com/gofrs/uuid"
+	uuid2 "github.com/satori/go.uuid"
 )
 
 type EsdbSerializer struct {

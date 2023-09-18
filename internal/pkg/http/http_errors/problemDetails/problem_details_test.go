@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"testing"
 
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+
 	"emperror.dev/errors"
 	"github.com/stretchr/testify/assert"
-
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 )
 
 func Test_Domain_Err(t *testing.T) {

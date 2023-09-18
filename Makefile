@@ -49,20 +49,20 @@ proto:
 
 .PHONY: unit-test
 unit-test:
-	@./scripts/test.sh catalog_write_service unit
 	@./scripts/test.sh catalog_read_service unit
+	@./scripts/test.sh catalog_write_service unit
 	@./scripts/test.sh  order_service unit
 
 .PHONY: integration-test
 integration-test:
-	@./scripts/test.sh catalog_write_service integration
 	@./scripts/test.sh catalog_read_service integration
+	@./scripts/test.sh catalog_write_service integration
 	@./scripts/test.sh  order_service integration
 
 .PHONY: e2e-test
 e2e-test:
-	@./scripts/test.sh catalog_write_service e2e
 	@./scripts/test.sh catalog_read_service e2e
+	@./scripts/test.sh catalog_write_service e2e
 	@./scripts/test.sh  order_service e2e
 
 #.PHONY: load-test
@@ -84,6 +84,7 @@ lint:
 	@./scripts/lint.sh catalog_read_service
 	@./scripts/lint.sh order_service
 	@./scripts/lint.sh pkg
+
 
 #.PHONY: c4
 #c4:

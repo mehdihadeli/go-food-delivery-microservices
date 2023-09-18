@@ -3,11 +3,11 @@ package utils
 import (
 	"reflect"
 
-	"github.com/ahmetb/go-linq/v3"
-	"github.com/iancoleman/strcase"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+
+	"github.com/ahmetb/go-linq/v3"
+	"github.com/iancoleman/strcase"
 )
 
 func GetMessageName(message interface{}) string {

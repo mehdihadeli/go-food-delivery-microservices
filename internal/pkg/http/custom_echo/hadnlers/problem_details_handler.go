@@ -1,11 +1,11 @@
 package customHadnlers
 
 import (
-	"github.com/labstack/echo/v4"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/problemDetails"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+
+	"github.com/labstack/echo/v4"
 )
 
 func ProblemHandlerFunc(err error, c echo.Context, logger logger.Logger) {

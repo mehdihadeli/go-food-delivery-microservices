@@ -5,14 +5,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+
 	"emperror.dev/errors"
 	"github.com/caarlos0/env/v8"
 	"github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 )
 
 func BindConfig[T any](environments ...environemnt.Environment) (T, error) {
@@ -46,6 +46,10 @@ func BindConfigKey[T any](configKey string, environments ...environemnt.Environm
 
 	cfg := typeMapper.GenericInstanceByT[T]()
 
+	// this should set before reading config values from json file
+	// https://github.com/mcuadros/go-defaults
+	defaults.SetDefaults(cfg)
+
 	// https://github.com/spf13/viper/issues/390#issuecomment-718756752
 	viper.SetConfigName(fmt.Sprintf("config.%s", environment))
 	viper.AddConfigPath(configPath)
@@ -71,9 +75,6 @@ func BindConfigKey[T any](configKey string, environments ...environemnt.Environm
 	if err := env.Parse(cfg); err != nil {
 		fmt.Printf("%+v\n", err)
 	}
-
-	// https://github.com/mcuadros/go-defaults
-	defaults.SetDefaults(cfg)
 
 	return cfg, nil
 }

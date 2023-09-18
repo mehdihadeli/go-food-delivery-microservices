@@ -3,14 +3,14 @@ package orders
 import (
 	"fmt"
 
-	"go.opentelemetry.io/otel/metric"
-	api "go.opentelemetry.io/otel/metric"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/configurations/orders/infrastructure"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/contracts"
+
+	"go.opentelemetry.io/otel/metric"
+	api "go.opentelemetry.io/otel/metric"
+	"go.uber.org/fx"
 )
 
 // https://pmihaylov.com/shared-components-go-microservices/

@@ -10,11 +10,11 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-	"github.com/mehdihadeli/go-mediatr"
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
 	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1/events/integration_events"
+
+	"github.com/mehdihadeli/go-mediatr"
+	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 type DeleteProductHandler struct {

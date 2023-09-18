@@ -1,5 +1,3 @@
-//go:build go1.18
-
 package options
 
 import "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"

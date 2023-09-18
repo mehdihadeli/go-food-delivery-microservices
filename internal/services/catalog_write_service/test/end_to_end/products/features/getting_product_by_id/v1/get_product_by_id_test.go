@@ -8,53 +8,76 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+
 	"github.com/gavv/httpexpect/v2"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/suite"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-type getProductByIdE2ETest struct {
-	*integration.IntegrationTestSharedFixture
+var integrationFixture *integration.IntegrationTestSharedFixture
+
+func TestGetProductByIdEndpoint(t *testing.T) {
+	RegisterFailHandler(Fail)
+	integrationFixture = integration.NewIntegrationTestSharedFixture(t)
+	RunSpecs(t, "GetProductById Endpoint EndToEnd Tests")
 }
 
-func TestGetProductByIdE2E(t *testing.T) {
-	suite.Run(
-		t,
-		&getProductByIdE2ETest{
-			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
-		},
+var _ = Describe("Get Product By Id Feature", func() {
+	var (
+		ctx context.Context
+		id  uuid.UUID
 	)
-}
 
-func (c *getProductByIdE2ETest) Test_Should_Return_Ok_Status_With_Valid_Id() {
-	ctx := context.Background()
+	_ = BeforeEach(func() {
+		ctx = context.Background()
 
-	// create httpexpect instance
-	expect := httpexpect.New(c.T(), c.BaseAddress)
+		By("Seeding the required data")
+		integrationFixture.InitializeTest()
 
-	id := c.Items[0].ProductId
+		id = integrationFixture.Items[0].ProductId
+	})
 
-	expect.GET("products/{id}").
-		WithPath("id", id.String()).
-		WithContext(ctx).
-		Expect().
-		Status(http.StatusOK)
-}
+	_ = AfterEach(func() {
+		By("Cleanup test data")
+		integrationFixture.DisposeTest()
+	})
 
-// Input validations
-func (c *getProductByIdE2ETest) Test_Should_Return_NotFound_Status_With_Invalid_Id() {
-	ctx := context.Background()
+	// "Scenario" step for testing the get product by ID API with a valid ID
+	Describe("Get product by ID with a valid ID returns ok status", func() {
+		// "When" step
+		When("A valid request is made with a valid ID", func() {
+			// "Then" step
+			It("Should return an OK status", func() {
+				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
+				expect.GET("products/{id}").
+					WithPath("id", id).
+					WithContext(ctx).
+					Expect().
+					Status(http.StatusOK)
+			})
+		})
+	})
 
-	// create httpexpect instance
-	expect := httpexpect.New(c.T(), c.BaseAddress)
-
-	id := uuid.NewV4()
-
-	expect.GET("products/{id}").
-		WithPath("id", id.String()).
-		WithContext(ctx).
-		Expect().
-		Status(http.StatusNotFound)
-}
+	// "Scenario" step for testing the get product by ID API with a valid ID
+	Describe("Get product by ID with a invalid ID returns NotFound status", func() {
+		BeforeEach(func() {
+			// Generate an invalid UUID
+			id = uuid.NewV4()
+		})
+		When("An invalid request is made with an invalid ID", func() {
+			// "Then" step
+			It("Should return a NotFound status", func() {
+				// Create an HTTPExpect instance and make the request
+				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
+				expect.GET("products/{id}").
+					WithPath("id", id.String()).
+					WithContext(ctx).
+					Expect().
+					Status(http.StatusNotFound)
+			})
+		})
+	})
+})

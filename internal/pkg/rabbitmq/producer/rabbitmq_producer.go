@@ -1,17 +1,9 @@
-//go:build go1.18
-
 package producer
 
 import (
 	"context"
 	"fmt"
 	"time"
-
-	"emperror.dev/errors"
-	"github.com/rabbitmq/amqp091-go"
-	uuid "github.com/satori/go.uuid"
-	"go.opentelemetry.io/otel/attribute"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
@@ -24,6 +16,12 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+
+	"emperror.dev/errors"
+	"github.com/rabbitmq/amqp091-go"
+	uuid "github.com/satori/go.uuid"
+	"go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 )
 
 type rabbitMQProducer struct {

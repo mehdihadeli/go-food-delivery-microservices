@@ -6,12 +6,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
+	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-
-	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 // https://github.com/testcontainers/testcontainers-go/issues/1359
@@ -19,9 +21,10 @@ import (
 type postgresPgxTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.PostgresContainerOptions
+	logger         logger.Logger
 }
 
-func NewPostgresPgxContainers() contracts.PostgresPgxContainer {
+func NewPostgresPgxContainers(l logger.Logger) contracts.PostgresPgxContainer {
 	return &postgresPgxTestContainers{
 		defaultOptions: &contracts.PostgresContainerOptions{
 			Database:  "test_db",
@@ -33,6 +36,7 @@ func NewPostgresPgxContainers() contracts.PostgresPgxContainer {
 			ImageName: "postgres",
 			Name:      "postgresql-testcontainer",
 		},
+		logger: l,
 	}
 }
 
@@ -56,6 +60,13 @@ func (g *postgresPgxTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
+	// Clean up the container after the test is complete
+	t.Cleanup(func() {
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
+
 	// get a free random host hostPort
 	hostPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Port))
 	if err != nil {
@@ -69,13 +80,6 @@ func (g *postgresPgxTestContainers) CreatingContainerOptions(
 	}
 
 	g.container = dbContainer
-
-	// Clean up the container after the test is complete
-	t.Cleanup(func() {
-		if err := dbContainer.Terminate(ctx); err != nil {
-			t.Fatalf("failed to terminate container: %s", err)
-		}
-	})
 
 	gormOptions := &postgres.PostgresPgxOptions{
 		Port:     g.defaultOptions.HostPort,
@@ -104,7 +108,10 @@ func (g *postgresPgxTestContainers) Start(
 }
 
 func (g *postgresPgxTestContainers) Cleanup(ctx context.Context) error {
-	return g.container.Terminate(ctx)
+	if err := g.container.Terminate(ctx); err != nil {
+		return errors.WrapIf(err, "failed to terminate container: %s")
+	}
+	return nil
 }
 
 func (g *postgresPgxTestContainers) getRunOptions(

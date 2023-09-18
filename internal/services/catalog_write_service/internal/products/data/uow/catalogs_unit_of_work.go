@@ -9,10 +9,10 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	"gorm.io/gorm"
-
 	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/repositories"
+
+	"gorm.io/gorm"
 )
 
 type catalogUnitOfWork[TContext data2.CatalogContext] struct {

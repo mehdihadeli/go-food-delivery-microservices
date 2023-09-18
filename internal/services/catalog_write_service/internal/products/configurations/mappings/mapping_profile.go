@@ -2,11 +2,11 @@ package mappings
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dto/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func ConfigureProductsMappings() error {

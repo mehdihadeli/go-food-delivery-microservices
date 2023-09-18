@@ -12,6 +12,19 @@ build:
 test:
 	go test -cover ./...
 
+.PHONY: lint
+lint:
+	revive -config revive-config.toml -formatter friendly ./...
+	staticcheck ./...
+	golangci-lint run ./...
+
+.PHONY: format
+format:
+	goimports-reviser -company-prefixes "github.com/mehdihadeli" -project-name "github.com/mehdihadeli/go-ecommerce-microservices" -imports-order "std,general,company,project" -recursive ./...
+	golines -m 120 -w --ignore-generated .
+	gofumpt -l -w .
+
+
 .PHONY: update
 update:
 	@go get -u

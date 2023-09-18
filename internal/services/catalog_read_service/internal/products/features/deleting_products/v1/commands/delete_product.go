@@ -7,7 +7,7 @@ import (
 )
 
 type DeleteProduct struct {
-	ProductId uuid.UUID `validate:"required"`
+	ProductId uuid.UUID
 }
 
 func NewDeleteProduct(productId uuid.UUID) (*DeleteProduct, error) {
@@ -15,6 +15,7 @@ func NewDeleteProduct(productId uuid.UUID) (*DeleteProduct, error) {
 	if err := delProduct.Validate(); err != nil {
 		return nil, err
 	}
+
 	return delProduct, nil
 }
 

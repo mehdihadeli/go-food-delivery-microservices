@@ -3,12 +3,12 @@ package mongodb
 import (
 	"context"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+
 	"emperror.dev/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 // https://stackoverflow.com/a/23650312/581476

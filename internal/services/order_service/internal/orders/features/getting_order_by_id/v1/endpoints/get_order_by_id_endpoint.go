@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"emperror.dev/errors"
-	"github.com/labstack/echo/v4"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
-	"github.com/mehdihadeli/go-mediatr"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/getting_order_by_id/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/getting_order_by_id/v1/queries"
+
+	"emperror.dev/errors"
+	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type getOrderByIdEndpoint struct {
@@ -54,8 +54,8 @@ func (ep *getOrderByIdEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		query := queries.NewGetOrderById(request.Id)
-		if err := ep.Validator.StructCtx(ctx, query); err != nil {
+		query, err := queries.NewGetOrderById(request.Id)
+		if err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,
 				"[getProductByIdEndpoint_handler.StructCtx]  query validation failed",

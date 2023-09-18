@@ -1,13 +1,11 @@
-//go:build go1.18
-
 package configurations
 
 import (
-	"github.com/solsw/go2linq/v2"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	consumerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
 	producerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/configurations"
+
+	"github.com/samber/lo"
 )
 
 type RabbitMQConfigurationBuilder interface {
@@ -42,6 +40,7 @@ func (r *rabbitMQConfigurationBuilder) AddProducer(
 	if producerBuilderFunc != nil {
 		producerBuilderFunc(builder)
 	}
+
 	r.producerBuilders = append(r.producerBuilders, builder)
 
 	return r
@@ -55,30 +54,29 @@ func (r *rabbitMQConfigurationBuilder) AddConsumer(
 	if consumerBuilderFunc != nil {
 		consumerBuilderFunc(builder)
 	}
+
 	r.consumerBuilders = append(r.consumerBuilders, builder)
 
 	return r
 }
 
 func (r *rabbitMQConfigurationBuilder) Build() *RabbitMQConfiguration {
-	consumersConfig := go2linq.ToSliceMust(
-		go2linq.SelectMust(
-			go2linq.NewEnSlice(r.consumerBuilders...),
-			func(source consumerConfigurations.RabbitMQConsumerConfigurationBuilder) *consumerConfigurations.RabbitMQConsumerConfiguration {
-				return source.Build()
-			},
-		))
+	consumersConfigs := lo.Map(
+		r.consumerBuilders,
+		func(builder consumerConfigurations.RabbitMQConsumerConfigurationBuilder, index int) *consumerConfigurations.RabbitMQConsumerConfiguration {
+			return builder.Build()
+		},
+	)
 
-	producersConfig := go2linq.ToSliceMust(
-		go2linq.SelectMust(
-			go2linq.NewEnSlice(r.producerBuilders...),
-			func(source producerConfigurations.RabbitMQProducerConfigurationBuilder) *producerConfigurations.RabbitMQProducerConfiguration {
-				return source.Build()
-			},
-		))
+	producersConfigs := lo.Map(
+		r.producerBuilders,
+		func(builder producerConfigurations.RabbitMQProducerConfigurationBuilder, index int) *producerConfigurations.RabbitMQProducerConfiguration {
+			return builder.Build()
+		},
+	)
 
-	r.rabbitMQConfiguration.ConsumersConfigurations = consumersConfig
-	r.rabbitMQConfiguration.ProducersConfigurations = producersConfig
+	r.rabbitMQConfiguration.ConsumersConfigurations = consumersConfigs
+	r.rabbitMQConfiguration.ProducersConfigurations = producersConfigs
 
 	return r.rabbitMQConfiguration
 }

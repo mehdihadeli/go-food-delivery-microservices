@@ -4,22 +4,27 @@ import (
 	"context"
 	"net/http"
 
-	"emperror.dev/errors"
-	"go.opentelemetry.io/otel/metric"
-	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
+
+	"emperror.dev/errors"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/fx"
 )
 
-// Module provided to fxlog
-// https://uber-go.github.io/fx/modules.html
-var Module = fx.Module(
-	"otelfx",
-	fx.Provide(
+var (
+	// Module provided to fxlog
+	// https://uber-go.github.io/fx/modules.html
+	Module = fx.Module( //nolint:gochecknoglobals
+		"otelfx",
+		otelProviders,
+		otelInvokes,
+	)
+
+	otelProviders = fx.Options(fx.Provide( //nolint:gochecknoglobals
 		config.ProvideOtelConfig,
 		metrics.NewOtelMetrics,
 		tracing.NewOtelTracing,
@@ -31,8 +36,9 @@ var Module = fx.Module(
 			fx.As(new(tracing.AppTracer)),
 			fx.As(new(trace.Tracer)),
 		),
-	),
-	fx.Invoke(registerHooks),
+	))
+
+	otelInvokes = fx.Options(fx.Invoke(registerHooks)) //nolint:gochecknoglobals
 )
 
 func provideMeter(otelMetrics *metrics.OtelMetrics) metric.Meter {

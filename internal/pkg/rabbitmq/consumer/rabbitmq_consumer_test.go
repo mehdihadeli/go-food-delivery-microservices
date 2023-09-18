@@ -1,14 +1,9 @@
-//go:build go1.18
-
 package consumer
 
 import (
 	"context"
 	"fmt"
 	"testing"
-
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
@@ -26,6 +21,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Consume_Message(t *testing.T) {

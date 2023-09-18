@@ -3,14 +3,14 @@ package fxapp
 import (
 	"time"
 
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	logConfig "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/fxlog"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/logrous"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
+
+	"go.uber.org/fx"
 )
 
 func CreateFxApp(
@@ -42,7 +42,7 @@ func CreateFxApp(
 
 	duration := 30 * time.Second
 
-	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Run`
+	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Register`
 	fxApp := fx.New(
 		fx.StartTimeout(duration),
 		config.ModuleFunc(app.environment),

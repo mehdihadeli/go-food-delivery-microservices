@@ -5,20 +5,26 @@ import (
 	"errors"
 	"net/http"
 
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
+	"go.uber.org/fx"
 )
 
-// Module provided to fxlog
-// https://uber-go.github.io/fx/modules.html
-var Module = fx.Module(
-	"customechofx",
+var (
+	// Module provided to fxlog
+	// https://uber-go.github.io/fx/modules.html
+	Module = fx.Module( //nolint:gochecknoglobals
+		"customechofx",
+
+		echoProviders,
+		echoInvokes,
+	)
+
 	// - order is not important in provide
 	// - provide can have parameter and will resolve if registered
 	// - execute its func only if it requested
-	fx.Provide(
+	echoProviders = fx.Options(fx.Provide( //nolint:gochecknoglobals
 		config.ProvideConfig,
 		// https://uber-go.github.io/fx/value-groups/consume.html#with-annotated-functions
 		// https://uber-go.github.io/fx/annotate.html
@@ -26,12 +32,13 @@ var Module = fx.Module(
 			NewEchoHttpServer,
 			fx.ParamTags(``, ``, `optional:"true"`),
 		),
-	),
+	))
+
 	// - execute after registering all of our provided
 	// - they execute by their orders
 	// - invokes always execute its func compare to provides that only run when we request for them.
 	// - return value will be discarded and can not be provided
-	fx.Invoke(registerHooks),
+	echoInvokes = fx.Options(fx.Invoke(registerHooks)) //nolint:gochecknoglobals
 )
 
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`

@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"emperror.dev/errors"
-	"github.com/go-redis/redis/v8"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
+
+	"emperror.dev/errors"
+	"github.com/redis/go-redis/v9"
+	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 const (

@@ -8,33 +8,50 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gavv/httpexpect/v2"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+
+	"github.com/gavv/httpexpect/v2"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-type getProductsE2ETest struct {
-	*integration.IntegrationTestSharedFixture
+var integrationFixture *integration.IntegrationTestSharedFixture
+
+func TestGetAllProductEndpoint(t *testing.T) {
+	RegisterFailHandler(Fail)
+	integrationFixture = integration.NewIntegrationTestSharedFixture(t)
+	RunSpecs(t, "GetAllProducts Endpoint EndToEnd Tests")
 }
 
-func TestGetProductsE2e(t *testing.T) {
-	suite.Run(
-		t,
-		&getProductsE2ETest{
-			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
-		},
-	)
-}
+var _ = Describe("Get All Products Feature", func() {
+	var ctx context.Context
 
-func (c *getProductsE2ETest) Test_Should_Return_Ok_Status() {
-	ctx := context.Background()
+	_ = BeforeEach(func() {
+		ctx = context.Background()
 
-	// create httpexpect instance
-	expect := httpexpect.New(c.T(), c.BaseAddress)
+		By("Seeding the required data")
+		integrationFixture.InitializeTest()
+	})
 
-	expect.GET("products").
-		WithContext(ctx).
-		Expect().
-		Status(http.StatusOK)
-}
+	_ = AfterEach(func() {
+		By("Cleanup test data")
+		integrationFixture.DisposeTest()
+	})
+
+	// "Scenario" step for testing the get all products API
+	Describe("Get all products returns ok status", func() {
+		// "When" step
+		When("A request is made to get all products", func() {
+			// "Then" step
+			It("Should return an OK status", func() {
+				// Create an HTTPExpect instance and make the request
+				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
+				expect.GET("products").
+					WithContext(ctx).
+					Expect().
+					Status(http.StatusOK)
+			})
+		})
+	})
+})

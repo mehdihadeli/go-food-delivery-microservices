@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	gormlogger "gorm.io/gorm/logger"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
+	gormlogger "gorm.io/gorm/logger"
 )
 
 // Ref: https://articles.wesionary.team/logging-interfaces-in-go-182c28be3d18

@@ -16,12 +16,13 @@ import (
 	mongo2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/mongo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/redis"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.opentelemetry.io/otel/trace"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	catalogs2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/configurations/catalogs"
+
+	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type TestApp struct{}
@@ -51,6 +52,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	// ref: https://github.com/uber-go/fx/blob/master/app_test.go
 	appBuilder := NewCatalogsReadTestApplicationBuilder(t)
 	appBuilder.ProvideModule(catalogs2.CatalogsServiceModule)
+
 	// replace real options with docker container options for testing
 	appBuilder.Decorate(rabbitmq.RabbitmqContainerOptionsDecorator(t, lifetimeCtx))
 	appBuilder.Decorate(mongo2.MongoContainerOptionsDecorator(t, lifetimeCtx))
@@ -91,13 +93,16 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 			}
 		},
 	)
-	duration := time.Second * 20
+
+	// we need a longer timout for up and running our testcontainers
+	duration := time.Second * 300
 
 	// short timeout for handling start hooks and setup dependencies
 	startCtx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
 	err := testApp.Start(startCtx)
 	if err != nil {
+		t.Errorf("Error starting, err: %v", err)
 		os.Exit(1)
 	}
 
@@ -106,7 +111,8 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 		stopCtx, cancel := context.WithTimeout(context.Background(), duration)
 		defer cancel()
 
-		_ = testApp.Stop(stopCtx)
+		err = testApp.Stop(stopCtx)
+		require.NoError(t, err)
 	})
 
 	return

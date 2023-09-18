@@ -1,11 +1,8 @@
 package mediator
 
 import (
-	"emperror.dev/errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	"github.com/mehdihadeli/go-mediatr"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	createProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/commands"
 	createProductDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/dtos"
@@ -17,6 +14,9 @@ import (
 	searchProductsDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/searching_products/v1/dtos"
 	searchProductsQueryV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/searching_products/v1/queries"
 	updateProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/updating_products/v1/commands"
+
+	"emperror.dev/errors"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 func ConfigProductsMediator(

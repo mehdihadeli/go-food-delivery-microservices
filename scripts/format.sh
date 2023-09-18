@@ -15,20 +15,26 @@ elif [ -n "$service"  ]; then
     cd "./internal/services/$service"
 fi
 
-# https://github.com/mvdan/gofumpt
-gofumpt -l -w .
+# https://github.com/segmentio/golines
+# # will do `gofmt` internally
+golines -m 120 -w --ignore-generated .
 
-# https://golang.org/cmd/gofmt/
-# gofmt -w .
 
 # # https://pkg.go.dev/golang.org/x/tools/cmd/goimports
 # goimports -l -w .
 
 # https://github.com/incu6us/goimports-reviser
-# will do `gofmt` and `goimports` internally
-# -rm-unused, -set-alias have some errors
-goimports-reviser -local -format -recursive ./...
+# https://github.com/incu6us/goimports-reviser/issues/118
+# https://github.com/incu6us/goimports-reviser/issues/88
+# will do `gofmt` internally if we use -format
+# -rm-unused, -set-alias have some errors ---> goimports-reviser -rm-unused -set-alias -format -recursive ./...
+# goimports-reviser -company-prefixes "github.com/mehdihadeli" -project-name "github.com/mehdihadeli/go-ecommerce-microservices" -imports-order "std,general,company,project" -recursive ./...
 
-# https://github.com/segmentio/golines
-golines -m 120 -w --ignore-generated .
+gci write --skip-generated -s standard -s "prefix(github.com/mehdihadeli/go-ecommerce-microservices)" -s default -s blank -s dot --custom-order  .
 
+# https://golang.org/cmd/gofmt/
+# gofmt -w .
+
+# https://github.com/mvdan/gofumpt
+# will do `gofmt` internally
+gofumpt -l -w .

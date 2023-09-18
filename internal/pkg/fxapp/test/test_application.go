@@ -3,12 +3,12 @@ package test
 import (
 	"context"
 
-	"go.uber.org/fx"
-	"go.uber.org/fx/fxtest"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
 )
 
 type testApplication struct {
@@ -61,7 +61,7 @@ func (a *testApplication) RegisterHook(function interface{}) {
 }
 
 func (a *testApplication) Run() {
-	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Run`
+	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Register`
 	fxTestApp := CreateFxTestApp(
 		a.tb,
 		a.provides,
@@ -78,7 +78,7 @@ func (a *testApplication) Run() {
 }
 
 func (a *testApplication) Start(ctx context.Context) error {
-	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Run`
+	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Register`
 	fxApp := CreateFxTestApp(a.tb, a.provides, a.decorates, a.invokes, a.options, a.logger, a.env)
 	a.fxtestApp = fxApp
 

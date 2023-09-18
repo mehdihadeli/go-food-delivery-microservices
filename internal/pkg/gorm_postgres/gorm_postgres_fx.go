@@ -1,6 +1,10 @@
 package gormPostgres
 
 import (
+	"fmt"
+
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
+
 	"go.uber.org/fx"
 )
 
@@ -11,5 +15,11 @@ var Module = fx.Module(
 	fx.Provide(
 		provideConfig,
 		NewGorm,
+		NewSQLDB,
+		fx.Annotate(
+			NewGormHealthChecker,
+			fx.As(new(health.Health)),
+			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
+		),
 	),
 )

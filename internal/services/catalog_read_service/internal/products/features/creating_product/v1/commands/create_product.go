@@ -4,18 +4,17 @@ import (
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation"
-
 	uuid "github.com/satori/go.uuid"
 )
 
 type CreateProduct struct {
 	// we generate id ourselves because auto generate mongo string id column with type _id is not an uuid
-	Id          string    `validate:"required"`
-	ProductId   string    `validate:"required"`
-	Name        string    `validate:"required,min=3,max=250"`
-	Description string    `validate:"required,min=3,max=500"`
-	Price       float64   `validate:"required"`
-	CreatedAt   time.Time `validate:"required"`
+	Id          string
+	ProductId   string
+	Name        string
+	Description string
+	Price       float64
+	CreatedAt   time.Time
 }
 
 func NewCreateProduct(
@@ -33,8 +32,7 @@ func NewCreateProduct(
 		Price:       price,
 		CreatedAt:   createdAt,
 	}
-	err := command.Validate()
-	if err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 

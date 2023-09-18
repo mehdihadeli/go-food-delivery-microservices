@@ -1,12 +1,26 @@
 GOPATH:=$(shell go env GOPATH)
 
-.PHONY:
+.PHONY: run
 run:
 	go run ./cmd/main.go
 
+.PHONY: build
 build:
 	go build ./cmd/main.go
 
+.PHONY: lint
+lint:
+	revive -config revive-config.toml -formatter friendly ./...
+	staticcheck ./...
+	golangci-lint run ./...
+
+.PHONY: format
+format:
+	goimports-reviser -company-prefixes "github.com/mehdihadeli" -project-name "github.com/mehdihadeli/go-ecommerce-microservices" -imports-order "std,general,company,project" -recursive ./...
+	golines -m 120 -w --ignore-generated .
+	gofumpt -l -w .
+
+.PHONY: test
 test:
 	go test -cover ./...
 

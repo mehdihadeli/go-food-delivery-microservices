@@ -5,9 +5,6 @@ import (
 	"testing"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
@@ -17,15 +14,20 @@ import (
 	consumerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/require"
 )
 
-func Test_RabbitMQ_Container(t *testing.T) {
+func Test_Custom_RabbitMQ_Container(t *testing.T) {
 	ctx := context.Background()
 	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
 	defaultLogger.SetupDefaultLogger()
 	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
 
-	rabbitmq, err := NewRabbitMQTestContainers().Start(ctx, t, eventSerializer, defaultLogger.Logger, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
+	rabbitmq, err := NewRabbitMQTestContainers(
+		defaultLogger.Logger,
+	).Start(ctx, t, eventSerializer, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
 		builder.AddConsumer(ProducerConsumerMessage{},
 			func(consumerBuilder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
 				consumerBuilder.WithHandlers(

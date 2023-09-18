@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/gromlog"
+
 	"emperror.dev/errors"
 	"github.com/uptrace/bun/driver/pgdriver"
 	gormPostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/gromlog"
 )
 
 func NewGorm(cfg *GormOptions) (*gorm.DB, error) {
@@ -42,6 +42,8 @@ func NewGorm(cfg *GormOptions) (*gorm.DB, error) {
 
 	return gormDb, nil
 }
+
+func NewSQLDB(orm *gorm.DB) (*sql.DB, error) { return orm.DB() }
 
 func createDB(cfg *GormOptions) error {
 	// we should choose a default database in the connection, but because we don't have a database yet we specify postgres default database 'postgres'

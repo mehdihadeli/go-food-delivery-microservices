@@ -8,35 +8,54 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gavv/httpexpect/v2"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/test_fixtures/integration"
+
+	"github.com/gavv/httpexpect/v2"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-type getOrderByIdE2ETest struct {
-	*integration.IntegrationTestSharedFixture
+var integrationFixture *integration.IntegrationTestSharedFixture
+
+func TestGetProductById(t *testing.T) {
+	RegisterFailHandler(Fail)
+	integrationFixture = integration.NewIntegrationTestSharedFixture(t)
+	RunSpecs(t, "GetOrderById Endpoint EndToEnd Tests")
 }
 
-func TestGetProductByIdE2E(t *testing.T) {
-	suite.Run(
-		t,
-		&getOrderByIdE2ETest{
-			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
-		},
+var _ = Describe("GetOrderById Feature", func() {
+	var (
+		ctx context.Context
+		id  string
 	)
-}
 
-func (c *getOrderByIdE2ETest) Test_Should_Return_Ok_Status_With_Valid_Id() {
-	ctx := context.Background()
+	_ = BeforeEach(func() {
+		ctx = context.Background()
 
-	expect := httpexpect.Default(c.T(), c.BaseAddress)
+		By("Seeding the required data")
+		integrationFixture.InitializeTest()
 
-	id := c.Items[0].Id
+		id = integrationFixture.Items[0].Id
+	})
 
-	expect.GET("orders/{id}").
-		WithPath("id", id).
-		WithContext(ctx).
-		Expect().
-		Status(http.StatusOK)
-}
+	_ = AfterEach(func() {
+		By("Cleanup test data")
+		integrationFixture.DisposeTest()
+	})
+
+	// "Scenario" for testing the retrieval of an order by a valid ID
+	Describe("Get order by ID with a valid ID returns ok status", func() {
+		// "When" step for making a request to get an order by ID
+		When("A valid request is made with a valid ID", func() {
+			It("should return an 'OK' status", func() {
+				expect := httpexpect.Default(GinkgoT(), integrationFixture.BaseAddress)
+				expect.GET("orders/{id}").
+					WithPath("id", id).
+					WithContext(ctx).
+					Expect().
+					Status(http.StatusOK)
+			})
+		})
+	})
+})

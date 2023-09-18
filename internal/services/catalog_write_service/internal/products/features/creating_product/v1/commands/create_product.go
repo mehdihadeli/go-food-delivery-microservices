@@ -11,11 +11,11 @@ import (
 // https://github.com/go-playground/validator
 
 type CreateProduct struct {
-	ProductID   uuid.UUID `validate:"required"`
-	Name        string    `validate:"required,gte=0,lte=255"`
-	Description string    `validate:"required,gte=0,lte=5000"`
-	Price       float64   `validate:"required,gte=0"`
-	CreatedAt   time.Time `validate:"required"`
+	ProductID   uuid.UUID
+	Name        string
+	Description string
+	Price       float64
+	CreatedAt   time.Time
 }
 
 func NewCreateProduct(name string, description string, price float64) (*CreateProduct, error) {

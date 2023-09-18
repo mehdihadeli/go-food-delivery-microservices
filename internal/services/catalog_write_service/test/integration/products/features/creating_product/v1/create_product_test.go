@@ -9,183 +9,189 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/hypothesis"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
-	"github.com/mehdihadeli/go-mediatr"
-	"github.com/stretchr/testify/suite"
-
 	createProductCommand "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/dtos"
 	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/events/integration_events"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/go-mediatr"
+	uuid "github.com/satori/go.uuid"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-type createProductIntegrationTests struct {
-	*integration.IntegrationTestSharedFixture
+var integrationFixture *integration.IntegrationTestSharedFixture
+
+func TestCreateProduct(t *testing.T) {
+	RegisterFailHandler(Fail)
+	integrationFixture = integration.NewIntegrationTestSharedFixture(t)
+	RunSpecs(t, "Create Product Integration Tests")
 }
 
-func TestCreateProductIntegration(t *testing.T) {
-	suite.Run(
-		t,
-		&createProductIntegrationTests{
-			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
-		},
-	)
-}
-
-func (c *createProductIntegrationTests) Test_Should_Create_New_Product_To_DB() {
-	ctx := context.Background()
-
-	command, err := createProductCommand.NewCreateProduct(
-		gofakeit.Name(),
-		gofakeit.AdjectiveDescriptive(),
-		gofakeit.Price(150, 6000),
-	)
-	c.Require().NoError(err)
-
-	result, err := mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
-		ctx,
-		command,
-	)
-	c.Require().NoError(err)
-
-	c.Assert().NotNil(result)
-	c.Assert().Equal(command.ProductID, result.ProductID)
-
-	createdProduct, err := c.ProductRepository.GetProductById(
-		ctx,
-		result.ProductID,
-	)
-	c.Require().NoError(err)
-	c.Assert().NotNil(createdProduct)
-}
-
-func (c *createProductIntegrationTests) Test_Should_Return_Error_For_Duplicate_Record() {
-	ctx := context.Background()
-
-	id := c.Items[0].ProductId
-
-	command := &createProductCommand.CreateProduct{
-		Name:        gofakeit.Name(),
-		Description: gofakeit.AdjectiveDescriptive(),
-		Price:       gofakeit.Price(150, 6000),
-		ProductID:   id,
-	}
-
-	result, err := mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
-		ctx,
-		command,
-	)
-	c.Assert().Error(err)
-	c.True(customErrors.IsApplicationError(err, http.StatusConflict))
-	c.Assert().Nil(result)
-}
-
-func (c *createProductIntegrationTests) Test_Should_Publish_Product_Created_To_Broker() {
-	ctx := context.Background()
-
-	shouldPublish := messaging.ShouldProduced[*integrationEvents.ProductCreatedV1](
-		ctx,
-		c.Bus,
-		nil,
+// https://specflow.org/learn/gherkin/#learn-gherkin
+// scenario
+var _ = Describe("Creating Product Feature", func() {
+	var (
+		ctx            context.Context
+		err            error
+		command        *createProductCommand.CreateProduct
+		result         *dtos.CreateProductResponseDto
+		createdProduct *models.Product
+		id             uuid.UUID
+		shouldPublish  hypothesis.Hypothesis[*integrationEvents.ProductCreatedV1]
 	)
 
-	command, err := createProductCommand.NewCreateProduct(
-		gofakeit.Name(),
-		gofakeit.AdjectiveDescriptive(),
-		gofakeit.Price(150, 6000),
-	)
-	c.Require().NoError(err)
+	_ = BeforeEach(func() {
+		By("Seeding the required data")
+		integrationFixture.InitializeTest()
 
-	_, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
-		ctx,
-		command,
-	)
-	c.Require().NoError(err)
+		id = integrationFixture.Items[0].ProductId
+	})
 
-	// ensuring message published to the rabbitmq broker
-	shouldPublish.Validate(ctx, "there is no published message", time.Second*30)
-}
+	_ = AfterEach(func() {
+		By("Cleanup test data")
+		integrationFixture.DisposeTest()
+	})
 
-func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With_Existing_Consumer_From_Broker() {
-	ctx := context.Background()
+	_ = BeforeSuite(func() {
+		ctx = context.Background()
 
-	// we setup this handler in `BeforeTest`
-	// we don't have a consumer in this service, so we simulate one consumer
-	// check for consuming `ProductCreatedV1` message with existing consumer
-	hypothesis := messaging.ShouldConsume[*integrationEvents.ProductCreatedV1](ctx, c.Bus, nil)
+		// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
+		err = integrationFixture.Bus.Start(context.Background())
+		Expect(err).ShouldNot(HaveOccurred())
 
-	command, err := createProductCommand.NewCreateProduct(
-		gofakeit.Name(),
-		gofakeit.AdjectiveDescriptive(),
-		gofakeit.Price(150, 6000),
-	)
-	c.Require().NoError(err)
+		// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+		time.Sleep(1 * time.Second)
+	})
 
-	_, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
-		ctx,
-		command,
-	)
-	c.Require().NoError(err)
+	_ = AfterSuite(func() {
+		integrationFixture.Log.Info("TearDownSuite started")
+		err := integrationFixture.Bus.Stop()
+		Expect(err).ShouldNot(HaveOccurred())
+		time.Sleep(1 * time.Second)
+	})
 
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
+	// "Scenario" step for testing creating a new product
+	Describe("Creating a new product and saving it to the database when product doesn't exists", func() {
+		Context("Given new product doesn't exists in the system", func() {
+			BeforeEach(func() {
+				command, err = createProductCommand.NewCreateProduct(
+					gofakeit.Name(),
+					gofakeit.AdjectiveDescriptive(),
+					gofakeit.Price(150, 6000),
+				)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(command).ToNot(BeNil())
+			})
 
-func (c *createProductIntegrationTests) Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker() {
-	ctx := context.Background()
-	defer c.Bus.Stop()
+			When("the CreateProduct command is executed for non-existing product", func() {
+				BeforeEach(func() {
+					result, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
+						ctx,
+						command,
+					)
+				})
 
-	// check for consuming `ProductCreatedV1` message, with a new consumer
-	hypothesis, err := messaging.ShouldConsumeNewConsumer[*integrationEvents.ProductCreatedV1](
-		c.Bus,
-	)
-	c.Require().NoError(err)
+				It("Should create the product successfully", func() {
+					Expect(err).NotTo(HaveOccurred())
+					Expect(result).NotTo(BeNil())
+				})
 
-	// at first, we should add new consumer to rabbitmq bus then start the broker, because we can't add new consumer after start.
-	// we should also turn off consumer in `BeforeTest` for this test
-	c.Bus.Start(ctx)
+				It("Should have a non-empty product ID matching the command ID", func() {
+					Expect(result.ProductID).To(Equal(command.ProductID))
+				})
 
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
+				It("Should be able to retrieve the product from the database", func() {
+					createdProduct, err = integrationFixture.ProductRepository.GetProductById(
+						ctx,
+						result.ProductID,
+					)
+					Expect(err).NotTo(HaveOccurred())
 
-	command, err := createProductCommand.NewCreateProduct(
-		gofakeit.Name(),
-		gofakeit.AdjectiveDescriptive(),
-		gofakeit.Price(150, 6000),
-	)
-	c.Require().NoError(err)
+					Expect(result).NotTo(BeNil())
+					Expect(command.ProductID).To(Equal(result.ProductID))
+					Expect(createdProduct).NotTo(BeNil())
+				})
+			})
+		})
+	})
 
-	_, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
-		ctx,
-		command,
-	)
-	c.Require().NoError(err)
+	// "Scenario" step for testing creating a product with duplicate data
+	Describe("Creating a new product with duplicate data and already exists product", func() {
+		Context("Given product already exists in the system", func() {
+			BeforeEach(func() {
+				command = &createProductCommand.CreateProduct{
+					Name:        gofakeit.Name(),
+					Description: gofakeit.AdjectiveDescriptive(),
+					Price:       gofakeit.Price(150, 6000),
+					ProductID:   id,
+				}
+			})
 
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
+			When("the CreateProduct command is executed for existing product", func() {
+				BeforeEach(func() {
+					result, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
+						ctx,
+						command,
+					)
+				})
 
-func (c *createProductIntegrationTests) BeforeTest(suiteName, testName string) {
-	if testName == "Test_Should_Consume_Product_Created_With_New_Consumer_From_Broker" {
-		c.Bus.Stop()
-	}
-}
+				It("Should return an error indicating duplicate record", func() {
+					Expect(err).To(HaveOccurred())
+					Expect(customErrors.IsApplicationError(err, http.StatusConflict)).To(BeTrue())
+				})
 
-func (c *createProductIntegrationTests) SetupSuite() {
-	// we don't have a consumer in this service, so we simulate one consumer, register one consumer for `ProductCreatedV1` message before executing the tests
-	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*integrationEvents.ProductCreatedV1]()
-	err := c.Bus.ConnectConsumerHandler(&integrationEvents.ProductCreatedV1{}, testConsumer)
-	c.Require().NoError(err)
+				It("Should not return a result", func() {
+					Expect(result).To(BeNil())
+				})
+			})
+		})
+	})
 
-	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually
-	c.Bus.Start(context.Background())
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-}
+	// "Scenario" step for testing creating a product with duplicate data
+	Describe("Publishing ProductCreated event to the broker when product saved successfully", func() {
+		Context("Given new product doesn't exists in the system", func() {
+			BeforeEach(func() {
+				shouldPublish = messaging.ShouldProduced[*integrationEvents.ProductCreatedV1](
+					ctx,
+					integrationFixture.Bus,
+					nil,
+				)
+				command, err = createProductCommand.NewCreateProduct(
+					gofakeit.Name(),
+					gofakeit.AdjectiveDescriptive(),
+					gofakeit.Price(150, 6000),
+				)
+				Expect(err).ToNot(HaveOccurred())
+			})
 
-func (c *createProductIntegrationTests) TearDownSuite() {
-	c.Bus.Stop()
-}
+			When("CreateProduct command is executed for non-existing product", func() {
+				BeforeEach(func() {
+					result, err = mediatr.Send[*createProductCommand.CreateProduct, *dtos.CreateProductResponseDto](
+						ctx,
+						command,
+					)
+				})
+
+				It("Should return no error", func() {
+					Expect(err).ToNot(HaveOccurred())
+				})
+
+				It("Should return not nil result", func() {
+					Expect(result).ToNot(BeNil())
+				})
+
+				It("Should publish ProductCreated event to the broker", func() {
+					// ensuring message published to the rabbitmq broker
+					shouldPublish.Validate(ctx, "there is no published message", time.Second*30)
+				})
+			})
+		})
+	})
+})

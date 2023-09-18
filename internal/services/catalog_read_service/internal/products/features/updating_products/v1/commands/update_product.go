@@ -3,19 +3,17 @@ package commands
 import (
 	"time"
 
-	"github.com/go-ozzo/ozzo-validation/is"
-
 	validation "github.com/go-ozzo/ozzo-validation"
-
+	"github.com/go-ozzo/ozzo-validation/is"
 	uuid "github.com/satori/go.uuid"
 )
 
 type UpdateProduct struct {
-	ProductId   uuid.UUID `validate:"required"`
-	Name        string    `validate:"required,gte=0,lte=255"`
-	Description string    `validate:"required,gte=0,lte=5000"`
-	Price       float64   `validate:"required,gte=0"`
-	UpdatedAt   time.Time `validate:"required"`
+	ProductId   uuid.UUID
+	Name        string
+	Description string
+	Price       float64
+	UpdatedAt   time.Time
 }
 
 func NewUpdateProduct(productId uuid.UUID, name string, description string, price float64) (*UpdateProduct, error) {

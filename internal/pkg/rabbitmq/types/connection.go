@@ -3,12 +3,12 @@ package types
 import (
 	"fmt"
 
-	"emperror.dev/errors"
-	"github.com/rabbitmq/amqp091-go"
-
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+
+	"emperror.dev/errors"
+	"github.com/rabbitmq/amqp091-go"
 )
 
 type internalConnection struct {
@@ -51,7 +51,9 @@ func NewRabbitMQConnection(cfg *config.RabbitmqOptions) (IConnection, error) {
 		return nil, err
 	}
 
-	go c.handleReconnecting()
+	if cfg.Reconnecting {
+		go c.handleReconnecting()
+	}
 
 	return c, err
 }
@@ -101,7 +103,7 @@ func (c *internalConnection) connect() error {
 		return errors.WrapIf(
 			err,
 			fmt.Sprintf(
-				"Error in creating rabbitmq connection with %s",
+				"Error in connecting to rabbitmq with host: %s",
 				c.cfg.RabbitmqHostOptions.AmqpEndPoint(),
 			),
 		)
@@ -115,9 +117,9 @@ func (c *internalConnection) connect() error {
 
 	go func() {
 		defer errorUtils.HandlePanic()
-		<-notifyClose // Listen to NotifyClose
+		chanErr := <-notifyClose // Listen to NotifyClose
 		c.isConnected = false
-		c.errConnectionChan <- errors.New("Connection Closed")
+		c.errConnectionChan <- errors.WrapIf(chanErr, "rabbitmq Connection Closed with an error.")
 	}()
 
 	return nil
@@ -132,6 +134,7 @@ func (c *internalConnection) handleReconnecting() {
 				defaultLogger.Logger.Info("Rabbitmq Connection Reconnecting started")
 				err := c.connect()
 				if err != nil {
+					defaultLogger.Logger.Error(fmt.Sprintf("Error in reconnecting, %s", err))
 					continue
 				}
 				defaultLogger.Logger.Info("Rabbitmq Connection Reconnected")

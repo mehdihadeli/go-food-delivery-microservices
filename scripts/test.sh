@@ -18,7 +18,7 @@ if [ "$type" = "load-test" ]; then
     # go run ./cmd/app/main.go
   	k6 run ./load_tests/script.js --insecure-skip-tls-verify
 else
-    go test -tags="$type" -count=1 -p=1 -parallel=1 ./...
+    go test -tags="$type" -timeout=30m -v -count=1 -p=1 -parallel=1 ./...
 fi
 
 

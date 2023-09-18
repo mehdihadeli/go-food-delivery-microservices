@@ -5,6 +5,11 @@ import (
 	"net"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
+	grpcError "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/grpc_error"
+	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/otel_metrics"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
 	"emperror.dev/errors"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -16,11 +21,6 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
-	grpcError "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/grpc_error"
-	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/otel_metrics"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 )
 
 const (

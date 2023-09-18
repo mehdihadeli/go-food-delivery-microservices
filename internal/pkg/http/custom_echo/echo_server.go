@@ -1,21 +1,21 @@
 package customEcho
 
 import (
-    "context"
-    "fmt"
-    "strings"
+	"context"
+	"fmt"
+	"strings"
 
-    "github.com/labstack/echo/v4"
-    "github.com/labstack/echo/v4/middleware"
-    "go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
-    "go.opentelemetry.io/otel/metric"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
+	customHadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/log"
+	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
-    customHadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/log"
-    otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
-    "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	"go.opentelemetry.io/otel/metric"
 )
 
 type echoHttpServer struct {
@@ -108,6 +108,10 @@ func (s *echoHttpServer) GracefulShutdown(ctx context.Context) error {
 func (s *echoHttpServer) SetupDefaultMiddlewares() {
 	// set error handler
 	s.echo.HTTPErrorHandler = func(err error, c echo.Context) {
+		// bypass notfound favicon endpoint and its error
+		if c.Request().URL.Path == "/favicon.ico" {
+			return
+		}
 		customHadnlers.ProblemHandlerFunc(err, c, s.log)
 	}
 

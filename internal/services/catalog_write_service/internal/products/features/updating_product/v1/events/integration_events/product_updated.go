@@ -2,9 +2,9 @@ package integration_events
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	uuid "github.com/satori/go.uuid"
-
 	dto "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dto/v1"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 type ProductUpdatedV1 struct {

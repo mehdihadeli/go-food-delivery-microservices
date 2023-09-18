@@ -1,19 +1,15 @@
-//go:build go1.18
-
 package config
 
 import (
 	"fmt"
 	"time"
 
-	"github.com/iancoleman/strcase"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
-)
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[RabbitmqOptions]())
+	"github.com/iancoleman/strcase"
+)
 
 type RabbitmqOptions struct {
 	RabbitmqHostOptions *RabbitmqHostOptions `mapstructure:"rabbitmqHostOptions"`
@@ -21,6 +17,7 @@ type RabbitmqOptions struct {
 	Persisted           bool
 	AppId               string
 	AutoStart           bool `mapstructure:"autoStart"           default:"true"`
+	Reconnecting        bool `mapstructure:"reconnecting"        default:"true"`
 }
 
 type RabbitmqHostOptions struct {
@@ -42,5 +39,8 @@ func (h *RabbitmqHostOptions) HttpEndPoint() string {
 }
 
 func ProvideConfig(environment environemnt.Environment) (*RabbitmqOptions, error) {
-	return config.BindConfigKey[*RabbitmqOptions](optionName, environment)
+	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[RabbitmqOptions]())
+	cfg, err := config.BindConfigKey[*RabbitmqOptions](optionName, environment)
+
+	return cfg, err
 }

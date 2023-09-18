@@ -4,9 +4,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/configurations/catalogs"
+
+	"go.uber.org/fx"
 )
 
 type CatalogsWriteApplication struct {

@@ -8,11 +8,11 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
+
+	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 type CreateProductHandler struct {
@@ -43,6 +43,7 @@ func (c *CreateProductHandler) Handle(
 	ctx, span := c.tracer.Start(ctx, "CreateProductHandler.Handle")
 	span.SetAttributes(attribute2.String("ProductId", command.ProductId))
 	span.SetAttributes(attribute.Object("Command", command))
+
 	defer span.End()
 
 	product := &models.Product{

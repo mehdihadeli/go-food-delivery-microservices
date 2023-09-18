@@ -3,13 +3,13 @@ package test
 import (
 	"time"
 
-	"go.uber.org/fx"
-	"go.uber.org/fx/fxtest"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
+
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
 )
 
 func CreateFxTestApp(
@@ -37,7 +37,7 @@ func CreateFxTestApp(
 
 	duration := 60 * time.Second
 
-	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Run`
+	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Register`
 	fxApp := fxtest.New(
 		tb,
 		fx.StartTimeout(duration),

@@ -10,7 +10,7 @@ import (
 // https://github.com/go-playground/validator
 
 type GetProductById struct {
-	ProductID uuid.UUID `validate:"required"`
+	ProductID uuid.UUID
 }
 
 func NewGetProductById(productId uuid.UUID) (*GetProductById, error) {

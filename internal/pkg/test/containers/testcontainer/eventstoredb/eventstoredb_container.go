@@ -6,22 +6,25 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+
+	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 )
 
 type eventstoredbTestContainers struct {
 	container      testcontainers.Container
 	defaultOptions *contracts.EventstoreDBContainerOptions
+	logger         logger.Logger
 }
 
-func NewEventstoreDBTestContainers() contracts.EventstoreDBContainer {
+func NewEventstoreDBTestContainers(l logger.Logger) contracts.EventstoreDBContainer {
 	return &eventstoredbTestContainers{
 		defaultOptions: &contracts.EventstoreDBContainerOptions{
 			Ports:   []string{"2113/tcp", "1113/tcp"},
@@ -33,6 +36,7 @@ func NewEventstoreDBTestContainers() contracts.EventstoreDBContainer {
 			ImageName: "eventstore/eventstore",
 			Name:      "eventstoredb-testcontainers",
 		},
+		logger: l,
 	}
 }
 
@@ -54,13 +58,20 @@ func (g *eventstoredbTestContainers) CreatingContainerOptions(
 		return nil, err
 	}
 
+	// Clean up the container after the test is complete
+	t.Cleanup(func() {
+		if err := dbContainer.Terminate(ctx); err != nil {
+			t.Fatalf("failed to terminate container: %s", err)
+		}
+	})
+
 	// get a free random host port for http and grpc port for eventstoredb
 	httpPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[0]))
 	if err != nil {
 		return nil, err
 	}
 	g.defaultOptions.HttpPort = httpPort.Int()
-	t.Logf("eventstoredb http and grpc port is: %d", httpPort.Int())
+	g.logger.Infof("eventstoredb http and grpc port is: %d", httpPort.Int())
 
 	// get a free random host port for tcp port eventstoredb
 	tcpPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[1]))
@@ -75,13 +86,6 @@ func (g *eventstoredbTestContainers) CreatingContainerOptions(
 	}
 
 	g.container = dbContainer
-
-	// Clean up the container after the test is complete
-	t.Cleanup(func() {
-		if err := dbContainer.Terminate(ctx); err != nil {
-			t.Fatalf("failed to terminate container: %s", err)
-		}
-	})
 
 	option := &config.EventStoreDbOptions{
 		Host:     host,
@@ -105,7 +109,10 @@ func (g *eventstoredbTestContainers) Start(
 }
 
 func (g *eventstoredbTestContainers) Cleanup(ctx context.Context) error {
-	return g.container.Terminate(ctx)
+	if err := g.container.Terminate(ctx); err != nil {
+		return errors.WrapIf(err, "failed to terminate container: %s")
+	}
+	return nil
 }
 
 func (g *eventstoredbTestContainers) getRunOptions(
@@ -132,7 +139,6 @@ func (g *eventstoredbTestContainers) getRunOptions(
 		ExposedPorts: g.defaultOptions.Ports,
 		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])).WithPollInterval(2 * time.Second),
 		Hostname:     g.defaultOptions.Host,
-		SkipReaper:   true,
 		// we use `EVENTSTORE_IN_MEM` for use eventstoredb in-memory mode in tests
 		Env: map[string]string{
 			"EVENTSTORE_START_STANDARD_PROJECTIONS": "false",

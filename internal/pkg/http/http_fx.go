@@ -1,10 +1,10 @@
 package http
 
 import (
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/client"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+
+	"go.uber.org/fx"
 )
 
 // Module provided to fxlog

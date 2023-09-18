@@ -6,11 +6,11 @@ package commands
 import (
 	"testing"
 
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/suite"
 )
 
 type deleteProductUnitTests struct {

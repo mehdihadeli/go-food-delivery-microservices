@@ -1,15 +1,15 @@
 package products
 
 import (
-	"github.com/labstack/echo/v4"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/data/repositories"
 	getProductByIdV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/endpoints"
 	getProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/getting_products/v1/endpoints"
 	searchProductV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/searching_products/v1/endpoints"
+
+	"github.com/labstack/echo/v4"
+	"go.uber.org/fx"
 )
 
 var Module = fx.Module(

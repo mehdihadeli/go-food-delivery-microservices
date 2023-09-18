@@ -5,16 +5,16 @@ import (
 	"net/http"
 	"time"
 
-	"emperror.dev/errors"
-	"github.com/labstack/echo/v4"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
-	"github.com/mehdihadeli/go-mediatr"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/params"
 	createOrderCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/dtos"
+
+	"emperror.dev/errors"
+	"github.com/labstack/echo/v4"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type createOrderEndpoint struct {
@@ -55,13 +55,13 @@ func (ep *createOrderEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		command := createOrderCommandV1.NewCreateOrder(
+		command, err := createOrderCommandV1.NewCreateOrder(
 			request.ShopItems,
 			request.AccountEmail,
 			request.DeliveryAddress,
 			time.Time(request.DeliveryTime),
 		)
-		if err := ep.Validator.StructCtx(ctx, command); err != nil {
+		if err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,
 				"[createOrderEndpoint_handler.StructCtx] command validation failed",

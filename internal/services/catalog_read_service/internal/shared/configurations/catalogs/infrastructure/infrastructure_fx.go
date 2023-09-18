@@ -1,10 +1,9 @@
 package infrastructure
 
 import (
-	"github.com/go-playground/validator"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
@@ -13,9 +12,10 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
-	"go.uber.org/fx"
-
 	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/configurations/rabbitmq"
+
+	"github.com/go-playground/validator"
+	"go.uber.org/fx"
 )
 
 // https://pmihaylov.com/shared-components-go-microservices/
@@ -25,7 +25,6 @@ var Module = fx.Module(
 	core.Module,
 	customEcho.Module,
 	grpc.Module,
-	gormPostgres.Module,
 	mongodb.Module,
 	otel.Module,
 	redis.Module,
@@ -36,6 +35,7 @@ var Module = fx.Module(
 			}
 		},
 	),
+	health.Module,
 
 	// Other provides
 	fx.Provide(validator.New),

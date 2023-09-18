@@ -1,13 +1,8 @@
-//go:build go1.18
-
 package producer
 
 import (
 	"context"
 	"testing"
-
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
@@ -19,6 +14,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+
+	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Publish_Message(t *testing.T) {

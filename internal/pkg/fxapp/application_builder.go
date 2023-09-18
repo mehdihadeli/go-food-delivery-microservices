@@ -5,9 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/spf13/viper"
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
@@ -16,6 +13,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/logrous"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
+
+	"github.com/spf13/viper"
+	"go.uber.org/fx"
 )
 
 type applicationBuilder struct {

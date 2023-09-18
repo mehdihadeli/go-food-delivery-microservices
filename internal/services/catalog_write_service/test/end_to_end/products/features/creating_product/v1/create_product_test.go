@@ -8,58 +8,89 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/gavv/httpexpect/v2"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/gavv/httpexpect/v2"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-type createProductE2ETest struct {
-	*integration.IntegrationTestSharedFixture
+var integrationFixture *integration.IntegrationTestSharedFixture
+
+func TestCreateProductEndpoint(t *testing.T) {
+	RegisterFailHandler(Fail)
+	integrationFixture = integration.NewIntegrationTestSharedFixture(t)
+	RunSpecs(t, "CreateProduct Endpoint EndToEnd Tests")
 }
 
-func TestCreateProductE2E(t *testing.T) {
-	suite.Run(
-		t,
-		&createProductE2ETest{
-			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
-		},
+var _ = Describe("CreateProduct Feature", func() {
+	var (
+		ctx     context.Context
+		request *dtos.CreateProductRequestDto
 	)
-}
 
-func (c *createProductE2ETest) Test_Should_Return_Created_Status_With_Valid_Input() {
-	request := dtos.CreateProductRequestDto{
-		Description: gofakeit.AdjectiveDescriptive(),
-		Price:       gofakeit.Price(100, 1000),
-		Name:        gofakeit.Name(),
-	}
+	_ = BeforeEach(func() {
+		ctx = context.Background()
 
-	// create httpexpect instance
-	expect := httpexpect.New(c.T(), c.BaseAddress)
+		By("Seeding the required data")
+		integrationFixture.InitializeTest()
+	})
 
-	expect.POST("products").
-		// WithContext(context.Background()).
-		WithJSON(request).
-		Expect().
-		Status(http.StatusCreated)
-}
+	_ = AfterEach(func() {
+		By("Cleanup test data")
+		integrationFixture.DisposeTest()
+	})
 
-// Input validations
-func (c *createProductE2ETest) Test_Should_Return_Bad_Request_Status_With_Invalid_Price_Input() {
-	request := dtos.CreateProductRequestDto{
-		Description: gofakeit.AdjectiveDescriptive(),
-		Price:       0,
-		Name:        gofakeit.Name(),
-	}
+	// "Scenario" step for testing the create product API with valid input
+	Describe("Create new product return created status with valid input", func() {
+		BeforeEach(func() {
+			// Generate a valid request
+			request = &dtos.CreateProductRequestDto{
+				Description: gofakeit.AdjectiveDescriptive(),
+				Price:       gofakeit.Price(100, 1000),
+				Name:        gofakeit.Name(),
+			}
+		})
+		// "When" step
+		When("A valid request is made to create a product", func() {
+			// "Then" step
+			It("Should returns a StatusCreated response", func() {
+				// Create an HTTPExpect instance and make the request
+				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
+				expect.POST("products").
+					WithContext(ctx).
+					WithJSON(request).
+					Expect().
+					Status(http.StatusCreated)
+			})
+		})
+	})
 
-	// create httpexpect instance
-	expect := httpexpect.New(c.T(), c.BaseAddress)
-
-	expect.POST("products").
-		WithContext(context.Background()).
-		WithJSON(request).
-		Expect().
-		Status(http.StatusBadRequest)
-}
+	// "Scenario" step for testing the create product API with invalid price input
+	Describe("Create product returns a BadRequest status with invalid price input", func() {
+		BeforeEach(func() {
+			// Generate an invalid request with zero price
+			request = &dtos.CreateProductRequestDto{
+				Description: gofakeit.AdjectiveDescriptive(),
+				Price:       0.0,
+				Name:        gofakeit.Name(),
+			}
+		})
+		// "When" step
+		When("An invalid request is made with a zero price", func() {
+			// "Then" step
+			It("Should return a BadRequest status", func() {
+				// Create an HTTPExpect instance and make the request
+				expect := httpexpect.New(GinkgoT(), integrationFixture.BaseAddress)
+				expect.POST("products").
+					WithContext(ctx).
+					WithJSON(request).
+					Expect().
+					Status(http.StatusBadRequest)
+			})
+		})
+	})
+})

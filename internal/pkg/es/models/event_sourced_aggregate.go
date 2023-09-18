@@ -7,14 +7,14 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"emperror.dev/errors"
-	"github.com/ahmetb/go-linq/v3"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	errors2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/errors"
 	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
+
+	"emperror.dev/errors"
+	"github.com/ahmetb/go-linq/v3"
+	uuid "github.com/satori/go.uuid"
 )
 
 type WhenFunc func(event domain.IDomainEvent) error

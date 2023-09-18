@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 
-	"emperror.dev/errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
@@ -19,12 +18,13 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
+
+	"emperror.dev/errors"
 	uuid2 "github.com/satori/go.uuid"
 	"go.mongodb.org/mongo-driver/mongo"
 	attribute2 "go.opentelemetry.io/otel/attribute"
-
-	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
 )
 
 const (

@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"emperror.dev/errors"
-	"github.com/go-playground/validator"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
@@ -13,10 +11,12 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-	"github.com/mehdihadeli/go-mediatr"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/dtos"
+
+	"emperror.dev/errors"
+	"github.com/go-playground/validator"
+	"github.com/mehdihadeli/go-mediatr"
 )
 
 type productCreatedConsumer struct {

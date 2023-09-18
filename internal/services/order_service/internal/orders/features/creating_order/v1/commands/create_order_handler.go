@@ -9,12 +9,12 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-	attribute2 "go.opentelemetry.io/otel/attribute"
-
+	customAttribute "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/value_objects"
+
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type CreateOrderHandler struct {
@@ -37,8 +37,8 @@ func (c *CreateOrderHandler) Handle(
 	command *CreateOrder,
 ) (*dtos.CreateOrderResponseDto, error) {
 	ctx, span := c.tracer.Start(ctx, "CreateOrderHandler.Handle")
-	span.SetAttributes(attribute2.String("OrderId", command.OrderId.String()))
-	span.SetAttributes(attribute.Object("Command", command))
+	span.SetAttributes(attribute.String("OrderId", command.OrderId.String()))
+	span.SetAttributes(customAttribute.Object("Command", command))
 	defer span.End()
 
 	shopItems, err := mapper.Map[[]*value_objects.ShopItem](command.ShopItems)
@@ -83,7 +83,7 @@ func (c *CreateOrderHandler) Handle(
 
 	response := &dtos.CreateOrderResponseDto{OrderId: order.Id()}
 
-	span.SetAttributes(attribute.Object("CreateOrderResponseDto", response))
+	span.SetAttributes(customAttribute.Object("CreateOrderResponseDto", response))
 
 	c.log.Infow(
 		fmt.Sprintf("[CreateOrderHandler.Handle] order with id: {%s} created", command.OrderId),

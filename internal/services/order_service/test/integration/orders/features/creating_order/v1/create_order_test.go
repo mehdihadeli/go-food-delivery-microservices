@@ -8,206 +8,206 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/hypothesis"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
-	"github.com/mehdihadeli/go-mediatr"
-	"github.com/stretchr/testify/suite"
-
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
 	createOrderCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/dtos"
 	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/events/integration_events"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/read_models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/test_fixtures/integration"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/mehdihadeli/go-mediatr"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-type createOrderIntegrationTests struct {
-	*integration.IntegrationTestSharedFixture
+var integrationFixture *integration.IntegrationTestSharedFixture
+
+func TestCreateOrder(t *testing.T) {
+	RegisterFailHandler(Fail)
+	integrationFixture = integration.NewIntegrationTestSharedFixture(t)
+	RunSpecs(t, "Create Order Integration Tests")
 }
 
-func TestCreateOrderIntegration(t *testing.T) {
-	suite.Run(
-		t,
-		&createOrderIntegrationTests{
-			IntegrationTestSharedFixture: integration.NewIntegrationTestSharedFixture(t),
-		},
-	)
-}
-
-func (c *createOrderIntegrationTests) Test_Should_Create_New_Order_To_EventStoreDB() {
-	command := createOrderCommandV1.NewCreateOrder(
-		[]*dtosV1.ShopItemDto{
-			{
-				Quantity:    uint64(gofakeit.Number(1, 10)),
-				Description: gofakeit.AdjectiveDescriptive(),
-				Price:       gofakeit.Price(100, 10000),
-				Title:       gofakeit.Name(),
-			},
-		},
-		gofakeit.Email(),
-		gofakeit.Address().Address,
-		time.Now(),
-	)
-	result, err := mediatr.Send[*createOrderCommandV1.CreateOrder, *dtos.CreateOrderResponseDto](
-		context.Background(),
-		command,
+var _ = Describe("Create Order Feature", func() {
+	var (
+		ctx          context.Context
+		err          error
+		command      *createOrderCommandV1.CreateOrder
+		result       *dtos.CreateOrderResponseDto
+		createdOrder *read_models.OrderReadModel
+		// id            string
+		shouldPublish hypothesis.Hypothesis[*integrationEvents.OrderCreatedV1]
 	)
 
-	c.NoError(err)
-	c.NotNil(result)
-	c.Equal(command.OrderId, result.OrderId)
-}
+	_ = BeforeEach(func() {
+		By("Seeding the required data")
+		integrationFixture.InitializeTest()
 
-func (c *createOrderIntegrationTests) Test_Should_Create_New_Order_To_MongoDB_Read() {
-	ctx := context.Background()
-	command := createOrderCommandV1.NewCreateOrder(
-		[]*dtosV1.ShopItemDto{
-			{
-				Quantity:    uint64(gofakeit.Number(1, 10)),
-				Description: gofakeit.AdjectiveDescriptive(),
-				Price:       gofakeit.Price(100, 10000),
-				Title:       gofakeit.Name(),
-			},
-		},
-		gofakeit.Email(),
-		gofakeit.Address().Address,
-		time.Now(),
-	)
-	result, err := mediatr.Send[*createOrderCommandV1.CreateOrder, *dtos.CreateOrderResponseDto](
-		context.Background(),
-		command,
-	)
+		// id = integrationFixture.Items[0].OrderId
+	})
 
-	c.NoError(err)
+	_ = AfterEach(func() {
+		By("Cleanup test data")
+		integrationFixture.DisposeTest()
+	})
 
-	c.NoError(testUtils.WaitUntilConditionMet(func() bool {
-		orderReadModel, err := c.OrderMongoRepository.GetOrderByOrderId(ctx, result.OrderId)
-		c.NoError(err)
-		return orderReadModel != nil
-	}))
-}
+	_ = BeforeSuite(func() {
+		ctx = context.Background()
 
-func (c *createOrderIntegrationTests) Test_Should_Publish_Order_Created_To_Broker() {
-	ctx := context.Background()
-	shouldPublish := messaging.ShouldProduced[*integrationEvents.OrderCreatedV1](
-		ctx,
-		c.Bus,
-		nil,
-	)
+		// in test mode we set rabbitmq `AutoStart=false` in configuration in rabbitmqOptions, so we should run rabbitmq bus manually
+		err = integrationFixture.Bus.Start(context.Background())
+		Expect(err).ShouldNot(HaveOccurred())
 
-	command := createOrderCommandV1.NewCreateOrder(
-		[]*dtosV1.ShopItemDto{
-			{
-				Quantity:    uint64(gofakeit.Number(1, 10)),
-				Description: gofakeit.AdjectiveDescriptive(),
-				Price:       gofakeit.Price(100, 10000),
-				Title:       gofakeit.Name(),
-			},
-		},
-		gofakeit.Email(),
-		gofakeit.Address().Address,
-		time.Now(),
-	)
-	_, err := mediatr.Send[*createOrderCommandV1.CreateOrder, *dtos.CreateOrderResponseDto](
-		context.Background(),
-		command,
-	)
-	c.NoError(err)
+		// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
+		time.Sleep(1 * time.Second)
+	})
 
-	// ensuring message published to the rabbitmq broker
-	shouldPublish.Validate(ctx, "there is no published message", time.Second*30)
-}
+	_ = AfterSuite(func() {
+		integrationFixture.Log.Info("TearDownSuite started")
+		err := integrationFixture.Bus.Stop()
+		Expect(err).ShouldNot(HaveOccurred())
+		time.Sleep(1 * time.Second)
+	})
 
-func (c *createOrderIntegrationTests) Test_Should_Consume_Order_Created_With_Existing_Consumer_From_Broker() {
-	ctx := context.Background()
+	// "Scenario" for testing the creation of a new order
+	Describe("Creating a new order in EventStoreDB", func() {
+		BeforeEach(func() {
+			command, err = createOrderCommandV1.NewCreateOrder(
+				[]*dtosV1.ShopItemDto{
+					{
+						Quantity:    uint64(gofakeit.Number(1, 10)),
+						Description: gofakeit.AdjectiveDescriptive(),
+						Price:       gofakeit.Price(100, 10000),
+						Title:       gofakeit.Name(),
+					},
+				},
+				gofakeit.Email(),
+				gofakeit.Address().Address,
+				time.Now(),
+			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(command).ToNot(BeNil())
+		})
+		When("the CreateOrder command is executed for non-existing order", func() {
+			BeforeEach(func() {
+				// "When" step for executing the createOrderCommand
+				result, err = mediatr.Send[*createOrderCommandV1.CreateOrder, *dtos.CreateOrderResponseDto](
+					ctx,
+					command,
+				)
+			})
+			// "Then" step for expected behavior
+			It("Should create the order successfully", func() {
+				// "Then" step for assertions
+				Expect(err).To(BeNil())
+				Expect(result).NotTo(BeNil())
+				Expect(command.OrderId).To(Equal(result.OrderId))
+			})
+		})
+	})
 
-	// we setup this handler in `BeforeTest`
-	// we don't have a consumer in this service, so we simulate one consumer
-	// check for consuming `OrderCreatedV1` message with existing consumer
-	hypothesis := messaging.ShouldConsume[*integrationEvents.OrderCreatedV1](ctx, c.Bus, nil)
+	// "Scenario" for testing the creation of a new order in MongoDB Read
+	Describe("Creating a new order in MongoDB Read", func() {
+		BeforeEach(func() {
+			command, err = createOrderCommandV1.NewCreateOrder(
+				[]*dtosV1.ShopItemDto{
+					{
+						Quantity:    uint64(gofakeit.Number(1, 10)),
+						Description: gofakeit.AdjectiveDescriptive(),
+						Price:       gofakeit.Price(100, 10000),
+						Title:       gofakeit.Name(),
+					},
+				},
+				gofakeit.Email(),
+				gofakeit.Address().Address,
+				time.Now(),
+			)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(command).ToNot(BeNil())
+		})
+		// "When" step for creating a new order
+		When("the CreateOrder command is executed for non-existing order", func() {
+			BeforeEach(func() {
+				// "When" step for executing the createOrderCommand
+				result, err = mediatr.Send[*createOrderCommandV1.CreateOrder, *dtos.CreateOrderResponseDto](
+					context.Background(),
+					command,
+				)
+			})
 
-	command := createOrderCommandV1.NewCreateOrder(
-		[]*dtosV1.ShopItemDto{
-			{
-				Quantity:    uint64(gofakeit.Number(1, 10)),
-				Description: gofakeit.AdjectiveDescriptive(),
-				Price:       gofakeit.Price(100, 10000),
-				Title:       gofakeit.Name(),
-			},
-		},
-		gofakeit.Email(),
-		gofakeit.Address().Address,
-		time.Now(),
-	)
-	_, err := mediatr.Send[*createOrderCommandV1.CreateOrder, *dtos.CreateOrderResponseDto](
-		context.Background(),
-		command,
-	)
-	c.NoError(err)
+			It("Should create the order successfully", func() {
+				// "Then" step for assertions
+				Expect(err).To(BeNil())
+				Expect(result).NotTo(BeNil())
+			})
 
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
+			// "Then" step for expected behavior
+			It("Should retrieve created order in MongoDB Read database", func() {
+				// Use a utility function to wait until the order is available in MongoDB Read
+				err = testUtils.WaitUntilConditionMet(func() bool {
+					createdOrder, err = integrationFixture.OrderMongoRepository.GetOrderByOrderId(ctx, result.OrderId)
+					Expect(err).ToNot(HaveOccurred())
+					return createdOrder != nil
+				})
 
-func (c *createOrderIntegrationTests) Test_Should_Consume_Order_Created_With_New_Consumer_From_Broker() {
-	ctx := context.Background()
-	defer c.Bus.Stop()
+				Expect(err).To(BeNil())
+			})
+		})
+	})
 
-	// check for consuming `OrderCreatedV1` message, with a new consumer
-	hypothesis, err := messaging.ShouldConsumeNewConsumer[*integrationEvents.OrderCreatedV1](
-		c.Bus,
-	)
-	c.Require().NoError(err)
+	// "Scenario" for testing the publishing of an "OrderCreated" event
+	Describe("Publishing an OrderCreated event to the message broker when order saved successfully", func() {
+		BeforeEach(func() {
+			shouldPublish = messaging.ShouldProduced[*integrationEvents.OrderCreatedV1](
+				ctx,
+				integrationFixture.Bus, nil,
+			)
 
-	// at first, we should add new consumer to rabbitmq bus then start the broker, because we can't add new consumer after start.
-	// we should also turn off consumer in `BeforeTest` for this test
-	c.Bus.Start(ctx)
+			command, err = createOrderCommandV1.NewCreateOrder(
+				[]*dtosV1.ShopItemDto{
+					{
+						Quantity:    uint64(gofakeit.Number(1, 10)),
+						Description: gofakeit.AdjectiveDescriptive(),
+						Price:       gofakeit.Price(100, 10000),
+						Title:       gofakeit.Name(),
+					},
+				},
+				gofakeit.Email(),
+				gofakeit.Address().Address,
+				time.Now(),
+			)
 
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(command).ToNot(BeNil())
+		})
 
-	command := createOrderCommandV1.NewCreateOrder(
-		[]*dtosV1.ShopItemDto{
-			{
-				Quantity:    uint64(gofakeit.Number(1, 10)),
-				Description: gofakeit.AdjectiveDescriptive(),
-				Price:       gofakeit.Price(100, 10000),
-				Title:       gofakeit.Name(),
-			},
-		},
-		gofakeit.Email(),
-		gofakeit.Address().Address,
-		time.Now(),
-	)
-	_, err = mediatr.Send[*createOrderCommandV1.CreateOrder, *dtos.CreateOrderResponseDto](
-		context.Background(),
-		command,
-	)
-	c.NoError(err)
+		// "When" step for creating and sending an order
+		When("CreateOrder command is executed for non-existing order", func() {
+			BeforeEach(func() {
+				// "When" step for executing the createOrderCommand
+				result, err = mediatr.Send[*createOrderCommandV1.CreateOrder, *dtos.CreateOrderResponseDto](
+					context.Background(),
+					command,
+				)
+			})
 
-	// ensuring message can be consumed with a consumer
-	hypothesis.Validate(ctx, "there is no consumed message", time.Second*30)
-}
+			It("Should return no error", func() {
+				Expect(err).ToNot(HaveOccurred())
+			})
 
-func (c *createOrderIntegrationTests) BeforeTest(suiteName, testName string) {
-	if testName == "Test_Should_Consume_Order_Created_With_New_Consumer_From_Broker" {
-		c.Bus.Stop()
-	}
-}
+			It("Should return not nil result", func() {
+				Expect(result).ToNot(BeNil())
+			})
 
-func (c *createOrderIntegrationTests) SetupSuite() {
-	// we don't have a consumer in this service, so we simulate one consumer, register one consumer for `OrderCreatedV1` message before executing the tests
-	testConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*integrationEvents.OrderCreatedV1]()
-	err := c.Bus.ConnectConsumerHandler(&integrationEvents.OrderCreatedV1{}, testConsumer)
-	c.Require().NoError(err)
-
-	// in test mode we set rabbitmq `AutoStart=false`, so we should run rabbitmq bus manually
-	c.Bus.Start(context.Background())
-	// wait for consumers ready to consume before publishing messages, preparation background workers takes a bit time (for preventing messages lost)
-	time.Sleep(1 * time.Second)
-}
-
-func (c *createOrderIntegrationTests) TearDownSuite() {
-	c.Bus.Stop()
-}
+			It("Should publish OrderCreated event to the broker", func() {
+				// ensuring message published to the rabbitmq broker
+				shouldPublish.Validate(ctx, "there is no published message", time.Second*30)
+			})
+		})
+	})
+})

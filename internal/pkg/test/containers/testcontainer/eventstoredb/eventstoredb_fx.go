@@ -5,11 +5,12 @@ import (
 	"testing"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 )
 
 var EventstoreDBContainerOptionsDecorator = func(t *testing.T, ctx context.Context) interface{} {
-	return func(c *config.EventStoreDbOptions) (*config.EventStoreDbOptions, error) {
-		newOption, err := NewEventstoreDBTestContainers().CreatingContainerOptions(ctx, t)
+	return func(c *config.EventStoreDbOptions, logger logger.Logger) (*config.EventStoreDbOptions, error) {
+		newOption, err := NewEventstoreDBTestContainers(logger).CreatingContainerOptions(ctx, t)
 		if err != nil {
 			return nil, err
 		}
@@ -19,8 +20,8 @@ var EventstoreDBContainerOptionsDecorator = func(t *testing.T, ctx context.Conte
 	}
 }
 
-var ReplaceEventStoreContainerOptions = func(t *testing.T, options *config.EventStoreDbOptions, ctx context.Context) error {
-	newOption, err := NewEventstoreDBTestContainers().CreatingContainerOptions(ctx, t)
+var ReplaceEventStoreContainerOptions = func(t *testing.T, options *config.EventStoreDbOptions, ctx context.Context, logger logger.Logger) error {
+	newOption, err := NewEventstoreDBTestContainers(logger).CreatingContainerOptions(ctx, t)
 	if err != nil {
 		return err
 	}

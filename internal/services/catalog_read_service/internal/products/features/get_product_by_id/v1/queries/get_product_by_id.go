@@ -7,7 +7,7 @@ import (
 )
 
 type GetProductById struct {
-	Id uuid.UUID `validate:"required"`
+	Id uuid.UUID
 }
 
 func NewGetProductById(id uuid.UUID) (*GetProductById, error) {
@@ -15,6 +15,7 @@ func NewGetProductById(id uuid.UUID) (*GetProductById, error) {
 	if err := product.Validate(); err != nil {
 		return nil, err
 	}
+
 	return product, nil
 }
 

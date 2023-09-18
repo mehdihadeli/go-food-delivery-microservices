@@ -3,19 +3,21 @@ package grpc
 import (
 	"context"
 
-	"go.uber.org/fx"
-
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+
+	"go.uber.org/fx"
 )
 
-// Module provided to fxlog
-// https://uber-go.github.io/fx/modules.html
-var Module = fx.Module("grpcfx",
+var (
+	// Module provided to fxlog
+	// https://uber-go.github.io/fx/modules.html
+	Module = fx.Module("grpcfx", grpcProviders, grpcInvokes) //nolint:gochecknoglobals
+
 	// - order is not important in provide
 	// - provide can have parameter and will resolve if registered
 	// - execute its func only if it requested
-	fx.Provide(
+	grpcProviders = fx.Options(fx.Provide( //nolint:gochecknoglobals
 		config.ProvideConfig,
 		// https://uber-go.github.io/fx/value-groups/consume.html#with-annotated-functions
 		// https://uber-go.github.io/fx/annotate.html
@@ -24,12 +26,13 @@ var Module = fx.Module("grpcfx",
 			fx.ParamTags(``, ``, `optional:"true"`),
 		),
 		NewGrpcClient,
-	),
+	))
+
 	// - execute after registering all of our provided
 	// - they execute by their orders
 	// - invokes always execute its func compare to provides that only run when we request for them.
 	// - return value will be discarded and can not be provided
-	fx.Invoke(registerHooks),
+	grpcInvokes = fx.Options(fx.Invoke(registerHooks)) //nolint:gochecknoglobals
 )
 
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`

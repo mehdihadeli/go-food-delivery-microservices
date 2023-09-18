@@ -5,17 +5,18 @@ import (
 	"log"
 	"testing"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
+	mongo2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/mongo"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	mongo2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/mongo"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 )
 
 const (
@@ -537,7 +538,9 @@ func setupGenericMongoRepositoryWithDataModel(
 	ctx context.Context,
 	t *testing.T,
 ) (data.GenericRepositoryWithDataModel[*ProductMongo, *Product], error) {
-	db, err := mongo2.NewMongoTestContainers().Start(ctx, t)
+	defaultLogger.SetupDefaultLogger()
+
+	db, err := mongo2.NewMongoTestContainers(defaultLogger.Logger).Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
@@ -551,7 +554,9 @@ func setupGenericMongoRepositoryWithDataModel(
 }
 
 func setupGenericMongoRepository(ctx context.Context, t *testing.T) (data.GenericRepository[*ProductMongo], error) {
-	db, err := mongo2.NewMongoTestContainers().Start(ctx, t)
+	defaultLogger.SetupDefaultLogger()
+
+	db, err := mongo2.NewMongoTestContainers(defaultLogger.Logger).Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
