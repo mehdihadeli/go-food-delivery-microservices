@@ -1,0 +1,6 @@
+h1:tpPUeCB+6hZZFR/Q7kF3UyQU0jggMPFUrcHVSeXxD6M=
+000001_enable_uuid_extension.down.sql h1:gtXVYVcdHUgztryvvV/3OSCpegzalBV2afyVKJD2Umw=
+000001_enable_uuid_extension.up.sql h1:AwRwKu3SfgU4x2WRaGwuVp9B+NZ0xFzH4/q3TCqwMbU=
+000002_create_products_table.down.sql h1:BxLX2d7QPf2y7uuw7O401p6Bg2mBNQVdEyWIfkEEo4U=
+000002_create_products_table.up.sql h1:dqSmpveIQ7ez6EgR5oq2jGjbhKWpQ+IU5StOz/hfbPw=
+schema.sql h1:sYZljxAdKwrdvhSf9OppA2UPUI0VaDZxyiiJ8ifJhlI=

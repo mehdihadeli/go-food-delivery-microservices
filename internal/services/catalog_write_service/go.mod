@@ -36,6 +36,8 @@ require (
 )
 
 require (
+	ariga.io/atlas-go-sdk v0.0.0-20230709063453-1058d6508503 // indirect
+	ariga.io/atlas-provider-gorm v0.1.0 // indirect
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/ClickHouse/ch-go v0.58.2 // indirect
@@ -47,6 +49,7 @@ require (
 	github.com/TylerBrock/colorjson v0.0.0-20200706003622-8a50f05110d2 // indirect
 	github.com/ahmetb/go-linq/v3 v3.2.0 // indirect
 	github.com/ajg/form v1.5.1 // indirect
+	github.com/alecthomas/kong v0.8.0 // indirect
 	github.com/alexflint/go-filemutex v1.2.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -75,6 +78,7 @@ require (
 	github.com/go-openapi/swag v0.22.4 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/go-testfixtures/testfixtures/v3 v3.9.0 // indirect
 	github.com/goccy/go-reflect v1.2.0 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
@@ -113,6 +117,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
+	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/mcuadros/go-defaults v1.2.0 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/sys/sequential v0.5.0 // indirect
@@ -130,6 +135,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pressly/goose/v3 v3.15.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
 	github.com/rabbitmq/amqp091-go v1.8.1 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.0.5 // indirect
@@ -185,7 +191,9 @@ require (
 	golang.org/x/tools v0.13.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
+	gorm.io/driver/mysql v1.5.1 // indirect
 	gorm.io/driver/postgres v1.5.2 // indirect
+	gorm.io/driver/sqlite v1.5.2 // indirect
 	mellium.im/sasl v0.3.1 // indirect
 	moul.io/http2curl v1.0.1-0.20190925090545-5cd742060b0e // indirect
 )

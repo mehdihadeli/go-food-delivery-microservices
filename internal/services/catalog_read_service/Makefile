@@ -16,8 +16,8 @@ lint:
 
 .PHONY: format
 format:
-	goimports-reviser -company-prefixes "github.com/mehdihadeli" -project-name "github.com/mehdihadeli/go-ecommerce-microservices" -imports-order "std,general,company,project" -recursive ./...
 	golines -m 120 -w --ignore-generated .
+	gci write --skip-generated -s standard -s "prefix(github.com/mehdihadeli/go-ecommerce-microservices)" -s default -s blank -s dot --custom-order  .
 	gofumpt -l -w .
 
 .PHONY: test

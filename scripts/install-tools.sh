@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2204-Readme.md
+
 # In a bash script, set -e is a command that enables the "exit immediately" option. When this option is set, the script will terminate immediately if any command within the script exits with a non-zero status (indicating an error).
 set -e
 
@@ -34,6 +36,10 @@ go install google.golang.org/protobuf/proto@latest
 # https://stackoverflow.com/questions/13616033/install-protocol-buffers-on-windows
 go install github.com/golang/protobuf/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# migration tools
+go install github.com/pressly/goose/v3/cmd/goose@latest
+go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 # https://github.com/swaggo/swag/
 # https://github.com/swaggo/swag/issues/817
@@ -72,9 +78,14 @@ if [[ "$OS" == "Linux" ]]; then
     sudo apt-get install k6
     sudo apt install diffutils
 
+    # Install atlas on linux
+    curl -sSf https://atlasgo.sh | sh
+
     # https://grpc.io/docs/protoc-installation/
     apt install -y protobuf-compiler
 elif [[ "$OS" == "MINGW"* || "$OS" == "MSYS"* ]]; then
+    # https://github.com/actions/runner-images/blob/main/images/win/Windows2022-Readme.md
+
     # https://github.com/bufbuild/buf
     echo "Installing Buff on Windows..."
     # Windows installation commands
@@ -89,6 +100,7 @@ elif [[ "$OS" == "MINGW"* || "$OS" == "MSYS"* ]]; then
 
      # https://community.chocolatey.org/packages/protoc
      # https://grpc.io/docs/protoc-installation/
+     # choco is available on github windows-server
      choco install protoc
 
      choco install diffutils

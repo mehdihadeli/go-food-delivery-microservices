@@ -20,10 +20,9 @@ lint:
 
 .PHONY: format
 format:
-	goimports-reviser -company-prefixes "github.com/mehdihadeli" -project-name "github.com/mehdihadeli/go-ecommerce-microservices" -imports-order "std,general,company,project" -recursive ./...
 	golines -m 120 -w --ignore-generated .
+	gci write --skip-generated -s standard -s "prefix(github.com/mehdihadeli/go-ecommerce-microservices)" -s default -s blank -s dot --custom-order  .
 	gofumpt -l -w .
-
 
 .PHONY: update
 update:
@@ -87,19 +86,3 @@ create_db:
 .PHONY: drop_db
 drop_db:
 	docker exec -it postgres dropdb -U $(DB_USER) $(DB_NAME)
-
-.PHONY: force_db
-force_db:
-	migrate -database postgres://postgres:postgres@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(SSL_MODE) -verbose -path migrations force 1
-
-.PHONY: version_db
-version_db:
-	migrate -database postgres://postgres:postgres@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(SSL_MODE) -verbose -path migrations version
-
-.PHONY: migrate_up
-migrate_up:
-	migrate -database postgres://postgres:postgres@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(SSL_MODE) -verbose -path migrations up
-
-.PHONY: migrate_down
-migrate_down:
-	migrate -database postgres://postgres:postgres@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(SSL_MODE) -verbose -path migrations down

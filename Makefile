@@ -85,6 +85,28 @@ lint:
 	@./scripts/lint.sh order_service
 	@./scripts/lint.sh pkg
 
+# https://github.com/golang-migrate/migrate/blob/856ea12df9d230b0145e23d951b7dbd6b86621cb/database/postgres/TUTORIAL.md
+# https://github.com/golang-migrate/migrate/blob/856ea12df9d230b0145e23d951b7dbd6b86621cb/GETTING_STARTED.md
+# https://github.com/golang-migrate/migrate/blob/856ea12df9d230b0145e23d951b7dbd6b86621cb/MIGRATIONS.md
+# https://github.com/golang-migrate/migrate/tree/856ea12df9d230b0145e23d951b7dbd6b86621cb/cmd/migrate#usage
+.PHONY: go-migrate
+go-migrate:
+	@./scripts/go-migrate.sh -p ./internal/services/catalog_write_service/db/migrations/go-migrate -c create -n create_product_table
+	@./scripts/go-migrate.sh -p ./internal/services/catalog_write_service/db/migrations/go-migrate -c up -o postgres://postgres:postgres@localhost:5432/catalogs_service?sslmode=disable
+	@./scripts/go-migrate.sh -p ./internal/services/catalog_write_service/db/migrations/go-migrate -c down -o postgres://postgres:postgres@localhost:5432/catalogs_service?sslmode=disable
+
+# https://github.com/pressly/goose#usage
+.PHONY: goose-migrate
+goose-migrate:
+	@./scripts/goose-migrate.sh -p ./internal/services/catalog_write_service/db/migrations/goose-migrate -c create -n create_product_table
+	@./scripts/goose-migrate.sh -p ./internal/services/catalog_write_service/db/migrations/goose-migrate -c up -o "user=postgres password=postgres dbname=catalogs_service sslmode=disable"
+	@./scripts/goose-migrate.sh -p ./internal/services/catalog_write_service/db/migrations/goose-migrate -c down -o "user=postgres password=postgres dbname=catalogs_service sslmode=disable"
+
+# https://atlasgo.io/guides/orms/gorm
+.PHONY: atlas
+atlas:
+	@./scripts/atlas-migrate.sh -c gorm-sync -p "./internal/services/catalog_write_service"
+	@./scripts/atlas-migrate.sh -c apply -p "./internal/services/catalog_write_service" -o "postgres://postgres:postgres@localhost:5432/catalogs_service?sslmode=disable"
 
 #.PHONY: c4
 #c4:

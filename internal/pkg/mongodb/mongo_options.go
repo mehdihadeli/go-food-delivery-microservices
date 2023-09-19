@@ -8,8 +8,6 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[MongoDbOptions]())
-
 type MongoDbOptions struct {
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
@@ -20,5 +18,6 @@ type MongoDbOptions struct {
 }
 
 func provideConfig(environment environemnt.Environment) (*MongoDbOptions, error) {
+	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[MongoDbOptions]())
 	return config.BindConfigKey[*MongoDbOptions](optionName, environment)
 }
