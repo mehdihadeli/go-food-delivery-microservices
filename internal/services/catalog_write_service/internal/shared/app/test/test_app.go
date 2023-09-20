@@ -11,6 +11,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/goose"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
@@ -27,18 +29,19 @@ import (
 type TestApp struct{}
 
 type TestAppResult struct {
-	Cfg                  *config.AppOptions
-	Bus                  bus.RabbitmqBus
-	Container            contracts.Container
-	Logger               logger.Logger
-	RabbitmqOptions      *config2.RabbitmqOptions
-	EchoHttpOptions      *config3.EchoHttpOptions
-	GormOptions          *gormPostgres.GormOptions
-	CatalogUnitOfWorks   data.CatalogUnitOfWork
-	ProductRepository    data.ProductRepository
-	Gorm                 *gorm2.DB
-	ProductServiceClient productsService.ProductsServiceClient
-	GrpcClient           grpc.GrpcClient
+	Cfg                     *config.AppOptions
+	Bus                     bus.RabbitmqBus
+	Container               contracts.Container
+	Logger                  logger.Logger
+	RabbitmqOptions         *config2.RabbitmqOptions
+	EchoHttpOptions         *config3.EchoHttpOptions
+	GormOptions             *gormPostgres.GormOptions
+	CatalogUnitOfWorks      data.CatalogUnitOfWork
+	ProductRepository       data.ProductRepository
+	Gorm                    *gorm2.DB
+	ProductServiceClient    productsService.ProductsServiceClient
+	GrpcClient              grpc.GrpcClient
+	PostgresMigrationRunner contracts2.PostgresMigrationRunner
 }
 
 func NewTestApp() *TestApp {
@@ -51,6 +54,7 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	// ref: https://github.com/uber-go/fx/blob/master/app_test.go
 	appBuilder := NewCatalogsWriteTestApplicationBuilder(t)
 	appBuilder.ProvideModule(catalogs.CatalogsServiceModule)
+	appBuilder.ProvideModule(goose.Module)
 
 	appBuilder.Decorate(rabbitmq.RabbitmqContainerOptionsDecorator(t, lifetimeCtx))
 	appBuilder.Decorate(gorm.GormContainerOptionsDecorator(t, lifetimeCtx))
@@ -72,20 +76,22 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 			gorm *gorm2.DB,
 			echoOptions *config3.EchoHttpOptions,
 			grpcClient grpc.GrpcClient,
+			postgresMigrationRunner contracts2.PostgresMigrationRunner,
 		) {
 			grpcConnection := grpcClient.GetGrpcConnection()
 
 			result = &TestAppResult{
-				Bus:                bus,
-				Cfg:                cfg,
-				Container:          testApp,
-				Logger:             logger,
-				RabbitmqOptions:    rabbitmqOptions,
-				GormOptions:        gormOptions,
-				ProductRepository:  productRepository,
-				CatalogUnitOfWorks: catalogUnitOfWorks,
-				Gorm:               gorm,
-				EchoHttpOptions:    echoOptions,
+				Bus:                     bus,
+				Cfg:                     cfg,
+				Container:               testApp,
+				Logger:                  logger,
+				RabbitmqOptions:         rabbitmqOptions,
+				GormOptions:             gormOptions,
+				ProductRepository:       productRepository,
+				CatalogUnitOfWorks:      catalogUnitOfWorks,
+				Gorm:                    gorm,
+				EchoHttpOptions:         echoOptions,
+				PostgresMigrationRunner: postgresMigrationRunner,
 				ProductServiceClient: productsService.NewProductsServiceClient(
 					grpcConnection,
 				),

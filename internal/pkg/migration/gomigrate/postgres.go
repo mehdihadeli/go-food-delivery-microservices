@@ -106,20 +106,30 @@ func (m *goMigratePostgresMigrator) Down(_ context.Context, version uint) error 
 }
 
 func (m *goMigratePostgresMigrator) executeCommand(command migration.CommandType, version uint) error {
+	var err error
 	switch command {
 	case migration.Up:
 		if version == 0 {
-			return m.migration.Up()
+			err = m.migration.Up()
+		} else {
+			err = m.migration.Migrate(version)
 		}
-
-		return m.migration.Migrate(version)
 	case migration.Down:
 		if version == 0 {
-			return m.migration.Down()
+			err = m.migration.Down()
+		} else {
+			err = m.migration.Migrate(version)
 		}
-
-		return m.migration.Migrate(version)
 	default:
-		return errors.New("invalid migration direction")
+		err = errors.New("invalid migration direction")
 	}
+
+	if err == migrate.ErrNoChange {
+		return nil
+	}
+	if err != nil {
+		return errors.WrapIf(err, "failed to migrate database")
+	}
+
+	return nil
 }

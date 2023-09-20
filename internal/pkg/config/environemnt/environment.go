@@ -3,10 +3,13 @@ package environemnt
 import (
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 
+	"emperror.dev/errors"
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
@@ -32,9 +35,33 @@ func ConfigAppEnv(environments ...Environment) Environment {
 
 	// https://articles.wesionary.team/environment-variable-configuration-in-your-golang-project-using-viper-4e8289ef664d
 	// load environment variables form .env files to system environment variables, it just find `.env` file in our current `executing working directory` in our app for example `catalogs_service`
-	err := godotenv.Load()
+	err := loadEnvFilesRecursive()
 	if err != nil {
-		log.Println(".env file cannot be found.")
+		log.Printf(".env file cannot be found, err: %v", err)
+	}
+
+	// https://articles.wesionary.team/environment-variable-configuration-in-your-golang-project-using-viper-4e8289ef664d
+	// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
+	// viper will get it from `os env` or viper `internal registry`
+	pn := viper.GetString(constants.PROJECT_NAME_ENV)
+	if pn != "" {
+		// set root working directory of our app in the viper
+		// https://stackoverflow.com/a/47785436/581476
+		wd, _ := os.Getwd()
+
+		for !strings.HasSuffix(wd, pn) {
+			wd = filepath.Dir(wd)
+		}
+
+		absRootDirectory, _ := filepath.Abs(wd)
+
+		// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
+		viper.Set(constants.AppRootPath, absRootDirectory)
+
+		configPath := filepath.Join(absRootDirectory, "config")
+
+		// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
+		viper.Set(constants.ConfigPath, configPath)
 	}
 
 	manualEnv := os.Getenv(constants.AppEnv)
@@ -63,4 +90,34 @@ func EnvString(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func loadEnvFilesRecursive() error {
+	// Start from the current working directory
+	dir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	// Keep traversing up the directory hierarchy until you find an ".env" file
+	for {
+		envFilePath := filepath.Join(dir, ".env")
+		err := godotenv.Load(envFilePath)
+
+		if err == nil {
+			// .env file found and loaded
+			return nil
+		}
+
+		// Move up one directory level
+		parentDir := filepath.Dir(dir)
+		if parentDir == dir {
+			// Reached the root directory, stop searching
+			break
+		}
+
+		dir = parentDir
+	}
+
+	return errors.New(".env file not found in the project hierarchy")
 }

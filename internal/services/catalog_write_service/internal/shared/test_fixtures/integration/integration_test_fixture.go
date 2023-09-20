@@ -23,7 +23,6 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
 	"gopkg.in/khaiql/dbcleaner.v2"
 	"gorm.io/gorm"
 
@@ -54,8 +53,9 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 		fmt.Sprintf(result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint()),
 		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
 		result.RabbitmqOptions.RabbitmqHostOptions.Password)
-
-	require.NoError(t, err)
+	if err != nil {
+		result.Logger.Fatalf("error in initializing rabbithole, err: %s", err)
+	}
 
 	shared := &IntegrationTestSharedFixture{
 		Log:                  result.Logger,
@@ -71,6 +71,8 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 		ProductServiceClient: result.ProductServiceClient,
 	}
 
+	migrateDatabase(result)
+
 	return shared
 }
 
@@ -82,6 +84,7 @@ func (i *IntegrationTestSharedFixture) InitializeTest() {
 	if err != nil {
 		i.Log.Fatal(err)
 	}
+
 	i.Items = res
 }
 
@@ -112,6 +115,7 @@ func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
 			queue.Name,
 		)
+
 		return err
 	}
 
@@ -123,8 +127,10 @@ func (i *IntegrationTestSharedFixture) cleanupPostgresData() error {
 	// Iterate over the tables and delete all records
 	for _, table := range tables {
 		err := i.Gorm.Exec("DELETE FROM " + table).Error
+
 		return err
 	}
+
 	return nil
 }
 
@@ -152,6 +158,7 @@ func seedData(gormDB *gorm.DB) ([]*models.Product, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "error in seed database")
 	}
+
 	return products, nil
 }
 
@@ -202,4 +209,11 @@ func seedAndMigration(gormDB *gorm.DB) ([]*models.Product, error) {
 		gormDB,
 	)
 	return result.Items, nil
+}
+
+func migrateDatabase(result *test.TestAppResult) {
+	err := result.PostgresMigrationRunner.Up(context.Background(), 0)
+	if err != nil {
+		result.Logger.Fatalf("error in catalog_service migration, err: %s", err)
+	}
 }

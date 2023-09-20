@@ -30,9 +30,11 @@ func BindConfigKey[T any](configKey string, environments ...environemnt.Environm
 	}
 
 	// https://articles.wesionary.team/environment-variable-configuration-in-your-golang-project-using-viper-4e8289ef664d
-	configPathFromEnv := viper.Get(constants.ConfigPath)
-	if configPathFromEnv != nil {
-		configPath = configPathFromEnv.(string)
+	// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
+	// load `config path` from environment variable or viper internal registry
+	configPathFromEnv := viper.GetString(constants.ConfigPath)
+	if configPathFromEnv != "" {
+		configPath = configPathFromEnv
 	} else {
 		// https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
 		// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file

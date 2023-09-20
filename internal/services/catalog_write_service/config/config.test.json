@@ -69,5 +69,15 @@
   },
   "eventStoreDbOptions": {
     "connectionString": "esdb://localhost:2113?tls=false"
+  },
+  "migrationOptions": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "dbName": "catalogs_service",
+    "sslMode": false,
+    "migrationsDir": "db/migrations/goose-migrate",
+    "skipMigration": false
   }
 }
