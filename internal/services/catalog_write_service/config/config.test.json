@@ -29,18 +29,6 @@
     "logType": 0,
     "callerEnabled": false
   },
-  "postgresPxgOptions": {
-    "host": "localhost",
-    "port": 5432,
-    "user": "postgres",
-    "password": "postgres",
-    "dbName": "catalogs_service",
-    "sslMode": false,
-    "migrations": {
-      "migrationsDir": "migrations",
-      "skipMigration": true
-    }
-  },
   "gormOptions": {
     "host": "localhost",
     "port": 5432,
@@ -60,7 +48,7 @@
       "httpPort": 15672
     }
   },
-  "OpenTelemetryOptions": {
+  "openTelemetryOptions": {
     "enable": true,
     "serviceName": "catalogs-write-service",
     "instrumentationName": "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice",
@@ -81,5 +69,15 @@
   },
   "eventStoreDbOptions": {
     "connectionString": "esdb://localhost:2113?tls=false"
+  },
+  "migrationOptions": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "dbName": "catalogs_service",
+    "sslMode": false,
+    "migrationsDir": "db/migrations/goose-migrate",
+    "skipMigration": false
   }
 }

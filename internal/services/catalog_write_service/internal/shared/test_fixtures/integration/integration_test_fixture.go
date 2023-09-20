@@ -2,7 +2,6 @@ package integration
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -23,7 +22,6 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
 	"gopkg.in/khaiql/dbcleaner.v2"
 	"gorm.io/gorm"
 
@@ -46,16 +44,21 @@ type IntegrationTestSharedFixture struct {
 	ProductServiceClient productsService.ProductsServiceClient
 }
 
-func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture {
+func NewIntegrationTestSharedFixture(
+	t *testing.T,
+) *IntegrationTestSharedFixture {
 	result := test.NewTestApp().Run(t)
 
 	// https://github.com/michaelklishin/rabbit-hole
 	rmqc, err := rabbithole.NewClient(
-		fmt.Sprintf(result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint()),
+		result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint(),
 		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
 		result.RabbitmqOptions.RabbitmqHostOptions.Password)
-
-	require.NoError(t, err)
+	if err != nil {
+		result.Logger.Error(
+			errors.WrapIf(err, "error in creating rabbithole client"),
+		)
+	}
 
 	shared := &IntegrationTestSharedFixture{
 		Log:                  result.Logger,
@@ -71,6 +74,8 @@ func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture
 		ProductServiceClient: result.ProductServiceClient,
 	}
 
+	migrateDatabase(result)
+
 	return shared
 }
 
@@ -80,8 +85,9 @@ func (i *IntegrationTestSharedFixture) InitializeTest() {
 	// seed data in each test
 	res, err := seedData(i.Gorm)
 	if err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in seeding data in postgres"))
 	}
+
 	i.Items = res
 }
 
@@ -90,18 +96,20 @@ func (i *IntegrationTestSharedFixture) DisposeTest() {
 
 	// cleanup test containers with their hooks
 	if err := i.cleanupRabbitmqData(); err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in cleanup rabbitmq data"))
 	}
 
 	if err := i.cleanupPostgresData(); err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in cleanup postgres data"))
 	}
 }
 
 func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 	// https://github.com/michaelklishin/rabbit-hole
 	// Get all queues
-	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
+	queues, err := i.RabbitmqCleaner.ListQueuesIn(
+		i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
+	)
 	if err != nil {
 		return err
 	}
@@ -112,6 +120,7 @@ func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
 			queue.Name,
 		)
+
 		return err
 	}
 
@@ -123,8 +132,10 @@ func (i *IntegrationTestSharedFixture) cleanupPostgresData() error {
 	// Iterate over the tables and delete all records
 	for _, table := range tables {
 		err := i.Gorm.Exec("DELETE FROM " + table).Error
+
 		return err
 	}
+
 	return nil
 }
 
@@ -152,6 +163,7 @@ func seedData(gormDB *gorm.DB) ([]*models.Product, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "error in seed database")
 	}
+
 	return products, nil
 }
 
@@ -202,4 +214,11 @@ func seedAndMigration(gormDB *gorm.DB) ([]*models.Product, error) {
 		gormDB,
 	)
 	return result.Items, nil
+}
+
+func migrateDatabase(result *test.TestAppResult) {
+	err := result.PostgresMigrationRunner.Up(context.Background(), 0)
+	if err != nil {
+		result.Logger.Fatalf("error in catalog_service migration, err: %s", err)
+	}
 }

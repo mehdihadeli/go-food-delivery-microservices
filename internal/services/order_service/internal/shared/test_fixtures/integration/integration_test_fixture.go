@@ -2,7 +2,6 @@ package integration
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
@@ -52,15 +51,21 @@ type IntegrationTestSharedFixture struct {
 	OrdersServiceClient  ordersService.OrdersServiceClient
 }
 
-func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture {
+func NewIntegrationTestSharedFixture(
+	t *testing.T,
+) *IntegrationTestSharedFixture {
 	result := test.NewTestApp().Run(t)
 
 	// https://github.com/michaelklishin/rabbit-hole
-	rmqc, _ := rabbithole.NewClient(
-		fmt.Sprintf(result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint()),
+	rmqc, err := rabbithole.NewClient(
+		result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint(),
 		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
 		result.RabbitmqOptions.RabbitmqHostOptions.Password)
-
+	if err != nil {
+		result.Logger.Error(
+			errors.WrapIf(err, "error in creating rabbithole client"),
+		)
+	}
 	shared := &IntegrationTestSharedFixture{
 		Log:                  result.Logger,
 		Container:            result.Container,
@@ -86,7 +91,7 @@ func (i *IntegrationTestSharedFixture) InitializeTest() {
 	// seed data in each test
 	res, err := seedReadModelData(i.mongoClient, i.MongoDbOptions.Database)
 	if err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in seeding mongodb data"))
 	}
 	i.Items = res
 }
@@ -96,18 +101,20 @@ func (i *IntegrationTestSharedFixture) DisposeTest() {
 
 	// cleanup test containers with their hooks
 	if err := i.cleanupRabbitmqData(); err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in cleanup rabbitmq data"))
 	}
 
 	if err := i.cleanupMongoData(); err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in cleanup mongodb data"))
 	}
 }
 
 func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 	// https://github.com/michaelklishin/rabbit-hole
 	// Get all queues
-	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
+	queues, err := i.RabbitmqCleaner.ListQueuesIn(
+		i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
+	)
 	if err != nil {
 		return err
 	}
@@ -126,11 +133,19 @@ func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 
 func (i *IntegrationTestSharedFixture) cleanupMongoData() error {
 	collections := []string{orderCollection}
-	err := cleanupCollections(i.mongoClient, collections, i.MongoDbOptions.Database)
+	err := cleanupCollections(
+		i.mongoClient,
+		collections,
+		i.MongoDbOptions.Database,
+	)
 	return err
 }
 
-func cleanupCollections(db *mongo.Client, collections []string, databaseName string) error {
+func cleanupCollections(
+	db *mongo.Client,
+	collections []string,
+	databaseName string,
+) error {
 	database := db.Database(databaseName)
 	ctx := context.Background()
 
@@ -196,7 +211,11 @@ func seedReadModelData(
 	}
 
 	collection := db.Database(databaseName).Collection("orders")
-	_, err := collection.InsertMany(context.Background(), data, &options.InsertManyOptions{})
+	_, err := collection.InsertMany(
+		context.Background(),
+		data,
+		&options.InsertManyOptions{},
+	)
 	if err != nil {
 		return nil, errors.WrapIf(err, "error in seed database")
 	}

@@ -19,7 +19,7 @@ var ModuleFunc = func(e environemnt.Environment) fx.Option {
 	return fx.Module(
 		"configfx",
 		fx.Provide(func() environemnt.Environment {
-			return e
+			return environemnt.ConfigAppEnv(e)
 		}),
 	)
 }

@@ -5,6 +5,8 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/app"
 
+	"github.com/pterm/pterm"
+	"github.com/pterm/pterm/putils"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +28,11 @@ var rootCmd = &cobra.Command{
 // @version 1.0
 // @description Orders Service Api
 func main() {
+	pterm.DefaultBigText.WithLetters(
+		putils.LettersFromStringWithStyle("Orders", pterm.FgLightGreen.ToStyle()),
+		putils.LettersFromStringWithStyle(" Service", pterm.FgLightMagenta.ToStyle())).
+		Render()
+
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
