@@ -34,7 +34,11 @@ var (
 	mongoInvokes = fx.Invoke(registerHooks) //nolint:gochecknoglobals
 )
 
-func registerHooks(lc fx.Lifecycle, client *mongo.Client, logger logger.Logger) {
+func registerHooks(
+	lc fx.Lifecycle,
+	client *mongo.Client,
+	logger logger.Logger,
+) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			err := client.Ping(ctx, nil)

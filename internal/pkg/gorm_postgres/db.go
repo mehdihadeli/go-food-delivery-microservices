@@ -24,7 +24,8 @@ func NewGorm(cfg *GormOptions) (*gorm.DB, error) {
 	}
 
 	var dataSourceName string
-	dataSourceName = fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s",
+	dataSourceName = fmt.Sprintf(
+		"host=%s port=%d user=%s dbname=%s password=%s",
 		cfg.Host,
 		cfg.Port,
 		cfg.User,
@@ -59,7 +60,10 @@ func createDB(cfg *GormOptions) error {
 
 	var exists int
 	rows, err := sqldb.Query(
-		fmt.Sprintf("SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'", cfg.DBName),
+		fmt.Sprintf(
+			"SELECT 1 FROM  pg_catalog.pg_database WHERE datname='%s'",
+			cfg.DBName,
+		),
 	)
 	if err != nil {
 		return err

@@ -1,9 +1,10 @@
 package tracing
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"os"
+	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
@@ -12,13 +13,15 @@ import (
 	"go.opentelemetry.io/contrib/propagators/ot"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/exporters/zipkin"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	_ "go.opentelemetry.io/otel"
 )
@@ -76,7 +79,9 @@ func NewOtelTracing(
 	// Register our TracerProvider as the global so any imported
 	// instrumentation in the future will default to using it.
 	otel.SetTracerProvider(openTel.TracerProvider)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagators...))
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(propagators...),
+	)
 
 	// https://trstringer.com/otel-part2-instrumentation/
 	// Finally, set the tracer that can be used for this package. global app tracer
@@ -124,19 +129,41 @@ func (o *TracingOpenTelemetry) configTracerProvider() error {
 }
 
 func (o *TracingOpenTelemetry) configExporters() error {
-	logger := log.New(os.Stderr, "otel_log", log.Ldate|log.Ltime|log.Llongfile)
-
 	if o.config.JaegerExporterOptions != nil {
-		// Create the Jaeger exporter
-		jaegerExporter, err := jaeger.New(jaeger.WithAgentEndpoint(
-			jaeger.WithAgentHost(o.config.JaegerExporterOptions.AgentHost),
-			jaeger.WithAgentPort(o.config.JaegerExporterOptions.AgentPort),
-			jaeger.WithLogger(logger),
-		))
+		// jaeger exporter removed from otel spec (it used jaeger agent and jaeger agent port), now we should use OTLP which supports by jaeger now by its built-in `collector`
+		// https://www.jaegertracing.io/docs/1.38/apis/#opentelemetry-protocol-stable
+		// https://deploy-preview-1892--opentelemetry.netlify.app/blog/2022/jaeger-native-otlp/
+		// https://www.jaegertracing.io/docs/1.49/getting-started/
+		// https://opentelemetry.io/docs/instrumentation/go/exporters/
+		// https://opentelemetry.io/docs/specs/otlp/
+		// https://github.com/open-telemetry/opentelemetry-go/pull/4467
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		conn, err := grpc.DialContext(
+			ctx,
+			o.config.JaegerExporterOptions.OtlpEndpoint, // default OTLP endpoint address is `localhost:4317`
+			// Note the use of insecure transport here. TLS is recommended in production.
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithBlock(),
+		)
 		if err != nil {
-			return err
+			return fmt.Errorf(
+				"failed to create gRPC connection to collector: %w",
+				err,
+			)
 		}
-		o.jaegerExporter = jaegerExporter
+
+		// Set up a trace exporter
+		jaegerTraceExporter, err := otlptracegrpc.New(
+			ctx,
+			otlptracegrpc.WithGRPCConn(conn),
+		)
+		if err != nil {
+			return fmt.Errorf("failed to create trace exporter: %w", err)
+		}
+
+		o.jaegerExporter = jaegerTraceExporter
 	}
 	if o.config.ZipkinExporterOptions != nil {
 		zipkinExporter, err := zipkin.New(
@@ -149,7 +176,12 @@ func (o *TracingOpenTelemetry) configExporters() error {
 		o.zipkinExporter = zipkinExporter
 	}
 	if o.config.UseStdout {
-		stdExporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+		stdExporter, err := stdouttrace.New(
+			stdouttrace.WithWriter(
+				os.Stdout,
+			), // stdExporter default is `stdouttrace.WithWriter(os.Stdout)`, we can remove this also
+			stdouttrace.WithPrettyPrint(), // make output json with pretty printing
+		)
 		if err != nil {
 			return fmt.Errorf("creating stdout exporter: %w", err)
 		}

@@ -21,6 +21,13 @@ build:
 	@./scripts/build.sh  catalog_read_service
 	@./scripts/build.sh  order_service
 
+.PHONY: update-dependencies
+update-dependencies:
+	@./scripts/update-dependencies.sh  pkg
+	@./scripts/update-dependencies.sh  catalog_write_service
+	@./scripts/update-dependencies.sh  catalog_read_service
+	@./scripts/update-dependencies.sh  order_service
+
 .PHONY: install-dependencies
 install-dependencies:
 	@./scripts/install-dependencies.sh  pkg

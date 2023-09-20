@@ -53,15 +53,15 @@
     "database": "catalogs_service",
     "useAuth": true
   },
-  "OpenTelemetryOptions": {
+  "openTelemetryOptions": {
     "enable": true,
     "serviceName": "catalogs-read-service",
     "instrumentationName": "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice",
     "id": 1,
     "alwaysOnSampler": true,
+    "useStdout": false,
     "jaegerExporterOptions": {
-      "agentHost": "localhost",
-      "agentPort": "6831"
+      "otlpEndpoint": "localhost:4317"
     },
     "zipkinExporterOptions": {
       "url": "http://localhost:9411/api/v2/spans"

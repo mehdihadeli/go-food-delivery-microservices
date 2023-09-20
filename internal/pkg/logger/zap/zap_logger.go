@@ -10,6 +10,7 @@ import (
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -40,9 +41,13 @@ var loggerLevelMap = map[string]zapcore.Level{
 }
 
 // NewZapLogger create new zap logger
-func NewZapLogger(cfg *config2.LogOptions, env environemnt.Environment) ZapLogger {
+func NewZapLogger(
+	cfg *config2.LogOptions,
+	env environemnt.Environment,
+) ZapLogger {
 	zapLogger := &zapLogger{level: cfg.LogLevel, logOptions: cfg}
 	zapLogger.initLogger(env)
+
 	return zapLogger
 }
 
@@ -108,6 +113,9 @@ func (l *zapLogger) initLogger(env environemnt.Environment) {
 	}
 
 	logger := zap.New(core, options...)
+
+	// add logs as events to tracing
+	logger = otelzap.New(logger).Logger
 
 	l.logger = logger
 	l.sugarLogger = logger.Sugar()

@@ -8,8 +8,6 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[OpenTelemetryOptions]())
-
 type OpenTelemetryOptions struct {
 	Enabled               bool                   `mapstructure:"enabled"`
 	ServiceName           string                 `mapstructure:"serviceName"`
@@ -23,8 +21,7 @@ type OpenTelemetryOptions struct {
 }
 
 type JaegerExporterOptions struct {
-	AgentHost string `mapstructure:"agentHost"`
-	AgentPort string `mapstructure:"agentPort"`
+	OtlpEndpoint string `mapstructure:"otlpEndpoint"`
 }
 
 type ZipkinExporterOptions struct {
@@ -38,6 +35,12 @@ type OTelMetricsOptions struct {
 	MetricsRoutePath string `mapstructure:"metricsRoutePath"`
 }
 
-func ProvideOtelConfig(environment environemnt.Environment) (*OpenTelemetryOptions, error) {
+func ProvideOtelConfig(
+	environment environemnt.Environment,
+) (*OpenTelemetryOptions, error) {
+	optionName := strcase.ToLowerCamel(
+		typeMapper.GetTypeNameByT[OpenTelemetryOptions](),
+	)
+
 	return config.BindConfigKey[*OpenTelemetryOptions](optionName, environment)
 }
