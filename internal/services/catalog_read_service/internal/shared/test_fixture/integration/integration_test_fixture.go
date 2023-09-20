@@ -2,7 +2,6 @@ package integration
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -21,7 +20,6 @@ import (
 	"github.com/brianvoe/gofakeit/v6"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.opentelemetry.io/otel/trace"
@@ -43,16 +41,19 @@ type IntegrationTestSharedFixture struct {
 	Tracer                 trace.Tracer
 }
 
-func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture {
+func NewIntegrationTestSharedFixture(
+	t *testing.T,
+) *IntegrationTestSharedFixture {
 	result := test.NewTestApp().Run(t)
 
 	// https://github.com/michaelklishin/rabbit-hole
 	rmqc, err := rabbithole.NewClient(
-		fmt.Sprintf(result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint()),
+		result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint(),
 		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
 		result.RabbitmqOptions.RabbitmqHostOptions.Password)
-
-	require.NoError(t, err)
+	if err != nil {
+		result.Logger.Error(errors.WrapIf(err, "error in creating rabbithole client"))
+	}
 
 	shared := &IntegrationTestSharedFixture{
 		Log:                    result.Logger,
@@ -78,8 +79,9 @@ func (i *IntegrationTestSharedFixture) InitializeTest() {
 	// seed data in each test
 	res, err := seedData(i.mongoClient, i.MongoOptions.Database)
 	if err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in seeding mongodb data"))
 	}
+
 	i.Items = res
 }
 
@@ -88,15 +90,18 @@ func (i *IntegrationTestSharedFixture) DisposeTest() {
 
 	// cleanup test containers with their hooks
 	if err := i.cleanupRabbitmqData(); err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in cleanup rabbitmq data"))
 	}
 
 	if err := i.cleanupMongoData(); err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in cleanup mongodb data"))
 	}
 }
 
-func seedData(db *mongo.Client, databaseName string) ([]*models.Product, error) {
+func seedData(
+	db *mongo.Client,
+	databaseName string,
+) ([]*models.Product, error) {
 	ctx := context.Background()
 
 	products := []*models.Product{
@@ -119,13 +124,18 @@ func seedData(db *mongo.Client, databaseName string) ([]*models.Product, error) 
 	}
 
 	//// https://go.dev/doc/faq#convert_slice_of_interface
-	data := make([]interface{}, len(products))
+	productsData := make([]interface{}, len(products))
+
 	for i, v := range products {
-		data[i] = v
+		productsData[i] = v
 	}
 
 	collection := db.Database(databaseName).Collection("products")
-	_, err := collection.InsertMany(context.Background(), data, &options.InsertManyOptions{})
+	_, err := collection.InsertMany(
+		context.Background(),
+		productsData,
+		&options.InsertManyOptions{},
+	)
 	if err != nil {
 		return nil, errors.WrapIf(err, "error in seed database")
 	}
@@ -136,13 +146,16 @@ func seedData(db *mongo.Client, databaseName string) ([]*models.Product, error) 
 		collection,
 		nil,
 	)
+
 	return result.Items, nil
 }
 
 func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 	// https://github.com/michaelklishin/rabbit-hole
 	// Get all queues
-	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
+	queues, err := i.RabbitmqCleaner.ListQueuesIn(
+		i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
+	)
 	if err != nil {
 		return err
 	}
@@ -153,6 +166,7 @@ func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 			i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
 			queue.Name,
 		)
+
 		return err
 	}
 
@@ -161,11 +175,20 @@ func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 
 func (i *IntegrationTestSharedFixture) cleanupMongoData() error {
 	collections := []string{"products"}
-	err := cleanupCollections(i.mongoClient, collections, i.MongoOptions.Database)
+	err := cleanupCollections(
+		i.mongoClient,
+		collections,
+		i.MongoOptions.Database,
+	)
+
 	return err
 }
 
-func cleanupCollections(db *mongo.Client, collections []string, databaseName string) error {
+func cleanupCollections(
+	db *mongo.Client,
+	collections []string,
+	databaseName string,
+) error {
 	database := db.Database(databaseName)
 	ctx := context.Background()
 

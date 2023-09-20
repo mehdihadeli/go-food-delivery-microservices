@@ -2,7 +2,6 @@ package integration
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -45,16 +44,20 @@ type IntegrationTestSharedFixture struct {
 	ProductServiceClient productsService.ProductsServiceClient
 }
 
-func NewIntegrationTestSharedFixture(t *testing.T) *IntegrationTestSharedFixture {
+func NewIntegrationTestSharedFixture(
+	t *testing.T,
+) *IntegrationTestSharedFixture {
 	result := test.NewTestApp().Run(t)
 
 	// https://github.com/michaelklishin/rabbit-hole
 	rmqc, err := rabbithole.NewClient(
-		fmt.Sprintf(result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint()),
+		result.RabbitmqOptions.RabbitmqHostOptions.HttpEndPoint(),
 		result.RabbitmqOptions.RabbitmqHostOptions.UserName,
 		result.RabbitmqOptions.RabbitmqHostOptions.Password)
 	if err != nil {
-		result.Logger.Fatalf("error in initializing rabbithole, err: %s", err)
+		result.Logger.Error(
+			errors.WrapIf(err, "error in creating rabbithole client"),
+		)
 	}
 
 	shared := &IntegrationTestSharedFixture{
@@ -82,7 +85,7 @@ func (i *IntegrationTestSharedFixture) InitializeTest() {
 	// seed data in each test
 	res, err := seedData(i.Gorm)
 	if err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in seeding data in postgres"))
 	}
 
 	i.Items = res
@@ -93,18 +96,20 @@ func (i *IntegrationTestSharedFixture) DisposeTest() {
 
 	// cleanup test containers with their hooks
 	if err := i.cleanupRabbitmqData(); err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in cleanup rabbitmq data"))
 	}
 
 	if err := i.cleanupPostgresData(); err != nil {
-		i.Log.Fatal(err)
+		i.Log.Error(errors.WrapIf(err, "error in cleanup postgres data"))
 	}
 }
 
 func (i *IntegrationTestSharedFixture) cleanupRabbitmqData() error {
 	// https://github.com/michaelklishin/rabbit-hole
 	// Get all queues
-	queues, err := i.RabbitmqCleaner.ListQueuesIn(i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost)
+	queues, err := i.RabbitmqCleaner.ListQueuesIn(
+		i.rabbitmqOptions.RabbitmqHostOptions.VirtualHost,
+	)
 	if err != nil {
 		return err
 	}

@@ -34,6 +34,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/mehdihadeli/go-mediatr v1.1.10
+	github.com/michaelklishin/rabbit-hole v1.5.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nolleh/caption_json_formatter v0.2.2
 	github.com/orlangure/gnomock v0.30.0
@@ -138,6 +139,7 @@ require (
 	github.com/moby/term v0.5.0 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
+	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc4 // indirect
 	github.com/opencontainers/runc v1.1.9 // indirect
@@ -158,6 +160,7 @@ require (
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/streadway/amqp v1.1.0 // indirect
 	github.com/stretchr/objx v0.5.1 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect

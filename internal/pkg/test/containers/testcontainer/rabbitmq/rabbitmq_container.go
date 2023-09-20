@@ -18,6 +18,7 @@ import (
 	"emperror.dev/errors"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
+	rabbithole "github.com/michaelklishin/rabbit-hole"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -79,7 +80,10 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 	})
 
 	// get a free random host port for rabbitmq `Tcp Port`
-	hostPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[0]))
+	hostPort, err := dbContainer.MappedPort(
+		ctx,
+		nat.Port(g.defaultOptions.Ports[0]),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +92,10 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 
 	// https://github.com/michaelklishin/rabbit-hole/issues/74
 	// get a free random host port for rabbitmq UI `Http Port`
-	uiHttpPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[1]))
+	uiHttpPort, err := dbContainer.MappedPort(
+		ctx,
+		nat.Port(g.defaultOptions.Ports[1]),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +143,9 @@ func (g *rabbitmqTestContainers) Start(
 		rabbitHostOptions.AmqpEndPoint(),
 	)
 
-	rabbitmqConfig := &config.RabbitmqOptions{RabbitmqHostOptions: rabbitHostOptions}
+	rabbitmqConfig := &config.RabbitmqOptions{
+		RabbitmqHostOptions: rabbitHostOptions,
+	}
 	conn, err := types.NewRabbitMQConnection(rabbitmqConfig)
 	if err != nil {
 		return nil, err
@@ -189,9 +198,15 @@ func (g *rabbitmqTestContainers) getRunOptions(
 		}
 	}
 	containerReq := testcontainers.ContainerRequest{
-		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
+		Image: fmt.Sprintf(
+			"%s:%s",
+			g.defaultOptions.ImageName,
+			g.defaultOptions.Tag,
+		),
 		ExposedPorts: g.defaultOptions.Ports,
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])),
+		WaitingFor: wait.ForListeningPort(
+			nat.Port(g.defaultOptions.Ports[0]),
+		),
 		HostConfigModifier: func(hostConfig *container.HostConfig) {
 			hostConfig.AutoRemove = true
 		},
@@ -205,12 +220,19 @@ func (g *rabbitmqTestContainers) getRunOptions(
 	return containerReq
 }
 
-func IsConnectable(logger logger.Logger, options *contracts.RabbitMQContainerOptions) bool {
-	conn, err := amqp091.Dial(
-		fmt.Sprintf("amqp://%s:%s@%s:%d", options.UserName, options.Password, options.Host, options.HostPort),
-	)
+func IsConnectable(
+	logger logger.Logger,
+	options *contracts.RabbitMQContainerOptions,
+) bool {
+	conn, err := amqp091.Dial(options.AmqpEndPoint())
 	if err != nil {
-		logError(logger, options.UserName, options.Password, options.Host, options.HostPort)
+		logError(
+			logger,
+			options.UserName,
+			options.Password,
+			options.Host,
+			options.HostPort,
+		)
 
 		return false
 	}
@@ -218,10 +240,33 @@ func IsConnectable(logger logger.Logger, options *contracts.RabbitMQContainerOpt
 	defer conn.Close()
 
 	if err != nil || (conn != nil && conn.IsClosed()) {
-		logError(logger, options.UserName, options.Password, options.Host, options.HostPort)
+		logError(
+			logger,
+			options.UserName,
+			options.Password,
+			options.Host,
+			options.HostPort,
+		)
 
 		return false
 	}
+
+	// https://github.com/michaelklishin/rabbit-hole
+	rmqc, err := rabbithole.NewClient(
+		options.HttpEndPoint(),
+		options.UserName,
+		options.Password,
+	)
+	_, err = rmqc.ListExchanges()
+	if err != nil {
+		logger.Errorf(
+			"Error in creating rabbitmq connection with http host: %s",
+			options.HttpEndPoint(),
+		)
+
+		return false
+	}
+
 	logger.Infof(
 		"Opened rabbitmq connection on host: amqp://%s:%s@%s:%d",
 		options.UserName,
@@ -233,9 +278,19 @@ func IsConnectable(logger logger.Logger, options *contracts.RabbitMQContainerOpt
 	return true
 }
 
-func logError(logger logger.Logger, userName string, password string, host string, hostPort int) {
+func logError(
+	logger logger.Logger,
+	userName string,
+	password string,
+	host string,
+	hostPort int,
+) {
 	// we should not use `t.Error` or `t.Errorf` for logging errors because it will `fail` our test at the end and, we just should use logs without error like log.Error (not log.Fatal)
 	logger.Errorf(
-		"Error in creating rabbitmq connection with host: amqp://%s:%s@%s:%d", userName, password, host, hostPort,
+		"Error in creating rabbitmq connection with amqp host: amqp://%s:%s@%s:%d",
+		userName,
+		password,
+		host,
+		hostPort,
 	)
 }

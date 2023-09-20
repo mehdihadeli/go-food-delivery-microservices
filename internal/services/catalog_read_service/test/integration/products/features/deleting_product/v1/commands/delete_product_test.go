@@ -17,7 +17,9 @@ import (
 )
 
 func TestDeleteProduct(t *testing.T) {
-	integrationTestSharedFixture := integration.NewIntegrationTestSharedFixture(t)
+	integrationTestSharedFixture := integration.NewIntegrationTestSharedFixture(
+		t,
+	)
 
 	Convey("Deleting Product Feature", t, func() {
 		ctx := context.Background()
@@ -27,7 +29,9 @@ func TestDeleteProduct(t *testing.T) {
 		// scenario
 		Convey("Deleting an existing product from the database", func() {
 			Convey("Given an existing product in the mongo database", func() {
-				productId, err := uuid.FromString(integrationTestSharedFixture.Items[0].ProductId)
+				productId, err := uuid.FromString(
+					integrationTestSharedFixture.Items[0].ProductId,
+				)
 				So(err, ShouldBeNil)
 
 				command, err := commands.NewDeleteProduct(productId)
@@ -39,18 +43,24 @@ func TestDeleteProduct(t *testing.T) {
 						command,
 					)
 
-					Convey("Then the product should be deleted successfully in mongo database", func() {
-						So(err, ShouldBeNil)
-						So(result, ShouldNotBeNil)
+					Convey(
+						"Then the product should be deleted successfully in mongo database",
+						func() {
+							So(err, ShouldBeNil)
+							So(result, ShouldNotBeNil)
 
-						Convey("And the product should no longer exist in the system", func() {
-							deletedProduct, _ := integrationTestSharedFixture.ProductRepository.GetProductById(
-								ctx,
-								productId.String(),
+							Convey(
+								"And the product should no longer exist in the system",
+								func() {
+									deletedProduct, _ := integrationTestSharedFixture.ProductRepository.GetProductByProductId(
+										ctx,
+										productId.String(),
+									)
+									So(deletedProduct, ShouldBeNil)
+								},
 							)
-							So(deletedProduct, ShouldBeNil)
-						})
-					})
+						},
+					)
 				})
 			})
 		})
