@@ -43,6 +43,7 @@ func NewGoMigratorPostgres(
 		config.DBName,
 	)
 
+	// In test environment, ewe need a fix for applying application working directory correctly. we will apply this in our environment setup process in `config/environment` file
 	migration, err := migrate.New(fmt.Sprintf("file://%s", config.MigrationsDir), datasource)
 	if err != nil {
 		return nil, errors.WrapIf(err, "failed to initialize migrator")

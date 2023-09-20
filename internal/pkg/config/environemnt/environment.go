@@ -40,29 +40,7 @@ func ConfigAppEnv(environments ...Environment) Environment {
 		log.Printf(".env file cannot be found, err: %v", err)
 	}
 
-	// https://articles.wesionary.team/environment-variable-configuration-in-your-golang-project-using-viper-4e8289ef664d
-	// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
-	// viper will get it from `os env` or viper `internal registry`
-	pn := viper.GetString(constants.PROJECT_NAME_ENV)
-	if pn != "" {
-		// set root working directory of our app in the viper
-		// https://stackoverflow.com/a/47785436/581476
-		wd, _ := os.Getwd()
-
-		for !strings.HasSuffix(wd, pn) {
-			wd = filepath.Dir(wd)
-		}
-
-		absRootDirectory, _ := filepath.Abs(wd)
-
-		// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
-		viper.Set(constants.AppRootPath, absRootDirectory)
-
-		configPath := filepath.Join(absRootDirectory, "config")
-
-		// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
-		viper.Set(constants.ConfigPath, configPath)
-	}
+	setRootWorkingDirectoryEnvironment()
 
 	manualEnv := os.Getenv(constants.AppEnv)
 
@@ -120,4 +98,40 @@ func loadEnvFilesRecursive() error {
 	}
 
 	return errors.New(".env file not found in the project hierarchy")
+}
+
+func setRootWorkingDirectoryEnvironment() {
+	// https://articles.wesionary.team/environment-variable-configuration-in-your-golang-project-using-viper-4e8289ef664d
+	// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
+	// viper will get it from `os env` or a .env file
+	pn := viper.GetString(constants.PROJECT_NAME_ENV)
+	if pn == "" {
+		log.Fatalf(
+			"can't find environment variable `%s` in the system environment variables or a .env file",
+			constants.PROJECT_NAME_ENV,
+		)
+	}
+
+	// set root working directory of our app in the viper
+	// https://stackoverflow.com/a/47785436/581476
+	wd, _ := os.Getwd()
+
+	for !strings.HasSuffix(wd, pn) {
+		wd = filepath.Dir(wd)
+	}
+
+	absoluteRootWorkingDirectory, _ := filepath.Abs(wd)
+
+	// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
+	viper.Set(constants.AppRootPath, absoluteRootWorkingDirectory)
+
+	configPath := viper.GetString(constants.ConfigPath)
+
+	// check for existing `CONFIG_PATH` variable in system environment variables - we can set it directly in .env file or system environments
+	if configPath == "" {
+		configPath := filepath.Join(absoluteRootWorkingDirectory, "config")
+
+		// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
+		viper.Set(constants.ConfigPath, configPath)
+	}
 }

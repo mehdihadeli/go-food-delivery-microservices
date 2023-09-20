@@ -47,6 +47,7 @@ func (m *goosePostgresMigrator) executeCommand(command migration.CommandType, ve
 	switch command {
 	case migration.Up:
 		if version == 0 {
+			// In test environment, ewe need a fix for applying application working directory correctly. we will apply this in our environment setup process in `config/environment` file
 			return goose.Run("up", m.db, m.config.MigrationsDir)
 		}
 
