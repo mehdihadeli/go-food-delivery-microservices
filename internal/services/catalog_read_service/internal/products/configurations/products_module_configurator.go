@@ -25,13 +25,13 @@ func NewProductsModuleConfigurator(
 func (c *ProductsModuleConfigurator) ConfigureProductsModule() {
 	c.ResolveFunc(
 		func(logger logger2.Logger, mongoRepository data.ProductRepository, cacheRepository data.ProductCacheRepository, tracer tracing.AppTracer) error {
-			// Config Products Mediators
+			// config Products Mediators
 			err := mediator.ConfigProductsMediator(logger, mongoRepository, cacheRepository, tracer)
 			if err != nil {
 				return err
 			}
 
-			// Config Products Mappings
+			// config Products Mappings
 			err = mappings.ConfigureProductsMappings()
 			if err != nil {
 				return err
@@ -42,7 +42,7 @@ func (c *ProductsModuleConfigurator) ConfigureProductsModule() {
 }
 
 func (c *ProductsModuleConfigurator) MapProductsEndpoints() {
-	// Config Products Http Endpoints
+	// config Products Http Endpoints
 	c.ResolveFuncWithParamTag(func(endpoints []route.Endpoint) {
 		for _, endpoint := range endpoints {
 			endpoint.MapEndpoint()

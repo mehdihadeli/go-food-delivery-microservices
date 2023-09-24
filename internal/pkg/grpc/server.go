@@ -51,12 +51,14 @@ func NewGrpcServer(
 	meter metric.Meter,
 ) GrpcServer {
 	unaryServerInterceptors := []googleGrpc.UnaryServerInterceptor{
+		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/example_interceptor_test.go
 		otelgrpc.UnaryServerInterceptor(),
 		grpcError.UnaryServerInterceptor(),
 		grpcCtxTags.UnaryServerInterceptor(),
 		grpcRecovery.UnaryServerInterceptor(),
 	}
 	streamServerInterceptors := []googleGrpc.StreamServerInterceptor{
+		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/example_interceptor_test.go
 		otelgrpc.StreamServerInterceptor(),
 		grpcError.StreamServerInterceptor(),
 	}
@@ -66,6 +68,7 @@ func NewGrpcServer(
 			unaryServerInterceptors,
 			otelMetrics.UnaryServerInterceptor(meter, config.Name),
 		)
+
 		streamServerInterceptors = append(
 			streamServerInterceptors,
 			otelMetrics.StreamServerInterceptor(meter, config.Name),
@@ -88,10 +91,12 @@ func NewGrpcServer(
 			unaryServerInterceptors...,
 		)),
 	)
-
 	healthServer := health.NewServer()
 	grpc_health_v1.RegisterHealthServer(s, healthServer)
-	healthServer.SetServingStatus(config.Name, grpc_health_v1.HealthCheckResponse_SERVING)
+	healthServer.SetServingStatus(
+		config.Name,
+		grpc_health_v1.HealthCheckResponse_SERVING,
+	)
 
 	return &grpcServer{
 		server:         s,
@@ -130,7 +135,10 @@ func (s *grpcServer) RunGrpcServer(
 
 	if err != nil {
 		s.log.Error(
-			fmt.Sprintf("[grpcServer_RunGrpcServer.Serve] grpc server serve error: %+v", err),
+			fmt.Sprintf(
+				"[grpcServer_RunGrpcServer.Serve] grpc server serve error: %+v",
+				err,
+			),
 		)
 	}
 

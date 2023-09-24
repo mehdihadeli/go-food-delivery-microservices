@@ -1,4 +1,4 @@
-package health
+package contracts
 
 import (
 	"go.uber.org/fx"

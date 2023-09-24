@@ -50,7 +50,10 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 				"[createProductEndpoint_handler.Bind] error in the binding request",
 			)
 			ep.Logger.Errorf(
-				fmt.Sprintf("[createProductEndpoint_handler.Bind] err: %v", badRequestErr),
+				fmt.Sprintf(
+					"[createProductEndpoint_handler.Bind] err: %v",
+					badRequestErr,
+				),
 			)
 		}
 
@@ -65,8 +68,12 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 				"[createProductEndpoint_handler.StructCtx] command validation failed",
 			)
 			ep.Logger.Errorf(
-				fmt.Sprintf("[createProductEndpoint_handler.StructCtx] err: {%v}", validationErr),
+				fmt.Sprintf(
+					"[createProductEndpoint_handler.StructCtx] err: {%v}",
+					validationErr,
+				),
 			)
+
 			return validationErr
 		}
 

@@ -60,6 +60,7 @@ func (l *zapLogger) getLoggerLevel() zapcore.Level {
 	if !exist {
 		return zapcore.DebugLevel
 	}
+
 	return level
 }
 
@@ -114,8 +115,10 @@ func (l *zapLogger) initLogger(env environemnt.Environment) {
 
 	logger := zap.New(core, options...)
 
-	// add logs as events to tracing
-	logger = otelzap.New(logger).Logger
+	if l.logOptions.EnableTracing {
+		// add logs as events to tracing
+		logger = otelzap.New(logger).Logger
+	}
 
 	l.logger = logger
 	l.sugarLogger = logger.Sugar()

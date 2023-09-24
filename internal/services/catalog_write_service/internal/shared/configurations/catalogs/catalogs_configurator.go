@@ -5,7 +5,8 @@ import (
 	"net/http"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
-	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	echocontracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
+	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/configurations/catalogs/infrastructure"
@@ -20,9 +21,13 @@ type CatalogsServiceConfigurator struct {
 	productsModuleConfigurator *configurations.ProductsModuleConfigurator
 }
 
-func NewCatalogsServiceConfigurator(app contracts.Application) *CatalogsServiceConfigurator {
+func NewCatalogsServiceConfigurator(
+	app contracts.Application,
+) *CatalogsServiceConfigurator {
 	infraConfigurator := infrastructure.NewInfrastructureConfigurator(app)
-	productModuleConfigurator := configurations.NewProductsModuleConfigurator(app)
+	productModuleConfigurator := configurations.NewProductsModuleConfigurator(
+		app,
+	)
 
 	return &CatalogsServiceConfigurator{
 		Application:                app,
@@ -38,14 +43,16 @@ func (ic *CatalogsServiceConfigurator) ConfigureCatalogs() {
 
 	// Shared
 	// Catalogs configurations
-	ic.ResolveFunc(func(gorm *gorm.DB) error {
-		err := ic.migrateCatalogs(gorm)
-		if err != nil {
-			return err
-		}
+	ic.ResolveFunc(
+		func(gorm *gorm.DB, postgresMigrationRunner contracts2.PostgresMigrationRunner) error {
+			err := ic.migrateCatalogs(gorm, postgresMigrationRunner)
+			if err != nil {
+				return err
+			}
 
-		return nil
-	})
+			return nil
+		},
+	)
 
 	// Modules
 	// Product module
@@ -55,21 +62,24 @@ func (ic *CatalogsServiceConfigurator) ConfigureCatalogs() {
 func (ic *CatalogsServiceConfigurator) MapCatalogsEndpoints() {
 	// Shared
 	ic.ResolveFunc(
-		func(catalogsServer customEcho.EchoHttpServer, options *config.AppOptions) error {
+		func(catalogsServer echocontracts.EchoHttpServer, options *config.AppOptions) error {
 			catalogsServer.SetupDefaultMiddlewares()
 
-			// Config catalogs root endpoint
+			// config catalogs root endpoint
 			catalogsServer.RouteBuilder().
 				RegisterRoutes(func(e *echo.Echo) {
 					e.GET("", func(ec echo.Context) error {
 						return ec.String(
 							http.StatusOK,
-							fmt.Sprintf("%s is running...", options.GetMicroserviceNameUpper()),
+							fmt.Sprintf(
+								"%s is running...",
+								options.GetMicroserviceNameUpper(),
+							),
 						)
 					})
 				})
 
-			// Config catalogs swagger
+			// config catalogs swagger
 			ic.configSwagger(catalogsServer.RouteBuilder())
 
 			return nil

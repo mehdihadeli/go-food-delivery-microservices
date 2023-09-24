@@ -24,6 +24,21 @@ exporters:
     endpoints:
     - "http://elastic_search:9200"
 
+#  #https://www.elastic.co/guide/en/apm/guide/current/open-telemetry-direct.html#open-telemetry-proxy-apm
+#  otlp/elastic:
+#    # Elastic APM server https endpoint without the "https://" prefix
+#    endpoint: "http://elastic-apm-server:8200"
+#    headers:
+#      # Elastic APM Server secret token
+#      Authorization: "Bearer ${ELASTIC_APM_SECRET_TOKEN}"
+
+#  # https://uptrace:dev/opentelemetry/prometheus-metrics:html#prometheus-receiver
+#  otlp/uptrace:
+#    endpoint: otlp.uptrace.dev:4317
+#    headers:
+#      # Copy your project DSN here
+#      uptrace-dsn: 'https://<token>@uptrace.dev/<project_id>
+
 processors:
   batch:
 
@@ -40,12 +55,12 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging, zipkin, jaeger]
+      exporters: [logging, zipkin, jaeger] # otlp/elastic
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging, prometheus]
+      exporters: [logging, prometheus] # otlp/uptrace, otlp/elastic
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging, elasticsearch]
+      exporters: [logging, elasticsearch] # otlp/elastic

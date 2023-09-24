@@ -30,7 +30,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.18.0
 	go.opentelemetry.io/otel/trace v1.18.0
 	go.uber.org/fx v1.20.0
-	google.golang.org/grpc v1.58.1
+	google.golang.org/grpc v1.58.2
 	gopkg.in/khaiql/dbcleaner.v2 v2.3.0
 	gorm.io/gorm v1.25.4
 )
@@ -47,7 +47,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/Microsoft/hcsshim v0.11.0 // indirect
+	github.com/Microsoft/hcsshim v0.11.1 // indirect
 	github.com/TylerBrock/colorjson v0.0.0-20200706003622-8a50f05110d2 // indirect
 	github.com/ahmetb/go-linq/v3 v3.2.0 // indirect
 	github.com/ajg/form v1.5.1 // indirect
@@ -166,6 +166,7 @@ require (
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/uptrace/bun v1.1.16 // indirect
 	github.com/uptrace/bun/driver/pgdriver v1.1.16 // indirect
+	github.com/uptrace/opentelemetry-go-extra/otellogrus v0.2.2 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelutil v0.2.2 // indirect
 	github.com/uptrace/opentelemetry-go-extra/otelzap v0.2.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
@@ -189,10 +190,14 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.44.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo v0.44.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.44.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/host v0.44.0 // indirect
 	go.opentelemetry.io/contrib/propagators/ot v1.19.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric v0.41.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.41.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.18.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.18.0 // indirect
 	go.opentelemetry.io/otel/exporters/prometheus v0.41.0 // indirect
+	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v0.41.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.18.0 // indirect
 	go.opentelemetry.io/otel/exporters/zipkin v1.18.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.18.0 // indirect
@@ -231,8 +236,8 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/prometheus/client_golang v1.16.0 // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
-	github.com/prometheus/procfs v0.11.1 // indirect
-	github.com/spf13/afero v1.9.5 // indirect
+	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/spf13/afero v1.10.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect

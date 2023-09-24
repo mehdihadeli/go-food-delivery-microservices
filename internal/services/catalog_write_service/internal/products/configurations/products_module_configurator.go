@@ -31,7 +31,7 @@ func NewProductsModuleConfigurator(
 func (c *ProductsModuleConfigurator) ConfigureProductsModule() {
 	c.ResolveFunc(
 		func(logger logger.Logger, uow data.CatalogUnitOfWork, productRepository data.ProductRepository, producer producer.Producer, tracer tracing.AppTracer) error {
-			// Config Products Mediators
+			// config Products Mediators
 			err := mediatr.ConfigProductsMediator(logger, uow, productRepository, producer, tracer)
 			if err != nil {
 				return err
@@ -49,14 +49,14 @@ func (c *ProductsModuleConfigurator) ConfigureProductsModule() {
 }
 
 func (c *ProductsModuleConfigurator) MapProductsEndpoints() {
-	// Config Products Http Endpoints
+	// config Products Http Endpoints
 	c.ResolveFunc(func(endpointParams params.ProductsEndpointsParams) {
 		for _, endpoint := range endpointParams.Endpoints {
 			endpoint.MapEndpoint()
 		}
 	})
 
-	// Config Products Grpc Endpoints
+	// config Products Grpc Endpoints
 	c.ResolveFunc(
 		func(catalogsGrpcServer grpcServer.GrpcServer, grpcService *grpc.ProductGrpcServiceServer) error {
 			catalogsGrpcServer.GrpcServiceBuilder().RegisterRoutes(func(server *googleGrpc.Server) {

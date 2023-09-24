@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
@@ -44,7 +44,7 @@ var (
 		)),
 		fx.Provide(fx.Annotate(
 			NewRabbitMQHealthChecker,
-			fx.As(new(health.Health)),
+			fx.As(new(contracts.Health)),
 			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
 		)))
 

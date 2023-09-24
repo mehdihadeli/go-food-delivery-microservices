@@ -4,14 +4,14 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health/contracts"
 )
 
 type gormHealthChecker struct {
 	client *sql.DB
 }
 
-func NewGormHealthChecker(client *sql.DB) health.Health {
+func NewGormHealthChecker(client *sql.DB) contracts.Health {
 	return &gormHealthChecker{client}
 }
 

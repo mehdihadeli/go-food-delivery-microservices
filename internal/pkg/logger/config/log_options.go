@@ -15,6 +15,7 @@ type LogOptions struct {
 	LogLevel      string         `mapstructure:"level"`
 	LogType       models.LogType `mapstructure:"logType"`
 	CallerEnabled bool           `mapstructure:"callerEnabled"`
+	EnableTracing bool           `mapstructure:"enableTracing" default:"true"`
 }
 
 func ProvideLogConfig(env environemnt.Environment) (*LogOptions, error) {

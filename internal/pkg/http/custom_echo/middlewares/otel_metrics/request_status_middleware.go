@@ -1,4 +1,4 @@
-package otelMetrics
+package otelmetrics
 
 // ref:https://github.com/open-telemetry/opentelemetry-go/blob/main/example/prometheus/main.go
 
@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/labstack/echo/v4"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	api "go.opentelemetry.io/otel/metric"
 )
@@ -17,8 +18,10 @@ var (
 
 // Middleware adds request status metrics to the otel
 // ref: https://github.com/open-telemetry/opentelemetry-go/blob/main/example/prometheus/main.go
-func Middleware(meter api.Meter, serviceName string) echo.MiddlewareFunc {
-	errorCounter, _ := meter.Float64Counter(
+func Middleware(serviceName string) echo.MiddlewareFunc {
+	meter := otel.GetMeterProvider().Meter("echo")
+
+	errorCounter, _ = meter.Float64Counter( //nolint:errcheck
 		fmt.Sprintf("%s_error_http_requests_total", serviceName),
 		api.WithDescription("The total number of error http requests"),
 	)

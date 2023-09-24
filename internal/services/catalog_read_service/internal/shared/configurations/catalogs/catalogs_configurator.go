@@ -49,7 +49,7 @@ func (ic *CatalogsServiceConfigurator) MapCatalogsEndpoints() {
 		func(catalogsServer customEcho.EchoHttpServer, cfg *config.Config) error {
 			catalogsServer.SetupDefaultMiddlewares()
 
-			// Config catalogs root endpoint
+			// config catalogs root endpoint
 			catalogsServer.RouteBuilder().
 				RegisterRoutes(func(e *echo.Echo) {
 					e.GET("", func(ec echo.Context) error {
@@ -63,7 +63,7 @@ func (ic *CatalogsServiceConfigurator) MapCatalogsEndpoints() {
 					})
 				})
 
-			// Config catalogs swagger
+			// config catalogs swagger
 			ic.configSwagger(catalogsServer.RouteBuilder())
 
 			return nil

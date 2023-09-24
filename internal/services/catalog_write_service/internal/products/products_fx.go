@@ -1,7 +1,7 @@
 package products
 
 import (
-	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/repositories"
 	createProductV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/endpoints"
@@ -23,22 +23,40 @@ var Module = fx.Module(
 	fx.Provide(repositories.NewPostgresProductRepository),
 	fx.Provide(grpc.NewProductGrpcService),
 
-	fx.Provide(fx.Annotate(func(catalogsServer customEcho.EchoHttpServer) *echo.Group {
-		var g *echo.Group
-		catalogsServer.RouteBuilder().RegisterGroupFunc("/api/v1", func(v1 *echo.Group) {
-			group := v1.Group("/products")
-			g = group
-		})
+	fx.Provide(
+		fx.Annotate(func(catalogsServer contracts.EchoHttpServer) *echo.Group {
+			var g *echo.Group
+			catalogsServer.RouteBuilder().
+				RegisterGroupFunc("/api/v1", func(v1 *echo.Group) {
+					group := v1.Group("/products")
+					g = group
+				})
 
-		return g
-	}, fx.ResultTags(`name:"product-echo-group"`))),
+			return g
+		}, fx.ResultTags(`name:"product-echo-group"`)),
+	),
 
 	fx.Provide(
-		route.AsRoute(createProductV1.NewCreteProductEndpoint, "product-routes"),
-		route.AsRoute(updateProductsV1.NewUpdateProductEndpoint, "product-routes"),
+		route.AsRoute(
+			createProductV1.NewCreteProductEndpoint,
+			"product-routes",
+		),
+		route.AsRoute(
+			updateProductsV1.NewUpdateProductEndpoint,
+			"product-routes",
+		),
 		route.AsRoute(getProductsV1.NewGetProductsEndpoint, "product-routes"),
-		route.AsRoute(searchProductsV1.NewSearchProductsEndpoint, "product-routes"),
-		route.AsRoute(getProductByIdV1.NewGetProductByIdEndpoint, "product-routes"),
-		route.AsRoute(deleteProductV1.NewDeleteProductEndpoint, "product-routes"),
+		route.AsRoute(
+			searchProductsV1.NewSearchProductsEndpoint,
+			"product-routes",
+		),
+		route.AsRoute(
+			getProductByIdV1.NewGetProductByIdEndpoint,
+			"product-routes",
+		),
+		route.AsRoute(
+			deleteProductV1.NewDeleteProductEndpoint,
+			"product-routes",
+		),
 	),
 )

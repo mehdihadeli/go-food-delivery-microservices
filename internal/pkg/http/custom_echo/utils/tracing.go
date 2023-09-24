@@ -1,4 +1,4 @@
-package tracing
+package utils
 
 import (
 	"context"
@@ -19,7 +19,9 @@ func TraceHttpErrFromSpan(span trace.Span, err error) error {
 	if err != nil {
 		stackTraceError := errorUtils.ErrorsWithStack(err)
 		span.SetStatus(codes.Error, "")
-		span.SetAttributes(attribute.String(constants.Otel.HttpErrorMessage, stackTraceError))
+		span.SetAttributes(
+			attribute.String(constants.Otel.HttpErrorMessage, stackTraceError),
+		)
 		if customErrors.IsCustomError(err) {
 			httpError := problemDetails.ParseError(err)
 			span.SetAttributes(semconv.HTTPStatusCode(httpError.GetStatus()))
@@ -36,7 +38,9 @@ func TraceHttpErrFromSpanWithCode(span trace.Span, err error, code int) error {
 		stackTraceError := errorUtils.ErrorsWithStack(err)
 		span.SetStatus(codes.Error, "")
 		span.SetAttributes(semconv.HTTPStatusCode(code))
-		span.SetAttributes(attribute.String(constants.Otel.HttpErrorMessage, stackTraceError))
+		span.SetAttributes(
+			attribute.String(constants.Otel.HttpErrorMessage, stackTraceError),
+		)
 		span.RecordError(err)
 	}
 
@@ -51,7 +55,9 @@ func TraceHttpErrFromContext(ctx context.Context, err error) error {
 	if err != nil {
 		stackTraceError := errorUtils.ErrorsWithStack(err)
 		span.SetStatus(codes.Error, "")
-		span.SetAttributes(attribute.String(constants.Otel.HttpErrorMessage, stackTraceError))
+		span.SetAttributes(
+			attribute.String(constants.Otel.HttpErrorMessage, stackTraceError),
+		)
 		span.RecordError(err)
 	}
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
 	customHadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/log"
 	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
@@ -23,27 +24,14 @@ type echoHttpServer struct {
 	config       *config.EchoHttpOptions
 	log          logger.Logger
 	meter        metric.Meter
-	routeBuilder *RouteBuilder
-}
-
-type EchoHttpServer interface {
-	RunHttpServer(configEcho ...func(echo *echo.Echo)) error
-	GracefulShutdown(ctx context.Context) error
-	ApplyVersioningFromHeader()
-	GetEchoInstance() *echo.Echo
-	Logger() logger.Logger
-	Cfg() *config.EchoHttpOptions
-	SetupDefaultMiddlewares()
-	RouteBuilder() *RouteBuilder
-	AddMiddlewares(middlewares ...echo.MiddlewareFunc)
-	ConfigGroup(groupName string, groupFunc func(group *echo.Group))
+	routeBuilder *contracts.RouteBuilder
 }
 
 func NewEchoHttpServer(
 	config *config.EchoHttpOptions,
 	logger logger.Logger,
 	meter metric.Meter,
-) EchoHttpServer {
+) contracts.EchoHttpServer {
 	e := echo.New()
 	e.HideBanner = false
 
@@ -52,7 +40,7 @@ func NewEchoHttpServer(
 		config:       config,
 		log:          logger,
 		meter:        meter,
-		routeBuilder: NewRouteBuilder(e),
+		routeBuilder: contracts.NewRouteBuilder(e),
 	}
 }
 
@@ -82,11 +70,14 @@ func (s *echoHttpServer) Cfg() *config.EchoHttpOptions {
 	return s.config
 }
 
-func (s *echoHttpServer) RouteBuilder() *RouteBuilder {
+func (s *echoHttpServer) RouteBuilder() *contracts.RouteBuilder {
 	return s.routeBuilder
 }
 
-func (s *echoHttpServer) ConfigGroup(groupName string, groupFunc func(group *echo.Group)) {
+func (s *echoHttpServer) ConfigGroup(
+	groupName string,
+	groupFunc func(group *echo.Group),
+) {
 	groupFunc(s.echo.Group(groupName))
 }
 
@@ -115,38 +106,63 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 		customHadnlers.ProblemHandlerFunc(err, c, s.log)
 	}
 
+	skipper := func(c echo.Context) bool {
+		return strings.Contains(c.Request().URL.Path, "swagger") ||
+			strings.Contains(c.Request().URL.Path, "metrics") ||
+			strings.Contains(c.Request().URL.Path, "health") ||
+			strings.Contains(c.Request().URL.Path, "favicon.ico")
+	}
+
 	// log errors and information
-	s.echo.Use(log.EchoLogger(s.log))
-	s.echo.Use(otelecho.Middleware(s.config.Name))
+	s.echo.Use(
+		log.EchoLogger(
+			s.log,
+			log.WithSkipper(skipper),
+		),
+	)
+	s.echo.Use(
+		otelecho.Middleware(s.config.Name, otelecho.WithSkipper(skipper)),
+	)
 	// Because we use metrics server middleware, if it is not available, our echo will not work.
 	if s.meter != nil {
 		s.echo.Use(otelMetrics.Middleware(s.meter, s.config.Name))
 	}
 
-	s.echo.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogContentLength: true,
-		LogLatency:       true,
-		LogError:         false,
-		LogMethod:        true,
-		LogRequestID:     true,
-		LogURI:           true,
-		LogResponseSize:  true,
-		LogURIPath:       true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			s.log.Infow(
-				fmt.Sprintf("[Request Middleware] REQUEST: uri: %v, status: %v\n", v.URI, v.Status),
-				logger.Fields{"URI": v.URI, "Status": v.Status},
-			)
-			return nil
-		},
-	}))
+	//s.echo.Use(
+	//	middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+	//		LogContentLength: true,
+	//		LogLatency:       true,
+	//		LogError:         false,
+	//		LogMethod:        true,
+	//		LogRequestID:     true,
+	//		LogURI:           true,
+	//		LogResponseSize:  true,
+	//		LogURIPath:       true,
+	//		Skipper: func(c echo.Context) bool {
+	//			return strings.Contains(c.Request().URL.Path, "swagger") ||
+	//				strings.Contains(c.Request().URL.Path, "metrics") ||
+	//				strings.Contains(c.Request().URL.Path, "health") ||
+	//				strings.Contains(c.Request().URL.Path, "favicon.ico")
+	//		},
+	//		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+	//			s.log.Infow(
+	//				fmt.Sprintf(
+	//					"[Request Middleware] REQUEST: uri: %v, status: %v\n",
+	//					v.URI,
+	//					v.Status,
+	//				),
+	//				logger.Fields{"URI": v.URI, "Status": v.Status},
+	//			)
+	//
+	//			return nil
+	//		},
+	//	}),
+	//)
 	s.echo.Use(middleware.BodyLimit(constants.BodyLimit))
 	s.echo.Use(middleware.RequestID())
 	s.echo.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Level: constants.GzipLevel,
-		Skipper: func(c echo.Context) bool {
-			return strings.Contains(c.Request().URL.Path, "swagger")
-		},
+		Level:   constants.GzipLevel,
+		Skipper: skipper,
 	}))
 }
 

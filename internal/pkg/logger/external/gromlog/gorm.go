@@ -20,7 +20,7 @@ type GormCustomLogger struct {
 func NewGormCustomLogger(logger logger.Logger) *GormCustomLogger {
 	//cfg, err := config.ProvideLogConfig()
 	//
-	//var logger logger.Logger
+	//var logger logger.logger
 	//if cfg.LogType == models.Logrus && err != nil {
 	//	logger = logrous.NewLogrusLogger(cfg, constants.Dev)
 	//} else {

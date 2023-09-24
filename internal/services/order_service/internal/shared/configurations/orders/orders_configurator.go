@@ -51,7 +51,7 @@ func (ic *OrdersServiceConfigurator) MapOrdersEndpoints() {
 		func(ordersServer customEcho.EchoHttpServer, cfg *config.Config) error {
 			ordersServer.SetupDefaultMiddlewares()
 
-			// Config orders root endpoint
+			// config orders root endpoint
 			ordersServer.RouteBuilder().
 				RegisterRoutes(func(e *echo.Echo) {
 					e.GET("", func(ec echo.Context) error {
@@ -65,7 +65,7 @@ func (ic *OrdersServiceConfigurator) MapOrdersEndpoints() {
 					})
 				})
 
-			// Config orders swagger
+			// config orders swagger
 			ic.configSwagger(ordersServer.RouteBuilder())
 
 			return nil

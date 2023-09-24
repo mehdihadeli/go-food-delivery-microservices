@@ -9,7 +9,6 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
 	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
@@ -27,11 +26,11 @@ func Test_Publish_Message(t *testing.T) {
 
 	ctx := context.Background()
 	tp, err := tracing.NewOtelTracing(
-		&config2.OpenTelemetryOptions{
+		&tracing.TracingOptions{
 			ServiceName:     "test",
 			Enabled:         true,
 			AlwaysOnSampler: true,
-			JaegerExporterOptions: &config2.JaegerExporterOptions{
+			JaegerExporterOptions: &tracing.JaegerExporterOptions{
 				AgentHost: "localhost",
 				AgentPort: "6831",
 			},

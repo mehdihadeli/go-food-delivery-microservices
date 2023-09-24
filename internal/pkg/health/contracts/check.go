@@ -1,4 +1,4 @@
-package health
+package contracts
 
 type Check map[string]Status
 
@@ -8,5 +8,6 @@ func (check Check) AllUp() bool {
 			return false
 		}
 	}
+
 	return true
 }

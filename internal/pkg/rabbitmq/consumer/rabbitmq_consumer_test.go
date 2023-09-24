@@ -12,7 +12,6 @@ import (
 	messageConsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/pipeline"
 	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
@@ -34,15 +33,15 @@ func Test_Consume_Message(t *testing.T) {
 	defaultLogger2.SetupDefaultLogger()
 	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
 
-	tp, err := tracing.NewOtelTracing(&config2.OpenTelemetryOptions{
+	tp, err := tracing.NewOtelTracing(&tracing.TracingOptions{
 		ServiceName:     "test",
 		Enabled:         true,
 		AlwaysOnSampler: true,
-		JaegerExporterOptions: &config2.JaegerExporterOptions{
+		JaegerExporterOptions: &tracing.JaegerExporterOptions{
 			AgentHost: "localhost",
 			AgentPort: "6831",
 		},
-		ZipkinExporterOptions: &config2.ZipkinExporterOptions{
+		ZipkinExporterOptions: &tracing.ZipkinExporterOptions{
 			Url: "http://localhost:9411/api/v2/spans",
 		},
 	}, environemnt.Development)

@@ -139,7 +139,7 @@ func (l *FxCustomLogger) LogEvent(event fxevent.Event) {
 				logger.Fields{"error": e.Err},
 			)
 		} else {
-			l.Debugw("initialized custom fxevent.Logger", logger.Fields{"function": e.ConstructorName})
+			l.Debugw("initialized custom fxevent.logger", logger.Fields{"function": e.ConstructorName})
 		}
 	}
 }

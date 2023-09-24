@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
 	"go.uber.org/fx"
@@ -42,7 +43,11 @@ var (
 )
 
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`
-func registerHooks(lc fx.Lifecycle, echoServer EchoHttpServer, logger logger.Logger) {
+func registerHooks(
+	lc fx.Lifecycle,
+	echoServer contracts.EchoHttpServer,
+	logger logger.Logger,
+) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			// https://github.com/uber-go/fx/blob/v1.20.0/app.go#L573
@@ -52,7 +57,10 @@ func registerHooks(lc fx.Lifecycle, echoServer EchoHttpServer, logger logger.Log
 			go func() {
 				// https://medium.com/@mokiat/proper-http-shutdown-in-go-bd3bfaade0f2
 				// When Shutdown is called, Serve, ListenAndServe, and ListenAndServeTLS immediately return ErrServerClosed. Make sure the program doesn’t exit and waits instead for Shutdown to return.
-				if err := echoServer.RunHttpServer(); !errors.Is(err, http.ErrServerClosed) {
+				if err := echoServer.RunHttpServer(); !errors.Is(
+					err,
+					http.ErrServerClosed,
+				) {
 					// do a fatal for going to OnStop process
 					logger.Fatalf(
 						"(EchoHttpServer.RunHttpServer) error in running server: {%v}",
@@ -75,7 +83,8 @@ func registerHooks(lc fx.Lifecycle, echoServer EchoHttpServer, logger logger.Log
 			// https://medium.com/@mokiat/proper-http-shutdown-in-go-bd3bfaade0f2
 			// When Shutdown is called, Serve, ListenAndServe, and ListenAndServeTLS immediately return ErrServerClosed. Make sure the program doesn’t exit and waits instead for Shutdown to return.
 			if err := echoServer.GracefulShutdown(ctx); err != nil {
-				echoServer.Logger().Errorf("error shutting down echo server: %v", err)
+				echoServer.Logger().
+					Errorf("error shutting down echo server: %v", err)
 			} else {
 				echoServer.Logger().Info("echo server shutdown gracefully")
 			}

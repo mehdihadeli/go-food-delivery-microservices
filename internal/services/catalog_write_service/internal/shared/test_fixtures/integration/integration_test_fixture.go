@@ -74,8 +74,6 @@ func NewIntegrationTestSharedFixture(
 		ProductServiceClient: result.ProductServiceClient,
 	}
 
-	migrateDatabase(result)
-
 	return shared
 }
 
@@ -214,11 +212,4 @@ func seedAndMigration(gormDB *gorm.DB) ([]*models.Product, error) {
 		gormDB,
 	)
 	return result.Items, nil
-}
-
-func migrateDatabase(result *test.TestAppResult) {
-	err := result.PostgresMigrationRunner.Up(context.Background(), 0)
-	if err != nil {
-		result.Logger.Fatalf("error in catalog_service migration, err: %s", err)
-	}
 }

@@ -1,7 +1,7 @@
 package catalogs
 
 import (
-	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/docs"
 
 	"github.com/labstack/echo/v4"

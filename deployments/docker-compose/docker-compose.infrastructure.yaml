@@ -1,3 +1,6 @@
+# Ref:https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/examples/demo/docker-compose.yaml
+# https://github.com/open-telemetry/opentelemetry-demo/blob/main/docker-compose.yml
+
 version: "3.8"
 name: go-ecommerce-microservices
 
@@ -6,7 +9,7 @@ services:
     image: rabbitmq:management
     container_name: rabbitmq
     pull_policy: if_not_present
-    restart: on-failure
+    restart: unless-stopped
     ports:
       - ${RABBITMQ_HOST_PORT:-5672}:${RABBITMQ_PORT:-5672}
       - ${RABBITMQ_HOST_API_PORT:-15672}:${RABBITMQ_API_PORT:-15672}
@@ -15,11 +18,15 @@ services:
     networks:
       - ecommerce
 
+  # prometheus dashboard: http://localhost:9090
+  # prometheus internal metrics: http://localhost:9090/metrics
+  # https://prometheus.io/docs/prometheus/latest/getting_started/
+  # https://prometheus.io/docs/guides/go-application/
   prometheus:
     image: prom/prometheus:latest
     pull_policy: if_not_present
     container_name: prometheus
-    restart: on-failure
+    restart: unless-stopped
     user: root
     ports:
       - ${PROMETHEUS_HOST_PORT:-9090}:${PROMETHEUS_PORT:-9090}
@@ -30,21 +37,25 @@ services:
     networks:
       - ecommerce
 
+  # node_exporter will use for gathering metrics on the system level with its own /metrics endpoint like cpu, ram, ...
+  # https://prometheus.io/docs/guides/node-exporter/
   node_exporter:
     container_name: node_exporter
     pull_policy: if_not_present
-    restart: on-failure
+    restart: unless-stopped
     image: prom/node-exporter
     ports:
-      - "9101:9100"
+      - "9100:9100"
     networks:
       - ecommerce
 
   grafana:
-    container_name: grafana
-    pull_policy: if_not_present
-    restart: on-failure
     image: grafana/grafana
+    pull_policy: if_not_present
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/grafana.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
     ports:
       - ${GRAFANA_HOST_PORT:-3000}:${GRAFANA_PORT:-3000}
     networks:
@@ -54,7 +65,7 @@ services:
     image: postgres:latest
     pull_policy: if_not_present
     container_name: postgres
-    restart: on-failure
+    restart: unless-stopped
     ports:
       - ${POSTGRES_HOST_PORT:-5432}:${POSTGRES_PORT:-5432}
     #https://docs.docker.com/compose/environment-variables/env-file/#parameter-expansion
@@ -69,7 +80,7 @@ services:
   redis:
     image: redis/redis-stack:latest
     pull_policy: if_not_present
-    restart: on-failure
+    restart: unless-stopped
     container_name: redis
     ports:
       - "6379:6379"
@@ -80,7 +91,7 @@ services:
   #   image: confluentinc/cp-zookeeper:7.0.1
   #   hostname: zookeeper
   #   container_name: zookeeper
-  #   restart: on-failure
+  #   restart: unless-stopped
   #   ports:
   #     - "2181:2181"
   #   environment:
@@ -93,7 +104,7 @@ services:
   #   image: confluentinc/cp-kafka:7.0.1
   #   hostname: kafka
   #   container_name: kafka
-  #   restart: on-failure
+  #   restart: unless-stopped
   #   depends_on:
   #     - zookeeper
   #   ports:
@@ -134,7 +145,7 @@ services:
     image: mongo
     pull_policy: if_not_present
     container_name: mongo
-    restart: on-failure
+    restart: unless-stopped
     # https://docs.docker.com/compose/environment-variables/env-file/#parameter-expansion
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-admin}
@@ -154,52 +165,40 @@ services:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
     pull_policy: if_not_present
+    restart: unless-stopped
+    command:
+      - "--memory.max-traces"
+      - "10000"
+      - "--query.base-path"
+      - "/jaeger/ui"
+      - "--prometheus.server-url"
+      - "http://${PROMETHEUS_ADDR}"
     environment:
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411
       - COLLECTOR_OTLP_ENABLED=true
+      # Store metrics in PROMETHEUS storage instead of in-memory storage
       - METRICS_STORAGE_TYPE=prometheus
-      - PROMETHEUS_SERVER_URL=http://prometheus:9090
+      - PROMETHEUS_SERVER_URL=http:${PROMETHEUS_ADDR}
+#      # Jaeger uses Elasticsearch as span storage instead of in-memory storage
+#      - SPAN_STORAGE_TYPE=elasticsearch
+#      - ES_SERVER_URLS=http://elastic_search:${ELASTIC_PORT:-9200}
+#      - ES_VERSION=8
     ports:
-      - "6831:6831/udp"
-      - "6832:6832/udp"
-      - "5778:5778"
-      - "16686:16686"
-      - "4317:4317"
-      - "4318:4318"
-      - "14250:14250"
-      - "14268:14268"
-      - "14269:14269"
+      - "16686:16686" # Jaeger UI port
+      - "4320:4317" # OTLP gRPC default port - for prevent duplicate expose this port that will expose also by `otel-collector` we not expose it on `4317` - `4320` could use by the app through otlptracegrpc
+      - "4321:4318" # OTLP Http default port - for prevent duplicate expose this port that will expose also by `otel-collector` we not expose it on `4318` - `4321` could use by the app through otlptracehttp
     networks:
       - ecommerce
 
   zipkin:
     image: openzipkin/zipkin:latest
     pull_policy: if_not_present
-    restart: on-failure
+    restart: unless-stopped
     container_name: zipkin
     ports:
       - "9411:9411"
     networks:
       - ecommerce
-
-#  otel-collector:
-#    image: otel/opentelemetry-collector-contrib-dev:latest
-#    pull_policy: if_not_present
-#    command: ["--config=/etc/otel-collector-config.yaml", ""]
-#    volumes:
-#      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
-#    ports:
-#      - "1888:1888" # pprof extension
-#      - "8888:8888" # Prometheus metrics exposed by the collector
-#      - "8889:8889" # Prometheus exporter metrics
-#      - "13133:13133" # health_check extension
-#      - "4317:4317" # OTLP gRPC receiver
-#      - "55679:55679" # zpages extension
-#    depends_on:
-#      - jaeger
-#      - zipkin
-#    networks:
-#      - ecommerce
 
   # https://developers.eventstore.com/server/v21.10/installation.html#insecure-single-node
   # https://hub.docker.com/r/eventstore/eventstore/tags
@@ -209,7 +208,7 @@ services:
     image: eventstore/eventstore:latest
     pull_policy: if_not_present
     container_name: eventstore
-    restart: on-failure
+    restart: unless-stopped
     environment:
       - EVENTSTORE_CLUSTER_SIZE=1
       - EVENTSTORE_RUN_PROJECTIONS=All
@@ -233,9 +232,44 @@ services:
     networks:
       - ecommerce
 
+  # containers monitoring
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    restart: unless-stopped
+    ports:
+      - "9091:8080"
+    # network_mode: host
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    networks:
+      - ecommerce
+
+#  # https://stackoverflow.com/questions/67791781/how-to-configure-apm-server-to-docker-compose-file
+#  # https://www.elastic.co/guide/en/apm/guide/current/open-telemetry.html
+#  apm-server:
+#    image: docker.elastic.co/apm/apm-server:latest
+#    cap_add: ["CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID"]
+#    cap_drop: ["ALL"]
+#    ports:
+#      - 8200:8200
+#    command: >
+#      apm-server -e
+#        -E apm-server.rum.enabled=true
+#        -E setup.kibana.host=kibana:5601
+#        -E setup.template.settings.index.number_of_replicas=0
+#        -E apm-server.kibana.enabled=true
+#        -E apm-server.kibana.host=kibana:5601
+#        -E output.elasticsearch.hosts=["elasticsearch:9200"]
+
   # elasticsearch:
   #   container_name: elastic_search
-  #   restart: on-failure
+  #   restart: unless-stopped
   #   image: elasticsearch:8.5.2
   #   environment:
   #     - discovery.type=single-node
@@ -258,9 +292,9 @@ services:
   # kibana:
   #   image: kibana:8.5.2
   #   container_name: kibana
-  #   restart: on-failure
+  #   restart: unless-stopped
   #   environment:
-  #     - ELASTICSEARCH_HOSTS=http://elastic_search:9200
+  #     - ELASTICSEARCH_HOSTS=http://elastic_search:${ELASTIC_PORT:-9200}
   #   ports:
   #     - ${KIBANA_HOST_PORT:-5601}:${KIBANA_PORT:-5601}
   #   networks:

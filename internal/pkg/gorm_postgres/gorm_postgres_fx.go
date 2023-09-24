@@ -3,11 +3,9 @@ package gormPostgres
 import (
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health/contracts"
 
 	"go.uber.org/fx"
-	"gorm.io/gorm"
-	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 // Module provided to fxlog
@@ -20,14 +18,8 @@ var Module = fx.Module(
 		NewSQLDB,
 		fx.Annotate(
 			NewGormHealthChecker,
-			fx.As(new(health.Health)),
+			fx.As(new(contracts.Health)),
 			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
 		),
 	),
-	fx.Invoke(EnableTracing),
 )
-
-func EnableTracing(gormDb *gorm.DB) error {
-	// add tracing to gorm
-	return gormDb.Use(tracing.NewPlugin())
-}

@@ -40,13 +40,13 @@ func (c *OrdersModuleConfigurator) ConfigureOrdersModule() {
 			orderAggregateStore store.AggregateStore[*aggregate.Order],
 			tracer tracing.AppTracer,
 		) error {
-			// Config Orders Mappings
+			// config Orders Mappings
 			err := mappings.ConfigureOrdersMappings()
 			if err != nil {
 				return err
 			}
 
-			// Config Orders Mediators
+			// config Orders Mediators
 			err = mediatr.ConfigOrdersMediator(logger, orderRepository, orderAggregateStore, tracer)
 			if err != nil {
 				return err
@@ -58,7 +58,7 @@ func (c *OrdersModuleConfigurator) ConfigureOrdersModule() {
 }
 
 func (c *OrdersModuleConfigurator) MapOrdersEndpoints() {
-	// Config Orders Http Endpoints
+	// config Orders Http Endpoints
 	c.ResolveFuncWithParamTag(func(endpoints []route.Endpoint) {
 		for _, endpoint := range endpoints {
 			endpoint.MapEndpoint()
@@ -66,7 +66,7 @@ func (c *OrdersModuleConfigurator) MapOrdersEndpoints() {
 	}, `group:"order-routes"`,
 	)
 
-	// Config Orders Grpc Endpoints
+	// config Orders Grpc Endpoints
 	c.ResolveFunc(
 		func(ordersGrpcServer grpcServer.GrpcServer, ordersMetrics *contracts.OrdersMetrics, logger logger.Logger, validator *validator.Validate) error {
 			orderGrpcService := grpc.NewOrderGrpcService(logger, validator, ordersMetrics)

@@ -12,6 +12,7 @@ import (
 
 	"github.com/nolleh/caption_json_formatter"
 	"github.com/sirupsen/logrus"
+	"github.com/uptrace/opentelemetry-go-extra/otellogrus"
 )
 
 type logrusLogger struct {
@@ -32,7 +33,10 @@ var loggerLevelMap = map[string]logrus.Level{
 }
 
 // NewLogrusLogger creates a new logrus logger
-func NewLogrusLogger(cfg *config2.LogOptions, env environemnt.Environment) logger.Logger {
+func NewLogrusLogger(
+	cfg *config2.LogOptions,
+	env environemnt.Environment,
+) logger.Logger {
 	logrusLogger := &logrusLogger{level: cfg.LogLevel, logOptions: cfg}
 	logrusLogger.initLogger(env)
 
@@ -63,6 +67,16 @@ func (l *logrusLogger) initLogger(env environemnt.Environment) {
 		logrusLogger.SetReportCaller(false)
 		// https://github.com/nolleh/caption_json_formatter
 		logrusLogger.SetFormatter(&caption_json_formatter.Formatter{PrettyPrint: true})
+	}
+
+	if l.logOptions.EnableTracing {
+		// Instrument logrus.
+		logrus.AddHook(otellogrus.NewHook(otellogrus.WithLevels(
+			logrus.PanicLevel,
+			logrus.FatalLevel,
+			logrus.ErrorLevel,
+			logrus.WarnLevel,
+		)))
 	}
 
 	l.logger = logrusLogger
@@ -190,6 +204,8 @@ func (l *logrusLogger) GrpcClientInterceptorLogger(
 	)
 }
 
-func (l *logrusLogger) mapToFields(fields map[string]interface{}) *logrus.Entry {
+func (l *logrusLogger) mapToFields(
+	fields map[string]interface{},
+) *logrus.Entry {
 	return l.logger.WithFields(logrus.Fields{"ss": 1})
 }

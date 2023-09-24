@@ -34,8 +34,6 @@ func NewMongoDB(cfg *MongoDbOptions) (*mongo.Client, error) {
 		SetMaxConnIdleTime(maxConnIdleTime).
 		SetMinPoolSize(minPoolSize).
 		SetMaxPoolSize(maxPoolSize)
-	// add tracing
-	opt.Monitor = otelmongo.NewMonitor()
 
 	if cfg.UseAuth {
 		opt = opt.SetAuth(
@@ -47,6 +45,11 @@ func NewMongoDB(cfg *MongoDbOptions) (*mongo.Client, error) {
 	client, err := mongo.Connect(ctx, opt)
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg.EnableTracing {
+		// add tracing
+		opt.Monitor = otelmongo.NewMonitor()
 	}
 
 	// setup  https://github.com/Kamva/mgm

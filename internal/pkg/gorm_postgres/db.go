@@ -11,6 +11,7 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 	gormPostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 func NewGorm(cfg *GormOptions) (*gorm.DB, error) {
@@ -39,6 +40,11 @@ func NewGorm(cfg *GormOptions) (*gorm.DB, error) {
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	// add tracing to gorm
+	if cfg.EnableTracing {
+		err = gormDb.Use(tracing.NewPlugin())
 	}
 
 	return gormDb, nil

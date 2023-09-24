@@ -8,7 +8,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
 	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/configurations/rabbitmq"
@@ -35,7 +36,6 @@ var Module = fx.Module(
 			}
 		},
 	),
-	otel.Module,
 	rabbitmq.ModuleFunc(
 		func() configurations.RabbitMQConfigurationBuilderFuc {
 			return func(builder configurations.RabbitMQConfigurationBuilder) {
@@ -44,6 +44,8 @@ var Module = fx.Module(
 		},
 	),
 	health.Module,
+	tracing.Module,
+	metrics.Module,
 
 	// Other provides
 	fx.Provide(validator.New),

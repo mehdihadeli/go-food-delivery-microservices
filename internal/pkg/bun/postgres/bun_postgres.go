@@ -37,7 +37,7 @@ func NewBunDB(cfg *bun2.BunConfig) (*bun.DB, error) {
 	//pgconn := pgdriver.NewConnector(
 	//	pgdriver.WithNetwork("tcp"),
 	//	pgdriver.WithAddr("localhost:5437"),
-	//	pgdriver.WithTLSConfig(&tls.Config{InsecureSkipVerify: true}),
+	//	pgdriver.WithTLSConfig(&tls.config{InsecureSkipVerify: true}),
 	//	pgdriver.WithUser("test"),
 	//	pgdriver.WithPassword("test"),
 	//	pgdriver.WithDatabase("test"),

@@ -16,7 +16,6 @@ require (
 	github.com/doug-martin/goqu/v9 v9.18.0
 	github.com/elastic/go-elasticsearch/v8 v8.10.0
 	github.com/go-playground/validator v9.31.0+incompatible
-	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-resty/resty/v2 v2.8.0
 	github.com/go-testfixtures/testfixtures/v3 v3.9.0
 	github.com/goccy/go-json v0.10.2
@@ -38,6 +37,8 @@ require (
 	github.com/michaelklishin/rabbit-hole v1.5.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nolleh/caption_json_formatter v0.2.2
+	github.com/onsi/ginkgo/v2 v2.12.1
+	github.com/onsi/gomega v1.27.10
 	github.com/orlangure/gnomock v0.30.0
 	github.com/ory/dockertest/v3 v3.10.0
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
@@ -56,15 +57,19 @@ require (
 	github.com/uptrace/bun v1.1.16
 	github.com/uptrace/bun/dialect/pgdialect v1.1.16
 	github.com/uptrace/bun/driver/pgdriver v1.1.16
+	github.com/uptrace/opentelemetry-go-extra/otellogrus v0.2.2
 	github.com/uptrace/opentelemetry-go-extra/otelzap v0.2.2
 	go.mongodb.org/mongo-driver v1.12.1
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.44.0
 	go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo v0.44.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.44.0
+	go.opentelemetry.io/contrib/instrumentation/host v0.44.0
 	go.opentelemetry.io/contrib/propagators/ot v1.19.0
 	go.opentelemetry.io/otel v1.18.0
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v0.41.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.18.0
 	go.opentelemetry.io/otel/exporters/prometheus v0.41.0
+	go.opentelemetry.io/otel/exporters/stdout/stdoutmetric v0.41.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.18.0
 	go.opentelemetry.io/otel/exporters/zipkin v1.18.0
 	go.opentelemetry.io/otel/metric v1.18.0
@@ -73,7 +78,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.18.0
 	go.uber.org/fx v1.20.0
 	go.uber.org/zap v1.26.0
-	google.golang.org/grpc v1.58.1
+	google.golang.org/grpc v1.58.2
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gorm v1.25.4
 	gorm.io/plugin/opentelemetry v0.1.4
@@ -85,7 +90,7 @@ require (
 	github.com/ClickHouse/ch-go v0.58.2 // indirect
 	github.com/ClickHouse/clickhouse-go/v2 v2.14.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/Microsoft/hcsshim v0.11.0 // indirect
+	github.com/Microsoft/hcsshim v0.11.1 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -109,11 +114,14 @@ require (
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/pprof v0.0.0-20230912144702-c363fe2c2ed8 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/google/uuid v1.3.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0 // indirect
@@ -160,14 +168,14 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20221212215047-62379fc7944b // indirect
 	github.com/prometheus/client_model v0.4.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
-	github.com/prometheus/procfs v0.11.1 // indirect
+	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/redis/go-redis/extra/rediscmd/v9 v9.0.5 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.8 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
-	github.com/spf13/afero v1.9.5 // indirect
+	github.com/spf13/afero v1.10.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
@@ -190,6 +198,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlpmetric v0.41.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.18.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect

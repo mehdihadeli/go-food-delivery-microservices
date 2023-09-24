@@ -9,15 +9,20 @@ import (
 )
 
 type MongoDbOptions struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	User     string `mapstructure:"user"`
-	Password string `mapstructure:"password"`
-	Database string `mapstructure:"database"`
-	UseAuth  bool   `mapstructure:"useAuth"`
+	Host          string `mapstructure:"host"`
+	Port          int    `mapstructure:"port"`
+	User          string `mapstructure:"user"`
+	Password      string `mapstructure:"password"`
+	Database      string `mapstructure:"database"`
+	UseAuth       bool   `mapstructure:"useAuth"`
+	EnableTracing bool   `mapstructure:"enableTracing" default:"true"`
 }
 
-func provideConfig(environment environemnt.Environment) (*MongoDbOptions, error) {
-	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[MongoDbOptions]())
+func provideConfig(
+	environment environemnt.Environment,
+) (*MongoDbOptions, error) {
+	optionName := strcase.ToLowerCamel(
+		typeMapper.GetTypeNameByT[MongoDbOptions](),
+	)
 	return config.BindConfigKey[*MongoDbOptions](optionName, environment)
 }

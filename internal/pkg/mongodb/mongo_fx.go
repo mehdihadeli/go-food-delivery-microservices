@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -26,7 +26,7 @@ var (
 		NewMongoDB,
 		fx.Annotate(
 			NewMongoHealthChecker,
-			fx.As(new(health.Health)),
+			fx.As(new(contracts.Health)),
 			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
 		),
 	)

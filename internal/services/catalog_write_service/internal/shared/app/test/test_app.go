@@ -12,7 +12,6 @@ import (
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/goose"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
@@ -54,9 +53,10 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	// ref: https://github.com/uber-go/fx/blob/master/app_test.go
 	appBuilder := NewCatalogsWriteTestApplicationBuilder(t)
 	appBuilder.ProvideModule(catalogs.CatalogsServiceModule)
-	appBuilder.ProvideModule(goose.Module)
 
-	appBuilder.Decorate(rabbitmq.RabbitmqContainerOptionsDecorator(t, lifetimeCtx))
+	appBuilder.Decorate(
+		rabbitmq.RabbitmqContainerOptionsDecorator(t, lifetimeCtx),
+	)
 	appBuilder.Decorate(gorm.GormContainerOptionsDecorator(t, lifetimeCtx))
 
 	testApp := appBuilder.Build()
