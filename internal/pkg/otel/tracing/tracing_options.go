@@ -26,6 +26,8 @@ type TracingOptions struct {
 	JaegerExporterOptions     *OTLPProvider          `mapstructure:"jaegerExporterOptions"`
 	ElasticApmExporterOptions *OTLPProvider          `mapstructure:"elasticApmExporterOptions"`
 	UptraceExporterOptions    *OTLPProvider          `mapstructure:"uptraceExporterOptions"`
+	SignozExporterOptions     *OTLPProvider          `mapstructure:"signozExporterOptions"`
+	TempoExporterOptions      *OTLPProvider          `mapstructure:"tempoExporterOptions"`
 	UseStdout                 bool                   `mapstructure:"useStdout"`
 	UseOTLP                   bool                   `mapstructure:"useOTLP"`
 	OTLPProviders             []OTLPProvider         `mapstructure:"otlpProviders"`

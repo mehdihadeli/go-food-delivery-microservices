@@ -2,6 +2,7 @@ package metrics
 
 // https://github.com/riferrei/otel-with-golang/blob/main/main.go
 // https://github.com/open-telemetry/opentelemetry-go/blob/main/example/prometheus/main.go
+// https://opentelemetry.io/docs/instrumentation/go/manual/#metrics
 
 import (
 	"context"
@@ -216,20 +217,49 @@ func (o *OtelMetrics) configExporters() ([]metric.Reader, error) {
 
 			exporters = append(exporters, uptraceExporter)
 		}
-
-		// https://prometheus.io/docs/prometheus/latest/getting_started/
-		// https://prometheus.io/docs/guides/go-application/
-		// prometheus exporter will collect otel metrics in prometheus registry
-		// all prometheus exporters will add to a singleton `prometheus.DefaultRegisterer` registry in newConfig method and this registry will use via `promhttp.Handler` through http endpoint on `/metrics` and calls `Collect` on prometheus Reader interface inner signature prometheus.DefaultRegisterer
-		prometheusExporter, err := prometheus.New()
-		if err != nil {
-			return nil, errors.WrapIf(
-				err,
-				"error creating prometheus exporter",
+		if o.config.SignozExporterOptions != nil {
+			// https://signoz.io/docs/instrumentation/golang/#instrumentation-of-a-sample-golang-application
+			// https://signoz.io/blog/distributed-tracing-golang/
+			metricOpts = append(
+				metricOpts,
+				otlpmetricgrpc.WithEndpoint(
+					o.config.SignozExporterOptions.OTLPEndpoint,
+				),
+				otlpmetricgrpc.WithHeaders(
+					o.config.SignozExporterOptions.OTLPHeaders,
+				),
 			)
-		}
 
-		exporters = append(exporters, prometheusExporter)
+			// send otel traces to jaeger builtin collector endpoint (default grpc port: 4317)
+			// https://opentelemetry.io/docs/collector/
+			exporter, err := otlpmetricgrpc.New(ctx, metricOpts...)
+			if err != nil {
+				return nil, errors.WrapIf(
+					err,
+					"failed to create otlpmetric exporter for signoz",
+				)
+			}
+
+			signozExporter := metric.NewPeriodicReader(
+				exporter,
+				// Default is 1m. Set to 3s for demonstrative purposes.
+				metric.WithInterval(3*time.Second))
+
+			exporters = append(exporters, signozExporter)
+		} else {
+			// https://prometheus.io/docs/prometheus/latest/getting_started/
+			// https://prometheus.io/docs/guides/go-application/
+			// prometheus exporter will collect otel metrics in prometheus registry
+			// all prometheus exporters will add to a singleton `prometheus.DefaultRegisterer` registry in newConfig method and this registry will use via `promhttp.Handler` through http endpoint on `/metrics` and calls `Collect` on prometheus Reader interface inner signature prometheus.DefaultRegisterer
+			prometheusExporter, err := prometheus.New()
+			if err != nil {
+				return nil, errors.WrapIf(
+					err,
+					"error creating prometheus exporter",
+				)
+			}
+			exporters = append(exporters, prometheusExporter)
+		}
 	} else {
 		for _, oltpProvider := range o.config.OTLPProviders {
 			if !oltpProvider.Enabled {

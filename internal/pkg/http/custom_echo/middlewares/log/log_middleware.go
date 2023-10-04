@@ -74,7 +74,9 @@ func EchoLogger(l logger.Logger, opts ...Option) echo.MiddlewareFunc {
 
 			err := requestMiddleware(next)(c)
 			if err != nil {
-				// handle echo error in this middleware and raise echo errorhandler func and our custom error handler (problem details handler)
+				// handle echo error in this middleware and raise echo errorhandler func and our custom error handler
+				// when we call c.Error more than once, `c.Response().Committed` becomes true and response doesn't write to client again in our error handler
+				// Error will update response status with occurred error object status code
 				c.Error(err)
 			}
 

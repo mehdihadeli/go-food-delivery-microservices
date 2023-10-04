@@ -30,18 +30,17 @@ type conflictError struct {
 
 type ConflictError interface {
 	CustomError
-	IsConflictError() bool
 }
 
-func (c *conflictError) IsConflictError() bool {
+func (c *conflictError) isConflictError() bool {
 	return true
 }
 
 func IsConflictError(err error) bool {
-	var conflictError ConflictError
+	var conflictError *conflictError
 	// us, ok := grpc_errors.Cause(err).(ConflictError)
 	if errors.As(err, &conflictError) {
-		return conflictError.IsConflictError()
+		return conflictError.isConflictError()
 	}
 
 	return false

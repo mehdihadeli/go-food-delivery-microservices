@@ -12,7 +12,7 @@ import (
 
 type AppOptions struct {
 	DeliveryType string `mapstructure:"deliveryType" env:"DeliveryType"`
-	ServiceName  string `mapstructure:"serviceName"  env:"ServiceName"`
+	ServiceName  string `mapstructure:"serviceName"  env:"serviceName"`
 }
 
 func NewAppOptions(environment environemnt.Environment) (*AppOptions, error) {

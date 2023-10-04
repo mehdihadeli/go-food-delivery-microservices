@@ -17,7 +17,9 @@ type OrderNotFoundError interface {
 }
 
 func NewOrderNotFoundError(id int) error {
-	notFound := customErrors.NewNotFoundError(fmt.Sprintf("order with id %d not found", id))
+	notFound := customErrors.NewNotFoundError(
+		fmt.Sprintf("order with id %d not found", id),
+	)
 	customErr := customErrors.GetCustomError(notFound).(customErrors.NotFoundError)
 	br := &orderNotFoundError{
 		NotFoundError: customErr,
@@ -26,10 +28,14 @@ func NewOrderNotFoundError(id int) error {
 	return errors.WithStackIf(br)
 }
 
+func (i *orderNotFoundError) isorderNotFoundError() bool {
+	return true
+}
+
 func IsOrderNotFoundError(err error) bool {
-	var os OrderNotFoundError
+	var os *orderNotFoundError
 	if errors.As(err, &os) {
-		return true
+		return os.isorderNotFoundError()
 	}
 
 	return false

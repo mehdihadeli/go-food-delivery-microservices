@@ -30,18 +30,17 @@ type badRequestError struct {
 
 type BadRequestError interface {
 	CustomError
-	IsBadRequestError() bool
 }
 
-func (b *badRequestError) IsBadRequestError() bool {
+func (b *badRequestError) isBadRequestError() bool {
 	return true
 }
 
 func IsBadRequestError(err error) bool {
-	var badRequestError BadRequestError
+	var badRequestError *badRequestError
 	// us, ok := grpc_errors.Cause(err).(BadRequestError)
 	if errors.As(err, &badRequestError) {
-		return badRequestError.IsBadRequestError()
+		return badRequestError.isBadRequestError()
 	}
 
 	return false

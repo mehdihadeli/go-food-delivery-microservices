@@ -24,10 +24,14 @@ func NewOrderShopItemsRequiredError(message string) error {
 	return errors.WithStackIf(br)
 }
 
+func (i *orderShopItemsRequiredError) isOrderShopItemsRequiredError() bool {
+	return true
+}
+
 func IsOrderShopItemsRequiredError(err error) bool {
-	var os OrderShopItemsRequiredError
+	var os *orderShopItemsRequiredError
 	if errors.As(err, &os) {
-		return true
+		return os.isOrderShopItemsRequiredError()
 	}
 
 	return false

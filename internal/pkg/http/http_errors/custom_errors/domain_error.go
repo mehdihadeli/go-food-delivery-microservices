@@ -48,18 +48,17 @@ type domainError struct {
 
 type DomainError interface {
 	CustomError
-	IsDomainError() bool
 }
 
-func (d *domainError) IsDomainError() bool {
+func (d *domainError) isDomainError() bool {
 	return true
 }
 
 func IsDomainError(err error, code int) bool {
-	var domainErr DomainError
+	var domainErr *domainError
 	// us, ok := grpc_errors.Cause(err).(DomainError)
 	if errors.As(err, &domainErr) {
-		return domainErr.IsDomainError() && domainErr.Status() == code
+		return domainErr.isDomainError() && domainErr.Status() == code
 	}
 
 	return false

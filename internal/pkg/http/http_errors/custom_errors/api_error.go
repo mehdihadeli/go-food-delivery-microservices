@@ -28,18 +28,18 @@ type apiError struct {
 
 type ApiError interface {
 	CustomError
-	IsApiError() bool
 }
 
-func (a *apiError) IsApiError() bool {
+func (a *apiError) isAPIError() bool {
 	return true
 }
 
 func IsApiError(err error, code int) bool {
-	var apiError ApiError
+	var apiError *apiError
+
 	// us, ok := grpc_errors.Cause(err).(ApiError)
 	if errors.As(err, &apiError) {
-		return apiError.IsApiError() && apiError.Status() == code
+		return apiError.isAPIError() && apiError.Status() == code
 	}
 
 	return false

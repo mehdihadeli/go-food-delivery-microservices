@@ -24,10 +24,15 @@ func NewInvalidEmailAddressError(message string) error {
 	return errors.WithStackIf(br)
 }
 
+func (i *invalidEmailAddressError) isInvalidEmailAddressError() bool {
+	return true
+}
+
 func IsInvalidEmailAddressError(err error) bool {
-	var ie InvalidEmailAddressError
+	var ie *invalidEmailAddressError
+
 	if errors.As(err, &ie) {
-		return true
+		return ie.isInvalidEmailAddressError()
 	}
 
 	return false

@@ -30,18 +30,17 @@ type unauthorizedError struct {
 
 type UnauthorizedError interface {
 	CustomError
-	IsUnAuthorizedError() bool
 }
 
-func (u *unauthorizedError) IsUnAuthorizedError() bool {
+func (u *unauthorizedError) isUnAuthorizedError() bool {
 	return true
 }
 
 func IsUnAuthorizedError(err error) bool {
-	var unauthorizedError UnauthorizedError
+	var unauthorizedError *unauthorizedError
 	// us, ok := grpc_errors.Cause(err).(UnauthorizedError)
 	if errors.As(err, &unauthorizedError) {
-		return unauthorizedError.IsUnAuthorizedError()
+		return unauthorizedError.isUnAuthorizedError()
 	}
 
 	return false

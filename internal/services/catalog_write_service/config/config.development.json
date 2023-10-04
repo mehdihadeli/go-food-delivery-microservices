@@ -59,6 +59,10 @@
       "otlpEndpoint": "localhost:4320",
       "enabled": true
     },
+    "tempoExporterOptions": {
+      "otlpEndpoint": "localhost:4322",
+      "enabled": true
+    },
     "zipkinExporterOptions": {
       "url": "http://localhost:9411/api/v2/spans"
     },
@@ -78,6 +82,16 @@
         "otlpHeaders": {
           "Authorization": "Bearer ${ELASTIC_APM_SECRET_TOKEN}"
         }
+      },
+      {
+        "name": "signoz",
+        "enabled": false,
+        "otlpEndpoint": "localhost:4317"
+      },
+      {
+        "name": "grafana-tempo",
+        "enabled": false,
+        "otlpEndpoint": "localhost:4322"
       }
     ]
   },

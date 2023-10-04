@@ -122,7 +122,7 @@ func (o *TracingOpenTelemetry) initTracer(
 
 	provider := tracesdk.NewTracerProvider(opts...)
 
-	// Register our TracerProvider as the global so any imported
+	// Register our tracerProvider as the global so any imported
 	// instrumentation in the future will default to using it.
 	otel.SetTracerProvider(provider)
 	o.provider = provider
@@ -187,6 +187,34 @@ func (o *TracingOpenTelemetry) configExporters() ([]tracesdk.SpanExporter, error
 			}
 
 			exporters = append(exporters, jaegerTraceExporter)
+		}
+
+		// https://medium.com/adevinta-tech-blog/distributed-tracing-with-opentelemetry-in-your-go-python-microservices-1782cd0a1e77
+		// https://grafana.com/docs/tempo/latest/getting-started/
+		if o.config.TempoExporterOptions != nil {
+			traceOpts = append(
+				traceOpts,
+				otlptracegrpc.WithEndpoint(
+					o.config.TempoExporterOptions.OTLPEndpoint,
+				),
+				otlptracegrpc.WithHeaders(
+					o.config.TempoExporterOptions.OTLPHeaders,
+				),
+			)
+
+			// send otel traces to jaeger builtin collector endpoint (default grpc port: 4317)
+			// https://opentelemetry.io/docs/collector/
+			grafanaTempoTraceExporter, err := otlptracegrpc.New(
+				ctx,
+				traceOpts...)
+			if err != nil {
+				return nil, errors.WrapIf(
+					err,
+					"failed to create oltptrace exporter for grafana-tempo",
+				)
+			}
+
+			exporters = append(exporters, grafanaTempoTraceExporter)
 		}
 
 		if o.config.ZipkinExporterOptions != nil {
@@ -255,6 +283,32 @@ func (o *TracingOpenTelemetry) configExporters() ([]tracesdk.SpanExporter, error
 			}
 
 			exporters = append(exporters, uptraceExporter)
+		}
+
+		if o.config.SignozExporterOptions != nil {
+			// https://signoz.io/docs/instrumentation/golang/#instrumentation-of-a-sample-golang-application
+			// https://signoz.io/blog/distributed-tracing-golang/
+			traceOpts = append(
+				traceOpts,
+				otlptracegrpc.WithEndpoint(
+					o.config.SignozExporterOptions.OTLPEndpoint,
+				),
+				otlptracegrpc.WithHeaders(
+					o.config.SignozExporterOptions.OTLPHeaders,
+				),
+			)
+
+			// send otel traces to jaeger builtin collector endpoint (default grpc port: 4317)
+			// https://opentelemetry.io/docs/collector/
+			signozExporter, err := otlptracegrpc.New(ctx, traceOpts...)
+			if err != nil {
+				return nil, errors.WrapIf(
+					err,
+					"failed to create oltptrace exporter for signoz",
+				)
+			}
+
+			exporters = append(exporters, signozExporter)
 		}
 
 		if o.config.UseStdout {

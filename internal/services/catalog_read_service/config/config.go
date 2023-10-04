@@ -22,7 +22,7 @@ func NewConfig(env environemnt.Environment) (*Config, error) {
 
 type AppOptions struct {
 	DeliveryType string `mapstructure:"deliveryType" env:"DeliveryType"`
-	ServiceName  string `mapstructure:"serviceName"  env:"ServiceName"`
+	ServiceName  string `mapstructure:"serviceName"  env:"serviceName"`
 }
 
 func (cfg *AppOptions) GetMicroserviceNameUpper() string {

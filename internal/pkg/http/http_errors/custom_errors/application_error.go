@@ -8,7 +8,11 @@ import (
 
 func NewApplicationError(message string) error {
 	ae := &applicationError{
-		CustomError: NewCustomError(nil, http.StatusInternalServerError, message),
+		CustomError: NewCustomError(
+			nil,
+			http.StatusInternalServerError,
+			message,
+		),
 	}
 	stackErr := errors.WithStackIf(ae)
 
@@ -26,14 +30,22 @@ func NewApplicationErrorWithCode(message string, code int) error {
 
 func NewApplicationErrorWrap(err error, message string) error {
 	ae := &applicationError{
-		CustomError: NewCustomError(err, http.StatusInternalServerError, message),
+		CustomError: NewCustomError(
+			err,
+			http.StatusInternalServerError,
+			message,
+		),
 	}
 	stackErr := errors.WithStackIf(ae)
 
 	return stackErr
 }
 
-func NewApplicationErrorWrapWithCode(err error, code int, message string) error {
+func NewApplicationErrorWrapWithCode(
+	err error,
+	code int,
+	message string,
+) error {
 	ae := &applicationError{
 		CustomError: NewCustomError(err, code, message),
 	}
@@ -48,18 +60,18 @@ type applicationError struct {
 
 type ApplicationError interface {
 	CustomError
-	IsApplicationError() bool
 }
 
-func (a *applicationError) IsApplicationError() bool {
+func (a *applicationError) isApplicationError() bool {
 	return true
 }
 
 func IsApplicationError(err error, code int) bool {
-	var applicationError ApplicationError
+	var applicationError *applicationError
 	// us, ok := grpc_errors.Cause(err).(ApplicationError)
 	if errors.As(err, &applicationError) {
-		return applicationError.IsApplicationError() && applicationError.Status() == code
+		return applicationError.isApplicationError() &&
+			applicationError.Status() == code
 	}
 
 	return false

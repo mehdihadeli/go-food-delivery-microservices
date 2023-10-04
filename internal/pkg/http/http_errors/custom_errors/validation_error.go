@@ -32,18 +32,17 @@ type validationError struct {
 
 type ValidationError interface {
 	BadRequestError
-	IsValidationError() bool
 }
 
-func (v *validationError) IsValidationError() bool {
+func (v *validationError) isValidationError() bool {
 	return true
 }
 
 func IsValidationError(err error) bool {
-	var validationError ValidationError
+	var validationError *validationError
 	// us, ok := grpc_errors.Cause(err).(ValidationError)
 	if errors.As(err, &validationError) {
-		return validationError.IsValidationError()
+		return validationError.isValidationError()
 	}
 
 	return false

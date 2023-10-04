@@ -66,7 +66,10 @@ func (ep *getProductsEndpoint) handler() echo.HandlerFunc {
 				"[getProductsEndpoint_handler.Bind] error in the binding request",
 			)
 			ep.Logger.Errorf(
-				fmt.Sprintf("[getProductsEndpoint_handler.Bind] err: %v", badRequestErr),
+				fmt.Sprintf(
+					"[getProductsEndpoint_handler.Bind] err: %v",
+					badRequestErr,
+				),
 			)
 			return badRequestErr
 		}
@@ -85,7 +88,12 @@ func (ep *getProductsEndpoint) handler() echo.HandlerFunc {
 				err,
 				"[getProductsEndpoint_handler.Send] error in sending GetProducts",
 			)
-			ep.Logger.Error(fmt.Sprintf("[getProductsEndpoint_handler.Send] err: {%v}", err))
+			ep.Logger.Error(
+				fmt.Sprintf(
+					"[getProductsEndpoint_handler.Send] err: {%v}",
+					err,
+				),
+			)
 			return err
 		}
 

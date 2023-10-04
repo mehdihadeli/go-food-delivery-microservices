@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/handlers"
 	grpcError "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/grpc_error"
-	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/otel_metrics"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
 	"emperror.dev/errors"
@@ -15,7 +15,6 @@ import (
 	grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpcCtxTags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"go.opentelemetry.io/otel/metric"
 	googleGrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -48,34 +47,24 @@ type grpcServer struct {
 func NewGrpcServer(
 	config *config.GrpcOptions,
 	logger logger.Logger,
-	meter metric.Meter,
 ) GrpcServer {
 	unaryServerInterceptors := []googleGrpc.UnaryServerInterceptor{
-		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/example_interceptor_test.go
-		otelgrpc.UnaryServerInterceptor(),
 		grpcError.UnaryServerInterceptor(),
 		grpcCtxTags.UnaryServerInterceptor(),
 		grpcRecovery.UnaryServerInterceptor(),
 	}
 	streamServerInterceptors := []googleGrpc.StreamServerInterceptor{
-		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/example_interceptor_test.go
-		otelgrpc.StreamServerInterceptor(),
 		grpcError.StreamServerInterceptor(),
 	}
 
-	if meter != nil {
-		unaryServerInterceptors = append(
-			unaryServerInterceptors,
-			otelMetrics.UnaryServerInterceptor(meter, config.Name),
-		)
-
-		streamServerInterceptors = append(
-			streamServerInterceptors,
-			otelMetrics.StreamServerInterceptor(meter, config.Name),
-		)
-	}
-
 	s := googleGrpc.NewServer(
+		// https://github.com/open-telemetry/opentelemetry-go-contrib/issues/2840
+		// https://github.com/open-telemetry/opentelemetry-go-contrib/pull/3002
+		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/doc.go
+		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/example/server/main.go#L143C3-L143C50
+		googleGrpc.StatsHandler(otelgrpc.NewServerHandler()),
+		googleGrpc.StatsHandler(handlers.NewServerHandler()),
+
 		googleGrpc.KeepaliveParams(keepalive.ServerParameters{
 			MaxConnectionIdle: maxConnectionIdle * time.Minute,
 			Timeout:           gRPCTimeout * time.Second,

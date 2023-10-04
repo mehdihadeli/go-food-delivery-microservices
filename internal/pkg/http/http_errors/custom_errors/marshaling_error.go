@@ -32,19 +32,18 @@ type marshalingError struct {
 
 type MarshalingError interface {
 	InternalServerError
-	IsMarshalingError() bool
 }
 
-func (m *marshalingError) IsMarshalingError() bool {
+func (m *marshalingError) isMarshalingError() bool {
 	return true
 }
 
 func IsMarshalingError(err error) bool {
-	var me MarshalingError
+	var me *marshalingError
 
 	// us, ok := grpc_errors.Cause(err).(MarshalingError)
 	if errors.As(err, &me) {
-		return me.IsMarshalingError()
+		return me.isMarshalingError()
 	}
 
 	return false

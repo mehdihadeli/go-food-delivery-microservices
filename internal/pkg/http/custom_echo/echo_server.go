@@ -8,14 +8,15 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
-	customHadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
+	hadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/log"
 	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
+	oteltracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_tracing"
+	problemdetail "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/problem_detail"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"go.opentelemetry.io/otel/metric"
 )
 
@@ -33,7 +34,7 @@ func NewEchoHttpServer(
 	meter metric.Meter,
 ) contracts.EchoHttpServer {
 	e := echo.New()
-	e.HideBanner = false
+	e.HideBanner = true
 
 	return &echoHttpServer{
 		echo:         e,
@@ -97,20 +98,21 @@ func (s *echoHttpServer) GracefulShutdown(ctx context.Context) error {
 }
 
 func (s *echoHttpServer) SetupDefaultMiddlewares() {
-	// set error handler
-	s.echo.HTTPErrorHandler = func(err error, c echo.Context) {
-		// bypass notfound favicon endpoint and its error
-		if c.Request().URL.Path == "/favicon.ico" {
-			return
-		}
-		customHadnlers.ProblemHandlerFunc(err, c, s.log)
-	}
-
 	skipper := func(c echo.Context) bool {
 		return strings.Contains(c.Request().URL.Path, "swagger") ||
 			strings.Contains(c.Request().URL.Path, "metrics") ||
 			strings.Contains(c.Request().URL.Path, "health") ||
 			strings.Contains(c.Request().URL.Path, "favicon.ico")
+	}
+
+	// set error handler
+	s.echo.HTTPErrorHandler = func(err error, c echo.Context) {
+		// bypass skip endpoints and its error
+		if skipper(c) {
+			return
+		}
+
+		hadnlers.ProblemDetailErrorHandlerFunc(err, c, s.log)
 	}
 
 	// log errors and information
@@ -121,49 +123,21 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 		),
 	)
 	s.echo.Use(
-		otelecho.Middleware(s.config.Name, otelecho.WithSkipper(skipper)),
+		oteltracing.HttpTrace(s.config.Name, oteltracing.WithSkipper(skipper)),
 	)
-	// Because we use metrics server middleware, if it is not available, our echo will not work.
-	if s.meter != nil {
-		s.echo.Use(otelMetrics.Middleware(s.meter, s.config.Name))
-	}
-
-	//s.echo.Use(
-	//	middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-	//		LogContentLength: true,
-	//		LogLatency:       true,
-	//		LogError:         false,
-	//		LogMethod:        true,
-	//		LogRequestID:     true,
-	//		LogURI:           true,
-	//		LogResponseSize:  true,
-	//		LogURIPath:       true,
-	//		Skipper: func(c echo.Context) bool {
-	//			return strings.Contains(c.Request().URL.Path, "swagger") ||
-	//				strings.Contains(c.Request().URL.Path, "metrics") ||
-	//				strings.Contains(c.Request().URL.Path, "health") ||
-	//				strings.Contains(c.Request().URL.Path, "favicon.ico")
-	//		},
-	//		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-	//			s.log.Infow(
-	//				fmt.Sprintf(
-	//					"[Request Middleware] REQUEST: uri: %v, status: %v\n",
-	//					v.URI,
-	//					v.Status,
-	//				),
-	//				logger.Fields{"URI": v.URI, "Status": v.Status},
-	//			)
-	//
-	//			return nil
-	//		},
-	//	}),
-	//)
+	s.echo.Use(
+		otelMetrics.HTTPMetrics(
+			otelMetrics.SetServiceName(s.config.Name),
+			otelMetrics.WithSkipper(skipper)),
+	)
 	s.echo.Use(middleware.BodyLimit(constants.BodyLimit))
 	s.echo.Use(middleware.RequestID())
 	s.echo.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level:   constants.GzipLevel,
 		Skipper: skipper,
 	}))
+	// should be last middleware
+	s.echo.Use(problemdetail.ProblemDetail(problemdetail.WithSkipper(skipper)))
 }
 
 func (s *echoHttpServer) ApplyVersioningFromHeader() {

@@ -3,6 +3,7 @@
 
 # Ref: https://github.com/open-telemetry/opentelemetry-demo/blob/main/src/otelcollector/otelcol-observability.yml
 # https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/examples/demo/otel-collector-config.yaml
+# https://www.youtube.com/watch?v=EeU-k659lpw
 
 receivers:
   otlp:

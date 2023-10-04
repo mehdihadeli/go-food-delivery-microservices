@@ -23,10 +23,14 @@ func NewInvalidDeliveryAddressError(message string) error {
 	return errors.WithStackIf(br)
 }
 
+func (i *invalidDeliveryAddressError) isInvalidAddress() bool {
+	return true
+}
+
 func IsInvalidDeliveryAddressError(err error) bool {
-	var ia InvalidDeliveryAddressError
+	var ia *invalidDeliveryAddressError
 	if errors.As(err, &ia) {
-		return true
+		return ia.isInvalidAddress()
 	}
 
 	return false

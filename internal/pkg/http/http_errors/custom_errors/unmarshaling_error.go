@@ -32,18 +32,17 @@ type unMarshalingError struct {
 
 type UnMarshalingError interface {
 	InternalServerError
-	IsUnMarshalingError() bool
 }
 
-func (u *unMarshalingError) IsUnMarshalingError() bool {
+func (u *unMarshalingError) isUnMarshalingError() bool {
 	return true
 }
 
 func IsUnMarshalingError(err error) bool {
-	var unMarshalingError UnMarshalingError
+	var unMarshalingError *unMarshalingError
 	// us, ok := grpc_errors.Cause(err).(UnMarshalingError)
 	if errors.As(err, &unMarshalingError) {
-		return unMarshalingError.IsUnMarshalingError()
+		return unMarshalingError.isUnMarshalingError()
 	}
 
 	return false

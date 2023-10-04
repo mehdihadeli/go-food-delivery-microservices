@@ -2,10 +2,10 @@ package grpcError
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/grpcErrors"
 
+	"emperror.dev/errors"
 	"google.golang.org/grpc"
 )
 
@@ -18,15 +18,16 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
 		resp, err := handler(ctx, req)
-		if err != nil {
-			grpcErr := grpcErrors.ParseError(err)
 
-			if grpcErr != nil {
-				return nil, grpcErr.ToGrpcResponseErr()
-			} else {
-				prb := grpcErrors.NewInternalServerGrpcError(err.Error(), fmt.Sprintf("%+v\n", err))
-				return nil, prb.ToGrpcResponseErr()
-			}
+		var grpcErr grpcErrors.GrpcErr
+
+		// if error was not `grpcErr` we will convert the error to a `grpcErr`
+		if ok := errors.As(err, &grpcErr); !ok {
+			grpcErr = grpcErrors.ParseError(err)
+		}
+
+		if grpcErr != nil {
+			return nil, grpcErr.ToGrpcResponseErr()
 		}
 
 		return resp, err
@@ -42,16 +43,18 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		handler grpc.StreamHandler,
 	) error {
 		err := handler(srv, ss)
-		if err != nil {
-			grpcErr := grpcErrors.ParseError(err)
 
-			if grpcErr != nil {
-				return grpcErr.ToGrpcResponseErr()
-			} else {
-				prb := grpcErrors.NewInternalServerGrpcError(err.Error(), fmt.Sprintf("%+v\n", err))
-				return prb.ToGrpcResponseErr()
-			}
+		var grpcErr grpcErrors.GrpcErr
+
+		// if error was not `grpcErr` we will convert the error to a `grpcErr`
+		if ok := errors.As(err, &grpcErr); !ok {
+			grpcErr = grpcErrors.ParseError(err)
 		}
+
+		if grpcErr != nil {
+			return grpcErr.ToGrpcResponseErr()
+		}
+
 		return err
 	}
 }

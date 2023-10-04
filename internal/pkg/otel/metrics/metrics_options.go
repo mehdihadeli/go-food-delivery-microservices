@@ -28,6 +28,7 @@ type MetricsOptions struct {
 	OTLPProviders             []OTLPProvider `mapstructure:"otlpProviders"`
 	ElasticApmExporterOptions *OTLPProvider  `mapstructure:"elasticApmExporterOptions"`
 	UptraceExporterOptions    *OTLPProvider  `mapstructure:"uptraceExporterOptions"`
+	SignozExporterOptions     *OTLPProvider  `mapstructure:"signozExporterOptions"`
 }
 
 func ProvideMetricsConfig(

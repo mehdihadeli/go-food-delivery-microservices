@@ -57,9 +57,16 @@ scrape_configs:
     static_configs:
       - targets: ['cadvisor:8080']
 
-  # OpenTelemetry collector
-  - job_name: 'otel-collector'
-    scrape_interval: 10s
+#  # scrap exported metrics by otel-collector
+#  # OpenTelemetry collector
+#  - job_name: 'otel-collector'
+#    scrape_interval: 10s
+#    static_configs:
+#      - targets: ['otel-collector:8889']
+#      - targets: ['otel-collector:8888']
+
+  # internal metrics by tempo
+  # https://github.com/grafana/tempo/blob/main/example/docker-compose/shared/prometheus.yaml
+  - job_name: 'tempo'
     static_configs:
-      - targets: ['otel-collector:8889']
-      - targets: ['otel-collector:8888']
+      - targets: [ 'tempo:3200' ]

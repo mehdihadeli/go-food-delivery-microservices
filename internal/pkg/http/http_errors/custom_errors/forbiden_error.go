@@ -30,18 +30,17 @@ type forbiddenError struct {
 
 type ForbiddenError interface {
 	CustomError
-	IsForbiddenError() bool
 }
 
-func (f *forbiddenError) IsForbiddenError() bool {
+func (f *forbiddenError) isForbiddenError() bool {
 	return true
 }
 
 func IsForbiddenError(err error) bool {
-	var forbiddenError ForbiddenError
+	var forbiddenError *forbiddenError
 	// us, ok := grpc_errors.Cause(err).(ForbiddenError)
 	if errors.As(err, &forbiddenError) {
-		return forbiddenError.IsForbiddenError()
+		return forbiddenError.isForbiddenError()
 	}
 
 	return false

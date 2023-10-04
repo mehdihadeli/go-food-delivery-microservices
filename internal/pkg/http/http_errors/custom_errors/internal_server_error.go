@@ -30,18 +30,17 @@ type internalServerError struct {
 
 type InternalServerError interface {
 	CustomError
-	IsInternalServerError() bool
 }
 
-func (i *internalServerError) IsInternalServerError() bool {
+func (i *internalServerError) isInternalServerError() bool {
 	return true
 }
 
 func IsInternalServerError(err error) bool {
-	var internalErr InternalServerError
+	var internalErr *internalServerError
 	// us, ok := grpc_errors.Cause(err).(InternalServerError)
 	if errors.As(err, &internalErr) {
-		return internalErr.IsInternalServerError()
+		return internalErr.isInternalServerError()
 	}
 
 	return false
