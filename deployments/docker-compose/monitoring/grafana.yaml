@@ -19,23 +19,19 @@ datasources:
     access: proxy
     editable: true
 
-#  # showing Tempo as one of dashboard tabs
-#  # https://github.com/grafana/tempo/blob/main/example/docker-compose/shared/grafana-datasources.yaml#L16
-#  - name: Tempo
-#    type: tempo
-#    access: proxy
-#    orgId: 1
-#    url: http://tempo:3200
-#    basicAuth: false
-#    isDefault: true
-#    version: 1
-#    editable: false
-#    apiVersion: 1
-#    uid: tempo
-#    jsonData:
-#      httpMethod: GET
-#      serviceMap:
-#        datasourceUid: prometheus
+  # showing Tempo as one of dashboard tabs
+  # https://github.com/grafana/tempo/blob/main/example/docker-compose/shared/grafana-datasources.yaml#L16
+  - name: Tempo
+    type: tempo
+    access: proxy
+    orgId: 1
+    url: http://tempo:3200
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: false
+    apiVersion: 1
+    uid: tempo
 
 # # showing Loki as one of dashboard tabs
 #  - name: loki

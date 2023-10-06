@@ -109,9 +109,6 @@ services:
     ports:
       - ${GRAFANA_HOST_PORT:-3000}:${GRAFANA_PORT:-3000}
     environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_DISABLE_LOGIN_FORM=true
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
     healthcheck:
       interval: 5s
@@ -132,7 +129,7 @@ services:
   # https://grafana.com/docs/tempo/latest/operations/architecture/
   tempo:
     image: grafana/tempo:latest
-    command: [ "-search.enabled=true", "-config.file=/etc/tempo.yaml" ]
+    command: ["-config.file=/etc/tempo.yaml" ]
     volumes:
       - ./otelcollector/tempo.yaml:/etc/tempo.yaml
       - ./tempo-data:/tmp/tempo
