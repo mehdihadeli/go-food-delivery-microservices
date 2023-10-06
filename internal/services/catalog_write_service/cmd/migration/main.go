@@ -39,7 +39,7 @@ var (
 			if len(args) == 0 {
 				cmd.SetArgs([]string{"up"})
 				if err := cmd.Execute(); err != nil {
-					defaultLogger.Logger.Error(err)
+					defaultLogger.GetLogger().Error(err)
 					os.Exit(1)
 				}
 			}
@@ -66,7 +66,7 @@ var (
 func executeMigration(cmd *cobra.Command, commandType migration.CommandType) {
 	version, err := cmd.Flags().GetUint("version")
 	if err != nil {
-		defaultLogger.Logger.Fatal(err)
+		defaultLogger.GetLogger().Fatal(err)
 	}
 
 	app := fx.New(
@@ -79,37 +79,37 @@ func executeMigration(cmd *cobra.Command, commandType migration.CommandType) {
 		//gomigrate.Module,
 		// use go-migrate library for migration
 		goose.Module,
-		fx.Invoke(func(migrationRunner contracts.PostgresMigrationRunner, logger logger.Logger) {
-			logger.Info("Migration process started...")
-			switch commandType {
-			case migration.Up:
-				err = migrationRunner.Up(context.Background(), version)
-			case migration.Down:
-				err = migrationRunner.Down(context.Background(), version)
-			}
-			if err != nil {
-				logger.Fatalf("migration failed, err: %s", err)
-			}
-			logger.Info("Migration completed...")
-		}),
+		fx.Invoke(
+			func(migrationRunner contracts.PostgresMigrationRunner, logger logger.Logger) {
+				logger.Info("Migration process started...")
+				switch commandType {
+				case migration.Up:
+					err = migrationRunner.Up(context.Background(), version)
+				case migration.Down:
+					err = migrationRunner.Down(context.Background(), version)
+				}
+				if err != nil {
+					logger.Fatalf("migration failed, err: %s", err)
+				}
+				logger.Info("Migration completed...")
+			},
+		),
 	)
 
 	err = app.Start(context.Background())
 	if err != nil {
-		defaultLogger.Logger.Fatal(err)
+		defaultLogger.GetLogger().Fatal(err)
 	}
 
 	err = app.Stop(context.Background())
 	if err != nil {
-		defaultLogger.Logger.Fatal(err)
+		defaultLogger.GetLogger().Fatal(err)
 	}
 }
 
 func main() {
-	defaultLogger.SetupDefaultLogger()
-
 	if err := rootCmd.Execute(); err != nil {
-		defaultLogger.Logger.Error(err)
+		defaultLogger.GetLogger().Error(err)
 		os.Exit(1)
 	}
 }

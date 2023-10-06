@@ -9,6 +9,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/dto"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/dtos"
@@ -53,7 +54,7 @@ func (q *GetProductByIdHandler) Handle(
 	defer span.End()
 
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -71,7 +72,7 @@ func (q *GetProductByIdHandler) Handle(
 		var mongoProduct *models.Product
 		mongoProduct, err = q.mongoRepository.GetProductById(ctx, query.Id.String())
 		if err != nil {
-			return nil, tracing.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %d in the mongo repository", query.Id)))
+			return nil, utils.TraceErrFromSpan(span, customErrors.NewApplicationErrorWrap(err, fmt.Sprintf("[GetProductByIdHandler_Handle.GetProductById] error in getting product with id %d in the mongo repository", query.Id)))
 		}
 		if mongoProduct == nil {
 			mongoProduct, err = q.mongoRepository.GetProductByProductId(ctx, query.Id.String())
@@ -83,13 +84,13 @@ func (q *GetProductByIdHandler) Handle(
 		product = mongoProduct
 		err = q.redisRepository.PutProduct(ctx, product.Id, product)
 		if err != nil {
-			return new(dtos.GetProductByIdResponseDto), tracing.TraceErrFromSpan(span, err)
+			return new(dtos.GetProductByIdResponseDto), utils.TraceErrFromSpan(span, err)
 		}
 	}
 
 	productDto, err := mapper.Map[*dto.ProductDto](product)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,

@@ -30,24 +30,19 @@ func Test_Consume_Message(t *testing.T) {
 	defer errorUtils.HandlePanic()
 
 	ctx := context.Background()
-	defaultLogger2.SetupDefaultLogger()
 	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
 
 	tp, err := tracing.NewOtelTracing(&tracing.TracingOptions{
 		ServiceName:     "test",
 		Enabled:         true,
 		AlwaysOnSampler: true,
-		JaegerExporterOptions: &tracing.JaegerExporterOptions{
-			AgentHost: "localhost",
-			AgentPort: "6831",
-		},
 		ZipkinExporterOptions: &tracing.ZipkinExporterOptions{
 			Url: "http://localhost:9411/api/v2/spans",
 		},
 	}, environemnt.Development)
 	require.NoError(t, err)
 
-	defer tp.TracerProvider.Shutdown(ctx)
+	defer tp.Shutdown(ctx)
 
 	conn, err := types.NewRabbitMQConnection(&config.RabbitmqOptions{
 		RabbitmqHostOptions: &config.RabbitmqHostOptions{
@@ -71,7 +66,7 @@ func Test_Consume_Message(t *testing.T) {
 		conn,
 		builder.Build(),
 		eventSerializer,
-		defaultLogger2.Logger,
+		defaultLogger2.GetLogger(),
 	)
 	require.NoError(t, err)
 
@@ -88,7 +83,7 @@ func Test_Consume_Message(t *testing.T) {
 	rabbitmqProducer, err := producer.NewRabbitMQProducer(
 		conn,
 		nil,
-		defaultLogger2.Logger,
+		defaultLogger2.GetLogger(),
 		eventSerializer)
 	require.NoError(t, err)
 

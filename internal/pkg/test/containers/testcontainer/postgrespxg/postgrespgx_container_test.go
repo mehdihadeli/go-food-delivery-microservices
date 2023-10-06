@@ -11,9 +11,9 @@ import (
 )
 
 func Test_Custom_PostgresPgx_Container(t *testing.T) {
-	defaultLogger.SetupDefaultLogger()
-
-	gorm, err := NewPostgresPgxContainers(defaultLogger.Logger).Start(context.Background(), t)
+	gorm, err := NewPostgresPgxContainers(
+		defaultLogger.GetLogger(),
+	).Start(context.Background(), t)
 	require.NoError(t, err)
 
 	assert.NotNil(t, gorm)

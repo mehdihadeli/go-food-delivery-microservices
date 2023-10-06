@@ -1,7 +1,6 @@
 package endpoints
 
 import (
-	"fmt"
 	"net/http"
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
@@ -48,29 +47,19 @@ func (ep *getProductsEndpoint) handler() echo.HandlerFunc {
 		if err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(
 				err,
-				"[getProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string",
+				"error in getting data from query string",
 			)
-			ep.Logger.Errorf(
-				fmt.Sprintf(
-					"[getProductsEndpoint_handler.GetListQueryFromCtx] err: %v",
-					badRequestErr,
-				),
-			)
-			return err
+
+			return badRequestErr
 		}
 
 		request := &dtos.GetProductsRequestDto{ListQuery: listQuery}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(
 				err,
-				"[getProductsEndpoint_handler.Bind] error in the binding request",
+				"error in the binding request",
 			)
-			ep.Logger.Errorf(
-				fmt.Sprintf(
-					"[getProductsEndpoint_handler.Bind] err: %v",
-					badRequestErr,
-				),
-			)
+
 			return badRequestErr
 		}
 
@@ -84,17 +73,10 @@ func (ep *getProductsEndpoint) handler() echo.HandlerFunc {
 			query,
 		)
 		if err != nil {
-			err = errors.WithMessage(
+			return errors.WithMessage(
 				err,
-				"[getProductsEndpoint_handler.Send] error in sending GetProducts",
+				"error in sending GetProducts",
 			)
-			ep.Logger.Error(
-				fmt.Sprintf(
-					"[getProductsEndpoint_handler.Send] err: {%v}",
-					err,
-				),
-			)
-			return err
 		}
 
 		return c.JSON(http.StatusOK, queryResult)

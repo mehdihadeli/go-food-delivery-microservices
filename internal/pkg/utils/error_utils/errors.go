@@ -94,6 +94,7 @@ func RootStackTrace(err error) string {
 
 func HandlePanic() {
 	if r := recover(); r != nil {
-		defaultLogger.Logger.Error("stacktrace from panic: \n" + string(debug.Stack()))
+		defaultLogger.GetLogger().
+			Error("stacktrace from panic: \n" + string(debug.Stack()))
 	}
 }

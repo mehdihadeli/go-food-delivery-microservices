@@ -33,7 +33,7 @@ require (
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/lib/pq v1.10.9
 	github.com/mcuadros/go-defaults v1.2.0
-	github.com/mehdihadeli/go-mediatr v1.1.10
+	github.com/mehdihadeli/go-mediatr v1.2.0
 	github.com/michaelklishin/rabbit-hole v1.5.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nolleh/caption_json_formatter v0.2.2

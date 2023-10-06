@@ -234,7 +234,11 @@ func Test_Search(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	models, err := repository.Search(ctx, "seed_product1", utils.NewListQuery(10, 1))
+	models, err := repository.Search(
+		ctx,
+		"seed_product1",
+		utils.NewListQuery(10, 1),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -247,7 +251,11 @@ func Test_Search_With_Data_Model(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericGormRepositoryWithDataModel(ctx, t)
 
-	models, err := repository.Search(ctx, "seed_product1", utils.NewListQuery(10, 1))
+	models, err := repository.Search(
+		ctx,
+		"seed_product1",
+		utils.NewListQuery(10, 1),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -260,7 +268,10 @@ func Test_Where(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericGormRepository(ctx, t)
 
-	models, err := repository.GetByFilter(ctx, map[string]interface{}{"name": "seed_product1"})
+	models, err := repository.GetByFilter(
+		ctx,
+		map[string]interface{}{"name": "seed_product1"},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -273,7 +284,10 @@ func Test_Where_With_Data_Model(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericGormRepositoryWithDataModel(ctx, t)
 
-	models, err := repository.GetByFilter(ctx, map[string]interface{}{"name": "seed_product1"})
+	models, err := repository.GetByFilter(
+		ctx,
+		map[string]interface{}{"name": "seed_product1"},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -401,7 +415,10 @@ func Test_Find(t *testing.T) {
 
 	entities, err := repository.Find(
 		ctx,
-		specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")),
+		specification.And(
+			specification.Equal("is_available", true),
+			specification.Equal("name", "seed_product1"),
+		),
 	)
 	if err != nil {
 		return
@@ -418,7 +435,10 @@ func Test_Find_With_Data_Model(t *testing.T) {
 
 	entities, err := repository.Find(
 		ctx,
-		specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")),
+		specification.And(
+			specification.Equal("is_available", true),
+			specification.Equal("name", "seed_product1"),
+		),
 	)
 	if err != nil {
 		return
@@ -430,9 +450,8 @@ func setupGenericGormRepositoryWithDataModel(
 	ctx context.Context,
 	t *testing.T,
 ) (data.GenericRepositoryWithDataModel[*ProductGorm, *Product], error) {
-	defaultLogger.SetupDefaultLogger()
-
-	db, err := gorm2.NewGormTestContainers(defaultLogger.Logger).Start(ctx, t)
+	db, err := gorm2.NewGormTestContainers(defaultLogger.GetLogger()).
+		Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
@@ -442,13 +461,17 @@ func setupGenericGormRepositoryWithDataModel(
 		return nil, err
 	}
 
-	return NewGenericGormRepositoryWithDataModel[*ProductGorm, *Product](db), nil
+	return NewGenericGormRepositoryWithDataModel[*ProductGorm, *Product](
+		db,
+	), nil
 }
 
-func setupGenericGormRepository(ctx context.Context, t *testing.T) (data.GenericRepository[*ProductGorm], error) {
-	defaultLogger.SetupDefaultLogger()
-
-	db, err := gorm2.NewGormTestContainers(defaultLogger.Logger).Start(ctx, t)
+func setupGenericGormRepository(
+	ctx context.Context,
+	t *testing.T,
+) (data.GenericRepository[*ProductGorm], error) {
+	db, err := gorm2.NewGormTestContainers(defaultLogger.GetLogger()).
+		Start(ctx, t)
 
 	err = seedAndMigration(ctx, db)
 	if err != nil {

@@ -1,11 +1,9 @@
 package endpoints
 
 import (
-	"fmt"
 	"net/http"
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/params"
 	createProductCommand "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/commands"
@@ -47,14 +45,10 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(
 				err,
-				"[createProductEndpoint_handler.Bind] error in the binding request",
+				"error in the binding request",
 			)
-			ep.Logger.Errorf(
-				fmt.Sprintf(
-					"[createProductEndpoint_handler.Bind] err: %v",
-					badRequestErr,
-				),
-			)
+
+			return badRequestErr
 		}
 
 		command, err := createProductCommand.NewCreateProduct(
@@ -65,15 +59,8 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 		if err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,
-				"[createProductEndpoint_handler.StructCtx] command validation failed",
+				"command validation failed",
 			)
-			ep.Logger.Errorf(
-				fmt.Sprintf(
-					"[createProductEndpoint_handler.StructCtx] err: {%v}",
-					validationErr,
-				),
-			)
-
 			return validationErr
 		}
 
@@ -82,19 +69,10 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 			command,
 		)
 		if err != nil {
-			err = errors.WithMessage(
+			return errors.WithMessage(
 				err,
-				"[createProductEndpoint_handler.Send] error in sending CreateProduct",
+				"error in sending CreateProduct",
 			)
-			ep.Logger.Errorw(
-				fmt.Sprintf(
-					"[createProductEndpoint_handler.Send] id: {%s}, err: {%v}",
-					command.ProductID,
-					err,
-				),
-				logger.Fields{"ProductId": command.ProductID},
-			)
-			return err
 		}
 
 		return c.JSON(http.StatusCreated, result)

@@ -12,6 +12,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
 	createOrderDomainEventsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/events/domain_events"
@@ -82,7 +83,7 @@ func (m *mongoOrderProjection) onOrderCreated(
 	)
 	_, err = m.mongoOrderRepository.CreateOrder(ctx, orderRead)
 	if err != nil {
-		return tracing.TraceErrFromSpan(
+		return utils.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -93,7 +94,7 @@ func (m *mongoOrderProjection) onOrderCreated(
 
 	orderReadDto, err := mapper.Map[*dtosV1.OrderReadDto](orderRead)
 	if err != nil {
-		return tracing.TraceErrFromSpan(
+		return utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -106,7 +107,7 @@ func (m *mongoOrderProjection) onOrderCreated(
 
 	err = m.rabbitmqProducer.PublishMessage(ctx, orderCreatedEvent, nil)
 	if err != nil {
-		return tracing.TraceErrFromSpan(
+		return utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,

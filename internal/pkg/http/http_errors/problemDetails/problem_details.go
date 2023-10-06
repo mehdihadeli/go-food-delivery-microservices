@@ -114,7 +114,12 @@ func (p *problemDetail) SetStackTrace(stackTrace string) ProblemDetailErr {
 }
 
 // NewProblemDetail New ProblemDetail Error
-func NewProblemDetail(status int, title string, detail string, stackTrace string) ProblemDetailErr {
+func NewProblemDetail(
+	status int,
+	title string,
+	detail string,
+	stackTrace string,
+) ProblemDetailErr {
 	problemDetail := &problemDetail{
 		Status:     status,
 		Title:      title,
@@ -191,7 +196,7 @@ func ResolveProblemDetail(err error) ProblemDetailErr {
 
 // WriteTo writes the JSON Problem to an HTTP Response Writer
 func WriteTo(p ProblemDetailErr, w http.ResponseWriter) (int, error) {
-	defaultLogger.Logger.Error(p.Error())
+	defaultLogger.GetLogger().Error(p.Error())
 	stackTrace := p.GetStackTrace()
 	fmt.Println(stackTrace)
 

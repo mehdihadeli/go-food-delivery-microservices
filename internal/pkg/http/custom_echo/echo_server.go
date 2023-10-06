@@ -123,11 +123,14 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 		),
 	)
 	s.echo.Use(
-		oteltracing.HttpTrace(s.config.Name, oteltracing.WithSkipper(skipper)),
+		oteltracing.HttpTrace(
+			oteltracing.WithSkipper(skipper),
+			oteltracing.WithServiceName(s.config.Name),
+		),
 	)
 	s.echo.Use(
 		otelMetrics.HTTPMetrics(
-			otelMetrics.SetServiceName(s.config.Name),
+			otelMetrics.WithServiceName(s.config.Name),
 			otelMetrics.WithSkipper(skipper)),
 	)
 	s.echo.Use(middleware.BodyLimit(constants.BodyLimit))

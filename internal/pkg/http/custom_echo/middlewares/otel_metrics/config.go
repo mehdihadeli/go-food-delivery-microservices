@@ -47,10 +47,10 @@ func (o optionFunc) apply(c *config) {
 	o(c)
 }
 
-// SetNamespace will set the metrics namespace that will be added to all metric configurations. It will be a prefix to each
+// WithNamespace will set the metrics namespace that will be added to all metric configurations. It will be a prefix to each
 // metric name. For example, if namespace is "myapp", then requests_total metric will be myapp_http_requests_total
 // (after namespace there is also the subsystem prefix, "http" in this case).
-func SetNamespace(v string) Option {
+func WithNamespace(v string) Option {
 	return optionFunc(func(cfg *config) {
 		if cfg.namespace != "" {
 			cfg.namespace = v
@@ -58,7 +58,7 @@ func SetNamespace(v string) Option {
 	})
 }
 
-func SetServiceName(v string) Option {
+func WithServiceName(v string) Option {
 	return optionFunc(func(cfg *config) {
 		if cfg.serviceName != "" {
 			cfg.serviceName = v
@@ -66,7 +66,7 @@ func SetServiceName(v string) Option {
 	})
 }
 
-func SetInstrumentationName(v string) Option {
+func WithInstrumentationName(v string) Option {
 	return optionFunc(func(cfg *config) {
 		if cfg.instrumentationName != "" {
 			cfg.instrumentationName = v

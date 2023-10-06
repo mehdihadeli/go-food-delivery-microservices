@@ -11,9 +11,7 @@ import (
 )
 
 func Test_Custom_EventStoreDB_Container(t *testing.T) {
-	defaultLogger.SetupDefaultLogger()
-
-	esdbInstance, err := NewEventstoreDBTestContainers(defaultLogger.Logger).Start(context.Background(), t)
+	esdbInstance, err := NewEventstoreDBTestContainers(defaultLogger.GetLogger()).Start(context.Background(), t)
 	require.NoError(t, err)
 
 	assert.NotNil(t, esdbInstance)

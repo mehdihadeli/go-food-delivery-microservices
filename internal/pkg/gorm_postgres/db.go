@@ -36,7 +36,9 @@ func NewGorm(cfg *GormOptions) (*gorm.DB, error) {
 
 	gormDb, err := gorm.Open(
 		gormPostgres.Open(dataSourceName),
-		&gorm.Config{Logger: gromlog.NewGormCustomLogger(defaultLogger.Logger)},
+		&gorm.Config{
+			Logger: gromlog.NewGormCustomLogger(defaultLogger.GetLogger()),
+		},
 	)
 	if err != nil {
 		return nil, err

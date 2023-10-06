@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/handlers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/handlers/otel"
 
 	"emperror.dev/errors"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -34,7 +34,7 @@ func NewGrpcClient(config *config.GrpcOptions) (GrpcClient, error) {
 		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/example/client/main.go#L47C3-L47C52
 		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/doc.go
 		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
-		grpc.WithStatsHandler(handlers.NewClientHandler()),
+		grpc.WithStatsHandler(otel.NewClientHandler()),
 	)
 	if err != nil {
 		return nil, err

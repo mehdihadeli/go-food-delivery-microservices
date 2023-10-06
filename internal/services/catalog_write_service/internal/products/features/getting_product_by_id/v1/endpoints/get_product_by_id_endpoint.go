@@ -1,11 +1,9 @@
 package endpoints
 
 import (
-	"fmt"
 	"net/http"
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_product_by_id/v1/dtos"
@@ -48,11 +46,9 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(
 				err,
-				"[getProductByIdEndpoint_handler.Bind] error in the binding request",
+				"error in the binding request",
 			)
-			ep.Logger.Errorf(
-				fmt.Sprintf("[getProductByIdEndpoint_handler.Bind] err: %v", badRequestErr),
-			)
+
 			return badRequestErr
 		}
 
@@ -60,9 +56,9 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 		if err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,
-				"[getProductByIdEndpoint_handler.StructCtx]  query validation failed",
+				"query validation failed",
 			)
-			ep.Logger.Errorf("[getProductByIdEndpoint_handler.StructCtx] err: {%v}", validationErr)
+
 			return validationErr
 		}
 
@@ -71,19 +67,10 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 			query,
 		)
 		if err != nil {
-			err = errors.WithMessage(
+			return errors.WithMessage(
 				err,
-				"[getProductByIdEndpoint_handler.Send] error in sending GetProductById",
+				"error in sending GetProductById",
 			)
-			ep.Logger.Errorw(
-				fmt.Sprintf(
-					"[getProductByIdEndpoint_handler.Send] id: {%s}, err: {%v}",
-					query.ProductID,
-					err,
-				),
-				logger.Fields{"ProductId": query.ProductID},
-			)
-			return err
 		}
 
 		return c.JSON(http.StatusOK, queryResult)

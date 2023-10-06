@@ -15,6 +15,7 @@ type config struct {
 	propagators         propagation.TextMapPropagator
 	skipper             middleware.Skipper
 	instrumentationName string
+	serviceName         string
 }
 
 // Option specifies instrumentation configuration options.
@@ -33,6 +34,7 @@ var defualtConfig = config{
 	propagators:         otel.GetTextMapPropagator(),
 	skipper:             middleware.DefaultSkipper,
 	instrumentationName: "echo",
+	serviceName:         "app",
 }
 
 // WithPropagators specifies propagators to use for extracting
@@ -63,10 +65,18 @@ func WithSkipper(skipper middleware.Skipper) Option {
 	})
 }
 
-func SetInstrumentationName(v string) Option {
+func WithInstrumentationName(v string) Option {
 	return optionFunc(func(cfg *config) {
 		if cfg.instrumentationName != "" {
 			cfg.instrumentationName = v
+		}
+	})
+}
+
+func WithServiceName(v string) Option {
+	return optionFunc(func(cfg *config) {
+		if cfg.serviceName != "" {
+			cfg.serviceName = v
 		}
 	})
 }

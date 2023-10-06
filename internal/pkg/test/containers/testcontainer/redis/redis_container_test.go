@@ -11,9 +11,7 @@ import (
 )
 
 func Test_Custom_Redis_Container(t *testing.T) {
-	defaultLogger.SetupDefaultLogger()
-
-	redis, err := NewRedisTestContainers(defaultLogger.Logger).Start(context.Background(), t)
+	redis, err := NewRedisTestContainers(defaultLogger.GetLogger()).Start(context.Background(), t)
 	require.NoError(t, err)
 
 	assert.NotNil(t, redis)

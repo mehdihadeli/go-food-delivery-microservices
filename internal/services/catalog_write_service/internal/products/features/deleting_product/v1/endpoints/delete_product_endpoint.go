@@ -1,11 +1,9 @@
 package endpoints
 
 import (
-	"fmt"
 	"net/http"
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1/commands"
@@ -48,11 +46,9 @@ func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(
 				err,
-				"[deleteProductEndpoint_handler.Bind] error in the binding request",
+				"error in the binding request",
 			)
-			ep.Logger.Errorf(
-				fmt.Sprintf("[deleteProductEndpoint_handler.Bind] err: %v", badRequestErr),
-			)
+
 			return badRequestErr
 		}
 
@@ -60,30 +56,22 @@ func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 		if err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,
-				"[deleteProductEndpoint_handler.StructCtx] command validation failed",
+				"command validation failed",
 			)
-			ep.Logger.Errorf(
-				fmt.Sprintf("[deleteProductEndpoint_handler.StructCtx] err: {%v}", validationErr),
-			)
+
 			return validationErr
 		}
 
-		_, err = mediatr.Send[*commands.DeleteProduct, *mediatr.Unit](ctx, command)
+		_, err = mediatr.Send[*commands.DeleteProduct, *mediatr.Unit](
+			ctx,
+			command,
+		)
 
 		if err != nil {
-			err = errors.WithMessage(
+			return errors.WithMessage(
 				err,
-				"[deleteProductEndpoint_handler.Send] error in sending DeleteProduct",
+				"error in sending DeleteProduct",
 			)
-			ep.Logger.Errorw(
-				fmt.Sprintf(
-					"[deleteProductEndpoint_handler.Send] id: {%s}, err: {%v}",
-					command.ProductID,
-					err,
-				),
-				logger.Fields{"ProductId": command.ProductID},
-			)
-			return err
 		}
 
 		return c.NoContent(http.StatusNoContent)

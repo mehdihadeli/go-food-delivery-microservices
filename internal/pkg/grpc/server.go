@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/handlers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/handlers/otel"
 	grpcError "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/grpc_error"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
@@ -63,7 +63,7 @@ func NewGrpcServer(
 		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/doc.go
 		// https://github.com/open-telemetry/opentelemetry-go-contrib/blob/main/instrumentation/google.golang.org/grpc/otelgrpc/example/server/main.go#L143C3-L143C50
 		googleGrpc.StatsHandler(otelgrpc.NewServerHandler()),
-		googleGrpc.StatsHandler(handlers.NewServerHandler()),
+		googleGrpc.StatsHandler(otel.NewServerHandler()),
 
 		googleGrpc.KeepaliveParams(keepalive.ServerParameters{
 			MaxConnectionIdle: maxConnectionIdle * time.Minute,

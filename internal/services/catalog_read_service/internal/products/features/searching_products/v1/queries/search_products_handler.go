@@ -7,6 +7,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	utils2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/dto"
@@ -37,7 +38,7 @@ func (c *SearchProductsHandler) Handle(
 
 	products, err := c.mongoRepository.SearchProducts(ctx, query.SearchText, query.ListQuery)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -48,7 +49,7 @@ func (c *SearchProductsHandler) Handle(
 
 	listResultDto, err := utils.ListResultToListResultDto[*dto.ProductDto](products)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,

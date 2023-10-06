@@ -1,4 +1,4 @@
-package handlers
+package otel
 
 import (
 	"context"
@@ -50,4 +50,20 @@ func extract(
 	return propagators.Extract(ctx, &metadataSupplier{
 		metadata: &md,
 	})
+}
+
+func inject(
+	ctx context.Context,
+	propagators propagation.TextMapPropagator,
+) context.Context {
+	md, ok := metadata.FromOutgoingContext(ctx)
+	if !ok {
+		md = metadata.MD{}
+	}
+
+	propagators.Inject(ctx, &metadataSupplier{
+		metadata: &md,
+	})
+
+	return metadata.NewOutgoingContext(ctx, md)
 }

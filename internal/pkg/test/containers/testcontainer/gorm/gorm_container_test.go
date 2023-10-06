@@ -18,9 +18,8 @@ import (
 
 func Test_Custom_Gorm_Container(t *testing.T) {
 	ctx := context.Background()
-	defaultLogger.SetupDefaultLogger()
 
-	gorm, err := NewGormTestContainers(defaultLogger.Logger).Start(ctx, t)
+	gorm, err := NewGormTestContainers(defaultLogger.GetLogger()).Start(ctx, t)
 	require.NoError(t, err)
 
 	assert.NotNil(t, gorm)

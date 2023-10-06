@@ -8,6 +8,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 
 	"github.com/mehdihadeli/go-mediatr"
@@ -47,7 +48,7 @@ func (c *DeleteProductCommand) Handle(
 	defer span.End()
 
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -59,7 +60,7 @@ func (c *DeleteProductCommand) Handle(
 		)
 	}
 	if product == nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewNotFoundErrorWrap(
 				err,
@@ -72,7 +73,7 @@ func (c *DeleteProductCommand) Handle(
 	}
 
 	if err := c.mongoRepository.DeleteProductByID(ctx, product.Id); err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -85,7 +86,7 @@ func (c *DeleteProductCommand) Handle(
 
 	err = c.redisRepository.DeleteProduct(ctx, product.Id)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,

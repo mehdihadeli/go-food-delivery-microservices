@@ -17,6 +17,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb/repository"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	utils2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
@@ -61,7 +62,7 @@ func (p *mongoProductRepository) GetAllProducts(
 	// https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
 	result, err := p.mongoGenericRepository.GetAll(ctx, listQuery)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -91,7 +92,7 @@ func (p *mongoProductRepository) SearchProducts(
 
 	result, err := p.mongoGenericRepository.Search(ctx, searchText, listQuery)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -128,7 +129,7 @@ func (p *mongoProductRepository) GetProductById(
 
 	product, err := p.mongoGenericRepository.GetById(ctx, id)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -164,7 +165,7 @@ func (p *mongoProductRepository) GetProductByProductId(
 		map[string]interface{}{"productId": uuid},
 	)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -198,7 +199,7 @@ func (p *mongoProductRepository) CreateProduct(
 
 	err := p.mongoGenericRepository.Add(ctx, product)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -230,7 +231,7 @@ func (p *mongoProductRepository) UpdateProduct(
 	err := p.mongoGenericRepository.Update(ctx, updateProduct)
 	// https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -266,7 +267,7 @@ func (p *mongoProductRepository) DeleteProductByID(ctx context.Context, uuid str
 
 	err = p.mongoGenericRepository.Delete(ctx, id)
 	if err != nil {
-		return tracing.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf(
+		return utils2.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf(
 			"[mongoProductRepository_DeleteProductByID.FindOneAndDelete] error in deleting product with id %s from the database.",
 			uuid,
 		)))

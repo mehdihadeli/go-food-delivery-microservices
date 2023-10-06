@@ -10,6 +10,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	customAttribute "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/models/orders/value_objects"
@@ -43,7 +44,7 @@ func (c *CreateOrderHandler) Handle(
 
 	shopItems, err := mapper.Map[[]*value_objects.ShopItem](command.ShopItems)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -61,7 +62,7 @@ func (c *CreateOrderHandler) Handle(
 		command.CreatedAt,
 	)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -72,7 +73,7 @@ func (c *CreateOrderHandler) Handle(
 
 	_, err = c.aggregateStore.Store(order, nil, ctx)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,

@@ -7,6 +7,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	utils2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
@@ -41,7 +42,7 @@ func (c *GetOrdersHandler) Handle(
 
 	products, err := c.mongoOrderReadRepository.GetAllOrders(ctx, query.ListQuery)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -52,7 +53,7 @@ func (c *GetOrdersHandler) Handle(
 
 	listResultDto, err := utils.ListResultToListResultDto[*dtosV1.OrderReadDto](products)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils2.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,

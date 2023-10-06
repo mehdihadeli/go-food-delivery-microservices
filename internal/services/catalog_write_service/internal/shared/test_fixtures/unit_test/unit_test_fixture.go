@@ -34,8 +34,7 @@ type UnitTestSharedFixture struct {
 
 func NewUnitTestSharedFixture(t *testing.T) *UnitTestSharedFixture {
 	// we could use EmptyLogger if we don't want to log anything
-	defaultLogger.SetupDefaultLogger()
-	log := defaultLogger.Logger
+	log := defaultLogger.GetLogger()
 	cfg := &config.AppOptions{}
 
 	err := configMapper()

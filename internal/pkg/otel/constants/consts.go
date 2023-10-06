@@ -1,4 +1,4 @@
-package tracing
+package constants
 
 const (
 	TraceId      = "general.trace-id"
@@ -6,5 +6,4 @@ const (
 	ParentSpanId = "general.parent-span-id"
 	Traceparent  = "general.traceparent"
 	Timestamp    = "general.timestamp"
-	ErrorMessage = "general.error_message"
 )

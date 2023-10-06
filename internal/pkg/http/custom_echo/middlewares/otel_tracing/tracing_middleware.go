@@ -8,7 +8,7 @@ package oteltracing
 import (
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 
 	"github.com/labstack/echo/v4"
 	"go.opentelemetry.io/otel/propagation"
@@ -18,7 +18,7 @@ import (
 )
 
 // HttpTrace returns echo middleware which will trace incoming requests.
-func HttpTrace(service string, opts ...Option) echo.MiddlewareFunc {
+func HttpTrace(opts ...Option) echo.MiddlewareFunc {
 	cfg := defualtConfig
 	for _, opt := range opts {
 		opt.apply(&cfg)
@@ -54,7 +54,7 @@ func HttpTrace(service string, opts ...Option) echo.MiddlewareFunc {
 			// https://github.com/open-telemetry/opentelemetry-go/pull/4362
 			opts := []oteltrace.SpanStartOption{
 				oteltrace.WithAttributes(
-					httpconv.ServerRequest(service, request)...),
+					httpconv.ServerRequest(cfg.serviceName, request)...),
 				oteltrace.WithSpanKind(oteltrace.SpanKindServer),
 			}
 
@@ -88,7 +88,7 @@ func HttpTrace(service string, opts ...Option) echo.MiddlewareFunc {
 			}
 
 			status := c.Response().Status
-			err = utils.HttpTraceFromSpanWithCode(span, err, status)
+			err = utils.HttpTraceStatusFromSpanWithCode(span, err, status)
 
 			return err
 		}

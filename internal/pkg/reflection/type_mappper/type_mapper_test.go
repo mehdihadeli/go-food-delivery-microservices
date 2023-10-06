@@ -44,6 +44,12 @@ func TestTypes(t *testing.T) {
 	typeName3 := GetTypeName(s2)
 	typeName4 := GetTypeName(s)
 
+	pkName := GetPackageName(&Test{})
+	pkName2 := GetPackageName(Test{})
+
+	assert.Equal(t, "typeMapper", pkName)
+	assert.Equal(t, "typeMapper", pkName2)
+
 	assert.Equal(t, "typeMapper.Test", typeName)
 	assert.Equal(t, "*typeMapper.Test", typeName2)
 	assert.Equal(t, "*Test", typeName3)

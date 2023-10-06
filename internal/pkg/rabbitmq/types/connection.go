@@ -131,13 +131,17 @@ func (c *internalConnection) handleReconnecting() {
 		select {
 		case err := <-c.errConnectionChan:
 			if err != nil {
-				defaultLogger.Logger.Info("Rabbitmq Connection Reconnecting started")
+				defaultLogger.GetLogger().
+					Info("Rabbitmq Connection Reconnecting started")
 				err := c.connect()
 				if err != nil {
-					defaultLogger.Logger.Error(fmt.Sprintf("Error in reconnecting, %s", err))
+					defaultLogger.GetLogger().
+						Error(fmt.Sprintf("Error in reconnecting, %s", err))
 					continue
 				}
-				defaultLogger.Logger.Info("Rabbitmq Connection Reconnected")
+
+				defaultLogger.GetLogger().
+					Info("Rabbitmq Connection Reconnected")
 				c.isConnected = true
 				c.reconnectedChan <- struct{}{}
 				continue

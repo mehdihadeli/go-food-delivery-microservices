@@ -8,6 +8,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
 
@@ -46,7 +47,7 @@ func (r *redisProductRepository) PutProduct(
 
 	productBytes, err := json.Marshal(product)
 	if err != nil {
-		return tracing.TraceErrFromSpan(
+		return utils.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -56,7 +57,7 @@ func (r *redisProductRepository) PutProduct(
 	}
 
 	if err := r.redisClient.HSetNX(ctx, r.getRedisProductPrefixKey(), key, productBytes).Err(); err != nil {
-		return tracing.TraceErrFromSpan(
+		return utils.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -102,7 +103,7 @@ func (r *redisProductRepository) GetProductById(
 			return nil, nil
 		}
 
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -116,7 +117,7 @@ func (r *redisProductRepository) GetProductById(
 
 	var product models.Product
 	if err := json.Unmarshal(productBytes, &product); err != nil {
-		return nil, tracing.TraceErrFromSpan(span, err)
+		return nil, utils.TraceErrFromSpan(span, err)
 	}
 
 	span.SetAttributes(attribute.Object("Product", product))
@@ -145,7 +146,7 @@ func (r *redisProductRepository) DeleteProduct(ctx context.Context, key string) 
 	defer span.End()
 
 	if err := r.redisClient.HDel(ctx, r.getRedisProductPrefixKey(), key).Err(); err != nil {
-		return tracing.TraceErrFromSpan(
+		return utils.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -175,7 +176,7 @@ func (r *redisProductRepository) DeleteAllProducts(ctx context.Context) error {
 	defer span.End()
 
 	if err := r.redisClient.Del(ctx, r.getRedisProductPrefixKey()).Err(); err != nil {
-		return tracing.TraceErrFromSpan(
+		return utils.TraceErrFromSpan(
 			span,
 			errors.WrapIf(
 				err,

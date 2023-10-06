@@ -230,7 +230,10 @@ func Test_First_Or_Default(t *testing.T) {
 	}
 	p := all.Items[0]
 
-	single, err := repository.FirstOrDefault(ctx, map[string]interface{}{"_id": p.ID})
+	single, err := repository.FirstOrDefault(
+		ctx,
+		map[string]interface{}{"_id": p.ID},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -250,7 +253,10 @@ func Test_First_Or_Default_With_Data_Model(t *testing.T) {
 	}
 	p := all.Items[0]
 
-	single, err := repository.FirstOrDefault(ctx, map[string]interface{}{"_id": p.ID})
+	single, err := repository.FirstOrDefault(
+		ctx,
+		map[string]interface{}{"_id": p.ID},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,7 +300,11 @@ func Test_Search(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	models, err := repository.Search(ctx, "seed_product1", utils.NewListQuery(10, 1))
+	models, err := repository.Search(
+		ctx,
+		"seed_product1",
+		utils.NewListQuery(10, 1),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -307,7 +317,11 @@ func Test_Search_With_Data_Model(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericMongoRepositoryWithDataModel(ctx, t)
 
-	models, err := repository.Search(ctx, "seed_product1", utils.NewListQuery(10, 1))
+	models, err := repository.Search(
+		ctx,
+		"seed_product1",
+		utils.NewListQuery(10, 1),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -320,7 +334,10 @@ func Test_GetByFilter(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericMongoRepository(ctx, t)
 
-	models, err := repository.GetByFilter(ctx, map[string]interface{}{"name": "seed_product1"})
+	models, err := repository.GetByFilter(
+		ctx,
+		map[string]interface{}{"name": "seed_product1"},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -333,7 +350,10 @@ func Test_GetByFilter_With_Data_Model(t *testing.T) {
 	ctx := context.Background()
 	repository, err := setupGenericMongoRepositoryWithDataModel(ctx, t)
 
-	models, err := repository.GetByFilter(ctx, map[string]interface{}{"name": "seed_product1"})
+	models, err := repository.GetByFilter(
+		ctx,
+		map[string]interface{}{"name": "seed_product1"},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -509,7 +529,10 @@ func Test_Find(t *testing.T) {
 
 	entities, err := repository.Find(
 		ctx,
-		specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")),
+		specification.And(
+			specification.Equal("is_available", true),
+			specification.Equal("name", "seed_product1"),
+		),
 	)
 	if err != nil {
 		return
@@ -526,7 +549,10 @@ func Test_Find_With_Data_Model(t *testing.T) {
 
 	entities, err := repository.Find(
 		ctx,
-		specification.And(specification.Equal("is_available", true), specification.Equal("name", "seed_product1")),
+		specification.And(
+			specification.Equal("is_available", true),
+			specification.Equal("name", "seed_product1"),
+		),
 	)
 	if err != nil {
 		return
@@ -538,9 +564,8 @@ func setupGenericMongoRepositoryWithDataModel(
 	ctx context.Context,
 	t *testing.T,
 ) (data.GenericRepositoryWithDataModel[*ProductMongo, *Product], error) {
-	defaultLogger.SetupDefaultLogger()
-
-	db, err := mongo2.NewMongoTestContainers(defaultLogger.Logger).Start(ctx, t)
+	db, err := mongo2.NewMongoTestContainers(defaultLogger.GetLogger()).
+		Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
@@ -550,13 +575,19 @@ func setupGenericMongoRepositoryWithDataModel(
 		return nil, err
 	}
 
-	return NewGenericMongoRepositoryWithDataModel[*ProductMongo, *Product](db, DatabaseName, CollectionName), nil
+	return NewGenericMongoRepositoryWithDataModel[*ProductMongo, *Product](
+		db,
+		DatabaseName,
+		CollectionName,
+	), nil
 }
 
-func setupGenericMongoRepository(ctx context.Context, t *testing.T) (data.GenericRepository[*ProductMongo], error) {
-	defaultLogger.SetupDefaultLogger()
-
-	db, err := mongo2.NewMongoTestContainers(defaultLogger.Logger).Start(ctx, t)
+func setupGenericMongoRepository(
+	ctx context.Context,
+	t *testing.T,
+) (data.GenericRepository[*ProductMongo], error) {
+	db, err := mongo2.NewMongoTestContainers(defaultLogger.GetLogger()).
+		Start(ctx, t)
 	if err != nil {
 		return nil, err
 	}
@@ -566,7 +597,11 @@ func setupGenericMongoRepository(ctx context.Context, t *testing.T) (data.Generi
 		return nil, err
 	}
 
-	return NewGenericMongoRepository[*ProductMongo](db, DatabaseName, CollectionName), nil
+	return NewGenericMongoRepository[*ProductMongo](
+		db,
+		DatabaseName,
+		CollectionName,
+	), nil
 }
 
 func seedAndMigration(ctx context.Context, db *mongo.Client) error {

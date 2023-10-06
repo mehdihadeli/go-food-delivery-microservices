@@ -11,24 +11,32 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
 )
 
-var Logger logger.Logger
+var l logger.Logger
 
-func SetupDefaultLogger() {
+func initLogger() {
 	logType := os.Getenv("LogConfig_LogType")
 
 	switch logType {
 	case "Zap", "":
-		Logger = zap.NewZapLogger(
+		l = zap.NewZapLogger(
 			&config.LogOptions{LogType: models.Zap, CallerEnabled: false},
 			constants.Dev,
 		)
 		break
 	case "Logrus":
-		Logger = logrous.NewLogrusLogger(
+		l = logrous.NewLogrusLogger(
 			&config.LogOptions{LogType: models.Logrus, CallerEnabled: false},
 			constants.Dev,
 		)
 		break
 	default:
 	}
+}
+
+func GetLogger() logger.Logger {
+	if l == nil {
+		initLogger()
+	}
+
+	return l
 }

@@ -21,8 +21,9 @@ import (
 func Test_Publish_Message(t *testing.T) {
 	testUtils.SkipCI(t)
 
-	defaultLogger.SetupDefaultLogger()
-	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
+	eventSerializer := serializer.NewDefaultEventSerializer(
+		json.NewDefaultSerializer(),
+	)
 
 	ctx := context.Background()
 	tp, err := tracing.NewOtelTracing(
@@ -30,9 +31,8 @@ func Test_Publish_Message(t *testing.T) {
 			ServiceName:     "test",
 			Enabled:         true,
 			AlwaysOnSampler: true,
-			JaegerExporterOptions: &tracing.JaegerExporterOptions{
-				AgentHost: "localhost",
-				AgentPort: "6831",
+			ZipkinExporterOptions: &tracing.ZipkinExporterOptions{
+				Url: "http://localhost:9411/api/v2/spans",
 			},
 		},
 		environemnt.Development,
@@ -40,7 +40,7 @@ func Test_Publish_Message(t *testing.T) {
 	if err != nil {
 		return
 	}
-	defer tp.TracerProvider.Shutdown(ctx)
+	defer tp.Shutdown(ctx)
 
 	conn, err := types.NewRabbitMQConnection(&config.RabbitmqOptions{
 		RabbitmqHostOptions: &config.RabbitmqHostOptions{
@@ -55,7 +55,7 @@ func Test_Publish_Message(t *testing.T) {
 	rabbitmqProducer, err := NewRabbitMQProducer(
 		conn,
 		nil,
-		defaultLogger.Logger,
+		defaultLogger.GetLogger(),
 		eventSerializer,
 	)
 	require.NoError(t, err)

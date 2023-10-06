@@ -18,7 +18,11 @@ type CreateProduct struct {
 	CreatedAt   time.Time
 }
 
-func NewCreateProduct(name string, description string, price float64) (*CreateProduct, error) {
+func NewCreateProduct(
+	name string,
+	description string,
+	price float64,
+) (*CreateProduct, error) {
 	command := &CreateProduct{
 		ProductID:   uuid.NewV4(),
 		Name:        name,
@@ -34,11 +38,24 @@ func NewCreateProduct(name string, description string, price float64) (*CreatePr
 }
 
 func (c *CreateProduct) Validate() error {
-	return validation.ValidateStruct(c,
+	return validation.ValidateStruct(
+		c,
 		validation.Field(&c.ProductID, validation.Required),
-		validation.Field(&c.Name, validation.Required, validation.Length(0, 255)),
-		validation.Field(&c.Description, validation.Required, validation.Length(0, 5000)),
-		validation.Field(&c.Price, validation.Required, validation.Min(0.0).Exclusive()),
+		validation.Field(
+			&c.Name,
+			validation.Required,
+			validation.Length(0, 255),
+		),
+		validation.Field(
+			&c.Description,
+			validation.Required,
+			validation.Length(0, 5000),
+		),
+		validation.Field(
+			&c.Price,
+			validation.Required,
+			validation.Min(0.0).Exclusive(),
+		),
 		validation.Field(&c.CreatedAt, validation.Required),
 	)
 }

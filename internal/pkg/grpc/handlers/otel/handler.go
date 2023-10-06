@@ -1,4 +1,4 @@
-package handlers
+package otel
 
 import (
 	"context"
@@ -177,7 +177,10 @@ func (h *handler) tagRPC(
 
 	gctx := gRPCContext{attributes: attributes, startTime: time.Now()}
 
-	return context.WithValue(ctx, gRPCContextKey{}, &gctx)
+	return inject(
+		context.WithValue(ctx, gRPCContextKey{}, &gctx),
+		h.config.propagator,
+	)
 }
 
 func (h *handler) handleRPC(ctx context.Context, rs stats.RPCStats) {

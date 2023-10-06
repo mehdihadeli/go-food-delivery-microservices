@@ -22,11 +22,10 @@ import (
 func Test_RabbitMQ_Container(t *testing.T) {
 	ctx := context.Background()
 	fakeConsumer := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
-	defaultLogger.SetupDefaultLogger()
 	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
 
 	rabbitmq, err := NewRabbitMQDockerTest(
-		defaultLogger.Logger,
+		defaultLogger.GetLogger(),
 	).Start(ctx, t, eventSerializer, func(builder rabbitmqConfigurations.RabbitMQConfigurationBuilder) {
 		builder.AddConsumer(ProducerConsumerMessage{},
 			func(consumerBuilder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {

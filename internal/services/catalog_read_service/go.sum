@@ -520,6 +520,8 @@ github.com/mcuadros/go-defaults v1.2.0 h1:FODb8WSf0uGaY8elWJAkoLL0Ri6AlZ1bFlenk5
 github.com/mcuadros/go-defaults v1.2.0/go.mod h1:WEZtHEVIGYVDqkKSWBdWKUVdRyKlMfulPaGDWIVeCWY=
 github.com/mehdihadeli/go-mediatr v1.1.10 h1:NAzg4065c90lgYeb+Vzbd2WKH0tUFpxzL0mpx6hkU/A=
 github.com/mehdihadeli/go-mediatr v1.1.10/go.mod h1:lwgZl7qVL/RKomObBblhG3uEte/r4nJDV95Vd+nGrMw=
+github.com/mehdihadeli/go-mediatr v1.2.0 h1:XkzYF/uGfW4pwPWYAxKyY+mO6l989PbmCQWSYHuCZtU=
+github.com/mehdihadeli/go-mediatr v1.2.0/go.mod h1:I9LuExxAKz6cTDJyP/SSDSmkHaPHK1/usnvEXjUY47k=
 github.com/michaelklishin/rabbit-hole v1.5.0 h1:Bex27BiFDsijCM9D0ezSHqyy0kehpYHuNKaPqq/a4RM=
 github.com/michaelklishin/rabbit-hole v1.5.0/go.mod h1:vvI1uOitYZi0O5HEGXhaWC1XT80Gy+HvFheJ+5Krlhk=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=

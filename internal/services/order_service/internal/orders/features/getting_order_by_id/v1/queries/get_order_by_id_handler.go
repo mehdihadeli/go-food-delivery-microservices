@@ -9,6 +9,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/getting_order_by_id/v1/dtos"
@@ -46,7 +47,7 @@ func (q *GetOrderByIdHandler) Handle(
 	// get order by order-read id
 	order, err := q.orderMongoRepository.GetOrderById(ctx, query.Id)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -62,7 +63,7 @@ func (q *GetOrderByIdHandler) Handle(
 		// get order by order-write id
 		order, err = q.orderMongoRepository.GetOrderByOrderId(ctx, query.Id)
 		if err != nil {
-			return nil, tracing.TraceErrFromSpan(
+			return nil, utils.TraceErrFromSpan(
 				span,
 				customErrors.NewApplicationErrorWrap(
 					err,
@@ -77,7 +78,7 @@ func (q *GetOrderByIdHandler) Handle(
 
 	orderDto, err := mapper.Map[*dtosV1.OrderReadDto](order)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,

@@ -9,7 +9,8 @@ import (
 	messageHeader "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/message_header"
 	messageTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -59,15 +60,15 @@ func StartProducerSpan(
 }
 
 func FinishProducerSpan(span trace.Span, err error) error {
-	messageName := tracing.GetSpanAttribute(span, messageTracing.MessageName).Value.AsString()
+	messageName := utils.GetSpanAttribute(span, messageTracing.MessageName).Value.AsString()
 
 	if err != nil {
 		span.AddEvent(fmt.Sprintf("failed to publsih message '%s' to the broker", messageName))
 		_ = messageTracing.TraceMessagingErrFromSpan(span, err)
 	}
 	span.SetAttributes(
-		attribute.Key(tracing.TraceId).String(span.SpanContext().TraceID().String()),
-		attribute.Key(tracing.SpanId).String(span.SpanContext().SpanID().String()), // current span id
+		attribute.Key(constants.TraceId).String(span.SpanContext().TraceID().String()),
+		attribute.Key(constants.SpanId).String(span.SpanContext().SpanID().String()), // current span id
 	)
 
 	span.AddEvent(fmt.Sprintf("message '%s' published to the broker succesfully", messageName))
@@ -93,7 +94,7 @@ func getTraceOptions(
 		attribute.Key(messageTracing.MessageName).String(messageHeader.GetMessageName(*meta)),
 		attribute.Key(messageTracing.Payload).String(payload),
 		attribute.String(messageTracing.Headers, meta.ToJson()),
-		attribute.Key(tracing.Timestamp).Int64(time.Now().UnixMilli()),
+		attribute.Key(constants.Timestamp).Int64(time.Now().UnixMilli()),
 		semconv.MessagingDestinationName(producerTracingOptions.Destination),
 		semconv.MessagingSystemKey.String(producerTracingOptions.MessagingSystem),
 		semconv.MessagingOperationKey.String("send"),

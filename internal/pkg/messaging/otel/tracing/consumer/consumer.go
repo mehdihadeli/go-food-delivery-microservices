@@ -8,8 +8,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	messageHeader "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/message_header"
 	messageTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants"
 	tracingHeaders "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/tracing_headers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -57,7 +58,7 @@ func StartConsumerSpan(
 }
 
 func FinishConsumerSpan(span trace.Span, err error) error {
-	messageName := tracing.GetSpanAttribute(span, messageTracing.MessageName).Value.AsString()
+	messageName := utils.GetSpanAttribute(span, messageTracing.MessageName).Value.AsString()
 
 	if err != nil {
 		span.AddEvent(fmt.Sprintf("failed to consume message '%s' from the broker", messageName))
@@ -65,7 +66,7 @@ func FinishConsumerSpan(span trace.Span, err error) error {
 	}
 
 	span.SetAttributes(
-		attribute.Key(tracing.SpanId).String(span.SpanContext().SpanID().String()), // current span id
+		attribute.Key(constants.SpanId).String(span.SpanContext().SpanID().String()), // current span id
 	)
 
 	span.AddEvent(fmt.Sprintf("message '%s' consumed from the broker succesfully", messageName))
@@ -87,10 +88,10 @@ func getTraceOptions(
 		semconv.MessageIDKey.String(messageHeader.GetMessageId(*meta)),
 		semconv.MessagingMessageConversationID(correlationId),
 		semconv.MessagingOperationReceive,
-		attribute.Key(tracing.TraceId).String(tracingHeaders.GetTracingTraceId(*meta)),
-		attribute.Key(tracing.Traceparent).String(tracingHeaders.GetTracingTraceparent(*meta)),
-		attribute.Key(tracing.ParentSpanId).String(tracingHeaders.GetTracingParentSpanId(*meta)),
-		attribute.Key(tracing.Timestamp).Int64(time.Now().UnixMilli()),
+		attribute.Key(constants.TraceId).String(tracingHeaders.GetTracingTraceId(*meta)),
+		attribute.Key(constants.Traceparent).String(tracingHeaders.GetTracingTraceparent(*meta)),
+		attribute.Key(constants.ParentSpanId).String(tracingHeaders.GetTracingParentSpanId(*meta)),
+		attribute.Key(constants.Timestamp).Int64(time.Now().UnixMilli()),
 		attribute.Key(messageTracing.MessageType).String(messageHeader.GetMessageType(*meta)),
 		attribute.Key(messageTracing.MessageName).String(messageHeader.GetMessageName(*meta)),
 		attribute.Key(messageTracing.Payload).String(payload),

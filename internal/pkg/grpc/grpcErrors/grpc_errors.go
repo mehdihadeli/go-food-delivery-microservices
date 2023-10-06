@@ -34,7 +34,12 @@ type GrpcErr interface {
 	ToGrpcResponseErr() error
 }
 
-func NewGrpcError(status codes.Code, title string, detail string, stackTrace string) GrpcErr {
+func NewGrpcError(
+	status codes.Code,
+	title string,
+	detail string,
+	stackTrace string,
+) GrpcErr {
 	grpcErr := &grpcErr{
 		Status:     status,
 		Title:      title,
@@ -107,7 +112,7 @@ func (p *grpcErr) ToGrpcResponseErr() error {
 }
 
 func (p *grpcErr) ToJson() string {
-	defaultLogger.Logger.Error(p.Error())
+	defaultLogger.GetLogger().Error(p.Error())
 	stackTrace := p.GetStackTrace()
 	fmt.Println(stackTrace)
 

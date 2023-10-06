@@ -9,6 +9,8 @@ import (
 	"reflect"
 	"strings"
 	"unsafe"
+
+	"github.com/iancoleman/strcase"
 )
 
 var (
@@ -32,7 +34,8 @@ func discoverTypes() {
 		for _, off := range offs {
 			emptyInterface := (*emptyInterface)(unsafe.Pointer(&typ))
 			emptyInterface.data = resolveTypeOff(rodata, off)
-			if typ.Kind() == reflect.Ptr && typ.Elem().Kind() == reflect.Struct {
+			if typ.Kind() == reflect.Ptr &&
+				typ.Elem().Kind() == reflect.Struct {
 				// just discover pointer types, but we also register this pointer type actual struct type to the registry
 				loadedTypePtr := typ
 				loadedType := typ.Elem()
@@ -105,7 +108,9 @@ func TypesByName(typeName string) []reflect.Type {
 	return nil
 }
 
-func TypeByNameAndImplementedInterface[TInterface interface{}](typeName string) reflect.Type {
+func TypeByNameAndImplementedInterface[TInterface interface{}](
+	typeName string,
+) reflect.Type {
 	// https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
 	implementedInterface := GetTypeFromGeneric[TInterface]()
 	if types, ok := types[typeName]; ok {
@@ -170,6 +175,25 @@ func GetTypeName(input interface{}) string {
 	return fmt.Sprintf("*%s", t.Elem().Name())
 }
 
+// GetNonePointerTypeName returns the name of the type without its package name and its pointer
+func GetNonePointerTypeName(input interface{}) string {
+	t := reflect.TypeOf(input)
+	if t.Kind() != reflect.Ptr {
+		return t.Name()
+	}
+
+	return t.Elem().Name()
+}
+
+func GetSnakeTypeName(input interface{}) string {
+	t := reflect.TypeOf(input)
+	if t.Kind() != reflect.Ptr {
+		return t.Name()
+	}
+
+	return strcase.ToSnake(t.Elem().Name())
+}
+
 func GetTypeNameByT[T any]() string {
 	t := reflect.TypeOf((*T)(nil)).Elem()
 	if t.Kind() != reflect.Ptr {
@@ -202,6 +226,19 @@ func TypeByPackageName(pkgPath string, name string) reflect.Type {
 		return pkgTypes[name][0]
 	}
 	return nil
+}
+
+func GetPackageName(value interface{}) string {
+	inputType := reflect.TypeOf(value)
+	if inputType.Kind() == reflect.Ptr {
+		inputType = inputType.Elem()
+	}
+
+	packagePath := inputType.PkgPath()
+
+	parts := strings.Split(packagePath, "/")
+
+	return parts[len(parts)-1]
 }
 
 func TypesByPackageName(pkgPath string, name string) []reflect.Type {
@@ -261,7 +298,9 @@ func InstanceByTypeName(name string) interface{} {
 	return getInstanceFromType(typ)
 }
 
-func InstanceByTypeNameAndImplementedInterface[TInterface interface{}](name string) interface{} {
+func InstanceByTypeNameAndImplementedInterface[TInterface interface{}](
+	name string,
+) interface{} {
 	typ := TypeByNameAndImplementedInterface[TInterface](name)
 
 	return getInstanceFromType(typ)

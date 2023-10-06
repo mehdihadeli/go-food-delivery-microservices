@@ -312,6 +312,7 @@ func getFieldType(value interface{}) zapcore.FieldType {
 	case error:
 		return zapcore.ErrorType
 	default:
-		return zapcore.StringerType
+		// uses reflection to serialize arbitrary objects, so it can be slow and allocation-heavy.
+		return zapcore.ReflectType
 	}
 }

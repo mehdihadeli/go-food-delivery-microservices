@@ -30,8 +30,9 @@ func Test_AddRabbitMQ(t *testing.T) {
 	fakeConsumer2 := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
 	fakeConsumer3 := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
 
-	defaultLogger2.SetupDefaultLogger()
-	serializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
+	serializer := serializer.NewDefaultEventSerializer(
+		json.NewDefaultSerializer(),
+	)
 
 	rabbitmqOptions := &config.RabbitmqOptions{
 		RabbitmqHostOptions: &config.RabbitmqHostOptions{
@@ -44,24 +45,35 @@ func Test_AddRabbitMQ(t *testing.T) {
 	conn, err := types.NewRabbitMQConnection(rabbitmqOptions)
 	require.NoError(t, err)
 
-	b, err := NewRabbitmqBus(rabbitmqOptions, serializer, defaultLogger2.Logger, conn,
+	b, err := NewRabbitmqBus(
+		rabbitmqOptions,
+		serializer,
+		defaultLogger2.GetLogger(),
+		conn,
 		func(builder configurations.RabbitMQConfigurationBuilder) {
 			builder.AddProducer(
 				ProducerConsumerMessage{},
 				func(builder producerConfigurations.RabbitMQProducerConfigurationBuilder) {
 				},
 			)
-			builder.AddConsumer(ProducerConsumerMessage{},
+			builder.AddConsumer(
+				ProducerConsumerMessage{},
 				func(builder consumerConfigurations.RabbitMQConsumerConfigurationBuilder) {
 					builder.WithHandlers(func(consumerHandlerBuilder messageConsumer.ConsumerHandlerConfigurationBuilder) {
-						consumerHandlerBuilder.AddHandler(NewTestMessageHandler())
-						consumerHandlerBuilder.AddHandler(NewTestMessageHandler2())
+						consumerHandlerBuilder.AddHandler(
+							NewTestMessageHandler(),
+						)
+						consumerHandlerBuilder.AddHandler(
+							NewTestMessageHandler2(),
+						)
 					}).
 						WIthPipelines(func(consumerPipelineBuilder pipeline.ConsumerPipelineConfigurationBuilder) {
 							consumerPipelineBuilder.AddPipeline(NewPipeline1())
 						})
-				})
-		})
+				},
+			)
+		},
+	)
 
 	require.NoError(t, err)
 
@@ -159,7 +171,10 @@ func (p Pipeline1) Handle(
 ) error {
 	fmt.Println("PipelineBehaviourTest.Handled")
 
-	fmt.Printf("pipeline got a message with id '%s'", consumerContext.Message().GeMessageId())
+	fmt.Printf(
+		"pipeline got a message with id '%s'",
+		consumerContext.Message().GeMessageId(),
+	)
 
 	err := next()
 	if err != nil {
