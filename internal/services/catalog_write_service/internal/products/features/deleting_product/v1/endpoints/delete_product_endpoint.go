@@ -40,7 +40,6 @@ func (ep *deleteProductEndpoint) MapEndpoint() {
 func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		ep.CatalogsMetrics.DeleteProductHttpRequests.Add(ctx, 1)
 
 		request := &dtos.DeleteProductRequestDto{}
 		if err := c.Bind(request); err != nil {

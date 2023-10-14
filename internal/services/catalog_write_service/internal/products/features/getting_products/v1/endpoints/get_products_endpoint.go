@@ -41,7 +41,6 @@ func (ep *getProductsEndpoint) MapEndpoint() {
 func (ep *getProductsEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		ep.CatalogsMetrics.GetProductsHttpRequests.Add(ctx, 1)
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 		if err != nil {

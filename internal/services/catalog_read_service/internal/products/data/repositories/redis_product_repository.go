@@ -32,7 +32,11 @@ func NewRedisProductRepository(
 	redisClient redis.UniversalClient,
 	tracer tracing.AppTracer,
 ) data.ProductCacheRepository {
-	return &redisProductRepository{log: log, redisClient: redisClient, tracer: tracer}
+	return &redisProductRepository{
+		log:         log,
+		redisClient: redisClient,
+		tracer:      tracer,
+	}
 }
 
 func (r *redisProductRepository) PutProduct(
@@ -41,28 +45,30 @@ func (r *redisProductRepository) PutProduct(
 	product *models.Product,
 ) error {
 	ctx, span := r.tracer.Start(ctx, "redisRepository.PutProduct")
-	span.SetAttributes(attribute2.String("PrefixKey", r.getRedisProductPrefixKey()))
+	span.SetAttributes(
+		attribute2.String("PrefixKey", r.getRedisProductPrefixKey()),
+	)
 	span.SetAttributes(attribute2.String("Key", key))
 	defer span.End()
 
 	productBytes, err := json.Marshal(product)
 	if err != nil {
-		return utils.TraceErrFromSpan(
+		return utils.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
-				"[redisProductRepository_PutProduct.Marshal] error marshalling product",
+				"error marshalling product",
 			),
 		)
 	}
 
 	if err := r.redisClient.HSetNX(ctx, r.getRedisProductPrefixKey(), key, productBytes).Err(); err != nil {
-		return utils.TraceErrFromSpan(
+		return utils.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
 				fmt.Sprintf(
-					"[redisProductRepository_PutProduct.HSetNX] error in updating product with key %s",
+					"error in updating product with key %s",
 					key,
 				),
 			),
@@ -73,7 +79,7 @@ func (r *redisProductRepository) PutProduct(
 
 	r.log.Infow(
 		fmt.Sprintf(
-			"[redisProductRepository.PutProduct] product with key '%s', prefix '%s'  updated successfully",
+			"product with key '%s', prefix '%s'  updated successfully",
 			key,
 			r.getRedisProductPrefixKey(),
 		),
@@ -93,22 +99,25 @@ func (r *redisProductRepository) GetProductById(
 	key string,
 ) (*models.Product, error) {
 	ctx, span := r.tracer.Start(ctx, "redisRepository.GetProductById")
-	span.SetAttributes(attribute2.String("PrefixKey", r.getRedisProductPrefixKey()))
+	span.SetAttributes(
+		attribute2.String("PrefixKey", r.getRedisProductPrefixKey()),
+	)
 	span.SetAttributes(attribute2.String("Key", key))
 	defer span.End()
 
-	productBytes, err := r.redisClient.HGet(ctx, r.getRedisProductPrefixKey(), key).Bytes()
+	productBytes, err := r.redisClient.HGet(ctx, r.getRedisProductPrefixKey(), key).
+		Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return nil, nil
 		}
 
-		return nil, utils.TraceErrFromSpan(
+		return nil, utils.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
 				fmt.Sprintf(
-					"[redisProductRepository_GetProduct.HGet] error in getting product with Key %s from database",
+					"error in getting product with Key %s from database",
 					key,
 				),
 			),
@@ -117,14 +126,14 @@ func (r *redisProductRepository) GetProductById(
 
 	var product models.Product
 	if err := json.Unmarshal(productBytes, &product); err != nil {
-		return nil, utils.TraceErrFromSpan(span, err)
+		return nil, utils.TraceErrStatusFromSpan(span, err)
 	}
 
 	span.SetAttributes(attribute.Object("Product", product))
 
 	r.log.Infow(
 		fmt.Sprintf(
-			"[redisProductRepository.GetProductById] product with with key '%s', prefix '%s' laoded",
+			"product with with key '%s', prefix '%s' laoded",
 			key,
 			r.getRedisProductPrefixKey(),
 		),
@@ -139,19 +148,24 @@ func (r *redisProductRepository) GetProductById(
 	return &product, nil
 }
 
-func (r *redisProductRepository) DeleteProduct(ctx context.Context, key string) error {
+func (r *redisProductRepository) DeleteProduct(
+	ctx context.Context,
+	key string,
+) error {
 	ctx, span := r.tracer.Start(ctx, "redisRepository.DeleteProduct")
-	span.SetAttributes(attribute2.String("PrefixKey", r.getRedisProductPrefixKey()))
+	span.SetAttributes(
+		attribute2.String("PrefixKey", r.getRedisProductPrefixKey()),
+	)
 	span.SetAttributes(attribute2.String("Key", key))
 	defer span.End()
 
 	if err := r.redisClient.HDel(ctx, r.getRedisProductPrefixKey(), key).Err(); err != nil {
-		return utils.TraceErrFromSpan(
+		return utils.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
 				fmt.Sprintf(
-					"[redisProductRepository_DeleteProduct.HDel] error in deleting product with key %s",
+					"error in deleting product with key %s",
 					key,
 				),
 			),
@@ -160,7 +174,7 @@ func (r *redisProductRepository) DeleteProduct(ctx context.Context, key string) 
 
 	r.log.Infow(
 		fmt.Sprintf(
-			"[redisProductRepository.DeleteProduct] product with key %s, prefix: %s deleted successfully",
+			"product with key %s, prefix: %s deleted successfully",
 			key,
 			r.getRedisProductPrefixKey(),
 		),
@@ -172,21 +186,23 @@ func (r *redisProductRepository) DeleteProduct(ctx context.Context, key string) 
 
 func (r *redisProductRepository) DeleteAllProducts(ctx context.Context) error {
 	ctx, span := r.tracer.Start(ctx, "redisRepository.DeleteAllProducts")
-	span.SetAttributes(attribute2.String("PrefixKey", r.getRedisProductPrefixKey()))
+	span.SetAttributes(
+		attribute2.String("PrefixKey", r.getRedisProductPrefixKey()),
+	)
 	defer span.End()
 
 	if err := r.redisClient.Del(ctx, r.getRedisProductPrefixKey()).Err(); err != nil {
-		return utils.TraceErrFromSpan(
+		return utils.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
-				"[redisProductRepository_DeleteAllProducts.Del] error in deleting all products",
+				"error in deleting all products",
 			),
 		)
 	}
 
 	r.log.Infow(
-		"[redisProductRepository.DeleteAllProducts] all products deleted",
+		"all products deleted",
 		logger.Fields{"PrefixKey": r.getRedisProductPrefixKey()},
 	)
 

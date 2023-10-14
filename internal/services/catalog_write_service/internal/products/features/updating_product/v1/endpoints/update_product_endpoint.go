@@ -41,7 +41,6 @@ func (ep *updateProductEndpoint) MapEndpoint() {
 func (ep *updateProductEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		ep.CatalogsMetrics.UpdateProductHttpRequests.Add(ctx, 1)
 
 		request := &dtos.UpdateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
@@ -68,7 +67,10 @@ func (ep *updateProductEndpoint) handler() echo.HandlerFunc {
 			return validationErr
 		}
 
-		_, err = mediatr.Send[*commands.UpdateProduct, *mediatr.Unit](ctx, command)
+		_, err = mediatr.Send[*commands.UpdateProduct, *mediatr.Unit](
+			ctx,
+			command,
+		)
 		if err != nil {
 			return errors.WithMessage(
 				err,

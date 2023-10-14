@@ -74,14 +74,16 @@ func (h *HTTPMetricsRecorder) namespacedValue(v string) string {
 }
 
 func (h *HTTPMetricsRecorder) register() error {
-	errorCounter, err := h.meter.Float64Counter( //nolint:errcheck
-		fmt.Sprintf("%s_error_http_requests_total", h.cfg.serviceName),
+	// https://opentelemetry.io/docs/specs/otel/metrics/semantic_conventions/http-metrics/#http-server
+	errorCounter, err := h.meter.Float64Counter(
+		"http.server.total_error_request",
+		metric.WithUnit("count"),
 		metric.WithDescription("The total number of error http requests"),
 	)
 	if err != nil {
 		return fmt.Errorf(
 			"meter %s cannot set; %w",
-			fmt.Sprintf("%s_error_http_requests_total", h.cfg.serviceName),
+			"http.server.total_error_request",
 			err,
 		)
 	}
@@ -89,13 +91,14 @@ func (h *HTTPMetricsRecorder) register() error {
 	h.errorCounter = errorCounter
 
 	successCounter, err := h.meter.Float64Counter(
-		fmt.Sprintf("%s_success_http_requests_total", h.cfg.serviceName),
+		"http.server.total_success_request",
+		metric.WithUnit("count"),
 		metric.WithDescription("The total number of success http requests"),
 	)
 	if err != nil {
 		return fmt.Errorf(
 			"meter %s cannot set; %w",
-			fmt.Sprintf("%s_success_http_requests_total", h.cfg.serviceName),
+			"http.server.total_success_request",
 			err,
 		)
 	}
@@ -104,13 +107,14 @@ func (h *HTTPMetricsRecorder) register() error {
 
 	if h.cfg.enableTotalMetric {
 		reqTotal, err := h.meter.Int64Counter(
-			h.namespacedValue("http_requests_total"),
+			h.namespacedValue("http.server.total_request"),
+			metric.WithUnit("count"),
 			metric.WithDescription("The total number of requests"),
 		)
 		if err != nil {
 			return fmt.Errorf(
 				"meter %s cannot set; %w",
-				"http_requests_total",
+				"http.server.total_request",
 				err,
 			)
 		}
@@ -120,7 +124,8 @@ func (h *HTTPMetricsRecorder) register() error {
 
 	if h.cfg.enableDurMetric {
 		reqDuration, err := h.meter.Float64Histogram(
-			h.namespacedValue("request_duration_seconds"),
+			h.namespacedValue("http.server.duration"),
+			metric.WithUnit("s"), // Specify the unit as "seconds"
 			metric.WithDescription(
 				"The total duration of a request in seconds",
 			),
@@ -128,7 +133,7 @@ func (h *HTTPMetricsRecorder) register() error {
 		if err != nil {
 			return fmt.Errorf(
 				"meter %s cannot set; %w",
-				"request_duration_seconds",
+				"http.server.duration",
 				err,
 			)
 		}
@@ -138,13 +143,14 @@ func (h *HTTPMetricsRecorder) register() error {
 
 	if h.cfg.enableInFlightMetric {
 		reqInFlight, err := h.meter.Int64UpDownCounter(
-			h.namespacedValue("requests_inflight_total"),
+			h.namespacedValue("http.server.request_inflight_total"),
+			metric.WithUnit("count"),
 			metric.WithDescription("The current number of in-flight requests"),
 		)
 		if err != nil {
 			return fmt.Errorf(
 				"meter %s cannot set; %w",
-				"requests_inflight_total",
+				"http.server.request_inflight_total",
 				err,
 			)
 		}
@@ -153,13 +159,14 @@ func (h *HTTPMetricsRecorder) register() error {
 	}
 
 	resSize, err := h.meter.Int64Histogram(
-		h.namespacedValue("response_size"),
+		h.namespacedValue("http.server.response.size"),
+		metric.WithUnit("bytes"),
 		metric.WithDescription("The HTTP response sizes in bytes."),
 	)
 	if err != nil {
 		return fmt.Errorf(
 			"meter %s cannot set; %w",
-			"response_size",
+			"http.server.response.size",
 			err,
 		)
 	}
@@ -167,13 +174,14 @@ func (h *HTTPMetricsRecorder) register() error {
 	h.resSize = resSize
 
 	reqSize, err := h.meter.Int64Histogram(
-		h.namespacedValue("request_size"),
+		h.namespacedValue("http.server.request.size"),
+		metric.WithUnit("bytes"),
 		metric.WithDescription("The HTTP request sizes in bytes."),
 	)
 	if err != nil {
 		return fmt.Errorf(
 			"meter %s cannot set; %w",
-			"request_size",
+			"http.server.request.size",
 			err,
 		)
 	}

@@ -49,7 +49,12 @@ func StartProducerSpan(
 		fmt.Sprintf("%s %s", producerTracingOptions.Destination, "send"),
 		opts...)
 
-	span.AddEvent(fmt.Sprintf("start publishing message '%s' to the broker", messageHeader.GetMessageName(*meta)))
+	span.AddEvent(
+		fmt.Sprintf(
+			"start publishing message '%s' to the broker",
+			messageHeader.GetMessageName(*meta),
+		),
+	)
 
 	// Injects current span context, so consumers can use it to propagate span.
 	// injects the tracing from the context into the header map
@@ -60,18 +65,33 @@ func StartProducerSpan(
 }
 
 func FinishProducerSpan(span trace.Span, err error) error {
-	messageName := utils.GetSpanAttribute(span, messageTracing.MessageName).Value.AsString()
+	messageName := utils.GetSpanAttribute(
+		span,
+		messageTracing.MessageName,
+	).Value.AsString()
 
 	if err != nil {
-		span.AddEvent(fmt.Sprintf("failed to publsih message '%s' to the broker", messageName))
-		_ = messageTracing.TraceMessagingErrFromSpan(span, err)
+		span.AddEvent(
+			fmt.Sprintf(
+				"failed to publsih message '%s' to the broker",
+				messageName,
+			),
+		)
+		_ = utils.TraceErrStatusFromSpan(span, err)
 	}
 	span.SetAttributes(
-		attribute.Key(constants.TraceId).String(span.SpanContext().TraceID().String()),
-		attribute.Key(constants.SpanId).String(span.SpanContext().SpanID().String()), // current span id
+		attribute.Key(constants.TraceId).
+			String(span.SpanContext().TraceID().String()),
+		attribute.Key(constants.SpanId).
+			String(span.SpanContext().SpanID().String()), // current span id
 	)
 
-	span.AddEvent(fmt.Sprintf("message '%s' published to the broker succesfully", messageName))
+	span.AddEvent(
+		fmt.Sprintf(
+			"message '%s' published to the broker succesfully",
+			messageName,
+		),
+	)
 	span.End()
 
 	return err
@@ -90,17 +110,22 @@ func getTraceOptions(
 	attrs := []attribute.KeyValue{
 		semconv.MessageIDKey.String(message.GeMessageId()),
 		semconv.MessagingMessageConversationID(correlationId),
-		attribute.Key(messageTracing.MessageType).String(message.GetEventTypeName()),
-		attribute.Key(messageTracing.MessageName).String(messageHeader.GetMessageName(*meta)),
+		attribute.Key(messageTracing.MessageType).
+			String(message.GetEventTypeName()),
+		attribute.Key(messageTracing.MessageName).
+			String(messageHeader.GetMessageName(*meta)),
 		attribute.Key(messageTracing.Payload).String(payload),
 		attribute.String(messageTracing.Headers, meta.ToJson()),
 		attribute.Key(constants.Timestamp).Int64(time.Now().UnixMilli()),
 		semconv.MessagingDestinationName(producerTracingOptions.Destination),
-		semconv.MessagingSystemKey.String(producerTracingOptions.MessagingSystem),
+		semconv.MessagingSystemKey.String(
+			producerTracingOptions.MessagingSystem,
+		),
 		semconv.MessagingOperationKey.String("send"),
 	}
 
-	if producerTracingOptions.OtherAttributes != nil && len(producerTracingOptions.OtherAttributes) > 0 {
+	if producerTracingOptions.OtherAttributes != nil &&
+		len(producerTracingOptions.OtherAttributes) > 0 {
 		attrs = append(attrs, producerTracingOptions.OtherAttributes...)
 	}
 
@@ -111,11 +136,21 @@ func getTraceOptions(
 	return opts
 }
 
-func addAfterBaggage(ctx context.Context, message types.IMessage, meta *metadata.Metadata) context.Context {
+func addAfterBaggage(
+	ctx context.Context,
+	message types.IMessage,
+	meta *metadata.Metadata,
+) context.Context {
 	correlationId := messageHeader.GetCorrelationId(*meta)
 
-	correlationIdBag, _ := baggage.NewMember(string(semconv.MessagingMessageConversationIDKey), correlationId)
-	messageIdBag, _ := baggage.NewMember(string(semconv.MessageIDKey), message.GeMessageId())
+	correlationIdBag, _ := baggage.NewMember(
+		string(semconv.MessagingMessageConversationIDKey),
+		correlationId,
+	)
+	messageIdBag, _ := baggage.NewMember(
+		string(semconv.MessageIDKey),
+		message.GeMessageId(),
+	)
 	b, _ := baggage.New(correlationIdBag, messageIdBag)
 	ctx = baggage.ContextWithBaggage(ctx, b)
 

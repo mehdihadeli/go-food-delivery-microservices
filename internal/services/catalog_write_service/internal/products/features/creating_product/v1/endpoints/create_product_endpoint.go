@@ -39,8 +39,6 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 
-		ep.CatalogsMetrics.CreateProductHttpRequests.Add(ctx, 1)
-
 		request := &dtos.CreateProductRequestDto{}
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(
@@ -61,6 +59,7 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 				err,
 				"command validation failed",
 			)
+
 			return validationErr
 		}
 

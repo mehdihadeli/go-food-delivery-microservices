@@ -40,7 +40,6 @@ func (ep *getProductByIdEndpoint) MapEndpoint() {
 func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		ep.CatalogsMetrics.GetProductByIdHttpRequests.Add(ctx, 1)
 
 		request := &dtos.GetProductByIdRequestDto{}
 		if err := c.Bind(request); err != nil {

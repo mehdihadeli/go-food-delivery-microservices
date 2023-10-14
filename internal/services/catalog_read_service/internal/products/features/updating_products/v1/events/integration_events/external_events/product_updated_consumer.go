@@ -7,10 +7,10 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	messageTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/updating_products/v1/commands"
 
 	"emperror.dev/errors"
@@ -30,7 +30,11 @@ func NewProductUpdatedConsumer(
 	validator *validator.Validate,
 	tracer tracing.AppTracer,
 ) consumer.ConsumerHandler {
-	return &productUpdatedConsumer{logger: logger, validator: validator, tracer: tracer}
+	return &productUpdatedConsumer{
+		logger:    logger,
+		validator: validator,
+		tracer:    tracer,
+	}
 }
 
 func (c *productUpdatedConsumer) Handle(
@@ -56,7 +60,7 @@ func (c *productUpdatedConsumer) Handle(
 		c.logger.Errorf(
 			fmt.Sprintf(
 				"[updateProductConsumer_Consume.uuid.FromString] err: %v",
-				messageTracing.TraceMessagingErrFromSpan(span, badRequestErr),
+				utils.TraceErrStatusFromSpan(span, badRequestErr),
 			),
 		)
 		return err
@@ -76,7 +80,7 @@ func (c *productUpdatedConsumer) Handle(
 		c.logger.Errorf(
 			fmt.Sprintf(
 				"[updateProductConsumer_Consume.StructCtx] err: {%v}",
-				messageTracing.TraceMessagingErrFromSpan(span, validationErr),
+				utils.TraceErrStatusFromSpan(span, validationErr),
 			),
 		)
 		return err
@@ -92,7 +96,7 @@ func (c *productUpdatedConsumer) Handle(
 			fmt.Sprintf(
 				"[updateProductConsumer_Consume.Send] id: {%s}, err: {%v}",
 				command.ProductId,
-				messageTracing.TraceMessagingErrFromSpan(span, err),
+				utils.TraceErrStatusFromSpan(span, err),
 			),
 			logger.Fields{"Id": command.ProductId},
 		)

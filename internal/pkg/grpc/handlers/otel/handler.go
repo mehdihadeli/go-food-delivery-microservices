@@ -2,7 +2,6 @@ package otel
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -126,7 +125,7 @@ func newHandler(spanKind trace.SpanKind, options []Option) (handler, error) {
 	}
 
 	rpcTotalFailed, err := meter.Int64Counter(
-		fmt.Sprintf("%s_error_grpc_requests_total", c.serviceName),
+		prefix+".rpc_error_total",
 		metric.WithDescription("The total number of error grpc requests"),
 		metric.WithUnit("count"),
 	)
@@ -135,7 +134,7 @@ func newHandler(spanKind trace.SpanKind, options []Option) (handler, error) {
 	}
 
 	rpcTotalSuccess, err := meter.Int64Counter(
-		fmt.Sprintf("%s_success_grpc_requests_total", c.serviceName),
+		prefix+".rpc_success_total",
 		metric.WithDescription("The total number of success grpc requests"),
 		metric.WithUnit("count"),
 	)

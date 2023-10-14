@@ -9,6 +9,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
 	hadnlers "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/hadnlers"
+	ipratelimit "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/ip_ratelimit"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/log"
 	otelMetrics "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_metrics"
 	oteltracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/middlewares/otel_tracing"
@@ -134,6 +135,7 @@ func (s *echoHttpServer) SetupDefaultMiddlewares() {
 			otelMetrics.WithSkipper(skipper)),
 	)
 	s.echo.Use(middleware.BodyLimit(constants.BodyLimit))
+	s.echo.Use(ipratelimit.IPRateLimit())
 	s.echo.Use(middleware.RequestID())
 	s.echo.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level:   constants.GzipLevel,

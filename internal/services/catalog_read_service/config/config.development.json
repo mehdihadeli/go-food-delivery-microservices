@@ -66,6 +66,10 @@
       "otlpEndpoint": "localhost:4320",
       "enabled": true
     },
+    "tempoExporterOptions": {
+      "otlpEndpoint": "localhost:4322",
+      "enabled": true
+    },
     "zipkinExporterOptions": {
       "url": "http://localhost:9411/api/v2/spans"
     },

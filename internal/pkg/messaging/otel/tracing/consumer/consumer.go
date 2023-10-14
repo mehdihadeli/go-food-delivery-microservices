@@ -62,7 +62,7 @@ func FinishConsumerSpan(span trace.Span, err error) error {
 
 	if err != nil {
 		span.AddEvent(fmt.Sprintf("failed to consume message '%s' from the broker", messageName))
-		_ = messageTracing.TraceMessagingErrFromSpan(span, err)
+		_ = utils.TraceErrStatusFromSpan(span, err)
 	}
 
 	span.SetAttributes(

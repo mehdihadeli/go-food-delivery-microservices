@@ -49,7 +49,11 @@ func NewMongoProductRepository(
 		mongoOptions.Database,
 		productCollection,
 	)
-	return &mongoProductRepository{log: log, mongoGenericRepository: mongoRepo, tracer: tracer}
+	return &mongoProductRepository{
+		log:                    log,
+		mongoGenericRepository: mongoRepo,
+		tracer:                 tracer,
+	}
 }
 
 func (p *mongoProductRepository) GetAllProducts(
@@ -62,17 +66,17 @@ func (p *mongoProductRepository) GetAllProducts(
 	// https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/query-document/
 	result, err := p.mongoGenericRepository.GetAll(ctx, listQuery)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
+		return nil, utils2.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
-				"[mongoProductRepository_GetAllProducts.Paginate] error in the paginate",
+				"error in the paginate",
 			),
 		)
 	}
 
 	p.log.Infow(
-		"[mongoProductRepository.GetAllProducts] products loaded",
+		"products loaded",
 		logger.Fields{"ProductsResult": result},
 	)
 
@@ -92,18 +96,18 @@ func (p *mongoProductRepository) SearchProducts(
 
 	result, err := p.mongoGenericRepository.Search(ctx, searchText, listQuery)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
+		return nil, utils2.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
-				"[mongoProductRepository_SearchProducts.Paginate] error in the paginate",
+				"error in the paginate",
 			),
 		)
 	}
 
 	p.log.Infow(
 		fmt.Sprintf(
-			"[mongoProductRepository.SearchProducts] products loaded for search term '%s'",
+			"products loaded for search term '%s'",
 			searchText,
 		),
 		logger.Fields{"ProductsResult": result},
@@ -129,12 +133,12 @@ func (p *mongoProductRepository) GetProductById(
 
 	product, err := p.mongoGenericRepository.GetById(ctx, id)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
+		return nil, utils2.TraceStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
 				fmt.Sprintf(
-					"[mongoProductRepository_GetProductById.FindOne] can't find the product with id %s into the database.",
+					"can't find the product with id %s into the database.",
 					uuid,
 				),
 			),
@@ -144,7 +148,7 @@ func (p *mongoProductRepository) GetProductById(
 	span.SetAttributes(attribute.Object("Product", product))
 
 	p.log.Infow(
-		fmt.Sprintf("[mongoProductRepository.GetProductById] product with id %s laoded", uuid),
+		fmt.Sprintf("product with id %s laoded", uuid),
 		logger.Fields{"Product": product, "Id": uuid},
 	)
 
@@ -156,7 +160,10 @@ func (p *mongoProductRepository) GetProductByProductId(
 	uuid string,
 ) (*models.Product, error) {
 	productId := uuid
-	ctx, span := p.tracer.Start(ctx, "mongoProductRepository.GetProductByProductId")
+	ctx, span := p.tracer.Start(
+		ctx,
+		"mongoProductRepository.GetProductByProductId",
+	)
 	span.SetAttributes(attribute2.String("ProductId", productId))
 	defer span.End()
 
@@ -165,12 +172,12 @@ func (p *mongoProductRepository) GetProductByProductId(
 		map[string]interface{}{"productId": uuid},
 	)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
+		return nil, utils2.TraceStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
 				fmt.Sprintf(
-					"[mongoProductRepository_GetProductById.FindOne] can't find the product with productId %s into the database.",
+					"can't find the product with productId %s into the database.",
 					uuid,
 				),
 			),
@@ -181,7 +188,7 @@ func (p *mongoProductRepository) GetProductByProductId(
 
 	p.log.Infow(
 		fmt.Sprintf(
-			"[mongoProductRepository.GetProductById] product with productId %s laoded",
+			"product with productId %s laoded",
 			productId,
 		),
 		logger.Fields{"Product": product, "ProductId": uuid},
@@ -199,11 +206,11 @@ func (p *mongoProductRepository) CreateProduct(
 
 	err := p.mongoGenericRepository.Add(ctx, product)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
+		return nil, utils2.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
-				"[mongoProductRepository_CreateProduct.InsertOne] error in the inserting product into the database.",
+				"error in the inserting product into the database.",
 			),
 		)
 	}
@@ -212,7 +219,7 @@ func (p *mongoProductRepository) CreateProduct(
 
 	p.log.Infow(
 		fmt.Sprintf(
-			"[mongoProductRepository.CreateProduct] product with id '%s' created",
+			"product with id '%s' created",
 			product.ProductId,
 		),
 		logger.Fields{"Product": product, "Id": product.ProductId},
@@ -231,12 +238,12 @@ func (p *mongoProductRepository) UpdateProduct(
 	err := p.mongoGenericRepository.Update(ctx, updateProduct)
 	// https://www.mongodb.com/docs/manual/reference/method/db.collection.findOneAndUpdate/
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
+		return nil, utils2.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
 				fmt.Sprintf(
-					"[mongoProductRepository_UpdateProduct.FindOneAndUpdate] error in updating product with id %s into the database.",
+					"error in updating product with id %s into the database.",
 					updateProduct.ProductId,
 				),
 			),
@@ -246,7 +253,7 @@ func (p *mongoProductRepository) UpdateProduct(
 	span.SetAttributes(attribute.Object("Product", updateProduct))
 	p.log.Infow(
 		fmt.Sprintf(
-			"[mongoProductRepository.UpdateProduct] product with id '%s' updated",
+			"product with id '%s' updated",
 			updateProduct.ProductId,
 		),
 		logger.Fields{"Product": updateProduct, "Id": updateProduct.ProductId},
@@ -255,7 +262,10 @@ func (p *mongoProductRepository) UpdateProduct(
 	return updateProduct, nil
 }
 
-func (p *mongoProductRepository) DeleteProductByID(ctx context.Context, uuid string) error {
+func (p *mongoProductRepository) DeleteProductByID(
+	ctx context.Context,
+	uuid string,
+) error {
 	ctx, span := p.tracer.Start(ctx, "mongoProductRepository.DeleteProductByID")
 	span.SetAttributes(attribute2.String("Id", uuid))
 	defer span.End()
@@ -267,14 +277,17 @@ func (p *mongoProductRepository) DeleteProductByID(ctx context.Context, uuid str
 
 	err = p.mongoGenericRepository.Delete(ctx, id)
 	if err != nil {
-		return utils2.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf(
-			"[mongoProductRepository_DeleteProductByID.FindOneAndDelete] error in deleting product with id %s from the database.",
-			uuid,
-		)))
+		return utils2.TraceErrStatusFromSpan(
+			span,
+			errors.WrapIf(err, fmt.Sprintf(
+				"error in deleting product with id %s from the database.",
+				uuid,
+			)),
+		)
 	}
 
 	p.log.Infow(
-		fmt.Sprintf("[mongoProductRepository.DeleteProductByID] product with id %s deleted", uuid),
+		fmt.Sprintf("product with id %s deleted", uuid),
 		logger.Fields{"Product": uuid},
 	)
 

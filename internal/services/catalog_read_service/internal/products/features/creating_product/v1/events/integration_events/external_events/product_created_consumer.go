@@ -7,10 +7,8 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	messageTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/commands"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/dtos"
 
@@ -30,7 +28,11 @@ func NewProductCreatedConsumer(
 	validator *validator.Validate,
 	tracer tracing.AppTracer,
 ) consumer.ConsumerHandler {
-	return &productCreatedConsumer{logger: logger, validator: validator, tracer: tracer}
+	return &productCreatedConsumer{
+		logger:    logger,
+		validator: validator,
+		tracer:    tracer,
+	}
 }
 
 func (c *productCreatedConsumer) Handle(
@@ -42,10 +44,6 @@ func (c *productCreatedConsumer) Handle(
 		return errors.New("error in casting message to ProductCreatedV1")
 	}
 
-	ctx, span := c.tracer.Start(ctx, "productCreatedConsumer.Handle")
-	span.SetAttributes(attribute.Object("Message", consumeContext.Message()))
-	defer span.End()
-
 	command, err := commands.NewCreateProduct(
 		product.ProductId,
 		product.Name,
@@ -56,30 +54,22 @@ func (c *productCreatedConsumer) Handle(
 	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(
 			err,
-			"[productCreatedConsumer_Handle.StructCtx] command validation failed",
-		)
-		c.logger.Errorf(
-			fmt.Sprintf(
-				"[productCreatedConsumer_Handle.StructCtx] err: {%v}",
-				messageTracing.TraceMessagingErrFromSpan(span, validationErr),
-			),
+			"command validation failed",
 		)
 
-		return err
+		return validationErr
 	}
-	_, err = mediatr.Send[*commands.CreateProduct, *dtos.CreateProductResponseDto](ctx, command)
+	_, err = mediatr.Send[*commands.CreateProduct, *dtos.CreateProductResponseDto](
+		ctx,
+		command,
+	)
 	if err != nil {
-		err = errors.WithMessage(
+		return errors.WithMessage(
 			err,
-			"[productCreatedConsumer_Handle.Send] error in sending CreateProduct",
-		)
-		c.logger.Errorw(
 			fmt.Sprintf(
-				"[productCreatedConsumer_Handle.Send] id: {%s}, err: {%v}",
+				"error in sending CreateProduct with id: {%s}",
 				command.ProductId,
-				messageTracing.TraceMessagingErrFromSpan(span, err),
 			),
-			logger.Fields{"Id": command.ProductId},
 		)
 	}
 	c.logger.Info("Product consumer handled.")
