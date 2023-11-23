@@ -44,6 +44,7 @@ func IPRateLimit(opts ...Option) echo.MiddlewareFunc {
 					ip,
 					c.Request().URL,
 				)
+
 				return c.JSON(http.StatusInternalServerError, echo.Map{
 					"success": false,
 					"message": err,
@@ -64,6 +65,7 @@ func IPRateLimit(opts ...Option) echo.MiddlewareFunc {
 					ip,
 					c.Request().URL,
 				)
+
 				return c.JSON(http.StatusTooManyRequests, echo.Map{
 					"success": false,
 					"message": "Too Many Requests on " + c.Request().URL.String(),

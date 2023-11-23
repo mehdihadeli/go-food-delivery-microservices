@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
@@ -18,6 +18,6 @@ type LogOptions struct {
 	EnableTracing bool           `mapstructure:"enableTracing" default:"true"`
 }
 
-func ProvideLogConfig(env environemnt.Environment) (*LogOptions, error) {
+func ProvideLogConfig(env environment.Environment) (*LogOptions, error) {
 	return config.BindConfigKey[*LogOptions](optionName, env)
 }

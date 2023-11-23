@@ -11,6 +11,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/factory"
+	producer2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 
 	"go.uber.org/fx"
@@ -37,11 +39,13 @@ var (
 		fx.Provide(types.NewRabbitMQConnection),
 		fx.Provide(fx.Annotate(
 			bus.NewRabbitmqBus,
-			fx.ParamTags(``, ``, ``, ``, `optional:"true"`),
+			fx.ParamTags(``, ``, ``, `optional:"true"`),
 			fx.As(new(producer.Producer)),
 			fx.As(new(bus2.Bus)),
 			fx.As(new(bus.RabbitmqBus)),
 		)),
+		fx.Provide(factory.NewConsumerFactory),
+		fx.Provide(producer2.NewProducerFactory),
 		fx.Provide(fx.Annotate(
 			NewRabbitMQHealthChecker,
 			fx.As(new(contracts.Health)),
@@ -52,7 +56,9 @@ var (
 	// - they execute by their orders
 	// - invokes always execute its func compare to provides that only run when we request for them.
 	// - return value will be discarded and can not be provided
-	rabbitmqInvokes = fx.Options(fx.Invoke(registerHooks)) //nolint:gochecknoglobals
+	rabbitmqInvokes = fx.Options(
+		fx.Invoke(registerHooks),
+	) //nolint:gochecknoglobals
 )
 
 // we don't want to register any dependencies here, its func body should execute always even we don't request for that, so we should use `invoke`
@@ -77,7 +83,10 @@ func registerHooks(
 			go func() {
 				// if (ctx.Err() == nil), context not canceled or deadlined
 				if err := bus.Start(lifeTimeCtx); err != nil {
-					logger.Errorf("(bus.Start) error in running rabbitmq server: {%v}", err)
+					logger.Errorf(
+						"(bus.Start) error in running rabbitmq server: {%v}",
+						err,
+					)
 					return
 				}
 			}()

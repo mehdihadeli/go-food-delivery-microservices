@@ -2,7 +2,7 @@ package redis
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -19,6 +19,6 @@ type RedisOptions struct {
 	EnableTracing bool   `mapstructure:"enableTracing" default:"true"`
 }
 
-func provideConfig(environment environemnt.Environment) (*RedisOptions, error) {
+func provideConfig(environment environment.Environment) (*RedisOptions, error) {
 	return config.BindConfigKey[*RedisOptions](optionName, environment)
 }

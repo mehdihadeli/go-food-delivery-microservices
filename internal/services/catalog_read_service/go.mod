@@ -13,7 +13,7 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg v0.0.0-20230831075934-be8df319f588
-	github.com/mehdihadeli/go-mediatr v1.2.0
+	github.com/mehdihadeli/go-mediatr v1.3.0
 	github.com/michaelklishin/rabbit-hole v1.5.0
 	github.com/pterm/pterm v0.12.69
 	github.com/redis/go-redis/v9 v9.2.1

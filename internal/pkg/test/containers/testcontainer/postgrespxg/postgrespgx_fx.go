@@ -10,6 +10,6 @@ import (
 
 var PostgresPgxContainerOptionsDecorator = func(t *testing.T, ctx context.Context) interface{} {
 	return func(c *postgres.PostgresPgxOptions, logger logger.Logger) (*postgres.PostgresPgxOptions, error) {
-		return NewPostgresPgxContainers(logger).CreatingContainerOptions(ctx, t)
+		return NewPostgresPgxContainers(logger).PopulateContainerOptions(ctx, t)
 	}
 }

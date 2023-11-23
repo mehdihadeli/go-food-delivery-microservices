@@ -8,11 +8,11 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-	createProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/commands"
-	createProductDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/dtos"
+	createProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creatingproduct/v1"
+	createProductDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creatingproduct/v1/dtos"
+	getProductByIdQueryV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_product_by_id/v1"
 	getProductByIdDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_product_by_id/v1/dtos"
-	getProductByIdQueryV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_product_by_id/v1/queries"
-	updateProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/commands"
+	updateProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/contracts"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
 
@@ -39,7 +39,10 @@ func NewProductGrpcService(
 	catalogsMetrics *contracts.CatalogsMetrics,
 	logger logger.Logger,
 ) *ProductGrpcServiceServer {
-	return &ProductGrpcServiceServer{catalogsMetrics: catalogsMetrics, logger: logger}
+	return &ProductGrpcServiceServer{
+		catalogsMetrics: catalogsMetrics,
+		logger:          logger,
+	}
 }
 
 func (s *ProductGrpcServiceServer) CreateProduct(
@@ -89,7 +92,9 @@ func (s *ProductGrpcServiceServer) CreateProduct(
 		return nil, err
 	}
 
-	return &productsService.CreateProductRes{ProductId: result.ProductID.String()}, nil
+	return &productsService.CreateProductRes{
+		ProductId: result.ProductID.String(),
+	}, nil
 }
 
 func (s *ProductGrpcServiceServer) UpdateProduct(

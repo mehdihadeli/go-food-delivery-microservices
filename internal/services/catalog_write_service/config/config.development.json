@@ -100,9 +100,6 @@
     "serviceName": "catalogs-write-service",
     "instrumentationName": "io.opentelemetry.metrics.catalogs-write-service"
   },
-  "eventStoreDbOptions": {
-    "connectionString": "esdb://localhost:2113?tls=false"
-  },
   "migrationOptions": {
     "host": "localhost",
     "port": 5432,

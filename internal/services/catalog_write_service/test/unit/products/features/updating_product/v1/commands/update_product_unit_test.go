@@ -6,7 +6,7 @@ package commands
 import (
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/commands"
+	v1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -31,7 +31,7 @@ func (c *updateProductUnitTests) Test_New_Update_Product_Should_Return_No_Error_
 	description := gofakeit.EmojiDescription()
 	price := gofakeit.Price(150, 6000)
 
-	updateProduct, err := commands.NewUpdateProduct(id, name, description, price)
+	updateProduct, err := v1.NewUpdateProduct(id, name, description, price)
 
 	c.Assert().NotNil(updateProduct)
 	c.Assert().Equal(id, updateProduct.ProductID)
@@ -42,7 +42,7 @@ func (c *updateProductUnitTests) Test_New_Update_Product_Should_Return_No_Error_
 }
 
 func (c *updateProductUnitTests) Test_New_Update_Product_Should_Return_Error_For_Invalid_Price() {
-	command, err := commands.NewUpdateProduct(
+	command, err := v1.NewUpdateProduct(
 		uuid.NewV4(),
 		gofakeit.Name(),
 		gofakeit.EmojiDescription(),
@@ -54,14 +54,14 @@ func (c *updateProductUnitTests) Test_New_Update_Product_Should_Return_Error_For
 }
 
 func (c *updateProductUnitTests) Test_New_Update_Product_Should_Return_Error_For_Empty_Name() {
-	command, err := commands.NewUpdateProduct(uuid.NewV4(), "", gofakeit.EmojiDescription(), 120)
+	command, err := v1.NewUpdateProduct(uuid.NewV4(), "", gofakeit.EmojiDescription(), 120)
 
 	c.Require().Error(err)
 	c.Assert().Nil(command)
 }
 
 func (c *updateProductUnitTests) Test_New_Update_Product_Should_Return_Error_For_Empty_Description() {
-	command, err := commands.NewUpdateProduct(uuid.NewV4(), gofakeit.Name(), "", 120)
+	command, err := v1.NewUpdateProduct(uuid.NewV4(), gofakeit.Name(), "", 120)
 
 	c.Require().Error(err)
 	c.Assert().Nil(command)

@@ -115,6 +115,14 @@ atlas:
 	@./scripts/atlas-migrate.sh -c gorm-sync -p "./internal/services/catalog_write_service"
 	@./scripts/atlas-migrate.sh -c apply -p "./internal/services/catalog_write_service" -o "postgres://postgres:postgres@localhost:5432/catalogs_service?sslmode=disable"
 
+.PHONY: cycle-check
+cycle-check:
+	cd internal/services/catalog_write_service && goimportcycle -dot imports.dot dot -Tpng -o cycle/catalog_write_service.png imports.dot
+	cd internal/services/catalog_write_service && goimportcycle -dot imports.dot dot -Tpng -o cycle/catalog_write_service.png imports.dot
+	cd internal/services/catalog_read_service && goimportcycle -dot imports.dot dot -Tpng -o cycle/catalog_read_service.png imports.dot
+	cd internal/pkg && goimportcycle -dot imports.dot dot -Tpng -o cycle/pkg.png imports.dot
+
+
 #.PHONY: c4
 #c4:
 #	cd tools/c4 && go mod tidy && sh generate.sh

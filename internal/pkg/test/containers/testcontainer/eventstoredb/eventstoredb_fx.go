@@ -10,7 +10,7 @@ import (
 
 var EventstoreDBContainerOptionsDecorator = func(t *testing.T, ctx context.Context) interface{} {
 	return func(c *config.EventStoreDbOptions, logger logger.Logger) (*config.EventStoreDbOptions, error) {
-		newOption, err := NewEventstoreDBTestContainers(logger).CreatingContainerOptions(ctx, t)
+		newOption, err := NewEventstoreDBTestContainers(logger).PopulateContainerOptions(ctx, t)
 		if err != nil {
 			return nil, err
 		}
@@ -21,7 +21,7 @@ var EventstoreDBContainerOptionsDecorator = func(t *testing.T, ctx context.Conte
 }
 
 var ReplaceEventStoreContainerOptions = func(t *testing.T, options *config.EventStoreDbOptions, ctx context.Context, logger logger.Logger) error {
-	newOption, err := NewEventstoreDBTestContainers(logger).CreatingContainerOptions(ctx, t)
+	newOption, err := NewEventstoreDBTestContainers(logger).PopulateContainerOptions(ctx, t)
 	if err != nil {
 		return err
 	}

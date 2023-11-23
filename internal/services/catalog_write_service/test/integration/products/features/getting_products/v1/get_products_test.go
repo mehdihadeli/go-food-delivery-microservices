@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products/v1/dtos"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products/v1/queries"
+	getProductsQueryV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
 
 	"github.com/mehdihadeli/go-mediatr"
@@ -31,7 +31,7 @@ var _ = Describe("Get All Products Feature", func() {
 	// Define variables to hold query and result data
 	var (
 		ctx         context.Context
-		query       *queries.GetProducts
+		query       *getProductsQueryV1.GetProducts
 		queryResult *dtos.GetProductsResponseDto
 		err         error
 	)
@@ -74,30 +74,38 @@ var _ = Describe("Get All Products Feature", func() {
 			})
 
 			// "When" step
-			When("the GteProducts query is executed for existing products", func() {
-				BeforeEach(func() {
-					queryResult, err = mediatr.Send[*queries.GetProducts, *dtos.GetProductsResponseDto](ctx, query)
-				})
+			When(
+				"the GteProducts query is executed for existing products",
+				func() {
+					BeforeEach(func() {
+						queryResult, err = mediatr.Send[*queries.GetProducts, *dtos.GetProductsResponseDto](
+							ctx,
+							query,
+						)
+					})
 
-				// "Then" step
-				It("Should not return an error", func() {
-					Expect(err).To(BeNil())
-				})
+					// "Then" step
+					It("Should not return an error", func() {
+						Expect(err).To(BeNil())
+					})
 
-				It("Should return a non-nil result", func() {
-					Expect(queryResult).NotTo(BeNil())
-				})
+					It("Should return a non-nil result", func() {
+						Expect(queryResult).NotTo(BeNil())
+					})
 
-				It("Should return a list of products with items", func() {
-					Expect(queryResult.Products).NotTo(BeNil())
-					Expect(queryResult.Products.Items).NotTo(BeEmpty())
-				})
+					It("Should return a list of products with items", func() {
+						Expect(queryResult.Products).NotTo(BeNil())
+						Expect(queryResult.Products.Items).NotTo(BeEmpty())
+					})
 
-				It("Should return the expected number of products", func() {
-					// Replace 'len(c.Items)' with the expected number of products
-					Expect(len(queryResult.Products.Items)).To(Equal(len(integrationFixture.Items)))
-				})
-			})
+					It("Should return the expected number of products", func() {
+						// Replace 'len(c.Items)' with the expected number of products
+						Expect(
+							len(queryResult.Products.Items),
+						).To(Equal(len(integrationFixture.Items)))
+					})
+				},
+			)
 		})
 	})
 })

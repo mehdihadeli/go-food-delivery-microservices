@@ -3,7 +3,8 @@
 package mocks
 
 import (
-	data "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
+	data "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts"
+
 	mock "github.com/stretchr/testify/mock"
 )
 

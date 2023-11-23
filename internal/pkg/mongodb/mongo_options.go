@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -19,7 +19,7 @@ type MongoDbOptions struct {
 }
 
 func provideConfig(
-	environment environemnt.Environment,
+	environment environment.Environment,
 ) (*MongoDbOptions, error) {
 	optionName := strcase.ToLowerCamel(
 		typeMapper.GetTypeNameByT[MongoDbOptions](),

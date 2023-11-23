@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
+	fxcontracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
@@ -17,7 +17,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
+	productcontracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/configurations/catalogs"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
 
@@ -30,13 +30,13 @@ type TestApp struct{}
 type TestAppResult struct {
 	Cfg                     *config.AppOptions
 	Bus                     bus.RabbitmqBus
-	Container               contracts.Container
+	Container               fxcontracts.Container
 	Logger                  logger.Logger
 	RabbitmqOptions         *config2.RabbitmqOptions
 	EchoHttpOptions         *config3.EchoHttpOptions
 	GormOptions             *gormPostgres.GormOptions
-	CatalogUnitOfWorks      data.CatalogUnitOfWork
-	ProductRepository       data.ProductRepository
+	CatalogUnitOfWorks      productcontracts.CatalogUnitOfWork
+	ProductRepository       productcontracts.ProductRepository
 	Gorm                    *gorm2.DB
 	ProductServiceClient    productsService.ProductsServiceClient
 	GrpcClient              grpc.GrpcClient
@@ -61,9 +61,15 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 
 	testApp := appBuilder.Build()
 
-	testApp.ConfigureCatalogs()
+	err := testApp.ConfigureCatalogs()
+	if err != nil {
+		testApp.Logger().Fatalf("Error in ConfigureCatalogs", err)
+	}
 
-	testApp.MapCatalogsEndpoints()
+	err = testApp.MapCatalogsEndpoints()
+	if err != nil {
+		testApp.Logger().Fatalf("Error in MapCatalogsEndpoints", err)
+	}
 
 	testApp.ResolveFunc(
 		func(cfg *config.AppOptions,
@@ -71,8 +77,8 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 			logger logger.Logger,
 			rabbitmqOptions *config2.RabbitmqOptions,
 			gormOptions *gormPostgres.GormOptions,
-			catalogUnitOfWorks data.CatalogUnitOfWork,
-			productRepository data.ProductRepository,
+			catalogUnitOfWorks productcontracts.CatalogUnitOfWork,
+			productRepository productcontracts.ProductRepository,
 			gorm *gorm2.DB,
 			echoOptions *config3.EchoHttpOptions,
 			grpcClient grpc.GrpcClient,
@@ -105,7 +111,8 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 	// short timeout for handling start hooks and setup dependencies
 	startCtx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
-	err := testApp.Start(startCtx)
+
+	err = testApp.Start(startCtx)
 	if err != nil {
 		t.Errorf("Error starting, err: %v", err)
 		os.Exit(1)

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
@@ -70,7 +70,7 @@ func executeMigration(cmd *cobra.Command, commandType migration.CommandType) {
 	}
 
 	app := fx.New(
-		config.ModuleFunc(environemnt.Development),
+		config.ModuleFunc(environment.Development),
 		zap.Module,
 		fxlog.FxLogger,
 		gormPostgres.Module,

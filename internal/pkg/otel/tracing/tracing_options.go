@@ -2,7 +2,7 @@ package tracing
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -38,7 +38,7 @@ type ZipkinExporterOptions struct {
 }
 
 func ProvideTracingConfig(
-	environment environemnt.Environment,
+	environment environment.Environment,
 ) (*TracingOptions, error) {
 	optionName := strcase.ToLowerCamel(
 		typeMapper.GetTypeNameByT[TracingOptions](),

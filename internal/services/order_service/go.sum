@@ -521,6 +521,8 @@ github.com/mehdihadeli/go-mediatr v1.1.10 h1:NAzg4065c90lgYeb+Vzbd2WKH0tUFpxzL0m
 github.com/mehdihadeli/go-mediatr v1.1.10/go.mod h1:lwgZl7qVL/RKomObBblhG3uEte/r4nJDV95Vd+nGrMw=
 github.com/mehdihadeli/go-mediatr v1.2.0 h1:XkzYF/uGfW4pwPWYAxKyY+mO6l989PbmCQWSYHuCZtU=
 github.com/mehdihadeli/go-mediatr v1.2.0/go.mod h1:I9LuExxAKz6cTDJyP/SSDSmkHaPHK1/usnvEXjUY47k=
+github.com/mehdihadeli/go-mediatr v1.3.0 h1:hrb5Scp/nsiR3Y62mjZ0Tc5UX/dRJl4nDFkINBEIESA=
+github.com/mehdihadeli/go-mediatr v1.3.0/go.mod h1:lsG+hyH+pEOhmZiZl0KPO72BcZiEReF03CBk4GVJB0k=
 github.com/michaelklishin/rabbit-hole v1.5.0 h1:Bex27BiFDsijCM9D0ezSHqyy0kehpYHuNKaPqq/a4RM=
 github.com/michaelklishin/rabbit-hole v1.5.0/go.mod h1:vvI1uOitYZi0O5HEGXhaWC1XT80Gy+HvFheJ+5Krlhk=
 github.com/mitchellh/go-wordwrap v1.0.1 h1:TLuKupo69TCn6TQSyGxwI1EblZZEsQ0vMlAFQflz0v0=

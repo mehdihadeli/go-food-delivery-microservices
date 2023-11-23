@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
@@ -20,7 +20,7 @@ type testApplication struct {
 	options   []fx.Option
 	invokes   []interface{}
 	logger    logger.Logger
-	env       environemnt.Environment
+	env       environment.Environment
 	tb        fxtest.TB
 	fxtestApp *fxtest.App
 }
@@ -29,7 +29,7 @@ func (a *testApplication) Logger() logger.Logger {
 	return a.logger
 }
 
-func (a *testApplication) Environment() environemnt.Environment {
+func (a *testApplication) Environment() environment.Environment {
 	return a.env
 }
 
@@ -39,7 +39,7 @@ func NewTestApplication(
 	decorates []interface{},
 	options []fx.Option,
 	logger logger.Logger,
-	env environemnt.Environment,
+	env environment.Environment,
 ) contracts.Application {
 	return &testApplication{
 		tb:        tb,

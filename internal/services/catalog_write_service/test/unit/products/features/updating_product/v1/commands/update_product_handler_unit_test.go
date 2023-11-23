@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/commands"
+	v1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
 
@@ -37,7 +37,7 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Update_Product_With_V
 	ctx := context.Background()
 	existing := c.Items[0]
 
-	updateProductCommand, err := commands.NewUpdateProduct(
+	updateProductCommand, err := v1.NewUpdateProduct(
 		existing.ProductId,
 		gofakeit.Name(),
 		gofakeit.EmojiDescription(),
@@ -62,7 +62,7 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Update_Product_With_V
 		Once().
 		Return(updated, nil)
 
-	updateProductHandler := commands.NewUpdateProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
+	updateProductHandler := v1.NewUpdateProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
 
 	_, err = updateProductHandler.Handle(ctx, updateProductCommand)
 	c.Require().NoError(err)
@@ -77,7 +77,7 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_NotF
 	ctx := context.Background()
 	id := uuid.NewV4()
 
-	command, err := commands.NewUpdateProduct(
+	command, err := v1.NewUpdateProduct(
 		id,
 		gofakeit.Name(),
 		gofakeit.EmojiDescription(),
@@ -89,7 +89,7 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_NotF
 		Once().
 		Return(nil, errors.New("error notfound product"))
 
-	updateProductHandler := commands.NewUpdateProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
+	updateProductHandler := v1.NewUpdateProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
 	dto, err := updateProductHandler.Handle(ctx, command)
 
 	c.Uow.AssertNumberOfCalls(c.T(), "Do", 1)
@@ -105,7 +105,7 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 	ctx := context.Background()
 	existing := c.Items[0]
 
-	updateProductCommand, err := commands.NewUpdateProduct(
+	updateProductCommand, err := v1.NewUpdateProduct(
 		existing.ProductId,
 		gofakeit.Name(),
 		gofakeit.EmojiDescription(),
@@ -137,7 +137,7 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 		Once().
 		Return(errors.New("error in the publish message"))
 
-	updateProductHandler := commands.NewUpdateProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
+	updateProductHandler := v1.NewUpdateProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
 	dto, err := updateProductHandler.Handle(ctx, updateProductCommand)
 
 	c.Uow.AssertNumberOfCalls(c.T(), "Do", 1)

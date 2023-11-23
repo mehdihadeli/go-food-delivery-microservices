@@ -3,7 +3,7 @@ package contracts
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
 	"go.uber.org/fx"
@@ -17,5 +17,5 @@ type Application interface {
 	Stop(ctx context.Context) error
 	Wait() <-chan fx.ShutdownSignal
 	Logger() logger.Logger
-	Environment() environemnt.Environment
+	Environment() environment.Environment
 }

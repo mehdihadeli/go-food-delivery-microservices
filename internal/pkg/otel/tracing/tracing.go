@@ -16,7 +16,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 
 	"emperror.dev/errors"
 	"github.com/samber/lo"
@@ -34,7 +34,7 @@ import (
 
 type TracingOpenTelemetry struct {
 	config      *TracingOptions
-	environment environemnt.Environment
+	environment environment.Environment
 	appTracer   AppTracer
 	provider    *tracesdk.TracerProvider
 }
@@ -44,7 +44,7 @@ type TracingOpenTelemetry struct {
 
 func NewOtelTracing(
 	config *TracingOptions,
-	environment environemnt.Environment,
+	environment environment.Environment,
 ) (*TracingOpenTelemetry, error) {
 	otelTracing := &TracingOpenTelemetry{
 		config:      config,

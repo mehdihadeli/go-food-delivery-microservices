@@ -2,7 +2,7 @@ package postgressqlx
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -19,6 +19,6 @@ type PostgresSqlxOptions struct {
 	Password string `mapstructure:"password"`
 }
 
-func provideConfig(environment environemnt.Environment) (*PostgresSqlxOptions, error) {
+func provideConfig(environment environment.Environment) (*PostgresSqlxOptions, error) {
 	return config.BindConfigKey[*PostgresSqlxOptions](optionName, environment)
 }

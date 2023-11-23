@@ -16,7 +16,7 @@ require (
 	github.com/goccy/go-json v0.10.2
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg v0.0.0-20230831075934-be8df319f588
-	github.com/mehdihadeli/go-mediatr v1.2.0
+	github.com/mehdihadeli/go-mediatr v1.3.0
 	github.com/michaelklishin/rabbit-hole v1.5.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.28.0

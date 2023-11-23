@@ -8,8 +8,7 @@ import (
 )
 
 type PostgresPgxContainer interface {
-	Start(ctx context.Context, t *testing.T, options ...*PostgresContainerOptions) (*postgres.Pgx, error)
-	CreatingContainerOptions(
+	PopulateContainerOptions(
 		ctx context.Context,
 		t *testing.T,
 		options ...*PostgresContainerOptions,

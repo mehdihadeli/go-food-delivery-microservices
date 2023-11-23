@@ -13,8 +13,8 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/hypothesis"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/commands"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/events/integration_events"
+	v1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/events/integrationevents"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
 
@@ -38,11 +38,11 @@ var _ = Describe("Update Product Feature", func() {
 	var (
 		ctx             context.Context
 		existingProduct *models.Product
-		command         *commands.UpdateProduct
+		command         *v1.UpdateProduct
 		result          *mediatr.Unit
 		err             error
 		id              uuid.UUID
-		shouldPublish   hypothesis.Hypothesis[*integration_events.ProductUpdatedV1]
+		shouldPublish   hypothesis.Hypothesis[*integrationevents.ProductUpdatedV1]
 	)
 
 	_ = BeforeEach(func() {
@@ -79,7 +79,7 @@ var _ = Describe("Update Product Feature", func() {
 	Describe("Updating an existing product in the database", func() {
 		Context("Given product exists in the database", func() {
 			BeforeEach(func() {
-				command, err = commands.NewUpdateProduct(
+				command, err = v1.NewUpdateProduct(
 					existingProduct.ProductId,
 					"Updated Product Name",
 					existingProduct.Description,
@@ -91,7 +91,7 @@ var _ = Describe("Update Product Feature", func() {
 			// "When" step
 			When("the UpdateProduct command is executed", func() {
 				BeforeEach(func() {
-					result, err = mediatr.Send[*commands.UpdateProduct, *mediatr.Unit](ctx, command)
+					result, err = mediatr.Send[*v1.UpdateProduct, *mediatr.Unit](ctx, command)
 				})
 
 				// "Then" step
@@ -125,7 +125,7 @@ var _ = Describe("Update Product Feature", func() {
 			BeforeEach(func() {
 				// Generate a random ID that does not exist in the database
 				id = uuid.NewV4()
-				command, err = commands.NewUpdateProduct(
+				command, err = v1.NewUpdateProduct(
 					id,
 					"Updated Product Name",
 					"Updated Product Description",
@@ -137,7 +137,7 @@ var _ = Describe("Update Product Feature", func() {
 			// "When" step
 			When("the UpdateProduct command executed for non-existing product", func() {
 				BeforeEach(func() {
-					result, err = mediatr.Send[*commands.UpdateProduct, *mediatr.Unit](ctx, command)
+					result, err = mediatr.Send[*v1.UpdateProduct, *mediatr.Unit](ctx, command)
 				})
 
 				// "Then" step
@@ -164,7 +164,7 @@ var _ = Describe("Update Product Feature", func() {
 	Describe("Publishing ProductUpdated when product updated  successfully", func() {
 		Context("Given product exists in the database", func() {
 			BeforeEach(func() {
-				command, err = commands.NewUpdateProduct(
+				command, err = v1.NewUpdateProduct(
 					existingProduct.ProductId,
 					"Updated Product Name",
 					existingProduct.Description,
@@ -172,7 +172,7 @@ var _ = Describe("Update Product Feature", func() {
 				)
 				Expect(err).NotTo(HaveOccurred())
 
-				shouldPublish = messaging.ShouldProduced[*integration_events.ProductUpdatedV1](
+				shouldPublish = messaging.ShouldProduced[*integrationevents.ProductUpdatedV1](
 					ctx,
 					integrationFixture.Bus,
 					nil,
@@ -182,7 +182,7 @@ var _ = Describe("Update Product Feature", func() {
 			// "When" step
 			When("the UpdateProduct command is executed for existing product", func() {
 				BeforeEach(func() {
-					result, err = mediatr.Send[*commands.UpdateProduct, *mediatr.Unit](ctx, command)
+					result, err = mediatr.Send[*v1.UpdateProduct, *mediatr.Unit](ctx, command)
 				})
 
 				It("Should publish ProductUpdated event to the broker", func() {

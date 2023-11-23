@@ -4,14 +4,14 @@ import (
 	"strings"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 )
 
 type Config struct {
 	AppOptions AppOptions `mapstructure:"appOptions" env:"AppOptions"`
 }
 
-func NewConfig(env environemnt.Environment) (*Config, error) {
+func NewConfig(env environment.Environment) (*Config, error) {
 	cfg, err := config.BindConfig[*Config](env)
 	if err != nil {
 		return nil, err

@@ -34,7 +34,7 @@ func NewGnoMockGormContainer() contracts.GormContainer {
 	}
 }
 
-func (g *gnoMockGormContainer) CreatingContainerOptions(
+func (g *gnoMockGormContainer) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
@@ -70,7 +70,7 @@ func (g *gnoMockGormContainer) Start(
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
 ) (*gorm.DB, error) {
-	gormOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	gormOptions, err := g.PopulateContainerOptions(ctx, t, options...)
 	if err != nil {
 		return nil, err
 	}

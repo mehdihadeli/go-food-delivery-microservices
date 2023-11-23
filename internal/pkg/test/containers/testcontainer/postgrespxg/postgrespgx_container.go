@@ -40,7 +40,7 @@ func NewPostgresPgxContainers(l logger.Logger) contracts.PostgresPgxContainer {
 	}
 }
 
-func (g *postgresPgxTestContainers) CreatingContainerOptions(
+func (g *postgresPgxTestContainers) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
@@ -97,7 +97,7 @@ func (g *postgresPgxTestContainers) Start(
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
 ) (*postgres.Pgx, error) {
-	postgresPgxOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	postgresPgxOptions, err := g.PopulateContainerOptions(ctx, t, options...)
 	if err != nil {
 		return nil, err
 	}

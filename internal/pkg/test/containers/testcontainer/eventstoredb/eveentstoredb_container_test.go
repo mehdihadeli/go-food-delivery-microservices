@@ -4,15 +4,30 @@ import (
 	"context"
 	"testing"
 
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/fxlog"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
 )
 
 func Test_Custom_EventStoreDB_Container(t *testing.T) {
-	esdbInstance, err := NewEventstoreDBTestContainers(defaultLogger.GetLogger()).Start(context.Background(), t)
-	require.NoError(t, err)
+	var esdbClient *esdb.Client
+	ctx := context.Background()
 
-	assert.NotNil(t, esdbInstance)
+	fxtest.New(t,
+		config.ModuleFunc(environment.Test),
+		zap.Module,
+		fxlog.FxLogger,
+		core.Module,
+		eventstroredb.ModuleFunc(func() {
+		}),
+		fx.Decorate(EventstoreDBContainerOptionsDecorator(t, ctx)),
+		fx.Populate(&esdbClient),
+	).RequireStart()
 }

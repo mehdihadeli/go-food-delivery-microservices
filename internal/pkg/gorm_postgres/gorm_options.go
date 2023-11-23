@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -34,6 +34,6 @@ func (h *GormOptions) Dns() string {
 	return datasource
 }
 
-func provideConfig(environment environemnt.Environment) (*GormOptions, error) {
+func provideConfig(environment environment.Environment) (*GormOptions, error) {
 	return config.BindConfigKey[*GormOptions](optionName, environment)
 }

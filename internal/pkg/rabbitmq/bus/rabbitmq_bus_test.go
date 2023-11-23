@@ -164,7 +164,7 @@ func NewPipeline1() pipeline.ConsumerPipeline {
 	return &Pipeline1{}
 }
 
-func (p Pipeline1) Handle(
+func (p *Pipeline1) Handle(
 	ctx context.Context,
 	consumerContext types2.MessageConsumeContext,
 	next pipeline.ConsumerHandlerFunc,

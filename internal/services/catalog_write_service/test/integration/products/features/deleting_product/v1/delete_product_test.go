@@ -12,8 +12,8 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/hypothesis"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1/commands"
-	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1/events/integration_events"
+	v1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1"
+	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1/events/integrationevents"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
 
 	"github.com/mehdihadeli/go-mediatr"
@@ -37,7 +37,7 @@ var _ = Describe("Delete Product Feature", func() {
 	var (
 		ctx           context.Context
 		err           error
-		command       *commands.DeleteProduct
+		command       *v1.DeleteProduct
 		result        *mediatr.Unit
 		id            uuid.UUID
 		notExistsId   uuid.UUID
@@ -83,13 +83,13 @@ var _ = Describe("Delete Product Feature", func() {
 					integrationFixture.Bus,
 					nil,
 				)
-				command, err = commands.NewDeleteProduct(id)
+				command, err = v1.NewDeleteProduct(id)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
 			When("the DeleteProduct command is executed for existing product", func() {
 				BeforeEach(func() {
-					result, err = mediatr.Send[*commands.DeleteProduct, *mediatr.Unit](
+					result, err = mediatr.Send[*v1.DeleteProduct, *mediatr.Unit](
 						ctx,
 						command,
 					)
@@ -114,13 +114,13 @@ var _ = Describe("Delete Product Feature", func() {
 		Context("Given product does not exists in the system", func() {
 			BeforeEach(func() {
 				notExistsId = uuid.NewV4()
-				command, err = commands.NewDeleteProduct(notExistsId)
+				command, err = v1.NewDeleteProduct(notExistsId)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
 			When("the DeleteProduct command is executed for non-existing product", func() {
 				BeforeEach(func() {
-					result, err = mediatr.Send[*commands.DeleteProduct, *mediatr.Unit](
+					result, err = mediatr.Send[*v1.DeleteProduct, *mediatr.Unit](
 						ctx,
 						command,
 					)
@@ -154,13 +154,13 @@ var _ = Describe("Delete Product Feature", func() {
 					integrationFixture.Bus,
 					nil,
 				)
-				command, err = commands.NewDeleteProduct(id)
+				command, err = v1.NewDeleteProduct(id)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 
 			When("the DeleteProduct command is executed for existing product", func() {
 				BeforeEach(func() {
-					result, err = mediatr.Send[*commands.DeleteProduct, *mediatr.Unit](
+					result, err = mediatr.Send[*v1.DeleteProduct, *mediatr.Unit](
 						ctx,
 						command,
 					)

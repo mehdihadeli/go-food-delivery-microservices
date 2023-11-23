@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/commands"
+	v1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
 
@@ -32,7 +32,7 @@ func TestCreateProduct(t *testing.T) {
 			"Creating a new product and saving it to the database for a none-existing product",
 			func() {
 				Convey("Given new product doesn't exists in the system", func() {
-					command, err := commands.NewCreateProduct(
+					command, err := v1.NewCreateProduct(
 						uuid.NewV4().String(),
 						gofakeit.Name(),
 						gofakeit.AdjectiveDescriptive(),
@@ -44,7 +44,7 @@ func TestCreateProduct(t *testing.T) {
 					Convey(
 						"When the CreateProduct command is executed and product doesn't exists",
 						func() {
-							result, err := mediatr.Send[*commands.CreateProduct, *dtos.CreateProductResponseDto](
+							result, err := mediatr.Send[*v1.CreateProduct, *dtos.CreateProductResponseDto](
 								ctx,
 								command,
 							)

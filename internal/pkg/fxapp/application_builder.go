@@ -1,7 +1,7 @@
 package fxapp
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	loggerConfig "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
@@ -17,11 +17,11 @@ type applicationBuilder struct {
 	decorates   []interface{}
 	options     []fx.Option
 	logger      logger.Logger
-	environment environemnt.Environment
+	environment environment.Environment
 }
 
-func NewApplicationBuilder(environments ...environemnt.Environment) contracts.ApplicationBuilder {
-	env := environemnt.ConfigAppEnv(environments...)
+func NewApplicationBuilder(environments ...environment.Environment) contracts.ApplicationBuilder {
+	env := environment.ConfigAppEnv(environments...)
 
 	var logger logger.Logger
 	logoption, err := loggerConfig.ProvideLogConfig(env)
@@ -70,6 +70,6 @@ func (a *applicationBuilder) Logger() logger.Logger {
 	return a.logger
 }
 
-func (a *applicationBuilder) Environment() environemnt.Environment {
+func (a *applicationBuilder) Environment() environment.Environment {
 	return a.environment
 }

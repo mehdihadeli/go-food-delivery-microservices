@@ -2,7 +2,7 @@ package metrics
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -32,7 +32,7 @@ type MetricsOptions struct {
 }
 
 func ProvideMetricsConfig(
-	environment environemnt.Environment,
+	environment environment.Environment,
 ) (*MetricsOptions, error) {
 	optionName := strcase.ToLowerCamel(
 		typeMapper.GetTypeNameByT[MetricsOptions](),

@@ -9,8 +9,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	mocks3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/mocks"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
-	dto "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dto/v1"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts"
+	dto "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/mocks"
@@ -90,7 +90,7 @@ func (c *UnitTestSharedFixture) SetupTest() {
 	var mockUOW *mock.Call
 	mockUOW = uow.On("Do", mock.Anything, mock.Anything).
 		Run(func(args mock.Arguments) {
-			fn, ok := args.Get(1).(data.CatalogUnitOfWorkActionFunc)
+			fn, ok := args.Get(1).(contracts.CatalogUnitOfWorkActionFunc)
 			if !ok {
 				panic("argument mismatch")
 			}

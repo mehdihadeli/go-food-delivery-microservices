@@ -1,12 +1,11 @@
 package endpoints
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/web/route"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/params"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/searching_products/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/searching_products/v1/queries"
@@ -44,21 +43,15 @@ func (ep *searchProductsEndpoint) MapEndpoint() {
 func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
-		ep.CatalogsMetrics.SearchProductHttpRequests.Add(ctx, 1)
 
 		listQuery, err := utils.GetListQueryFromCtx(c)
 		if err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(
 				err,
-				"[searchProductsEndpoint_handler.GetListQueryFromCtx] error in getting data from query string",
+				"error in getting data from query string",
 			)
-			ep.Logger.Errorf(
-				fmt.Sprintf(
-					"[searchProductsEndpoint_handler.GetListQueryFromCtx] err: %v",
-					badRequestErr,
-				),
-			)
-			return err
+
+			return badRequestErr
 		}
 
 		request := &dtos.SearchProductsRequestDto{ListQuery: listQuery}
@@ -66,11 +59,9 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 		if err := c.Bind(request); err != nil {
 			badRequestErr := customErrors.NewBadRequestErrorWrap(
 				err,
-				"[searchProductsEndpoint_handler.Bind] error in the binding request",
+				"error in the binding request",
 			)
-			ep.Logger.Errorf(
-				fmt.Sprintf("[searchProductsEndpoint_handler.Bind] err: %v", badRequestErr),
-			)
+
 			return badRequestErr
 		}
 
@@ -82,9 +73,9 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 		if err := query.Validate(); err != nil {
 			validationErr := customErrors.NewValidationErrorWrap(
 				err,
-				"[searchProductsEndpoint_handler.StructCtx]  query validation failed",
+				"query validation failed",
 			)
-			ep.Logger.Errorf("[searchProductsEndpoint_handler.StructCtx] err: {%v}", validationErr)
+
 			return validationErr
 		}
 
@@ -93,12 +84,10 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 			query,
 		)
 		if err != nil {
-			err = errors.WithMessage(
+			return errors.WithMessage(
 				err,
-				"[searchProductsEndpoint_handler.Send] error in sending SearchProducts",
+				"error in sending SearchProducts",
 			)
-			ep.Logger.Error(fmt.Sprintf("[searchProductsEndpoint_handler.Send] err: {%v}", err))
-			return err
 		}
 
 		return c.JSON(http.StatusOK, queryResult)

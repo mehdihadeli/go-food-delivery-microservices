@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
@@ -16,17 +16,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-func BindConfig[T any](environments ...environemnt.Environment) (T, error) {
+func BindConfig[T any](environments ...environment.Environment) (T, error) {
 	return BindConfigKey[T]("", environments...)
 }
 
 func BindConfigKey[T any](
 	configKey string,
-	environments ...environemnt.Environment,
+	environments ...environment.Environment,
 ) (T, error) {
 	var configPath string
 
-	environment := environemnt.Environment("")
+	environment := environment.Environment("")
 	if len(environments) > 0 {
 		environment = environments[0]
 	} else {
@@ -104,7 +104,7 @@ func BindConfigKey[T any](
 //	error:  An error indicating any issues encountered during the search.
 func searchForConfigFileDir(
 	rootDir string,
-	environment environemnt.Environment,
+	environment environment.Environment,
 ) (string, error) {
 	var result string
 

@@ -7,7 +7,7 @@ import (
 )
 
 // ConsumerHandlerFunc is a continuation for the next task to execute in the pipeline
-type ConsumerHandlerFunc func() error
+type ConsumerHandlerFunc func(ctx context.Context) error
 
 // ConsumerPipeline is a Pipeline for wrapping the inner consumer handler.
 type ConsumerPipeline interface {

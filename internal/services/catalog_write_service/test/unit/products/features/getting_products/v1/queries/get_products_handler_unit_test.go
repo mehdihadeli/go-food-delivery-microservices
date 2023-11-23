@@ -10,7 +10,7 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products/v1/queries"
+	getting_products2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/mocks/testData"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
@@ -34,7 +34,7 @@ func TestGetProductsUnit(t *testing.T) {
 func (c *getProductsHandlerUnitTests) Test_Handle_Should_Return_Products_Successfully() {
 	ctx := context.Background()
 
-	query, err := queries.NewGetProducts(utils.NewListQuery(10, 1))
+	query, err := getting_products2.NewGetProducts(utils.NewListQuery(10, 1))
 	c.Require().NoError(err)
 
 	items := utils.NewListResult[*models.Product](
@@ -47,7 +47,7 @@ func (c *getProductsHandlerUnitTests) Test_Handle_Should_Return_Products_Success
 		Once().
 		Return(items, nil)
 
-	getProductsHandler := queries.NewGetProductsHandler(c.Log, c.ProductRepository, c.Tracer)
+	getProductsHandler := getting_products2.NewGetProductsHandler(c.Log, c.ProductRepository, c.Tracer)
 
 	res, err := getProductsHandler.Handle(ctx, query)
 	c.Require().NoError(err)

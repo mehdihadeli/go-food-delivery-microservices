@@ -10,6 +10,6 @@ import (
 
 var GormContainerOptionsDecorator = func(t *testing.T, ctx context.Context) interface{} {
 	return func(c *gormPostgres.GormOptions, logger logger.Logger) (*gormPostgres.GormOptions, error) {
-		return NewGormTestContainers(logger).CreatingContainerOptions(ctx, t)
+		return NewGormTestContainers(logger).PopulateContainerOptions(ctx, t)
 	}
 }

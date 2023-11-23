@@ -13,6 +13,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/utils"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
@@ -26,6 +27,7 @@ import (
 
 type rabbitMQProducer struct {
 	logger                  logger.Logger
+	rabbitmqOptions         *config.RabbitmqOptions
 	connection              types.IConnection
 	eventSerializer         serializer.EventSerializer
 	producersConfigurations map[string]*configurations.RabbitMQProducerConfiguration
@@ -33,6 +35,7 @@ type rabbitMQProducer struct {
 }
 
 func NewRabbitMQProducer(
+	cfg *config.RabbitmqOptions,
 	connection types.IConnection,
 	rabbitmqProducersConfiguration map[string]*configurations.RabbitMQProducerConfiguration,
 	logger logger.Logger,
@@ -41,6 +44,7 @@ func NewRabbitMQProducer(
 ) (producer.Producer, error) {
 	p := &rabbitMQProducer{
 		logger:                  logger,
+		rabbitmqOptions:         cfg,
 		connection:              connection,
 		eventSerializer:         eventSerializer,
 		producersConfigurations: rabbitmqProducersConfiguration,
@@ -88,7 +92,9 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 	producerConfiguration := r.getProducerConfigurationByMessage(message)
 
 	if producerConfiguration == nil {
-		producerConfiguration = configurations.NewDefaultRabbitMQProducerConfiguration(message)
+		producerConfiguration = configurations.NewDefaultRabbitMQProducerConfiguration(
+			message,
+		)
 	}
 
 	var exchange string
@@ -134,7 +140,10 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 
 	// https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/go/publisher_confirms.go
 	if r.connection == nil {
-		return producer2.FinishProducerSpan(beforeProduceSpan, errors.New("connection is nil"))
+		return producer2.FinishProducerSpan(
+			beforeProduceSpan,
+			errors.New("connection is nil"),
+		)
 	}
 
 	if r.connection.IsClosed() {
@@ -192,7 +201,10 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 	}
 
 	if confirmed := <-confirms; !confirmed.Ack {
-		return producer2.FinishProducerSpan(beforeProduceSpan, errors.New("ack not confirmed"))
+		return producer2.FinishProducerSpan(
+			beforeProduceSpan,
+			errors.New("ack not confirmed"),
+		)
 	}
 
 	if len(r.isProducedNotifications) > 0 {

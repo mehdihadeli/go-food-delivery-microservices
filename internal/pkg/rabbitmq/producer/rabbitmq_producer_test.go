@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
@@ -35,29 +35,44 @@ func Test_Publish_Message(t *testing.T) {
 				Url: "http://localhost:9411/api/v2/spans",
 			},
 		},
-		environemnt.Development,
+		environment.Development,
 	)
 	if err != nil {
 		return
 	}
 	defer tp.Shutdown(ctx)
 
-	conn, err := types.NewRabbitMQConnection(&config.RabbitmqOptions{
+	//conn, err := types.NewRabbitMQConnection(&config.RabbitmqOptions{
+	//	RabbitmqHostOptions: &config.RabbitmqHostOptions{
+	//		UserName: "guest",
+	//		Password: "guest",
+	//		HostName: "localhost",
+	//		Port:     5672,
+	//	},
+	//})
+	//require.NoError(t, err)
+
+	options := &config.RabbitmqOptions{
 		RabbitmqHostOptions: &config.RabbitmqHostOptions{
 			UserName: "guest",
 			Password: "guest",
 			HostName: "localhost",
 			Port:     5672,
 		},
-	})
+	}
+
+	conn, err := types.NewRabbitMQConnection(options)
 	require.NoError(t, err)
 
-	rabbitmqProducer, err := NewRabbitMQProducer(
+	producerFactory := NewProducerFactory(
+		options,
 		conn,
-		nil,
-		defaultLogger.GetLogger(),
 		eventSerializer,
+		defaultLogger.GetLogger(),
 	)
+
+	rabbitmqProducer, err := producerFactory.CreateProducer(nil)
+
 	require.NoError(t, err)
 
 	err = rabbitmqProducer.PublishMessage(ctx, NewProducerMessage("test"), nil)

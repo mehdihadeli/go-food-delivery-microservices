@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
+	fxcontracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
@@ -13,7 +13,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/testfixture"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
+	productscontracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/app/test"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
@@ -32,9 +32,9 @@ type IntegrationTestSharedFixture struct {
 	Cfg                  *config.AppOptions
 	Log                  logger.Logger
 	Bus                  bus.Bus
-	CatalogUnitOfWorks   data.CatalogUnitOfWork
-	ProductRepository    data.ProductRepository
-	Container            contracts.Container
+	CatalogUnitOfWorks   productscontracts.CatalogUnitOfWork
+	ProductRepository    productscontracts.ProductRepository
+	Container            fxcontracts.Container
 	DbCleaner            dbcleaner.DbCleaner
 	RabbitmqCleaner      *rabbithole.Client
 	rabbitmqOptions      *config2.RabbitmqOptions

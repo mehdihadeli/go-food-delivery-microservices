@@ -11,7 +11,7 @@ import (
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	getProductByIdQueryV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_product_by_id/v1/queries"
+	v1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_product_by_id/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
 
@@ -93,7 +93,7 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 			// create new mocks or clear mocks before executing
 			c.CleanupMocks()
 
-			getProductByIdHandler := getProductByIdQueryV1.NewGetProductByIdHandler(
+			getProductByIdHandler := v1.NewGetProductByIDHandler(
 				c.Log,
 				c.ProductRepository,
 				c.Tracer,
@@ -107,7 +107,7 @@ func (c *getProductByIdHandlerTest) Test_Get_Product_By_Id() {
 				testCase.fn()
 			}
 
-			query, err := getProductByIdQueryV1.NewGetProductById(testCase.id)
+			query, err := v1.NewGetProductById(testCase.id)
 			c.Require().NoError(err)
 
 			// act

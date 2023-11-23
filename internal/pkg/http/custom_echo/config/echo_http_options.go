@@ -5,7 +5,7 @@ import (
 	"net/url"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -36,6 +36,6 @@ func (c *EchoHttpOptions) BasePathAddress() string {
 	return path
 }
 
-func ProvideConfig(environment environemnt.Environment) (*EchoHttpOptions, error) {
+func ProvideConfig(environment environment.Environment) (*EchoHttpOptions, error) {
 	return config.BindConfigKey[*EchoHttpOptions](optionName, environment)
 }

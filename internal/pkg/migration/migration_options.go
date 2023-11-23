@@ -2,7 +2,7 @@ package migration
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -27,7 +27,7 @@ type MigrationOptions struct {
 	SkipMigration bool   `mapstructure:"skipMigration"`
 }
 
-func ProvideConfig(environment environemnt.Environment) (*MigrationOptions, error) {
+func ProvideConfig(environment environment.Environment) (*MigrationOptions, error) {
 	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[MigrationOptions]())
 
 	return config.BindConfigKey[*MigrationOptions](optionName, environment)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -49,7 +49,7 @@ type Subscription struct {
 	SubscriptionId string   `mapstructure:"subscriptionId" validate:"required"`
 }
 
-func ProvideConfig(environment environemnt.Environment) (*EventStoreDbOptions, error) {
+func ProvideConfig(environment environment.Environment) (*EventStoreDbOptions, error) {
 	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[EventStoreDbOptions]())
 	return config.BindConfigKey[*EventStoreDbOptions](optionName, environment)
 }

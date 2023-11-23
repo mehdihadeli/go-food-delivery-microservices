@@ -1,6 +1,6 @@
 package dtos
 
-import dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dto/v1"
+import dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
 
 // https://echo.labstack.com/guide/response/
 type GetProductByIdResponseDto struct {

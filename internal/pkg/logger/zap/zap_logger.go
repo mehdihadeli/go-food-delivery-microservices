@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
@@ -43,7 +43,7 @@ var loggerLevelMap = map[string]zapcore.Level{
 // NewZapLogger create new zap logger
 func NewZapLogger(
 	cfg *config2.LogOptions,
-	env environemnt.Environment,
+	env environment.Environment,
 ) ZapLogger {
 	zapLogger := &zapLogger{level: cfg.LogLevel, logOptions: cfg}
 	zapLogger.initLogger(env)
@@ -65,7 +65,7 @@ func (l *zapLogger) getLoggerLevel() zapcore.Level {
 }
 
 // InitLogger Init logger
-func (l *zapLogger) initLogger(env environemnt.Environment) {
+func (l *zapLogger) initLogger(env environment.Environment) {
 	logLevel := l.getLoggerLevel()
 
 	logWriter := zapcore.AddSync(os.Stdout)

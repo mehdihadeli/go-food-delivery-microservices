@@ -1,15 +1,16 @@
 package products
 
 import (
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/cqrs"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/web/route"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/repositories"
-	createProductV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creating_product/v1/endpoints"
-	deleteProductV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1/endpoints"
-	getProductByIdV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_product_by_id/v1/endpoints"
-	getProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products/v1/endpoints"
-	searchProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/searching_product/v1/endpoints"
-	updateProductsV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1/endpoints"
+	creatingproductv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creatingproduct/v1"
+	deletingproductv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1"
+	gettingproductbyidv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_product_by_id/v1"
+	gettingproductsv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/getting_products/v1"
+	searchingproductsv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/searching_product/v1"
+	updatingoroductsv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updating_product/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc"
 
 	"github.com/labstack/echo/v4"
@@ -36,26 +37,58 @@ var Module = fx.Module(
 		}, fx.ResultTags(`name:"product-echo-group"`)),
 	),
 
+	// add cqrs handlers to DI
+	fx.Provide(
+		cqrs.AsHandler(
+			creatingproductv1.NewCreateProductHandler,
+			"product-handlers",
+		),
+		cqrs.AsHandler(
+			gettingproductsv1.NewGetProductsHandler,
+			"product-handlers",
+		),
+		cqrs.AsHandler(
+			deletingproductv1.NewDeleteProductHandler,
+			"product-handlers",
+		),
+		cqrs.AsHandler(
+			gettingproductbyidv1.NewGetProductByIDHandler,
+			"product-handlers",
+		),
+		cqrs.AsHandler(
+			searchingproductsv1.NewSearchProductsHandler,
+			"product-handlers",
+		),
+		cqrs.AsHandler(
+			updatingoroductsv1.NewUpdateProductHandler,
+			"product-handlers",
+		),
+	),
+
+	// add endpoints to DI
 	fx.Provide(
 		route.AsRoute(
-			createProductV1.NewCreteProductEndpoint,
+			creatingproductv1.NewCreteProductEndpoint,
 			"product-routes",
 		),
 		route.AsRoute(
-			updateProductsV1.NewUpdateProductEndpoint,
-			"product-routes",
-		),
-		route.AsRoute(getProductsV1.NewGetProductsEndpoint, "product-routes"),
-		route.AsRoute(
-			searchProductsV1.NewSearchProductsEndpoint,
+			updatingoroductsv1.NewUpdateProductEndpoint,
 			"product-routes",
 		),
 		route.AsRoute(
-			getProductByIdV1.NewGetProductByIdEndpoint,
+			gettingproductsv1.NewGetProductsEndpoint,
 			"product-routes",
 		),
 		route.AsRoute(
-			deleteProductV1.NewDeleteProductEndpoint,
+			searchingproductsv1.NewSearchProductsEndpoint,
+			"product-routes",
+		),
+		route.AsRoute(
+			gettingproductbyidv1.NewGetProductByIdEndpoint,
+			"product-routes",
+		),
+		route.AsRoute(
+			deletingproductv1.NewDeleteProductEndpoint,
 			"product-routes",
 		),
 	),

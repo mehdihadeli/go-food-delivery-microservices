@@ -9,13 +9,13 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts/data"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/repositories"
 
 	"gorm.io/gorm"
 )
 
-type catalogUnitOfWork[TContext data2.CatalogContext] struct {
+type catalogUnitOfWork[TContext contracts.CatalogContext] struct {
 	logger logger.Logger
 	db     *gorm.DB
 	tracer tracing.AppTracer
@@ -25,13 +25,13 @@ func NewCatalogsUnitOfWork(
 	logger logger.Logger,
 	db *gorm.DB,
 	tracer tracing.AppTracer,
-) data2.CatalogUnitOfWork {
-	return &catalogUnitOfWork[data2.CatalogContext]{logger: logger, db: db, tracer: tracer}
+) contracts.CatalogUnitOfWork {
+	return &catalogUnitOfWork[contracts.CatalogContext]{logger: logger, db: db, tracer: tracer}
 }
 
 func (c *catalogUnitOfWork[TContext]) Do(
 	ctx context.Context,
-	action data2.CatalogUnitOfWorkActionFunc,
+	action contracts.CatalogUnitOfWorkActionFunc,
 ) error {
 	// https://gorm.io/docs/transactions.html#Transaction
 	return c.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {

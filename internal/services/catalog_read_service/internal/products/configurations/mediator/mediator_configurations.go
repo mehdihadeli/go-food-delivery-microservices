@@ -4,7 +4,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
-	createProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/commands"
+	v1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1"
 	createProductDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/dtos"
 	deleteProductCommandV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/deleting_products/v1/commands"
 	getProductByIdDtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/dtos"
@@ -25,8 +25,8 @@ func ConfigProductsMediator(
 	cacheProductRepository data.ProductCacheRepository,
 	tracer tracing.AppTracer,
 ) error {
-	err := mediatr.RegisterRequestHandler[*createProductCommandV1.CreateProduct, *createProductDtosV1.CreateProductResponseDto](
-		createProductCommandV1.NewCreateProductHandler(
+	err := mediatr.RegisterRequestHandler[*v1.CreateProduct, *createProductDtosV1.CreateProductResponseDto](
+		v1.NewCreateProductHandler(
 			logger,
 			mongoProductRepository,
 			cacheProductRepository,

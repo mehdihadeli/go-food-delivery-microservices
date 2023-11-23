@@ -8,7 +8,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
@@ -30,7 +30,7 @@ type OtelMetrics struct {
 	config      *MetricsOptions
 	logger      logger.Logger
 	appMetrics  AppMetrics
-	environment environemnt.Environment
+	environment environment.Environment
 	provider    *metric.MeterProvider
 }
 
@@ -38,7 +38,7 @@ type OtelMetrics struct {
 func NewOtelMetrics(
 	config *MetricsOptions,
 	logger logger.Logger,
-	environment environemnt.Environment,
+	environment environment.Environment,
 ) (*OtelMetrics, error) {
 	if config == nil {
 		return nil, errors.New("metrics config can't be nil")

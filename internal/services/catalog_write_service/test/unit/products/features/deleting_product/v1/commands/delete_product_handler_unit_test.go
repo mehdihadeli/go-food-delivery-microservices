@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1/commands"
+	v1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deleting_product/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
 
 	"emperror.dev/errors"
@@ -35,7 +35,7 @@ func (c *deleteProductHandlerUnitTests) Test_Handle_Should_Delete_Product_With_V
 	ctx := context.Background()
 	id := c.Items[0].ProductId
 
-	deleteProduct := &commands.DeleteProduct{
+	deleteProduct := &v1.DeleteProduct{
 		ProductID: id,
 	}
 
@@ -43,7 +43,7 @@ func (c *deleteProductHandlerUnitTests) Test_Handle_Should_Delete_Product_With_V
 		Once().
 		Return(nil)
 
-	deleteProductHandler := commands.NewDeleteProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
+	deleteProductHandler := v1.NewDeleteProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
 
 	_, err := deleteProductHandler.Handle(ctx, deleteProduct)
 	c.Require().NoError(err)
@@ -57,7 +57,7 @@ func (c *deleteProductHandlerUnitTests) Test_Handle_Should_Return_NotFound_Error
 	ctx := context.Background()
 	id := uuid.NewV4()
 
-	deleteProduct := &commands.DeleteProduct{
+	deleteProduct := &v1.DeleteProduct{
 		ProductID: id,
 	}
 
@@ -65,7 +65,7 @@ func (c *deleteProductHandlerUnitTests) Test_Handle_Should_Return_NotFound_Error
 		Once().
 		Return(customErrors.NewNotFoundError("error finding product"))
 
-	deleteProductHandler := commands.NewDeleteProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
+	deleteProductHandler := v1.NewDeleteProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
 
 	res, err := deleteProductHandler.Handle(ctx, deleteProduct)
 	c.Require().Error(err)
@@ -82,7 +82,7 @@ func (c *deleteProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 	ctx := context.Background()
 	id := c.Items[0].ProductId
 
-	deleteProduct := &commands.DeleteProduct{
+	deleteProduct := &v1.DeleteProduct{
 		ProductID: id,
 	}
 
@@ -97,7 +97,7 @@ func (c *deleteProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Erro
 		Once().
 		Return(errors.New("error in the publish message"))
 
-	deleteProductHandler := commands.NewDeleteProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
+	deleteProductHandler := v1.NewDeleteProductHandler(c.Log, c.Uow, c.Bus, c.Tracer)
 	dto, err := deleteProductHandler.Handle(ctx, deleteProduct)
 
 	c.NotNil(dto)

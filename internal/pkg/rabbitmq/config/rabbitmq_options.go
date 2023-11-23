@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
 
 	"github.com/iancoleman/strcase"
@@ -38,7 +38,7 @@ func (h *RabbitmqHostOptions) HttpEndPoint() string {
 	return fmt.Sprintf("http://%s:%d", h.HostName, h.HttpPort)
 }
 
-func ProvideConfig(environment environemnt.Environment) (*RabbitmqOptions, error) {
+func ProvideConfig(environment environment.Environment) (*RabbitmqOptions, error) {
 	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[RabbitmqOptions]())
 	cfg, err := config.BindConfigKey[*RabbitmqOptions](optionName, environment)
 

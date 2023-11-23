@@ -21,9 +21,15 @@ func (a *App) Run() {
 	app := appBuilder.Build()
 
 	// configure application
-	app.ConfigureCatalogs()
+	err := app.ConfigureCatalogs()
+	if err != nil {
+		app.Logger().Fatalf("Error in ConfigureCatalogs", err)
+	}
 
-	app.MapCatalogsEndpoints()
+	err = app.MapCatalogsEndpoints()
+	if err != nil {
+		app.Logger().Fatalf("Error in MapCatalogsEndpoints", err)
+	}
 
 	app.Logger().Info("Starting catalog_service application")
 	app.ResolveFunc(func(tracer tracing.AppTracer) {

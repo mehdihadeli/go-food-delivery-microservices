@@ -36,7 +36,7 @@ func NewCatalogsServiceConfigurator(
 	}
 }
 
-func (ic *CatalogsServiceConfigurator) ConfigureCatalogs() {
+func (ic *CatalogsServiceConfigurator) ConfigureCatalogs() error {
 	// Shared
 	// Infrastructure
 	ic.infrastructureConfigurator.ConfigInfrastructures()
@@ -56,10 +56,12 @@ func (ic *CatalogsServiceConfigurator) ConfigureCatalogs() {
 
 	// Modules
 	// Product module
-	ic.productsModuleConfigurator.ConfigureProductsModule()
+	err := ic.productsModuleConfigurator.ConfigureProductsModule()
+
+	return err
 }
 
-func (ic *CatalogsServiceConfigurator) MapCatalogsEndpoints() {
+func (ic *CatalogsServiceConfigurator) MapCatalogsEndpoints() error {
 	// Shared
 	ic.ResolveFunc(
 		func(catalogsServer echocontracts.EchoHttpServer, options *config.AppOptions) error {
@@ -88,5 +90,7 @@ func (ic *CatalogsServiceConfigurator) MapCatalogsEndpoints() {
 
 	// Modules
 	// Products CatalogsServiceModule endpoints
-	ic.productsModuleConfigurator.MapProductsEndpoints()
+	err := ic.productsModuleConfigurator.MapProductsEndpoints()
+
+	return err
 }

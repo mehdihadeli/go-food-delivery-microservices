@@ -5,22 +5,37 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/fxlog"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
+	"gorm.io/gorm"
 )
 
 func Test_Custom_Gorm_Container(t *testing.T) {
 	ctx := context.Background()
 
-	gorm, err := NewGormTestContainers(defaultLogger.GetLogger()).Start(ctx, t)
-	require.NoError(t, err)
+	var gorm *gorm.DB
+
+	fxtest.New(t,
+		config.ModuleFunc(environment.Test),
+		zap.Module,
+		fxlog.FxLogger,
+		core.Module,
+		gormPostgres.Module,
+		fx.Decorate(GormContainerOptionsDecorator(t, ctx)),
+		fx.Populate(&gorm),
+	).RequireStart()
 
 	assert.NotNil(t, gorm)
 }

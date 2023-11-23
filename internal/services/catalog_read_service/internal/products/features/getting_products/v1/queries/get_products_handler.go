@@ -6,8 +6,6 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-	utils2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/contracts/data"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/dto"
@@ -25,40 +23,36 @@ func NewGetProductsHandler(
 	mongoRepository data.ProductRepository,
 	tracer tracing.AppTracer,
 ) *GetProductsHandler {
-	return &GetProductsHandler{log: log, mongoRepository: mongoRepository, tracer: tracer}
+	return &GetProductsHandler{
+		log:             log,
+		mongoRepository: mongoRepository,
+		tracer:          tracer,
+	}
 }
 
 func (c *GetProductsHandler) Handle(
 	ctx context.Context,
 	query *GetProducts,
 ) (*dtos.GetProductsResponseDto, error) {
-	ctx, span := c.tracer.Start(ctx, "GetProductsHandler.Handle")
-	span.SetAttributes(attribute.Object("Query", query))
-	defer span.End()
-
 	products, err := c.mongoRepository.GetAllProducts(ctx, query.ListQuery)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
-			span,
-			customErrors.NewApplicationErrorWrap(
-				err,
-				"[GetProductsHandler_Handle.GetAllProducts] error in getting products in the repository",
-			),
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			"error in getting products in the repository",
 		)
 	}
 
-	listResultDto, err := utils.ListResultToListResultDto[*dto.ProductDto](products)
+	listResultDto, err := utils.ListResultToListResultDto[*dto.ProductDto](
+		products,
+	)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
-			span,
-			customErrors.NewApplicationErrorWrap(
-				err,
-				"[GetProductsHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto",
-			),
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			"error in the mapping ListResultToListResultDto",
 		)
 	}
 
-	c.log.Info("[GetProductsHandler.Handle] products fetched")
+	c.log.Info("products fetched")
 
 	return &dtos.GetProductsResponseDto{Products: listResultDto}, nil
 }

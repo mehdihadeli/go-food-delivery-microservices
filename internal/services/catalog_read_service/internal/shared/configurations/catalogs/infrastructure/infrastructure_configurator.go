@@ -5,9 +5,9 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/pipelines"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
-	pipelines2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics/pipelines"
+	pipelines2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics/mediatr/pipelines"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	tracingpipelines "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/pipelines"
+	tracingpipelines "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/mediatr/pipelines"
 
 	"github.com/mehdihadeli/go-mediatr"
 )
@@ -29,11 +29,11 @@ func (ic *InfrastructureConfigurator) ConfigInfrastructures() {
 		func(logger logger.Logger, tracer tracing.AppTracer, metrics metrics.AppMetrics) error {
 			err := mediatr.RegisterRequestPipelineBehaviors(
 				pipelines.NewLoggingPipeline(logger),
-				tracingpipelines.NewTracingPipeline(
+				tracingpipelines.NewMediatorTracingPipeline(
 					tracer,
 					tracingpipelines.WithLogger(logger),
 				),
-				pipelines2.NewMetricsPipeline(
+				pipelines2.NewMediatorMetricsPipeline(
 					metrics,
 					pipelines2.WithLogger(logger),
 				),
