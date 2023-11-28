@@ -42,6 +42,8 @@ func ConfigAppEnv(environments ...Environment) Environment {
 
 	setRootWorkingDirectoryEnvironment()
 
+	fixTestEnvironmentWorkingDirectory()
+
 	manualEnv := os.Getenv(constants.AppEnv)
 
 	if manualEnv != "" {
@@ -59,6 +61,10 @@ func (env Environment) IsProduction() bool {
 	return env == Production
 }
 
+func (env Environment) IsTest() bool {
+	return env == Test
+}
+
 func (env Environment) GetEnvironmentName() string {
 	return string(env)
 }
@@ -67,6 +73,7 @@ func EnvString(key, fallback string) string {
 	if value, ok := syscall.Getenv(key); ok {
 		return value
 	}
+
 	return fallback
 }
 
@@ -121,6 +128,19 @@ func setRootWorkingDirectoryEnvironment() {
 
 	// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
 	viper.Set(constants.AppRootPath, absoluteRootWorkingDirectory)
+}
+
+func fixTestEnvironmentWorkingDirectory() {
+	currentWD, _ := os.Getwd()
+	log.Printf("Current test working directory is: %s", currentWD)
+
+	rootDir := viper.GetString(constants.AppRootPath)
+	if rootDir != "" {
+		_ = os.Chdir(rootDir)
+
+		newWD, _ := os.Getwd()
+		log.Printf("New test working directory is: %s", newWD)
+	}
 }
 
 func getRootDirectoryFromProjectName(pn string) string {

@@ -46,14 +46,14 @@ var _ = Describe("Create Order Feature", func() {
 
 	_ = BeforeEach(func() {
 		By("Seeding the required data")
-		integrationFixture.InitializeTest()
+		integrationFixture.SetupTest()
 
 		// id = integrationFixture.Items[0].OrderId
 	})
 
 	_ = AfterEach(func() {
 		By("Cleanup test data")
-		integrationFixture.DisposeTest()
+		integrationFixture.TearDownTest()
 	})
 
 	_ = BeforeSuite(func() {

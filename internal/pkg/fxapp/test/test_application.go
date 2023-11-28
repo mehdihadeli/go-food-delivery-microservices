@@ -2,14 +2,11 @@ package test
 
 import (
 	"context"
-	"os"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
-	"github.com/spf13/viper"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 )
@@ -94,7 +91,7 @@ func (a *testApplication) Wait() <-chan fx.ShutdownSignal {
 }
 
 func (a *testApplication) createFxTest() *fxtest.App {
-	a.fixTestEnvironmentWorkingDirectory()
+	// a.fixTestEnvironmentWorkingDirectory()
 
 	// build phase of container will do in this stage, containing provides and invokes but app not started yet and will be started in the future with `fxApp.Register`
 	fxTestApp := CreateFxTestApp(
@@ -111,15 +108,15 @@ func (a *testApplication) createFxTest() *fxtest.App {
 	return fxTestApp
 }
 
-func (a *testApplication) fixTestEnvironmentWorkingDirectory() {
-	currentWD, _ := os.Getwd()
-	a.logger.Infof("Current test working directory is: %s", currentWD)
-
-	rootDir := viper.GetString(constants.AppRootPath)
-	if rootDir != "" {
-		_ = os.Chdir(rootDir)
-
-		newWD, _ := os.Getwd()
-		a.logger.Infof("New test working directory is: %s", newWD)
-	}
-}
+//func (a *testApplication) fixTestEnvironmentWorkingDirectory() {
+//	currentWD, _ := os.Getwd()
+//	a.logger.Infof("Current test working directory is: %s", currentWD)
+//
+//	rootDir := viper.GetString(constants.AppRootPath)
+//	if rootDir != "" {
+//		_ = os.Chdir(rootDir)
+//
+//		newWD, _ := os.Getwd()
+//		a.logger.Infof("New test working directory is: %s", newWD)
+//	}
+//}

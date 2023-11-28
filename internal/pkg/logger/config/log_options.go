@@ -4,7 +4,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/models"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 
 	"github.com/iancoleman/strcase"
 )

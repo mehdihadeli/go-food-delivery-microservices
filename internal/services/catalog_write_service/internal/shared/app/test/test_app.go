@@ -7,18 +7,18 @@ import (
 	"time"
 
 	fxcontracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc"
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
-	productcontracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/configurations/catalogs"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/data/dbcontext"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
 
 	"github.com/stretchr/testify/require"
@@ -35,12 +35,11 @@ type TestAppResult struct {
 	RabbitmqOptions         *config2.RabbitmqOptions
 	EchoHttpOptions         *config3.EchoHttpOptions
 	GormOptions             *gormPostgres.GormOptions
-	CatalogUnitOfWorks      productcontracts.CatalogUnitOfWork
-	ProductRepository       productcontracts.ProductRepository
 	Gorm                    *gorm2.DB
 	ProductServiceClient    productsService.ProductsServiceClient
 	GrpcClient              grpc.GrpcClient
 	PostgresMigrationRunner contracts2.PostgresMigrationRunner
+	CatalogsDBContext       *dbcontext.CatalogsGormDBContext
 }
 
 func NewTestApp() *TestApp {
@@ -77,9 +76,8 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 			logger logger.Logger,
 			rabbitmqOptions *config2.RabbitmqOptions,
 			gormOptions *gormPostgres.GormOptions,
-			catalogUnitOfWorks productcontracts.CatalogUnitOfWork,
-			productRepository productcontracts.ProductRepository,
 			gorm *gorm2.DB,
+			catalogsDBContext *dbcontext.CatalogsGormDBContext,
 			echoOptions *config3.EchoHttpOptions,
 			grpcClient grpc.GrpcClient,
 			postgresMigrationRunner contracts2.PostgresMigrationRunner,
@@ -93,9 +91,8 @@ func (a *TestApp) Run(t *testing.T) (result *TestAppResult) {
 				Logger:                  logger,
 				RabbitmqOptions:         rabbitmqOptions,
 				GormOptions:             gormOptions,
-				ProductRepository:       productRepository,
-				CatalogUnitOfWorks:      catalogUnitOfWorks,
 				Gorm:                    gorm,
+				CatalogsDBContext:       catalogsDBContext,
 				EchoHttpOptions:         echoOptions,
 				PostgresMigrationRunner: postgresMigrationRunner,
 				ProductServiceClient: productsService.NewProductsServiceClient(

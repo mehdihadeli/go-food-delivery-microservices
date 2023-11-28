@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
 )
 
 var GormContainerOptionsDecorator = func(t *testing.T, ctx context.Context) interface{} {

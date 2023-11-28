@@ -10,7 +10,7 @@ import (
 
 	v1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/creating_product/v1/dtos"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/testfixture/integration"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/mehdihadeli/go-mediatr"
@@ -24,7 +24,7 @@ func TestCreateProduct(t *testing.T) {
 
 	Convey("Creating Product Feature", t, func() {
 		ctx := context.Background()
-		integrationTestSharedFixture.InitializeTest()
+		integrationTestSharedFixture.SetupTest()
 
 		// https://specflow.org/learn/gherkin/#learn-gherkin
 		// scenario
@@ -78,6 +78,6 @@ func TestCreateProduct(t *testing.T) {
 			},
 		)
 
-		integrationTestSharedFixture.DisposeTest()
+		integrationTestSharedFixture.TearDownTest()
 	})
 }

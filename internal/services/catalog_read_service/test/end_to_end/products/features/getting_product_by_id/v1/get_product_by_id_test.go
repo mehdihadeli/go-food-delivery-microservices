@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/testfixture/integration"
 
 	"github.com/gavv/httpexpect/v2"
 
@@ -19,7 +19,7 @@ func TestGetProductById(t *testing.T) {
 	e2eFixture := integration.NewIntegrationTestSharedFixture(t)
 
 	Convey("Get Product By Id Feature", t, func() {
-		e2eFixture.InitializeTest()
+		e2eFixture.SetupTest()
 
 		ctx := context.Background()
 		id := e2eFixture.Items[0].Id
@@ -39,6 +39,6 @@ func TestGetProductById(t *testing.T) {
 			})
 		})
 
-		e2eFixture.DisposeTest()
+		e2eFixture.TearDownTest()
 	})
 }

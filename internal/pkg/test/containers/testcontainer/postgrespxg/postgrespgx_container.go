@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
+	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgrespgx"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"

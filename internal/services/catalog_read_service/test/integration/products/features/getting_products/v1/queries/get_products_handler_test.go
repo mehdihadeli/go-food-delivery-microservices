@@ -10,7 +10,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/getting_products/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/getting_products/v1/queries"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/testfixture/integration"
 
 	"github.com/mehdihadeli/go-mediatr"
 
@@ -22,7 +22,7 @@ func TestGetProducts(t *testing.T) {
 
 	Convey("Get All Products Feature", t, func() {
 		ctx := context.Background()
-		integrationTestSharedFixture.InitializeTest()
+		integrationTestSharedFixture.SetupTest()
 
 		// https://specflow.org/learn/gherkin/#learn-gherkin
 		// scenario
@@ -61,6 +61,6 @@ func TestGetProducts(t *testing.T) {
 			})
 		})
 
-		integrationTestSharedFixture.DisposeTest()
+		integrationTestSharedFixture.TearDownTest()
 	})
 }

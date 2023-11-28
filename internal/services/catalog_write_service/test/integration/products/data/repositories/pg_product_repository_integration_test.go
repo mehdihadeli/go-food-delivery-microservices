@@ -11,7 +11,7 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/testfixtures/integration"
 
 	"github.com/brianvoe/gofakeit/v6"
 	uuid "github.com/satori/go.uuid"
@@ -42,14 +42,14 @@ var _ = Describe("Product Repository Suite", func() {
 
 	_ = BeforeEach(func() {
 		By("Seeding the required data")
-		integrationFixture.InitializeTest()
+		integrationFixture.SetupTest()
 
 		id = integrationFixture.Items[0].ProductId
 	})
 
 	_ = AfterEach(func() {
 		By("Cleanup test data")
-		integrationFixture.DisposeTest()
+		integrationFixture.TearDownTest()
 	})
 
 	_ = BeforeSuite(func() {

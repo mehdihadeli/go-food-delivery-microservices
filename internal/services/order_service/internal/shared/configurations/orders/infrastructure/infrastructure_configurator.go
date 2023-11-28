@@ -3,9 +3,8 @@ package infrastructure
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/pipelines"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
-	pipelines2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics/mediatr/pipelines"
+	metricspipelines "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics/mediatr/pipelines"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	tracingpipelines "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/mediatr/pipelines"
 
@@ -26,16 +25,16 @@ func NewInfrastructureConfigurator(
 
 func (ic *InfrastructureConfigurator) ConfigInfrastructures() {
 	ic.ResolveFunc(
-		func(logger logger.Logger, tracer tracing.AppTracer, metrics metrics.AppMetrics) error {
+		func(l logger.Logger, tracer tracing.AppTracer, metrics metrics.AppMetrics) error {
 			err := mediatr.RegisterRequestPipelineBehaviors(
-				pipelines.NewLoggingPipeline(logger),
+				loggingpipelines.NewMediatorLoggingPipeline(l),
 				tracingpipelines.NewMediatorTracingPipeline(
 					tracer,
-					tracingpipelines.WithLogger(logger),
+					tracingpipelines.WithLogger(l),
 				),
-				pipelines2.NewMediatorMetricsPipeline(
+				metricspipelines.NewMediatorMetricsPipeline(
 					metrics,
-					pipelines2.WithLogger(logger),
+					metricspipelines.WithLogger(l),
 				),
 			)
 

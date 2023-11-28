@@ -38,6 +38,11 @@ func NewCreateProduct(
 	return command, nil
 }
 
+// IsTxRequest for enabling transactions on the mediatr pipeline
+func (c *CreateProduct) IsTxRequest() bool {
+	return true
+}
+
 func (c *CreateProduct) Validate() error {
 	return validation.ValidateStruct(
 		c,

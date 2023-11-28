@@ -34,14 +34,14 @@ var _ = Describe("GetOrderById Feature", func() {
 		ctx = context.Background()
 
 		By("Seeding the required data")
-		integrationFixture.InitializeTest()
+		integrationFixture.SetupTest()
 
 		id = integrationFixture.Items[0].Id
 	})
 
 	_ = AfterEach(func() {
 		By("Cleanup test data")
-		integrationFixture.DisposeTest()
+		integrationFixture.TearDownTest()
 	})
 
 	// "Scenario" for testing the retrieval of an order by a valid ID

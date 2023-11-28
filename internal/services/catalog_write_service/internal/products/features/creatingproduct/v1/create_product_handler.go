@@ -3,13 +3,11 @@ package v1
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/cqrs"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts"
 	dtosv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1/fxparams"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creatingproduct/v1/dtos"
@@ -41,6 +39,11 @@ func (c *createProductHandler) Handle(
 	ctx context.Context,
 	command *CreateProduct,
 ) (*dtos.CreateProductResponseDto, error) {
+	dbContext, err := c.CatalogsDBContext.WithTx(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	product := &models.Product{
 		ProductId:   command.ProductID,
 		Name:        command.Name,
@@ -51,64 +54,51 @@ func (c *createProductHandler) Handle(
 
 	var createProductResult *dtos.CreateProductResponseDto
 
-	err := c.Uow.Do(
-		ctx,
-		func(catalogContext contracts.CatalogContext) error {
-			createdProduct, err := catalogContext.Products().
-				CreateProduct(ctx, product)
-			if err != nil {
-				return customErrors.NewApplicationErrorWrapWithCode(
-					err,
-					http.StatusConflict,
-					"product already exists",
-				)
-			}
-			productDto, err := mapper.Map[*dtosv1.ProductDto](
-				createdProduct,
-			)
-			if err != nil {
-				return customErrors.NewApplicationErrorWrap(
-					err,
-					"error in the mapping ProductDto",
-				)
-			}
+	result, err := dbContext.AddProduct(ctx, product)
+	if err != nil {
+		return nil, err
+	}
 
-			productCreated := integrationevents.NewProductCreatedV1(
-				productDto,
-			)
+	productDto, err := mapper.Map[*dtosv1.ProductDto](result)
+	if err != nil {
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			"error in the mapping ProductDto",
+		)
+	}
 
-			err = c.RabbitmqProducer.PublishMessage(ctx, productCreated, nil)
-			if err != nil {
-				return customErrors.NewApplicationErrorWrap(
-					err,
-					"error in publishing ProductCreated integration_events event",
-				)
-			}
+	productCreated := integrationevents.NewProductCreatedV1(
+		productDto,
+	)
 
-			c.Log.Infow(
-				fmt.Sprintf(
-					"ProductCreated message with messageId `%s` published to the rabbitmq broker",
-					productCreated.MessageId,
-				),
-				logger.Fields{"MessageId": productCreated.MessageId},
-			)
+	err = c.RabbitmqProducer.PublishMessage(ctx, productCreated, nil)
+	if err != nil {
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			"error in publishing ProductCreated integration_events event",
+		)
+	}
 
-			createProductResult = &dtos.CreateProductResponseDto{
-				ProductID: product.ProductId,
-			}
+	c.Log.Infow(
+		fmt.Sprintf(
+			"ProductCreated message with messageId `%s` published to the rabbitmq broker",
+			productCreated.MessageId,
+		),
+		logger.Fields{"MessageId": productCreated.MessageId},
+	)
 
-			c.Log.Infow(
-				fmt.Sprintf(
-					"product with id '%s' created",
-					command.ProductID,
-				),
-				logger.Fields{
-					"ProductId": command.ProductID,
-					"MessageId": productCreated.MessageId,
-				},
-			)
+	createProductResult = &dtos.CreateProductResponseDto{
+		ProductID: product.ProductId,
+	}
 
-			return nil
+	c.Log.Infow(
+		fmt.Sprintf(
+			"product with id '%s' created",
+			command.ProductID,
+		),
+		logger.Fields{
+			"ProductId": command.ProductID,
+			"MessageId": productCreated.MessageId,
 		},
 	)
 

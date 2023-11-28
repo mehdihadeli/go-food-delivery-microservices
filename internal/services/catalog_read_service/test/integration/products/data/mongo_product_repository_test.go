@@ -11,7 +11,7 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/testfixture/integration"
 
 	"github.com/brianvoe/gofakeit/v6"
 	uuid "github.com/satori/go.uuid"
@@ -24,7 +24,7 @@ func TestProductPostgresRepository(t *testing.T) {
 
 	// scenario
 	Convey("Product Repository", t, func() {
-		integrationTestSharedFixture.InitializeTest()
+		integrationTestSharedFixture.SetupTest()
 
 		Convey("When we create the new product in the database", func() {
 			ctx := context.Background()
@@ -165,6 +165,6 @@ func TestProductPostgresRepository(t *testing.T) {
 			})
 		})
 
-		integrationTestSharedFixture.DisposeTest()
+		integrationTestSharedFixture.TearDownTest()
 	})
 }

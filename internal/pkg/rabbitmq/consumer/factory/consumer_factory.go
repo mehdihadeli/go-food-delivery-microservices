@@ -1,10 +1,10 @@
 package factory
 
 import (
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/consumer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	rabbitmqconsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer"
 	consumerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"

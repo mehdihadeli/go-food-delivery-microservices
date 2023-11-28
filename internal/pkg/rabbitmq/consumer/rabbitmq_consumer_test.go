@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
+	messageConsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/consumer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/pipeline"
+	types3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
-	defaultLogger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-	messageConsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/pipeline"
-	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	defaultLogger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	rabbitmqConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
@@ -116,14 +116,14 @@ func Test_Consumer_With_Fake_Message(t *testing.T) {
 }
 
 type ProducerConsumerMessage struct {
-	*types2.Message
+	*types3.Message
 	Data string
 }
 
 func NewProducerConsumerMessage(data string) *ProducerConsumerMessage {
 	return &ProducerConsumerMessage{
 		Data:    data,
-		Message: types2.NewMessage(uuid.NewV4().String()),
+		Message: types3.NewMessage(uuid.NewV4().String()),
 	}
 }
 
@@ -132,7 +132,7 @@ type TestMessageHandler struct{}
 
 func (t *TestMessageHandler) Handle(
 	ctx context.Context,
-	consumeContext types2.MessageConsumeContext,
+	consumeContext types3.MessageConsumeContext,
 ) error {
 	message := consumeContext.Message().(*ProducerConsumerMessage)
 	fmt.Println(message)
@@ -148,7 +148,7 @@ type TestMessageHandler2 struct{}
 
 func (t *TestMessageHandler2) Handle(
 	ctx context.Context,
-	consumeContext types2.MessageConsumeContext,
+	consumeContext types3.MessageConsumeContext,
 ) error {
 	message := consumeContext.Message()
 	fmt.Println(message)
@@ -169,7 +169,7 @@ func NewPipeline1() pipeline.ConsumerPipeline {
 
 func (p Pipeline1) Handle(
 	ctx context.Context,
-	consumerContext types2.MessageConsumeContext,
+	consumerContext types3.MessageConsumeContext,
 	next pipeline.ConsumerHandlerFunc,
 ) error {
 	fmt.Println("PipelineBehaviourTest.Handled")

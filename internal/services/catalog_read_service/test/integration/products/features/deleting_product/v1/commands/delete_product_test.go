@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/deleting_products/v1/commands"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/testfixture/integration"
 
 	"github.com/mehdihadeli/go-mediatr"
 	uuid "github.com/satori/go.uuid"
@@ -23,7 +23,7 @@ func TestDeleteProduct(t *testing.T) {
 
 	Convey("Deleting Product Feature", t, func() {
 		ctx := context.Background()
-		integrationTestSharedFixture.InitializeTest()
+		integrationTestSharedFixture.SetupTest()
 
 		// https://specflow.org/learn/gherkin/#learn-gherkin
 		// scenario
@@ -65,6 +65,6 @@ func TestDeleteProduct(t *testing.T) {
 			})
 		})
 
-		integrationTestSharedFixture.DisposeTest()
+		integrationTestSharedFixture.TearDownTest()
 	})
 }

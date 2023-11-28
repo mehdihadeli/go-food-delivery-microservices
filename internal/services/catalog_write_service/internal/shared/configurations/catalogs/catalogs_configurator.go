@@ -6,7 +6,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	echocontracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
-	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
+	migrationcontracts "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/configurations/catalogs/infrastructure"
@@ -44,7 +44,7 @@ func (ic *CatalogsServiceConfigurator) ConfigureCatalogs() error {
 	// Shared
 	// Catalogs configurations
 	ic.ResolveFunc(
-		func(gorm *gorm.DB, postgresMigrationRunner contracts2.PostgresMigrationRunner) error {
+		func(gorm *gorm.DB, postgresMigrationRunner migrationcontracts.PostgresMigrationRunner) error {
 			err := ic.migrateCatalogs(gorm, postgresMigrationRunner)
 			if err != nil {
 				return err

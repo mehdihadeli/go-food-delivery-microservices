@@ -2,6 +2,7 @@ package mappings
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
+	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/models"
 	dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
@@ -16,6 +17,16 @@ func ConfigureProductsMappings() error {
 	}
 
 	err = mapper.CreateMap[*dtoV1.ProductDto, *models.Product]()
+	if err != nil {
+		return err
+	}
+
+	err = mapper.CreateMap[*datamodel.ProductDataModel, *models.Product]()
+	if err != nil {
+		return err
+	}
+
+	err = mapper.CreateMap[*models.Product, *datamodel.ProductDataModel]()
 	if err != nil {
 		return err
 	}
@@ -39,16 +50,18 @@ func ConfigureProductsMappings() error {
 		return err
 	}
 
-	err = mapper.CreateCustomMap(func(product *models.Product) *productsService.Product {
-		return &productsService.Product{
-			ProductId:   product.ProductId.String(),
-			Name:        product.Name,
-			Description: product.Description,
-			Price:       product.Price,
-			CreatedAt:   timestamppb.New(product.CreatedAt),
-			UpdatedAt:   timestamppb.New(product.UpdatedAt),
-		}
-	})
+	err = mapper.CreateCustomMap(
+		func(product *models.Product) *productsService.Product {
+			return &productsService.Product{
+				ProductId:   product.ProductId.String(),
+				Name:        product.Name,
+				Description: product.Description,
+				Price:       product.Price,
+				CreatedAt:   timestamppb.New(product.CreatedAt),
+				UpdatedAt:   timestamppb.New(product.UpdatedAt),
+			}
+		},
+	)
 
 	return nil
 }

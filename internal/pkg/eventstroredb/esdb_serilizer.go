@@ -13,7 +13,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_position/truncatePosition"
 	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
 	esErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/errors"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"

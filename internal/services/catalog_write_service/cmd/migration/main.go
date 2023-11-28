@@ -6,14 +6,14 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/fxlog"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/goose"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
 	appconfig "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 
 	"github.com/spf13/cobra"

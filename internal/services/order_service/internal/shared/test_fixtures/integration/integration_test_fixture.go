@@ -4,11 +4,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
@@ -85,8 +85,8 @@ func NewIntegrationTestSharedFixture(
 	return shared
 }
 
-func (i *IntegrationTestSharedFixture) InitializeTest() {
-	i.Log.Info("InitializeTest started")
+func (i *IntegrationTestSharedFixture) SetupTest() {
+	i.Log.Info("SetupTest started")
 
 	// seed data in each test
 	res, err := seedReadModelData(i.mongoClient, i.MongoDbOptions.Database)
@@ -96,8 +96,8 @@ func (i *IntegrationTestSharedFixture) InitializeTest() {
 	i.Items = res
 }
 
-func (i *IntegrationTestSharedFixture) DisposeTest() {
-	i.Log.Info("DisposeTest started")
+func (i *IntegrationTestSharedFixture) TearDownTest() {
+	i.Log.Info("TearDownTest started")
 
 	// cleanup test containers with their hooks
 	if err := i.cleanupRabbitmqData(); err != nil {

@@ -38,7 +38,7 @@ var _ = Describe("Get Order By Id Feature", func() {
 
 	_ = BeforeEach(func() {
 		By("Seeding the required data")
-		integrationFixture.InitializeTest()
+		integrationFixture.SetupTest()
 
 		idString := integrationFixture.Items[0].Id
 		id, err = uuid.FromString(idString)
@@ -47,7 +47,7 @@ var _ = Describe("Get Order By Id Feature", func() {
 
 	_ = AfterEach(func() {
 		By("Cleanup test data")
-		integrationFixture.DisposeTest()
+		integrationFixture.TearDownTest()
 	})
 
 	_ = BeforeSuite(func() {

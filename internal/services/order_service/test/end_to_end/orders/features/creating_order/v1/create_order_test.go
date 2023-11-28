@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	customTypes "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/custom_types"
+	customTypes "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/customtypes"
 	dtosV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/orderservice/internal/shared/test_fixtures/integration"
@@ -39,12 +39,12 @@ var _ = Describe("CreateOrder Feature", func() {
 		ctx = context.Background()
 
 		By("Seeding the required data")
-		integrationFixture.InitializeTest()
+		integrationFixture.SetupTest()
 	})
 
 	_ = AfterEach(func() {
 		By("Cleanup test data")
-		integrationFixture.DisposeTest()
+		integrationFixture.TearDownTest()
 	})
 
 	// "Scenario" for testing the creation of an order with valid input

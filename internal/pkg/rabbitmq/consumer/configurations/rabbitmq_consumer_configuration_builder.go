@@ -1,9 +1,9 @@
 package configurations
 
 import (
-	messageConsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/pipeline"
-	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	messageConsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/consumer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/pipeline"
+	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 )
 

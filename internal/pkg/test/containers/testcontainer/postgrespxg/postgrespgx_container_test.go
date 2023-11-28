@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

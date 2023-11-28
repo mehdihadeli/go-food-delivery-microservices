@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants/telemetry_attributes/app"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants/telemetrytags"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants/tracing/components"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	attribute2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	customAttribute "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 
-	"emperror.dev/errors"
 	"github.com/mehdihadeli/go-mediatr"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -45,30 +44,30 @@ func (r *mediatorTracingPipeline) Handle(
 	requestName := typeMapper.GetSnakeTypeName(request)
 
 	componentName := components.RequestHandler
-	requestNameAttribute := app.RequestName
-	requestAttribute := app.Request
-	requestResultName := app.RequestResultName
-	requestResult := app.RequestResult
+	requestNameTag := telemetrytags.App.RequestName
+	requestTag := telemetrytags.App.Request
+	requestResultNameTag := telemetrytags.App.RequestResultName
+	requestResultTag := telemetrytags.App.RequestResult
 
 	switch {
 	case strings.Contains(typeMapper.GetPackageName(request), "command") || strings.Contains(typeMapper.GetPackageName(request), "commands"):
 		componentName = components.CommandHandler
-		requestNameAttribute = app.CommandName
-		requestAttribute = app.Command
-		requestResultName = app.CommandResultName
-		requestResult = app.CommandResult
+		requestNameTag = telemetrytags.App.CommandName
+		requestTag = telemetrytags.App.Command
+		requestResultNameTag = telemetrytags.App.CommandResultName
+		requestResultTag = telemetrytags.App.CommandResult
 	case strings.Contains(typeMapper.GetPackageName(request), "query") || strings.Contains(typeMapper.GetPackageName(request), "queries"):
 		componentName = components.QueryHandler
-		requestNameAttribute = app.QueryName
-		requestAttribute = app.Query
-		requestResultName = app.QueryResultName
-		requestResult = app.QueryResult
+		requestNameTag = telemetrytags.App.QueryName
+		requestTag = telemetrytags.App.Query
+		requestResultNameTag = telemetrytags.App.QueryResultName
+		requestResultTag = telemetrytags.App.QueryResult
 	case strings.Contains(typeMapper.GetPackageName(request), "event") || strings.Contains(typeMapper.GetPackageName(request), "events"):
 		componentName = components.EventHandler
-		requestNameAttribute = app.EventName
-		requestAttribute = app.Event
-		requestResultName = app.EventResultName
-		requestResult = app.EventResult
+		requestNameTag = telemetrytags.App.EventName
+		requestTag = telemetrytags.App.Event
+		requestResultNameTag = telemetrytags.App.EventResultName
+		requestResultTag = telemetrytags.App.EventResult
 	}
 
 	operationName := fmt.Sprintf("%s_handler", requestName)
@@ -85,24 +84,21 @@ func (r *mediatorTracingPipeline) Handle(
 	defer span.End()
 
 	span.SetAttributes(
-		attribute.String(requestNameAttribute, requestName),
-		attribute2.Object(requestAttribute, request),
+		attribute.String(requestNameTag, requestName),
+		customAttribute.Object(requestTag, request),
 	)
 
 	response, err := next(newCtx)
 
 	responseName := typeMapper.GetSnakeTypeName(response)
 	span.SetAttributes(
-		attribute.String(requestResultName, responseName),
-		attribute2.Object(requestResult, response),
+		attribute.String(requestResultNameTag, responseName),
+		customAttribute.Object(requestResultTag, response),
 	)
 
 	err = utils.TraceStatusFromSpan(
 		span,
-		errors.WrapIf(
-			err,
-			fmt.Sprintf("Request '%s' failed.", requestName),
-		),
+		err,
 	)
 
 	return response, err

@@ -10,7 +10,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/unit_test"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/testfixtures/unittest"
 
 	"github.com/brianvoe/gofakeit/v6"
 	uuid "github.com/satori/go.uuid"
@@ -18,13 +18,13 @@ import (
 )
 
 type mappingProfileUnitTests struct {
-	*unit_test.UnitTestSharedFixture
+	*unittest.UnitTestSharedFixture
 }
 
 func TestMappingProfileUnit(t *testing.T) {
 	suite.Run(
 		t,
-		&mappingProfileUnitTests{UnitTestSharedFixture: unit_test.NewUnitTestSharedFixture(t)},
+		&mappingProfileUnitTests{UnitTestSharedFixture: unittest.NewUnitTestSharedFixture(t)},
 	)
 }
 

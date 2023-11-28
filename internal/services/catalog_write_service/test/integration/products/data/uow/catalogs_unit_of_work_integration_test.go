@@ -11,7 +11,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/test_fixtures/integration"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/testfixtures/integration"
 
 	"emperror.dev/errors"
 	"github.com/brianvoe/gofakeit/v6"
@@ -40,12 +40,12 @@ var _ = Describe("CatalogsUnitOfWork Feature", func() {
 	_ = BeforeEach(func() {
 		ctx = context.Background()
 		By("Seeding the required data")
-		integrationFixture.InitializeTest()
+		integrationFixture.SetupTest()
 	})
 
 	_ = AfterEach(func() {
 		By("Cleanup test data")
-		integrationFixture.DisposeTest()
+		integrationFixture.TearDownTest()
 	})
 
 	// "Scenario" step for testing a UnitOfWork action that should roll back on error

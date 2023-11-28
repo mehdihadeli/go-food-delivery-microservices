@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 	externalEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/updating_products/v1/events/integration_events/external_events"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/models"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/testfixture/integration"
 
 	"github.com/brianvoe/gofakeit/v6"
 	uuid "github.com/satori/go.uuid"
@@ -33,7 +33,7 @@ func TestProductUpdatedConsumer(t *testing.T) {
 
 	Convey("Product Created Feature", t, func() {
 		ctx := context.Background()
-		integrationTestSharedFixture.InitializeTest()
+		integrationTestSharedFixture.SetupTest()
 
 		// https://specflow.org/learn/gherkin/#learn-gherkin
 		// scenario
@@ -143,7 +143,7 @@ func TestProductUpdatedConsumer(t *testing.T) {
 			},
 		)
 
-		integrationTestSharedFixture.DisposeTest()
+		integrationTestSharedFixture.TearDownTest()
 	})
 
 	integrationTestSharedFixture.Log.Info("TearDownSuite started")

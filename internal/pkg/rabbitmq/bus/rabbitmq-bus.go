@@ -6,20 +6,20 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/bus"
+	consumer2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/consumer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/producer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	consumerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/consumercontracts"
 	producerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/producercontracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/rabbitmqErrors"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 
 	"emperror.dev/errors"
 	"github.com/samber/lo"
@@ -31,7 +31,7 @@ type RabbitmqBus interface {
 }
 
 type rabbitmqBus struct {
-	messageTypeConsumers    map[reflect.Type][]consumer.Consumer
+	messageTypeConsumers    map[reflect.Type][]consumer2.Consumer
 	producer                producer.Producer
 	rabbitmqConfiguration   *configurations.RabbitMQConfiguration
 	rabbitmqConfigBuilder   configurations.RabbitMQConfigurationBuilder
@@ -60,7 +60,7 @@ func NewRabbitmqBus(
 		consumerFactory:       consumerFactory,
 		producerFactory:       producerFactory,
 		rabbitmqConfigBuilder: builder,
-		messageTypeConsumers:  map[reflect.Type][]consumer.Consumer{},
+		messageTypeConsumers:  map[reflect.Type][]consumer2.Consumer{},
 	}
 
 	producersConfigurationMap := make(
@@ -136,7 +136,7 @@ func (r *rabbitmqBus) IsProduced(h func(message types.IMessage)) {
 // ConnectConsumer Add a new consumer to existing message type consumers. if there is no consumer, will create a new consumer for the message type
 func (r *rabbitmqBus) ConnectConsumer(
 	messageType types.IMessage,
-	consumer consumer.Consumer,
+	consumer consumer2.Consumer,
 ) error {
 	typeName := utils.GetMessageBaseReflectType(messageType)
 
@@ -190,7 +190,7 @@ func (r *rabbitmqBus) ConnectRabbitMQConsumer(
 // ConnectConsumerHandler Add handler to existing consumer. creates new consumer if not exist
 func (r *rabbitmqBus) ConnectConsumerHandler(
 	messageType types.IMessage,
-	consumerHandler consumer.ConsumerHandler,
+	consumerHandler consumer2.ConsumerHandler,
 ) error {
 	typeName := utils.GetMessageBaseReflectType(messageType)
 
@@ -203,7 +203,7 @@ func (r *rabbitmqBus) ConnectConsumerHandler(
 	} else {
 		// if there is no consumer for a message type, we should create new one and add handler to the consumer
 		consumerBuilder := consumerConfigurations.NewRabbitMQConsumerConfigurationBuilder(messageType)
-		consumerBuilder.WithHandlers(func(builder consumer.ConsumerHandlerConfigurationBuilder) {
+		consumerBuilder.WithHandlers(func(builder consumer2.ConsumerHandlerConfigurationBuilder) {
 			builder.AddHandler(consumerHandler)
 		})
 		consumerConfig := consumerBuilder.Build()
@@ -280,7 +280,7 @@ func (r *rabbitmqBus) Stop() error {
 		for _, c := range consumers {
 			waitGroup.Add(1)
 
-			go func(c consumer.Consumer) {
+			go func(c consumer2.Consumer) {
 				defer waitGroup.Done()
 
 				err := c.Stop()

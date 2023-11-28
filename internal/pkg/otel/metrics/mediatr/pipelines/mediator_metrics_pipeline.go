@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants/telemetry_attributes/app"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants/telemetrytags"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
-	attribute2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	customAttribute "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
+	typemapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 
 	"github.com/mehdihadeli/go-mediatr"
 	"go.opentelemetry.io/otel/attribute"
@@ -41,32 +41,32 @@ func (r *mediatorMetricsPipeline) Handle(
 	request interface{},
 	next mediatr.RequestHandlerFunc,
 ) (interface{}, error) {
-	requestName := typeMapper.GetSnakeTypeName(request)
+	requestName := typemapper.GetSnakeTypeName(request)
 
-	requestNameAttribute := app.RequestName
-	requestAttribute := app.Request
-	requestResultName := app.RequestResultName
-	requestResult := app.RequestResult
+	requestNameTag := telemetrytags.App.RequestName
+	requestTag := telemetrytags.App.Request
+	requestResultNameTag := telemetrytags.App.RequestResultName
+	requestResultTag := telemetrytags.App.RequestResult
 	requestType := "request"
 
 	switch {
-	case strings.Contains(typeMapper.GetPackageName(request), "command") || strings.Contains(typeMapper.GetPackageName(request), "commands"):
-		requestNameAttribute = app.CommandName
-		requestAttribute = app.Command
-		requestResultName = app.CommandResultName
-		requestResult = app.CommandResult
+	case strings.Contains(typemapper.GetPackageName(request), "command") || strings.Contains(typemapper.GetPackageName(request), "commands"):
+		requestNameTag = telemetrytags.App.CommandName
+		requestTag = telemetrytags.App.Command
+		requestResultNameTag = telemetrytags.App.CommandResultName
+		requestResultTag = telemetrytags.App.CommandResult
 		requestType = "command"
-	case strings.Contains(typeMapper.GetPackageName(request), "query") || strings.Contains(typeMapper.GetPackageName(request), "queries"):
-		requestNameAttribute = app.QueryName
-		requestAttribute = app.Query
-		requestResultName = app.QueryResultName
-		requestResult = app.QueryResult
+	case strings.Contains(typemapper.GetPackageName(request), "query") || strings.Contains(typemapper.GetPackageName(request), "queries"):
+		requestNameTag = telemetrytags.App.QueryName
+		requestTag = telemetrytags.App.Query
+		requestResultNameTag = telemetrytags.App.QueryResultName
+		requestResultTag = telemetrytags.App.QueryResult
 		requestType = "query"
-	case strings.Contains(typeMapper.GetPackageName(request), "event") || strings.Contains(typeMapper.GetPackageName(request), "events"):
-		requestNameAttribute = app.EventName
-		requestAttribute = app.Event
-		requestResultName = app.EventResultName
-		requestResult = app.EventResult
+	case strings.Contains(typemapper.GetPackageName(request), "event") || strings.Contains(typemapper.GetPackageName(request), "events"):
+		requestNameTag = telemetrytags.App.EventName
+		requestTag = telemetrytags.App.Event
+		requestResultNameTag = telemetrytags.App.EventResultName
+		requestResultTag = telemetrytags.App.EventResult
 		requestType = "event"
 	}
 
@@ -138,12 +138,14 @@ func (r *mediatorMetricsPipeline) Handle(
 	// Calculate the duration
 	duration := time.Since(startTime).Milliseconds()
 
-	responseName := typeMapper.GetSnakeTypeName(response)
+	// response will be nil if we have an error
+	responseName := typemapper.GetSnakeTypeName(response)
+
 	opt := metric.WithAttributes(
-		attribute.String(requestNameAttribute, requestName),
-		attribute2.Object(requestAttribute, request),
-		attribute.String(requestResultName, responseName),
-		attribute2.Object(requestResult, response),
+		attribute.String(requestNameTag, requestName),
+		customAttribute.Object(requestTag, request),
+		attribute.String(requestResultNameTag, responseName),
+		customAttribute.Object(requestResultTag, response),
 	)
 
 	// Record metrics

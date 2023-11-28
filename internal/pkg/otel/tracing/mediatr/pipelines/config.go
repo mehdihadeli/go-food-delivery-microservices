@@ -2,7 +2,7 @@ package pipelines
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 )
 
 type config struct {

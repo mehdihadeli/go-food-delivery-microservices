@@ -9,7 +9,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/dtos"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/queries"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/test_fixture/integration"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogreadservice/internal/shared/testfixture/integration"
 
 	"github.com/mehdihadeli/go-mediatr"
 	uuid "github.com/satori/go.uuid"
@@ -22,7 +22,7 @@ func TestGetProductById(t *testing.T) {
 	ctx := context.Background()
 
 	Convey("Get Product by ID Feature", t, func() {
-		integrationTestSharedFixture.InitializeTest()
+		integrationTestSharedFixture.SetupTest()
 
 		knownProductID, err := uuid.FromString(integrationTestSharedFixture.Items[0].Id)
 		unknownProductID := uuid.NewV4()
@@ -81,6 +81,6 @@ func TestGetProductById(t *testing.T) {
 			})
 		})
 
-		integrationTestSharedFixture.DisposeTest()
+		integrationTestSharedFixture.TearDownTest()
 	})
 }

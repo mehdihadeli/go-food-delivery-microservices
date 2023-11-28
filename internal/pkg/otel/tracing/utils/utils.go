@@ -9,7 +9,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/grpcErrors"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/problemDetails"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants/telemetry_attributes/exception"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants/telemetrytags"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
 
 	"github.com/ahmetb/go-linq/v3"
@@ -64,8 +64,8 @@ func HttpTraceStatusFromSpan(span trace.Span, err error) error {
 
 		// https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 		span.SetAttributes(
-			attribute.String(exception.Message, err.Error()),
-			attribute.String(exception.Stacktrace, stackTraceError),
+			attribute.String(telemetrytags.Exceptions.Message, err.Error()),
+			attribute.String(telemetrytags.Exceptions.Stacktrace, stackTraceError),
 		)
 		span.RecordError(err)
 	}
@@ -95,8 +95,8 @@ func TraceStatusFromSpan(span trace.Span, err error) error {
 
 		// https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 		span.SetAttributes(
-			attribute.String(exception.Message, err.Error()),
-			attribute.String(exception.Stacktrace, stackTraceError),
+			attribute.String(telemetrytags.Exceptions.Message, err.Error()),
+			attribute.String(telemetrytags.Exceptions.Stacktrace, stackTraceError),
 		)
 		span.RecordError(err)
 	}
@@ -114,8 +114,8 @@ func TraceErrStatusFromSpan(span trace.Span, err error) error {
 
 		// https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 		span.SetAttributes(
-			attribute.String(exception.Message, err.Error()),
-			attribute.String(exception.Stacktrace, stackTraceError),
+			attribute.String(telemetrytags.Exceptions.Message, err.Error()),
+			attribute.String(telemetrytags.Exceptions.Stacktrace, stackTraceError),
 		)
 		span.RecordError(err)
 	}
@@ -134,8 +134,8 @@ func HttpTraceStatusFromSpanWithCode(
 
 		// https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 		span.SetAttributes(
-			attribute.String(exception.Message, err.Error()),
-			attribute.String(exception.Stacktrace, stackTraceError),
+			attribute.String(telemetrytags.Exceptions.Message, err.Error()),
+			attribute.String(telemetrytags.Exceptions.Stacktrace, stackTraceError),
 		)
 		span.RecordError(err)
 	}
@@ -193,8 +193,8 @@ func GrpcTraceErrFromSpan(span trace.Span, err error) error {
 		stackTraceError := errorUtils.ErrorsWithStack(err)
 		// https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 		span.SetAttributes(
-			attribute.String(exception.Message, err.Error()),
-			attribute.String(exception.Stacktrace, stackTraceError),
+			attribute.String(telemetrytags.Exceptions.Message, err.Error()),
+			attribute.String(telemetrytags.Exceptions.Stacktrace, stackTraceError),
 		)
 
 		if customErrors.IsCustomError(err) {
@@ -220,8 +220,8 @@ func GrpcTraceErrFromSpanWithCode(span trace.Span, err error, code int) error {
 		stackTraceError := errorUtils.ErrorsWithStack(err)
 		// https://opentelemetry.io/docs/instrumentation/go/manual/#record-errors
 		span.SetAttributes(
-			attribute.String(exception.Message, err.Error()),
-			attribute.String(exception.Stacktrace, stackTraceError),
+			attribute.String(telemetrytags.Exceptions.Message, err.Error()),
+			attribute.String(telemetrytags.Exceptions.Stacktrace, stackTraceError),
 		)
 		span.SetAttributes(semconv.RPCGRPCStatusCodeKey.Int(code))
 		span.RecordError(err)

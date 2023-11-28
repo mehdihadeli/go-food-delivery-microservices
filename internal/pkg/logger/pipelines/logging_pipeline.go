@@ -1,4 +1,4 @@
-package pipelines
+package loggingpipelines
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 
 	"github.com/mehdihadeli/go-mediatr"
 )
@@ -15,7 +15,7 @@ type requestLoggerPipeline struct {
 	logger logger.Logger
 }
 
-func NewLoggingPipeline(l logger.Logger) mediatr.PipelineBehavior {
+func NewMediatorLoggingPipeline(l logger.Logger) mediatr.PipelineBehavior {
 	return &requestLoggerPipeline{logger: l}
 }
 

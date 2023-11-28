@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"time"
 
+	messageHeader "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/messageheader"
+	producer3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/otel/tracing/producer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/producer"
+	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	messageHeader "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/message_header"
-	producer2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing/producer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
-	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 
 	"emperror.dev/errors"
 	"github.com/rabbitmq/amqp091-go"
@@ -116,7 +116,7 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 
 	meta = r.getMetadata(message, meta)
 
-	producerOptions := &producer2.ProducerTracingOptions{
+	producerOptions := &producer3.ProducerTracingOptions{
 		MessagingSystem: "rabbitmq",
 		DestinationKind: "exchange",
 		Destination:     exchange,
@@ -130,7 +130,7 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		return err
 	}
 
-	ctx, beforeProduceSpan := producer2.StartProducerSpan(
+	ctx, beforeProduceSpan := producer3.StartProducerSpan(
 		ctx,
 		message,
 		&meta,
@@ -140,14 +140,14 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 
 	// https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/go/publisher_confirms.go
 	if r.connection == nil {
-		return producer2.FinishProducerSpan(
+		return producer3.FinishProducerSpan(
 			beforeProduceSpan,
 			errors.New("connection is nil"),
 		)
 	}
 
 	if r.connection.IsClosed() {
-		return producer2.FinishProducerSpan(
+		return producer3.FinishProducerSpan(
 			beforeProduceSpan,
 			errors.New("connection is closed, wait for connection alive"),
 		)
@@ -156,17 +156,17 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 	// create a unique channel on the connection and in the end close the channel
 	channel, err := r.connection.Channel()
 	if err != nil {
-		return producer2.FinishProducerSpan(beforeProduceSpan, err)
+		return producer3.FinishProducerSpan(beforeProduceSpan, err)
 	}
 	defer channel.Close()
 
 	err = r.ensureExchange(producerConfiguration, channel, exchange)
 	if err != nil {
-		return producer2.FinishProducerSpan(beforeProduceSpan, err)
+		return producer3.FinishProducerSpan(beforeProduceSpan, err)
 	}
 
 	if err := channel.Confirm(false); err != nil {
-		return producer2.FinishProducerSpan(beforeProduceSpan, err)
+		return producer3.FinishProducerSpan(beforeProduceSpan, err)
 	}
 
 	confirms := make(chan amqp091.Confirmation)
@@ -197,11 +197,11 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		props,
 	)
 	if err != nil {
-		return producer2.FinishProducerSpan(beforeProduceSpan, err)
+		return producer3.FinishProducerSpan(beforeProduceSpan, err)
 	}
 
 	if confirmed := <-confirms; !confirmed.Ack {
-		return producer2.FinishProducerSpan(
+		return producer3.FinishProducerSpan(
 			beforeProduceSpan,
 			errors.New("ack not confirmed"),
 		)
@@ -215,7 +215,7 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		}
 	}
 
-	return producer2.FinishProducerSpan(beforeProduceSpan, err)
+	return producer3.FinishProducerSpan(beforeProduceSpan, err)
 }
 
 func (r *rabbitMQProducer) getMetadata(

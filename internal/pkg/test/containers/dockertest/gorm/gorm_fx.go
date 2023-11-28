@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
 )
 
 var GormDockerTestConatnerOptionsDecorator = func(t *testing.T, ctx context.Context) interface{} {

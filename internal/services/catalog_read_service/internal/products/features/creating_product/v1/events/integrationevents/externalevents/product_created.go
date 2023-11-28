@@ -3,7 +3,7 @@ package externalEvents
 import (
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
 )
 
 type ProductCreatedV1 struct {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

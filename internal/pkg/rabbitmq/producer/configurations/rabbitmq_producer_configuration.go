@@ -3,8 +3,8 @@ package configurations
 import (
 	"reflect"
 
-	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/utils"
+	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/options"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
 )

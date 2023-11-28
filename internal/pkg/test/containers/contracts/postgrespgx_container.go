@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
+	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgrespgx"
 )
 
 type PostgresPgxContainer interface {

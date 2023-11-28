@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/bus"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/producer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/factory"
