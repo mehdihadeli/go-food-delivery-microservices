@@ -39,11 +39,6 @@ func (c *createProductHandler) Handle(
 	ctx context.Context,
 	command *CreateProduct,
 ) (*dtos.CreateProductResponseDto, error) {
-	dbContext, err := c.CatalogsDBContext.WithTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	product := &models.Product{
 		ProductId:   command.ProductID,
 		Name:        command.Name,
@@ -54,7 +49,7 @@ func (c *createProductHandler) Handle(
 
 	var createProductResult *dtos.CreateProductResponseDto
 
-	result, err := dbContext.AddProduct(ctx, product)
+	result, err := c.CatalogsDBContext.AddProduct(ctx, product)
 	if err != nil {
 		return nil, err
 	}

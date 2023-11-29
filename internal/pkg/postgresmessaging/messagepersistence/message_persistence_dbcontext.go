@@ -3,8 +3,7 @@ package messagepersistence
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm/helpers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers"
 
 	"gorm.io/gorm"
 )
@@ -13,26 +12,24 @@ type PostgresMessagePersistenceDBContextActionFunc func(ctx context.Context, mes
 
 type PostgresMessagePersistenceDBContext struct {
 	*gorm.DB
-	logger logger.Logger
 }
 
 func NewPostgresMessagePersistenceDBContext(
 	db *gorm.DB,
-	log logger.Logger,
 ) *PostgresMessagePersistenceDBContext {
-	c := &PostgresMessagePersistenceDBContext{DB: db, logger: log}
+	c := &PostgresMessagePersistenceDBContext{DB: db}
 
 	return c
 }
 
-// WithTx creates a transactional DBContext with getting tx-gorm from the ctx
-func (c *PostgresMessagePersistenceDBContext) WithTx(
+// WithTxIfExists creates a transactional DBContext with getting tx-gorm from the ctx. not throw an error if the transaction is not existing and returns an existing database.
+func (c *PostgresMessagePersistenceDBContext) WithTxIfExists(
 	ctx context.Context,
-) (*PostgresMessagePersistenceDBContext, error) {
-	tx, err := helpers.GetTxFromContext(ctx)
-	if err != nil {
-		return nil, err
+) *PostgresMessagePersistenceDBContext {
+	tx := helpers.GetTxFromContextIfExists(ctx)
+	if tx == nil {
+		return c
 	}
 
-	return NewPostgresMessagePersistenceDBContext(tx, c.logger), nil
+	return NewPostgresMessagePersistenceDBContext(tx)
 }

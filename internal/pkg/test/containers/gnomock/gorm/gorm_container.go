@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"

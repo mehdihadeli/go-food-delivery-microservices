@@ -9,7 +9,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
 	utils2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm/repository"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/repository"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	data2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"

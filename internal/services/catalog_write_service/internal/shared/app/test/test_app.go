@@ -11,7 +11,7 @@ import (
 	config3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	contracts2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
 	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"

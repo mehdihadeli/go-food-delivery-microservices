@@ -1,6 +1,10 @@
 package persistmessage
 
-import "time"
+import (
+	"time"
+
+	uuid "github.com/satori/go.uuid"
+)
 
 type MessageDeliveryType int
 
@@ -18,7 +22,7 @@ const (
 )
 
 type StoreMessage struct {
-	ID            string
+	ID            uuid.UUID `gorm:"primaryKey"`
 	DataType      string
 	Data          string
 	Created       time.Time
@@ -28,7 +32,7 @@ type StoreMessage struct {
 }
 
 func NewStoreMessage(
-	id string,
+	id uuid.UUID,
 	dataType string,
 	data string,
 	deliveryType MessageDeliveryType,
@@ -50,4 +54,8 @@ func (sm *StoreMessage) ChangeState(messageStatus MessageStatus) {
 
 func (sm *StoreMessage) IncreaseRetry() {
 	sm.RetryCount++
+}
+
+func (sm *StoreMessage) TableName() string {
+	return "store_messages"
 }

@@ -3,8 +3,8 @@ package helpers
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm/constants"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/constants"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/contracts"
 
 	"emperror.dev/errors"
 	"gorm.io/gorm"
@@ -22,6 +22,20 @@ func GetTxFromContext(ctx context.Context) (*gorm.DB, error) {
 	}
 
 	return tx, nil
+}
+
+func GetTxFromContextIfExists(ctx context.Context) *gorm.DB {
+	gCtx, gCtxOk := ctx.(*contracts.GormContext)
+	if gCtxOk {
+		return gCtx.Tx
+	}
+
+	tx, ok := ctx.Value(constants.TxKey).(*gorm.DB)
+	if !ok {
+		return nil
+	}
+
+	return tx
 }
 
 func SetTxToContext(ctx context.Context, tx *gorm.DB) *contracts.GormContext {

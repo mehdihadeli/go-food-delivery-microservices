@@ -44,12 +44,7 @@ func (c *updateProductHandler) Handle(
 	ctx context.Context,
 	command *UpdateProduct,
 ) (*mediatr.Unit, error) {
-	dbContext, err := c.CatalogsDBContext.WithTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	product, err := dbContext.FindProductByID(ctx, command.ProductID)
+	product, err := c.CatalogsDBContext.FindProductByID(ctx, command.ProductID)
 	if err != nil {
 		return nil, customErrors.NewApplicationErrorWrapWithCode(
 			err,
@@ -66,7 +61,7 @@ func (c *updateProductHandler) Handle(
 	product.Description = command.Description
 	product.UpdatedAt = command.UpdatedAt
 
-	updatedProduct, err := dbContext.UpdateProduct(ctx, product)
+	updatedProduct, err := c.CatalogsDBContext.UpdateProduct(ctx, product)
 	if err != nil {
 		return nil, customErrors.NewApplicationErrorWrap(
 			err,

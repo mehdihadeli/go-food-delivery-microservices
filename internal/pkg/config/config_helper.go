@@ -26,11 +26,11 @@ func BindConfigKey[T any](
 ) (T, error) {
 	var configPath string
 
-	environment := environment.Environment("")
+	currentEnv := environment.Environment("")
 	if len(environments) > 0 {
-		environment = environments[0]
+		currentEnv = environments[0]
 	} else {
-		environment = constants.Dev
+		currentEnv = constants.Dev
 	}
 
 	cfg := typeMapper.GenericInstanceByT[T]()
@@ -41,7 +41,7 @@ func BindConfigKey[T any](
 
 	// https://articles.wesionary.team/environment-variable-configuration-in-your-golang-project-using-viper-4e8289ef664d
 	// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
-	// load `config path` from environment variable or viper internal registry
+	// load `config path` from env variable or viper internal registry
 	configPathFromEnv := viper.GetString(constants.ConfigPath)
 
 	if configPathFromEnv != "" {
@@ -50,8 +50,11 @@ func BindConfigKey[T any](
 		// https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
 		// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
 		appRootPath := viper.GetString(constants.AppRootPath)
+		if appRootPath == "" {
+			appRootPath = environment.GetProjectRootWorkingDirectory()
+		}
 
-		d, err := searchForConfigFileDir(appRootPath, environment)
+		d, err := searchForConfigFileDir(appRootPath, currentEnv)
 		if err != nil {
 			return *new(T), err
 		}
@@ -60,7 +63,7 @@ func BindConfigKey[T any](
 	}
 
 	// https://github.com/spf13/viper/issues/390#issuecomment-718756752
-	viper.SetConfigName(fmt.Sprintf("config.%s", environment))
+	viper.SetConfigName(fmt.Sprintf("config.%s", currentEnv))
 	viper.AddConfigPath(configPath)
 	viper.SetConfigType(constants.Json)
 
@@ -104,7 +107,7 @@ func BindConfigKey[T any](
 //	error:  An error indicating any issues encountered during the search.
 func searchForConfigFileDir(
 	rootDir string,
-	environment environment.Environment,
+	env environment.Environment,
 ) (string, error) {
 	var result string
 
@@ -116,23 +119,24 @@ func searchForConfigFileDir(
 				return err
 			}
 
-			// Check if the file is named "config.%s.json" (replace %s with the environment)
+			// Check if the file is named "config.%s.json" (replace %s with the env)
 			if !info.IsDir() &&
 				strings.EqualFold(
 					info.Name(),
-					fmt.Sprintf("config.%s.json", environment),
+					fmt.Sprintf("config.%s.json", env),
 				) ||
 				strings.EqualFold(
 					info.Name(),
-					fmt.Sprintf("config.%s.yaml", environment),
+					fmt.Sprintf("config.%s.yaml", env),
 				) ||
 				strings.EqualFold(
 					info.Name(),
-					fmt.Sprintf("config.%s.yml", environment),
+					fmt.Sprintf("config.%s.yml", env),
 				) {
 				// Get the directory name containing the config file
 				dir := filepath.Dir(path)
 				result = dir
+
 				return filepath.SkipDir // Skip further traversal
 			}
 

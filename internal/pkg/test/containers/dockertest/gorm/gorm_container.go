@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
 
 	"github.com/ory/dockertest/v3"

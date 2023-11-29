@@ -13,7 +13,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/goose"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
 	appconfig "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 
 	"github.com/spf13/cobra"

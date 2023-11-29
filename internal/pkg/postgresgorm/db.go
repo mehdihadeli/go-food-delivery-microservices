@@ -1,4 +1,4 @@
-package postgresGorm
+package postgresgorm
 
 import (
 	"database/sql"
@@ -66,6 +66,7 @@ func createInMemoryDB() (*gorm.DB, error) {
 		&gorm.Config{
 			Logger: gromlog.NewGormCustomLogger(defaultlogger.GetLogger()),
 		})
+
 	return db, err
 }
 

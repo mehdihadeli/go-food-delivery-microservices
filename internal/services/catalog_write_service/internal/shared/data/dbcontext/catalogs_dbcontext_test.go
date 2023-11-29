@@ -11,7 +11,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/fxlog"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/goose"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/configurations/mappings"
 	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"

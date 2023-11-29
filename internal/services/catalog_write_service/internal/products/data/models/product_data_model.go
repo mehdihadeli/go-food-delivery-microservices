@@ -5,6 +5,7 @@ import (
 
 	"github.com/goccy/go-json"
 	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 // https://gorm.io/docs/conventions.html
@@ -12,6 +13,7 @@ import (
 
 // ProductDataModel data model
 type ProductDataModel struct {
+	gorm.Model
 	ProductId   uuid.UUID `json:"productId"   gorm:"primaryKey"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`

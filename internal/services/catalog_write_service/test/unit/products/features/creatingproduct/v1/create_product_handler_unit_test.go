@@ -64,11 +64,10 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Create_New_Product_Wi
 	}
 
 	c.BeginTx()
-
 	_, err := c.handler.Handle(c.Ctx, createProduct)
-	c.Require().NoError(err)
-
 	c.CommitTx()
+
+	c.Require().NoError(err)
 
 	c.Bus.AssertNumberOfCalls(c.T(), "PublishMessage", 1)
 

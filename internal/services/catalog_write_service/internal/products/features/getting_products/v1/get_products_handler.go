@@ -5,7 +5,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/cqrs"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/models"
 	dtosv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
@@ -38,7 +38,7 @@ func (c *getProductsHandler) Handle(
 	ctx context.Context,
 	query *GetProducts,
 ) (*dtos.GetProductsResponseDto, error) {
-	products, err := postgresGorm.Paginate[*datamodel.ProductDataModel, *models.Product](
+	products, err := postgresgorm.Paginate[*datamodel.ProductDataModel, *models.Product](
 		ctx,
 		query.ListQuery,
 		c.CatalogsDBContext.DB,

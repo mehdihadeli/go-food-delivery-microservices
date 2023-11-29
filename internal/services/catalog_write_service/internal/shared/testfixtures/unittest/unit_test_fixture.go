@@ -2,15 +2,19 @@ package unittest
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	mocks3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/mocks"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/gromlog"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm/helpers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/configurations/mappings"
 	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/models"
@@ -35,6 +39,8 @@ type UnitTestSharedFixture struct {
 	Tracer           trace.Tracer
 	CatalogDBContext *dbcontext.CatalogsGormDBContext
 	Ctx              context.Context
+	projectRootDir   string
+	dbFileName       string
 }
 
 func NewUnitTestSharedFixture(t *testing.T) *UnitTestSharedFixture {
@@ -47,9 +53,10 @@ func NewUnitTestSharedFixture(t *testing.T) *UnitTestSharedFixture {
 	testTracer := nopetracer.Tracer("test_tracer")
 
 	unit := &UnitTestSharedFixture{
-		Cfg:    cfg,
-		Log:    log,
-		Tracer: testTracer,
+		Cfg:        cfg,
+		Log:        log,
+		Tracer:     testTracer,
+		dbFileName: "sqlite.db",
 	}
 
 	return unit
@@ -58,17 +65,18 @@ func NewUnitTestSharedFixture(t *testing.T) *UnitTestSharedFixture {
 // Shared Hooks
 
 func (c *UnitTestSharedFixture) SetupTest() {
+	ctx := context.Background()
+	c.Ctx = ctx
+
 	// create new mocks
 	bus := &mocks3.Bus{}
 
 	bus.On("PublishMessage", mock.Anything, mock.Anything, mock.Anything).
 		Return(nil)
 
-	dbContext, products := c.createInMemoryDBContext()
+	dbContext, products := c.createSQLLiteDBContext()
 
 	c.Bus = bus
-	ctx := context.Background()
-	c.Ctx = ctx
 	c.CatalogDBContext = dbContext
 	c.Products = products
 
@@ -77,20 +85,24 @@ func (c *UnitTestSharedFixture) SetupTest() {
 }
 
 func (c *UnitTestSharedFixture) TearDownTest() {
+	err := c.dropSQLLiteDB()
+	c.Require().NoError(err)
 	mapper.ClearMappings()
 }
 
 func (c *UnitTestSharedFixture) SetupSuite() {
+	environment.FixProjectRootWorkingDirectoryPath()
+	c.projectRootDir = environment.GetProjectRootWorkingDirectory()
 }
 
 func (c *UnitTestSharedFixture) TearDownSuite() {
 }
 
-func (c *UnitTestSharedFixture) createInMemoryDBContext() (*dbcontext.CatalogsGormDBContext, []*datamodel.ProductDataModel) {
-	inMemoryGormDB, err := createInMemoryDB()
+func (c *UnitTestSharedFixture) createSQLLiteDBContext() (*dbcontext.CatalogsGormDBContext, []*datamodel.ProductDataModel) {
+	sqlLiteGormDB, err := c.createSQLLiteDB()
 	c.Require().NoError(err)
 
-	dbContext := dbcontext.NewCatalogsDBContext(inMemoryGormDB, c.Log)
+	dbContext := dbcontext.NewCatalogsDBContext(sqlLiteGormDB, c.Log)
 
 	err = migrateGorm(dbContext)
 	c.Require().NoError(err)
@@ -106,26 +118,48 @@ func (c *UnitTestSharedFixture) BeginTx() {
 	tx := c.CatalogDBContext.Begin()
 	gormContext := helpers.SetTxToContext(c.Ctx, tx)
 	c.Ctx = gormContext
+
+	var productData []*datamodel.ProductDataModel
+	var productData2 []*datamodel.ProductDataModel
+
+	s := c.CatalogDBContext.Find(&productData).Error
+	s2 := tx.Find(&productData2).Error
+	fmt.Println(s)
+	fmt.Println(s2)
 }
 
 func (c *UnitTestSharedFixture) CommitTx() {
-	tx, err := helpers.GetTxFromContext(c.Ctx)
-	c.Require().NoError(err)
-	c.Log.Info("committing transaction")
-	tx.Commit()
+	tx := helpers.GetTxFromContextIfExists(c.Ctx)
+	if tx != nil {
+		c.Log.Info("committing transaction")
+		tx.Commit()
+	}
 }
 
-func createInMemoryDB() (*gorm.DB, error) {
+func (c *UnitTestSharedFixture) createSQLLiteDB() (*gorm.DB, error) {
+	dbFilePath := filepath.Join(c.projectRootDir, c.dbFileName)
+
 	// https://gorm.io/docs/connecting_to_the_database.html#SQLite
 	// https://github.com/glebarez/sqlite
 	// https://www.connectionstrings.com/sqlite/
-	db, err := gorm.Open(
-		sqlite.Open(":memory:"),
+	gormDB, err := gorm.Open(
+		sqlite.Open(dbFilePath),
 		&gorm.Config{
 			Logger: gromlog.NewGormCustomLogger(defaultLogger.GetLogger()),
 		})
 
-	return db, err
+	return gormDB, err
+}
+
+func (c *UnitTestSharedFixture) dropSQLLiteDB() error {
+	sqldb, _ := c.CatalogDBContext.DB.DB()
+	e := sqldb.Close()
+	c.Require().NoError(e)
+
+	dbFilePath := filepath.Join(c.projectRootDir, c.dbFileName)
+	err := os.Remove(dbFilePath)
+
+	return err
 }
 
 func migrateGorm(dbContext *dbcontext.CatalogsGormDBContext) error {

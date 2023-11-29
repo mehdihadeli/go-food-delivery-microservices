@@ -9,7 +9,7 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
 	gorm2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/gorm"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 
@@ -62,7 +62,7 @@ func (c *gormGenericRepositoryTest) SetupSuite() {
 		PopulateContainerOptions(context.Background(), c.T())
 	c.Require().NoError(err)
 
-	gormDB, err := postgresGorm.NewGorm(opts)
+	gormDB, err := postgresgorm.NewGorm(opts)
 	c.Require().NoError(err)
 	c.DB = gormDB
 

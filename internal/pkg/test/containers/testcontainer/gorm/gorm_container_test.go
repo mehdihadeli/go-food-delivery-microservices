@@ -10,7 +10,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/fxlog"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/stretchr/testify/assert"

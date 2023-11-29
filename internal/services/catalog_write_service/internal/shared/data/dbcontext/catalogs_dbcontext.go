@@ -7,7 +7,7 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm/helpers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers"
 	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 
@@ -31,7 +31,7 @@ func NewCatalogsDBContext(
 	return c
 }
 
-// WithTx creates a transactional DBContext with getting tx-gorm from the ctx
+// WithTx creates a transactional DBContext with getting tx-gorm from the ctx. This will throw an error if the transaction does not exist.
 func (c *CatalogsGormDBContext) WithTx(
 	ctx context.Context,
 ) (*CatalogsGormDBContext, error) {
@@ -41,6 +41,18 @@ func (c *CatalogsGormDBContext) WithTx(
 	}
 
 	return NewCatalogsDBContext(tx, c.logger), nil
+}
+
+// WithTxIfExists creates a transactional DBContext with getting tx-gorm from the ctx. not throw an error if the transaction is not existing and returns an existing database.
+func (c *CatalogsGormDBContext) WithTxIfExists(
+	ctx context.Context,
+) *CatalogsGormDBContext {
+	tx := helpers.GetTxFromContextIfExists(ctx)
+	if tx == nil {
+		return c
+	}
+
+	return NewCatalogsDBContext(tx, c.logger)
 }
 
 func (c *CatalogsGormDBContext) RunInTx(
@@ -93,7 +105,11 @@ func (c *CatalogsGormDBContext) FindProductByID(
 	ctx context.Context,
 	id uuid.UUID,
 ) (*models.Product, error) {
+	var productDatas []*datamodel.ProductDataModel
 	var productData *datamodel.ProductDataModel
+
+	s := c.DB.WithContext(ctx).Find(&productDatas).Error
+	fmt.Println(s)
 
 	// https://gorm.io/docs/query.html#Retrieving-objects-with-primary-key
 	// https://gorm.io/docs/query.html#Struct-amp-Map-Conditions
@@ -123,11 +139,14 @@ func (c *CatalogsGormDBContext) FindProductByID(
 	return product, nil
 }
 
+// DeleteProductByID delete the product inner a tx if exists
 func (c *CatalogsGormDBContext) DeleteProductByID(
 	ctx context.Context,
 	id uuid.UUID,
 ) error {
-	product, err := c.FindProductByID(ctx, id)
+	dbContext := c.WithTxIfExists(ctx)
+
+	product, err := dbContext.FindProductByID(ctx, id)
 	if err != nil {
 		return customErrors.NewNotFoundErrorWrap(
 			err,
@@ -146,7 +165,7 @@ func (c *CatalogsGormDBContext) DeleteProductByID(
 		)
 	}
 
-	result := c.WithContext(ctx).Delete(productDataModel, id)
+	result := dbContext.WithContext(ctx).Delete(productDataModel, id)
 	if result.Error != nil {
 		return customErrors.NewInternalServerErrorWrap(
 			result.Error,
@@ -162,10 +181,13 @@ func (c *CatalogsGormDBContext) DeleteProductByID(
 	return nil
 }
 
+// AddProduct add the product inner a tx if exists
 func (c *CatalogsGormDBContext) AddProduct(
 	ctx context.Context,
 	product *models.Product,
 ) (*models.Product, error) {
+	dbContext := c.WithTxIfExists(ctx)
+
 	productDataModel, err := mapper.Map[*datamodel.ProductDataModel](product)
 	if err != nil {
 		return nil, customErrors.NewInternalServerErrorWrap(
@@ -175,7 +197,7 @@ func (c *CatalogsGormDBContext) AddProduct(
 	}
 
 	// https://gorm.io/docs/create.html
-	result := c.WithContext(ctx).Create(productDataModel)
+	result := dbContext.WithContext(ctx).Create(productDataModel)
 	if result.Error != nil {
 		return nil, customErrors.NewConflictErrorWrap(
 			result.Error,
@@ -196,10 +218,13 @@ func (c *CatalogsGormDBContext) AddProduct(
 	return product, err
 }
 
+// UpdateProduct update the product inner a tx if exists
 func (c *CatalogsGormDBContext) UpdateProduct(
 	ctx context.Context,
 	product *models.Product,
 ) (*models.Product, error) {
+	dbContext := c.WithTxIfExists(ctx)
+
 	productDataModel, err := mapper.Map[*datamodel.ProductDataModel](product)
 	if err != nil {
 		return nil, customErrors.NewInternalServerErrorWrap(
@@ -209,10 +234,10 @@ func (c *CatalogsGormDBContext) UpdateProduct(
 	}
 
 	// https://gorm.io/docs/update.html
-	result := c.WithContext(ctx).Updates(productDataModel)
+	result := dbContext.WithContext(ctx).Updates(productDataModel)
 	if result.Error != nil {
 		return nil, customErrors.NewInternalServerErrorWrap(
-			err,
+			result.Error,
 			"error in updating the product",
 		)
 	}

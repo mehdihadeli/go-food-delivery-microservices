@@ -1,4 +1,4 @@
-package postgresGorm
+package postgresgorm
 
 import (
 	"testing"

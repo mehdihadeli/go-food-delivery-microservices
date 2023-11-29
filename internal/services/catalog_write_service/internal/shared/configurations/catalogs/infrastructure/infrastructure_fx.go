@@ -8,7 +8,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/goose"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresGorm"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresmessaging"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	rabbitmq2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/configurations/rabbitmq"
@@ -25,7 +26,8 @@ var Module = fx.Module(
 	core.Module,
 	customEcho.Module,
 	grpc.Module,
-	gormPostgres.Module,
+	postgresgorm.Module,
+	postgresmessaging.Module,
 	goose.Module,
 	rabbitmq.ModuleFunc(
 		func() configurations.RabbitMQConfigurationBuilderFuc {

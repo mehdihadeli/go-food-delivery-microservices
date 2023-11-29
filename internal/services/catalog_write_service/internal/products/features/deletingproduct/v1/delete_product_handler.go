@@ -40,12 +40,7 @@ func (c *deleteProductHandler) Handle(
 	ctx context.Context,
 	command *DeleteProduct,
 ) (*mediatr.Unit, error) {
-	dbContext, err := c.CatalogsDBContext.WithTx(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = dbContext.DeleteProductByID(ctx, command.ProductID)
+	err := c.CatalogsDBContext.DeleteProductByID(ctx, command.ProductID)
 	if err != nil {
 		return nil, err
 	}
