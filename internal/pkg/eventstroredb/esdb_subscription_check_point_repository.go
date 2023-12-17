@@ -98,7 +98,7 @@ func (e *esdbSubscriptionCheckpointRepository) Store(
 		Event:          events.NewEvent(typeMapper.GetTypeName(&CheckpointStored{})),
 	}
 	streamName := getCheckpointStreamName(subscriptionId)
-	eventData, err := e.esdbSerilizer.Serialize(checkpoint, nil)
+	eventData, err := e.esdbSerilizer.SerializeObject(checkpoint, nil)
 	if err != nil {
 		return errors.WrapIf(err, "esdbSerilizer.Serialize")
 	}

@@ -1,12 +1,12 @@
 package types
 
 type MessageEnvelope struct {
-	Message interface{}
+	Message IMessage
 	Headers map[string]interface{}
 }
 
 func NewMessageEnvelope(
-	message interface{},
+	message IMessage,
 	headers map[string]interface{},
 ) *MessageEnvelope {
 	if headers == nil {
@@ -19,19 +19,19 @@ func NewMessageEnvelope(
 	}
 }
 
-type MessageEnvelopeTMessage struct {
+type MessageEnvelopeT[T IMessage] struct {
 	*MessageEnvelope
-	MessageTMessage interface{}
+	Message T
 }
 
-func NewMessageEnvelopeTMessage(
-	messageTMessage interface{},
+func NewMessageEnvelopeT[T IMessage](
+	message T,
 	headers map[string]interface{},
-) *MessageEnvelopeTMessage {
-	messageEnvelope := NewMessageEnvelope(messageTMessage, headers)
+) *MessageEnvelopeT[T] {
+	messageEnvelope := NewMessageEnvelope(message, headers)
 
-	return &MessageEnvelopeTMessage{
+	return &MessageEnvelopeT[T]{
 		MessageEnvelope: messageEnvelope,
-		MessageTMessage: messageTMessage,
+		Message:         message,
 	}
 }

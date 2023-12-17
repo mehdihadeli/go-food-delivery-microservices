@@ -219,7 +219,7 @@ func (e *EsdbSerializer) SerializeObject(
 	data interface{},
 	meta metadata.Metadata,
 ) (*esdb.EventData, error) {
-	serializedData, err := e.eventSerializer.Serialize(data)
+	serializedData, err := e.eventSerializer.SerializeObject(data)
 	if err != nil {
 		return nil, err
 	}

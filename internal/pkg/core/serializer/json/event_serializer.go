@@ -18,10 +18,6 @@ func NewDefaultEventJsonSerializer(serializer contratcs.Serializer) contratcs.Ev
 	return &DefaultEventJsonSerializer{serializer: serializer}
 }
 
-func (s *DefaultEventJsonSerializer) Serializer() contratcs.Serializer {
-	return s.serializer
-}
-
 func (s *DefaultEventJsonSerializer) Serialize(event domain.IDomainEvent) (*contratcs.EventSerializationResult, error) {
 	return s.SerializeObject(event)
 }
@@ -110,25 +106,13 @@ func (s *DefaultEventJsonSerializer) DeserializeType(
 	// we use event short type name instead of full type name because this event in other receiver packages could have different package name
 	eventTypeName := typeMapper.GetTypeName(eventType)
 
-	targetEventPointer := typeMapper.EmptyInstanceByTypeNameAndImplementedInterface[domain.IDomainEvent](
-		eventTypeName,
-	)
-
-	if targetEventPointer == nil {
-		return nil, errors.Errorf("event type `%s` is not impelemted IDomainEvent or can't be instansiated", eventType)
-	}
-
-	if contentType != s.ContentType() {
-		return nil, errors.Errorf("contentType: %s is not supported", contentType)
-	}
-
-	if err := s.serializer.Unmarshal(data, targetEventPointer); err != nil {
-		return nil, errors.WrapIff(err, "error in Unmarshaling: `%s`", eventType)
-	}
-
-	return targetEventPointer.(domain.IDomainEvent), nil
+	return s.Deserialize(data, eventTypeName, contentType)
 }
 
 func (s *DefaultEventJsonSerializer) ContentType() string {
 	return "application/json"
+}
+
+func (s *DefaultEventJsonSerializer) Serializer() contratcs.Serializer {
+	return s.serializer
 }

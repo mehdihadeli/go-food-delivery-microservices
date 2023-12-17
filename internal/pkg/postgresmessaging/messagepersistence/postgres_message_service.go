@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/persistmessage"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
@@ -44,7 +43,7 @@ func (m *postgresMessageService) AddReceivedMessage(messageEnvelope types.Messag
 	panic("implement me")
 }
 
-func AddMessageCore(
+func (m *postgresMessageService) AddMessageCore(
 	ctx context.Context,
 	messageEnvelope types.MessageEnvelope,
 	deliveryType persistmessage.MessageDeliveryType,
@@ -63,14 +62,22 @@ func AddMessageCore(
 		id = uuid.NewV4().String()
 	}
 
-	storeMessage := persistmessage.NewStoreMessage()
-
-	persistmessage.StoreMessage{
-		ID:           id,
-		TypeName:     reflect.TypeOf(messageEnvelope.Message).Name(),
-		Serialized:   _messageSerializer.Serialize(messageEnvelope),
-		DeliveryType: deliveryType,
+	data, err := m.messageSerializer.SerializeEnvelop(messageEnvelope)
+	if err != nil {
+		return err
 	}
+
+	uuidId, err := uuid.FromString(id)
+	if err != nil {
+		return err
+	}
+
+	storeMessage := persistmessage.NewStoreMessage(
+		uuidId,
+		messageEnvelope.Message.GetMessageFullTypeName(),
+		string(data.Data),
+		deliveryType,
+	)
 
 	err := _messagePersistenceRepository.AddAsync(storeMessage, cancellationToken)
 	if err != nil {
