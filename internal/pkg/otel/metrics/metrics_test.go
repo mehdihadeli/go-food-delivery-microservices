@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
-	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo"
+	customEcho "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/customecho"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/fxlog"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics"

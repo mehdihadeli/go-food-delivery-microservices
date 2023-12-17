@@ -120,6 +120,7 @@ func TypeByNameAndImplementedInterface[TInterface interface{}](
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -322,12 +323,21 @@ func InstanceByTypeName(name string) interface{} {
 	return getInstanceFromType(typ)
 }
 
-func InstanceByTypeNameAndImplementedInterface[TInterface interface{}](
+func EmptyInstanceByTypeNameAndImplementedInterface[TInterface interface{}](
 	name string,
 ) interface{} {
 	typ := TypeByNameAndImplementedInterface[TInterface](name)
 
 	return getInstanceFromType(typ)
+}
+
+func EmptyInstanceByTypeAndImplementedInterface[TInterface interface{}](
+	typ reflect.Type,
+) interface{} {
+	// we use short type name instead of full type name because this typ in other receiver packages could have different package name
+	typeName := GetTypeName(typ)
+
+	return EmptyInstanceByTypeNameAndImplementedInterface[TInterface](typeName)
 }
 
 // InstancePointerByTypeName return an empty pointer instance of the type by its name

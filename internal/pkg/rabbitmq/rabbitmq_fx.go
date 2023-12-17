@@ -33,9 +33,8 @@ var (
 	// - order is not important in provide
 	// - provide can have parameter and will resolve if registered
 	// - execute its func only if it requested
-	rabbitmqProviders = fx.Options(fx.Provide( //nolint:gochecknoglobals
-		config.ProvideConfig,
-	),
+	rabbitmqProviders = fx.Options(
+		fx.Provide(config.ProvideConfig),
 		fx.Provide(types.NewRabbitMQConnection),
 		fx.Provide(fx.Annotate(
 			bus.NewRabbitmqBus,

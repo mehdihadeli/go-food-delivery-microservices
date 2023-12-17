@@ -45,20 +45,20 @@ services:
     networks:
       - ecommerce
 
-  # node_exporter will use for gathering metrics on the system level with its own /metrics endpoint like cpu, ram, ...
-  # https://prometheus.io/docs/guides/node-exporter/
-  node_exporter:
-    container_name: node_exporter
-    pull_policy: if_not_present
-    restart: unless-stopped
-    image: prom/node-exporter
-    ports:
-      - "9100:9100"
-    networks:
-      - ecommerce
+#   # node_exporter will use for gathering metrics on the system level with its own /metrics endpoint (http://localhost:9100/metrics) like cpu, ram, ...
+#   # https://prometheus.io/docs/guides/node-exporter/
+#   node_exporter:
+#     container_name: node_exporter
+#     pull_policy: if_not_present
+#     restart: unless-stopped
+#     image: prom/node-exporter
+#     ports:
+#       - "9100:9100"
+#     networks:
+#       - ecommerce
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:latest
     pull_policy: if_not_present
     container_name: grafana
     restart: unless-stopped
@@ -103,13 +103,13 @@ services:
     networks:
       - ecommerce
 
-#  k6-tracing:
-#    image: ghcr.io/grafana/xk6-client-tracing:latest
-#    environment:
-#      - ENDPOINT=tempo:4317
-#    restart: always
-#    depends_on:
-#      - tempo
+# #  k6-tracing:
+# #    image: ghcr.io/grafana/xk6-client-tracing:latest
+# #    environment:
+# #      - ENDPOINT=tempo:4317
+# #    restart: always
+# #    depends_on:
+# #      - tempo
 
   postgres:
     image: postgres:latest
@@ -138,7 +138,7 @@ services:
       - ecommerce
 
   mongo:
-    image: mongo
+    image: mongo:latest
     pull_policy: if_not_present
     container_name: mongo
     restart: unless-stopped
@@ -191,15 +191,15 @@ services:
     networks:
       - ecommerce
 
-  zipkin:
-    image: openzipkin/zipkin:latest
-    pull_policy: if_not_present
-    restart: unless-stopped
-    container_name: zipkin
-    ports:
-      - "9411:9411"
-    networks:
-      - ecommerce
+#   zipkin:
+#     image: openzipkin/zipkin:latest
+#     pull_policy: if_not_present
+#     restart: unless-stopped
+#     container_name: zipkin
+#     ports:
+#       - "9411:9411"
+#     networks:
+#       - ecommerce
 
   # https://developers.eventstore.com/server/v21.10/installation.html#insecure-single-node
   # https://hub.docker.com/r/eventstore/eventstore/tags
@@ -233,135 +233,135 @@ services:
     networks:
       - ecommerce
 
-  # containers monitoring
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    restart: unless-stopped
-    ports:
-      - "9091:8080"
-    # network_mode: host
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-    devices:
-      - /dev/kmsg
-    networks:
-      - ecommerce
+#   # containers monitoring - Analyzes resource usage and performance characteristics of running containers. 
+#   cadvisor:
+#     image: gcr.io/cadvisor/cadvisor:latest
+#     restart: unless-stopped
+#     ports:
+#       - "9091:8080"
+#     # network_mode: host
+#     volumes:
+#       - /:/rootfs:ro
+#       - /var/run:/var/run:ro
+#       - /sys:/sys:ro
+#       - /var/lib/docker/:/var/lib/docker:ro
+#       - /dev/disk/:/dev/disk:ro
+#     devices:
+#       - /dev/kmsg
+#     networks:
+#       - ecommerce
 
-#  # https://stackoverflow.com/questions/67791781/how-to-configure-apm-server-to-docker-compose-file
-#  # https://www.elastic.co/guide/en/apm/guide/current/open-telemetry.html
-#  apm-server:
-#    image: docker.elastic.co/apm/apm-server:latest
-#    cap_add: ["CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID"]
-#    cap_drop: ["ALL"]
-#    ports:
-#      - 8200:8200
-#    command: >
-#      apm-server -e
-#        -E apm-server.rum.enabled=true
-#        -E setup.kibana.host=kibana:5601
-#        -E setup.template.settings.index.number_of_replicas=0
-#        -E apm-server.kibana.enabled=true
-#        -E apm-server.kibana.host=kibana:5601
-#        -E output.elasticsearch.hosts=["elasticsearch:9200"]
+# #  # https://stackoverflow.com/questions/67791781/how-to-configure-apm-server-to-docker-compose-file
+# #  # https://www.elastic.co/guide/en/apm/guide/current/open-telemetry.html
+# #  apm-server:
+# #    image: docker.elastic.co/apm/apm-server:latest
+# #    cap_add: ["CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID"]
+# #    cap_drop: ["ALL"]
+# #    ports:
+# #      - 8200:8200
+# #    command: >
+# #      apm-server -e
+# #        -E apm-server.rum.enabled=true
+# #        -E setup.kibana.host=kibana:5601
+# #        -E setup.template.settings.index.number_of_replicas=0
+# #        -E apm-server.kibana.enabled=true
+# #        -E apm-server.kibana.host=kibana:5601
+# #        -E output.elasticsearch.hosts=["elasticsearch:9200"]
 
-  # elasticsearch:
-  #   container_name: elastic_search
-  #   restart: unless-stopped
-  #   image: elasticsearch:8.5.2
-  #   environment:
-  #     - discovery.type=single-node
-  #     - bootstrap.memory_lock=true
-  #     - xpack.monitoring.enabled=true
-  #     - xpack.watcher.enabled=false
-  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  #   ulimits:
-  #     memlock:
-  #       soft: -1
-  #       hard: -1
-  #   volumes:
-  #     - elastic-data:/usr/share/elasticsearch/data
-  #   ports:
-  #     - ${ELASTIC_HOST_PORT:-9200}:${ELASTIC_PORT:-9200}
-  #     - 9300:9300
-  #   networks:
-  #     - ecommerce
+#   # elasticsearch:
+#   #   container_name: elastic_search
+#   #   restart: unless-stopped
+#   #   image: elasticsearch:8.5.2
+#   #   environment:
+#   #     - discovery.type=single-node
+#   #     - bootstrap.memory_lock=true
+#   #     - xpack.monitoring.enabled=true
+#   #     - xpack.watcher.enabled=false
+#   #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+#   #   ulimits:
+#   #     memlock:
+#   #       soft: -1
+#   #       hard: -1
+#   #   volumes:
+#   #     - elastic-data:/usr/share/elasticsearch/data
+#   #   ports:
+#   #     - ${ELASTIC_HOST_PORT:-9200}:${ELASTIC_PORT:-9200}
+#   #     - 9300:9300
+#   #   networks:
+#   #     - ecommerce
 
-  # kibana:
-  #   image: kibana:8.5.2
-  #   container_name: kibana
-  #   restart: unless-stopped
-  #   environment:
-  #     - ELASTICSEARCH_HOSTS=http://elastic_search:${ELASTIC_PORT:-9200}
-  #   ports:
-  #     - ${KIBANA_HOST_PORT:-5601}:${KIBANA_PORT:-5601}
-  #   networks:
-  #     - ecommerce
-  #   depends_on:
-  #     - elasticsearch
+#   # kibana:
+#   #   image: kibana:8.5.2
+#   #   container_name: kibana
+#   #   restart: unless-stopped
+#   #   environment:
+#   #     - ELASTICSEARCH_HOSTS=http://elastic_search:${ELASTIC_PORT:-9200}
+#   #   ports:
+#   #     - ${KIBANA_HOST_PORT:-5601}:${KIBANA_PORT:-5601}
+#   #   networks:
+#   #     - ecommerce
+#   #   depends_on:
+#   #     - elasticsearch
 
 
-  # zookeeper:
-  #   image: confluentinc/cp-zookeeper:7.0.1
-  #   hostname: zookeeper
-  #   container_name: zookeeper
-  #   restart: unless-stopped
-  #   ports:
-  #     - "2181:2181"
-  #   environment:
-  #     ZOOKEEPER_CLIENT_PORT: 2181
-  #     ZOOKEEPER_TICK_TIME: 2000
-  #   networks:
-  #     - ecommerce
+#   # zookeeper:
+#   #   image: confluentinc/cp-zookeeper:7.0.1
+#   #   hostname: zookeeper
+#   #   container_name: zookeeper
+#   #   restart: unless-stopped
+#   #   ports:
+#   #     - "2181:2181"
+#   #   environment:
+#   #     ZOOKEEPER_CLIENT_PORT: 2181
+#   #     ZOOKEEPER_TICK_TIME: 2000
+#   #   networks:
+#   #     - ecommerce
 
-  # kafka:
-  #   image: confluentinc/cp-kafka:7.0.1
-  #   hostname: kafka
-  #   container_name: kafka
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - zookeeper
-  #   ports:
-  #     - "9092:9092"
-  #   environment:
-  #     KAFKA_BROKER_ID: 1
-  #     KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-  #     ADVERTISED_HOST_NAME: kafka
-  #     KAFKA_ADVERTISED_HOSTNAME: 127.0.0.1
-  #   networks:
-  #     - ecommerce
+#   # kafka:
+#   #   image: confluentinc/cp-kafka:7.0.1
+#   #   hostname: kafka
+#   #   container_name: kafka
+#   #   restart: unless-stopped
+#   #   depends_on:
+#   #     - zookeeper
+#   #   ports:
+#   #     - "9092:9092"
+#   #   environment:
+#   #     KAFKA_BROKER_ID: 1
+#   #     KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+#   #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+#   #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+#   #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#   #     ADVERTISED_HOST_NAME: kafka
+#   #     KAFKA_ADVERTISED_HOSTNAME: 127.0.0.1
+#   #   networks:
+#   #     - ecommerce
 
-  # kafka-ui:
-  #   image: provectuslabs/kafka-ui
-  #   container_name: kafka-ui
-  #   ports:
-  #     - "8080:8080"
-  #   restart: always
-  #   environment:
-  #     - KAFKA_CLUSTERS_0_NAME=local
-  #     - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-  #     - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+#   # kafka-ui:
+#   #   image: provectuslabs/kafka-ui
+#   #   container_name: kafka-ui
+#   #   ports:
+#   #     - "8080:8080"
+#   #   restart: always
+#   #   environment:
+#   #     - KAFKA_CLUSTERS_0_NAME=local
+#   #     - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+#   #     - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
 
-  # kafdrop:
-  #   image: obsidiandynamics/kafdrop
-  #   container_name: kafdrop
-  #   ports:
-  #       - '9000:9000'
-  #   environment:
-  #       - 'KAFKA_BROKERCONNECT=<host:port,host:port>'
-  #       - 'JVM_OPTS=-Xms32M -Xmx64M'
-  #       - SERVER_SERVLET_CONTEXTPATH=/
+#   # kafdrop:
+#   #   image: obsidiandynamics/kafdrop
+#   #   container_name: kafdrop
+#   #   ports:
+#   #       - '9000:9000'
+#   #   environment:
+#   #       - 'KAFKA_BROKERCONNECT=<host:port,host:port>'
+#   #       - 'JVM_OPTS=-Xms32M -Xmx64M'
+#   #       - SERVER_SERVLET_CONTEXTPATH=/
 
 volumes:
   eventstore-volume-data:
   eventstore-volume-logs:
-  elastic-data:
+#  elastic-data:
 
 networks:
   ecommerce:

@@ -47,7 +47,7 @@ scrape_configs:
   # http://localhost:8000/metrics
   # localhost doesn't work here because inner prometheus container localhost will infer to localhost inner the container which is different with system localhost. for access to actual system localhost we should use `host.docker.internal`
   # instead of `localhost` to access node_exporter container inner prometheus container we can use our container network name to access this container because they are in same docker-compose and same default network
-  - job_name: order_service
+  - job_name: orderservice
     scrape_interval: 1s
     static_configs:
       - targets: [ "host.docker.internal:8000" ]

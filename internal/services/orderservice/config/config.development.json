@@ -1,0 +1,98 @@
+{
+  "appOptions": {
+    "serviceName": "orderservice",
+    "deliveryType": "http"
+  },
+  "grpcOptions": {
+    "name": "orderservice",
+    "port": ":6005",
+    "host": "localhost",
+    "development": true
+  },
+  "echoHttpOptions": {
+    "name": "orderservice",
+    "port": ":8000",
+    "development": true,
+    "timeout": 30,
+    "basePath": "/api/v1",
+    "host": "http://localhost",
+    "ordersPath": "orders",
+    "debugHeaders": true,
+    "httpClientDebug": true,
+    "debugErrorsResponse": true,
+    "ignoreLogUrls": [
+      "metrics"
+    ]
+  },
+  "logOptions": {
+    "level": "debug",
+    "logType": 0,
+    "callerEnabled": false
+  },
+  "mongoDbOptions": {
+    "host": "localhost",
+    "port": 27017,
+    "user": "admin",
+    "password": "admin",
+    "database": "orders_service",
+    "useAuth": true
+  },
+  "rabbitmqOptions": {
+    "autoStart": true,
+    "reconnecting": true,
+    "rabbitmqHostOptions": {
+      "userName": "guest",
+      "password": "guest",
+      "hostName": "localhost",
+      "port": 5672,
+      "httpPort": 15672
+    }
+  },
+  "tracingOptions": {
+    "enable": true,
+    "serviceName": "orders-service",
+    "instrumentationName": "io.opentelemetry.traces.orders-service",
+    "id": 1,
+    "useStdout": false,
+    "alwaysOnSampler": true,
+    "jaegerExporterOptions": {
+      "otlpEndpoint": "localhost:4320",
+      "enabled": true
+    },
+    "zipkinExporterOptions": {
+      "url": "http://localhost:9411/api/v2/spans"
+    },
+    "otlpProviders": [
+      {
+        "name": "uptrace",
+        "enabled": false,
+        "otlpEndpoint": "otlp.uptrace.dev:4317",
+        "otlpHeaders": {
+          "uptrace-dsn": "https://<token>@uptrace.dev/<project_id>"
+        }
+      },
+      {
+        "name": "elastic-apm",
+        "enabled": false,
+        "otlpEndpoint": "host.docker.internal:4317",
+        "otlpHeaders": {
+          "Authorization": "Bearer ${ELASTIC_APM_SECRET_TOKEN}"
+        }
+      }
+    ]
+  },
+  "metricsOptions": {
+    "metricsRoutePath": "/metrics",
+    "serviceName": "orders-service",
+    "instrumentationName": "io.opentelemetry.metrics.orders-service"
+  },
+  "eventStoreDbOptions": {
+    "host": "localhost",
+    "httpPort": 2113,
+    "tcpPort": 1113 ,
+    "subscription": {
+      "subscriptionId": "orders-subscription",
+      "prefix": ["order-"]
+    }
+  }
+}

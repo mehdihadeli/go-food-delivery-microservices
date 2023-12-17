@@ -104,7 +104,7 @@ func (_c *IMessage_GetCreated_Call) RunAndReturn(run func() time.Time) *IMessage
 }
 
 // GetEventTypeName provides a mock function with given fields:
-func (_m *IMessage) GetEventTypeName() string {
+func (_m *IMessage) GetMessageTypeName() string {
 	ret := _m.Called()
 
 	var r0 string
@@ -117,14 +117,14 @@ func (_m *IMessage) GetEventTypeName() string {
 	return r0
 }
 
-// IMessage_GetEventTypeName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEventTypeName'
+// IMessage_GetEventTypeName_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetMessageTypeName'
 type IMessage_GetEventTypeName_Call struct {
 	*mock.Call
 }
 
 // GetEventTypeName is a helper method to define mock.On call
 func (_e *IMessage_Expecter) GetEventTypeName() *IMessage_GetEventTypeName_Call {
-	return &IMessage_GetEventTypeName_Call{Call: _e.mock.On("GetEventTypeName")}
+	return &IMessage_GetEventTypeName_Call{Call: _e.mock.On("GetMessageTypeName")}
 }
 
 func (_c *IMessage_GetEventTypeName_Call) Run(run func()) *IMessage_GetEventTypeName_Call {
@@ -223,7 +223,8 @@ func (_c *IMessage_SetEventTypeName_Call) RunAndReturn(run func(string)) *IMessa
 func NewIMessage(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *IMessage {
+},
+) *IMessage {
 	mock := &IMessage{}
 	mock.Mock.Test(t)
 

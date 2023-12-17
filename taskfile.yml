@@ -11,33 +11,33 @@ tasks:
   run-catalogs-write-service:
     desc: Run catalog write service
     cmds:
-      - sh ./scripts/run.sh catalog_write_service
+      - sh ./scripts/run.sh catalogwriteservice
 
   run-catalog-read-service:
     desc: Run catalog read service
     cmds:
-      - sh ./scripts/run.sh catalog_read_service
+      - sh ./scripts/run.sh catalogreadservice
 
   run-order-service:
     desc: Run order service
     cmds:
-      - sh ./scripts/run.sh order_service
+      - sh ./scripts/run.sh orderservice
 
   build:
     desc: Build project components
     cmds:
       - sh ./scripts/build.sh pkg
-      - sh ./scripts/build.sh catalog_write_service
-      - sh ./scripts/build.sh catalog_read_service
-      - sh ./scripts/build.sh order_service
+      - sh ./scripts/build.sh catalogwriteservice
+      - sh ./scripts/build.sh catalogreadservice
+      - sh ./scripts/build.sh orderservice
 
   install-dependencies:
     desc: Install project dependencies
     cmds:
       - sh ./scripts/install-dependencies.sh pkg
-      - sh ./scripts/install-dependencies.sh catalog_write_service
-      - sh ./scripts/install-dependencies.sh catalog_read_service
-      - sh ./scripts/install-dependencies.sh order_service
+      - sh ./scripts/install-dependencies.sh catalogwriteservice
+      - sh ./scripts/install-dependencies.sh catalogreadservice
+      - sh ./scripts/install-dependencies.sh orderservice
 
   docker-compose-infra-up:
     desc: Start infrastructure using docker-compose
@@ -52,51 +52,51 @@ tasks:
   openapi:
     desc: Generate OpenAPI documentation
     cmds:
-      - sh ./scripts/openapi.sh catalog_write_service
-      - sh ./scripts/openapi.sh catalog_read_service
-      - sh ./scripts/openapi.sh order_service
+      - sh ./scripts/openapi.sh catalogwriteservice
+      - sh ./scripts/openapi.sh catalogreadservice
+      - sh ./scripts/openapi.sh orderservice
 
   proto:
     desc: Generate protobuf files
     cmds:
-      - sh ./scripts/proto.sh catalog_write_service
-      - sh ./scripts/proto.sh order_service
+      - sh ./scripts/proto.sh catalogwriteservice
+      - sh ./scripts/proto.sh orderservice
 
   unit-test:
     desc: Run unit tests
     cmds:
-      - sh ./scripts/test.sh catalog_write_service unit
-      - sh ./scripts/test.sh catalog_read_service unit
-      - sh ./scripts/test.sh order_service unit
+      - sh ./scripts/test.sh catalogwriteservice unit
+      - sh ./scripts/test.sh catalogreadservice unit
+      - sh ./scripts/test.sh orderservice unit
 
   integration-test:
     desc: Run integration tests
     cmds:
-      - sh ./scripts/test.sh catalog_write_service integration
-      - sh ./scripts/test.sh catalog_read_service integration
-      - sh ./scripts/test.sh order_service integration
+      - sh ./scripts/test.sh catalogwriteservice integration
+      - sh ./scripts/test.sh catalogreadservice integration
+      - sh ./scripts/test.sh orderservice integration
 
   e2e-test:
     desc: Run end-to-end tests
     cmds:
-      - sh ./scripts/test.sh catalog_write_service e2e
-      - sh ./scripts/test.sh catalog_read_service e2e
-      - sh ./scripts/test.sh order_service e2e
+      - sh ./scripts/test.sh catalogwriteservice e2e
+      - sh ./scripts/test.sh catalogreadservice e2e
+      - sh ./scripts/test.sh orderservice e2e
 
   format:
     desc: Format codebase
     cmds:
-      - sh ./scripts/format.sh catalog_write_service
-      - sh ./scripts/format.sh catalog_read_service
-      - sh ./scripts/format.sh order_service
+      - sh ./scripts/format.sh catalogwriteservice
+      - sh ./scripts/format.sh catalogreadservice
+      - sh ./scripts/format.sh orderservice
       - sh ./scripts/format.sh pkg
 
   lint:
     desc: Run linters
     cmds:
-      - sh ./scripts/lint.sh catalog_write_service
-      - sh ./scripts/lint.sh catalog_read_service
-      - sh ./scripts/lint.sh order_service
+      - sh ./scripts/lint.sh catalogwriteservice
+      - sh ./scripts/lint.sh catalogreadservice
+      - sh ./scripts/lint.sh orderservice
       - sh ./scripts/lint.sh pkg
 
   pkg-mocks:
@@ -109,6 +109,6 @@ tasks:
   services-mocks:
     desc: Generate service mocks
     cmds:
-      - cd internal/services/catalog_write_service && mockery --output mocks --all
-      - cd internal/services/catalog_read_service && mockery --output mocks --all
-      - cd internal/services/order_service && mockery --output mocks --all
+      - cd internal/services/catalogwriteservice && mockery --output mocks --all
+      - cd internal/services/catalogreadservice && mockery --output mocks --all
+      - cd internal/services/orderservice && mockery --output mocks --all

@@ -7,7 +7,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/handlers/otel"
-	grpcError "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/grpc_error"
+	grpcError "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/interceptors/grpcerror"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
 	"emperror.dev/errors"

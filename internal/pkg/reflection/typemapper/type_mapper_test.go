@@ -14,7 +14,7 @@ func TestTypes(t *testing.T) {
 	q22 := InstanceByTypeName("*typeMapper.Test").(*Test)
 	q222 := InstancePointerByTypeName("*typeMapper.Test").(*Test)
 	q3 := TypeByNameAndImplementedInterface[ITest]("*typeMapper.Test")
-	q4 := InstanceByTypeNameAndImplementedInterface[ITest]("*typeMapper.Test")
+	q4 := EmptyInstanceByTypeNameAndImplementedInterface[ITest]("*typeMapper.Test")
 
 	c1 := GetTypeFromGeneric[Test]()
 	c2 := GetTypeFromGeneric[*Test]()

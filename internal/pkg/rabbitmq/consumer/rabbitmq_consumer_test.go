@@ -9,7 +9,6 @@ import (
 	messageConsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/consumer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/pipeline"
 	types3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
@@ -52,8 +51,8 @@ func Test_Consumer_With_Fake_Message(t *testing.T) {
 	conn, err := types.NewRabbitMQConnection(options)
 	require.NoError(t, err)
 
-	eventSerializer := serializer.NewDefaultEventSerializer(
-		json.NewDefaultSerializer(),
+	eventSerializer := json.NewDefaultEventJsonSerializer(
+		json.NewDefaultJsonSerializer(),
 	)
 	consumerFactory := factory.NewConsumerFactory(
 		options,

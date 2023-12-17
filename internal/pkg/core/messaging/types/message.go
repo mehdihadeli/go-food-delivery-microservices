@@ -2,14 +2,16 @@ package types
 
 import (
 	"time"
+
+	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 )
 
 type IMessage interface {
 	GeMessageId() string
 	GetCreated() time.Time
-	GetEventTypeName() string
-	SetEventTypeName(string)
-	IsMessage() bool
+	// GetMessageTypeName get short type name of the message - we use message short type name instead of full type name because this message in other receiver packages could have different package name
+	GetMessageTypeName() string
+	GetMessageFullTypeName() string
 }
 
 type Message struct {
@@ -27,13 +29,6 @@ func NewMessageWithTypeName(messageId string, eventTypeName string) *Message {
 	return &Message{MessageId: messageId, Created: time.Now(), EventType: eventTypeName}
 }
 
-func (m *Message) IsMessage() bool {
-	if m == nil {
-		return false
-	}
-	return true
-}
-
 func (m *Message) GeMessageId() string {
 	return m.MessageId
 }
@@ -42,10 +37,10 @@ func (m *Message) GetCreated() time.Time {
 	return m.Created
 }
 
-func (m *Message) GetEventTypeName() string {
-	return m.EventType
+func (m *Message) GetMessageTypeName() string {
+	return typeMapper.GetTypeName(m)
 }
 
-func (m *Message) SetEventTypeName(eventTypeName string) {
-	m.EventType = eventTypeName
+func (m *Message) GetMessageFullTypeName() string {
+	return typeMapper.GetFullTypeName(m)
 }

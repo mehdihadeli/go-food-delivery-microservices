@@ -1,3 +1,6 @@
+//go:build unit
+// +build unit
+
 package json
 
 import (
@@ -12,7 +15,7 @@ type person struct {
 	Age  int
 }
 
-var currentSerializer = NewDefaultSerializer()
+var currentSerializer = NewDefaultJsonSerializer()
 
 func Test_Deserialize_Unstructured_Data_Into_Empty_Interface(t *testing.T) {
 	// https://www.sohamkamani.com/golang/json/#decoding-json-to-maps---unstructured-data

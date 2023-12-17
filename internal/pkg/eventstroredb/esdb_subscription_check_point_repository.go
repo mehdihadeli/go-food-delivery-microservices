@@ -71,7 +71,7 @@ func (e *esdbSubscriptionCheckpointRepository) Load(
 		return 0, errors.WrapIf(err, "stream.Recv")
 	}
 
-	deserialized, _, err := e.esdbSerilizer.Deserialize(event)
+	deserialized, _, err := e.esdbSerilizer.DeserializeObject(event)
 	if err != nil {
 		return 0, err
 	}

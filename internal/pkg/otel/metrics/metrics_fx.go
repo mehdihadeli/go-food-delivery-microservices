@@ -3,7 +3,7 @@ package metrics
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/customecho/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
 	"go.opentelemetry.io/contrib/instrumentation/host"

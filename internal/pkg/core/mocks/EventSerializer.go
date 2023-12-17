@@ -5,6 +5,8 @@ package mocks
 import (
 	reflect "reflect"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/contratcs"
+
 	mock "github.com/stretchr/testify/mock"
 
 	serializer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
@@ -343,15 +345,15 @@ func (_c *EventSerializer_Serialize_Call) RunAndReturn(run func(interface{}) (*s
 }
 
 // Serializer provides a mock function with given fields:
-func (_m *EventSerializer) Serializer() serializer.Serializer {
+func (_m *EventSerializer) Serializer() contratcs.Serializer {
 	ret := _m.Called()
 
-	var r0 serializer.Serializer
-	if rf, ok := ret.Get(0).(func() serializer.Serializer); ok {
+	var r0 contratcs.Serializer
+	if rf, ok := ret.Get(0).(func() contratcs.Serializer); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(serializer.Serializer)
+			r0 = ret.Get(0).(contratcs.Serializer)
 		}
 	}
 
@@ -375,12 +377,12 @@ func (_c *EventSerializer_Serializer_Call) Run(run func()) *EventSerializer_Seri
 	return _c
 }
 
-func (_c *EventSerializer_Serializer_Call) Return(_a0 serializer.Serializer) *EventSerializer_Serializer_Call {
+func (_c *EventSerializer_Serializer_Call) Return(_a0 contratcs.Serializer) *EventSerializer_Serializer_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *EventSerializer_Serializer_Call) RunAndReturn(run func() serializer.Serializer) *EventSerializer_Serializer_Call {
+func (_c *EventSerializer_Serializer_Call) RunAndReturn(run func() contratcs.Serializer) *EventSerializer_Serializer_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -390,7 +392,8 @@ func (_c *EventSerializer_Serializer_Call) RunAndReturn(run func() serializer.Se
 func NewEventSerializer(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *EventSerializer {
+},
+) *EventSerializer {
 	mock := &EventSerializer{}
 	mock.Mock.Test(t)
 

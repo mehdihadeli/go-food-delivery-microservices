@@ -68,7 +68,7 @@ func (e *eventStoreDbEventStore) StreamExists(
 			span,
 			errors.WithMessage(
 				esErrors.NewReadStreamError(err),
-				"[eventStoreDbEventStore_StreamExists:ReadStream] error in reading stream",
+				"error in reading stream",
 			),
 		)
 	}
@@ -113,7 +113,7 @@ func (e *eventStoreDbEventStore) AppendEvents(
 			span,
 			errors.WithMessage(
 				esErrors.NewAppendToStreamError(err, streamName.String()),
-				"[eventStoreDbEventStore_AppendEvents:AppendToStream] error in appending to stream",
+				"error in appending to stream",
 			),
 		)
 	}
@@ -125,7 +125,7 @@ func (e *eventStoreDbEventStore) AppendEvents(
 	)
 
 	e.log.Infow(
-		"[eventStoreDbEventStore_AppendEvents] events append to stream successfully",
+		"events append to stream successfully",
 		logger.Fields{
 			"AppendEventsResult": appendEventsResult,
 			"StreamId":           streamName.String(),
@@ -155,7 +155,7 @@ func (e *eventStoreDbEventStore) AppendNewEvents(
 			span,
 			errors.WithMessage(
 				esErrors.NewAppendToStreamError(err, streamName.String()),
-				"[eventStoreDbEventStore_AppendNewEvents:AppendEvents] error in appending to stream",
+				"error in appending to stream",
 			),
 		)
 	}
@@ -163,7 +163,7 @@ func (e *eventStoreDbEventStore) AppendNewEvents(
 	span.SetAttributes(attribute.Object("AppendNewEvents", appendEventsResult))
 
 	e.log.Infow(
-		"[eventStoreDbEventStore_AppendNewEvents] events append to stream successfully",
+		"events append to stream successfully",
 		logger.Fields{
 			"AppendEventsResult": appendEventsResult,
 			"StreamId":           streamName.String(),
@@ -199,7 +199,7 @@ func (e *eventStoreDbEventStore) ReadEvents(
 			span,
 			errors.WithMessage(
 				esErrors.NewReadStreamError(err),
-				"[eventStoreDbEventStore_ReadEvents:ReadStream] error in reading stream",
+				"error in reading stream",
 			),
 		)
 	}
@@ -214,7 +214,7 @@ func (e *eventStoreDbEventStore) ReadEvents(
 			span,
 			errors.WrapIf(
 				err,
-				"[eventStoreDbEventStore_ReadEvents.EsdbReadStreamToResolvedEvents] error in converting to resolved events",
+				"error in converting to resolved events",
 			),
 		)
 	}
@@ -225,7 +225,7 @@ func (e *eventStoreDbEventStore) ReadEvents(
 			span,
 			errors.WrapIf(
 				err,
-				"[eventStoreDbEventStore_ReadEvents.ResolvedEventsToStreamEvents] error in converting to stream events",
+				"error in converting to stream events",
 			),
 		)
 	}
@@ -389,7 +389,7 @@ func (e *eventStoreDbEventStore) TruncateStream(
 			span,
 			errors.WithMessage(
 				esErrors.NewTruncateStreamError(err, streamName.String()),
-				"[eventStoreDbEventStore_TruncateStream:SetStreamMetadata] error in truncating stream",
+				"error in truncating stream",
 			),
 		)
 	}
@@ -398,7 +398,7 @@ func (e *eventStoreDbEventStore) TruncateStream(
 
 	e.log.Infow(
 		fmt.Sprintf(
-			"[eventStoreDbEventStore.TruncateStream] stream with id %s truncated successfully",
+			"stream with id %s truncated successfully",
 			streamName.String(),
 		),
 		logger.Fields{
@@ -432,7 +432,7 @@ func (e *eventStoreDbEventStore) DeleteStream(
 			span,
 			errors.WithMessage(
 				esErrors.NewDeleteStreamError(err, streamName.String()),
-				"[eventStoreDbEventStore_DeleteStream:DeleteStream] error in deleting stream",
+				"error in deleting stream",
 			),
 		)
 	}
@@ -441,7 +441,7 @@ func (e *eventStoreDbEventStore) DeleteStream(
 
 	e.log.Infow(
 		fmt.Sprintf(
-			"[eventStoreDbEventStore.DeleteStream] stream with id %s deleted successfully",
+			"stream with id %s deleted successfully",
 			streamName.String(),
 		),
 		logger.Fields{

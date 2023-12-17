@@ -165,14 +165,14 @@ func (_m *IDomainEvent) GetEventType() string {
 	return r0
 }
 
-// IDomainEvent_GetEventType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEventType'
+// IDomainEvent_GetEventType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEventTypeName'
 type IDomainEvent_GetEventType_Call struct {
 	*mock.Call
 }
 
 // GetEventType is a helper method to define mock.On call
 func (_e *IDomainEvent_Expecter) GetEventType() *IDomainEvent_GetEventType_Call {
-	return &IDomainEvent_GetEventType_Call{Call: _e.mock.On("GetEventType")}
+	return &IDomainEvent_GetEventType_Call{Call: _e.mock.On("GetEventTypeName")}
 }
 
 func (_c *IDomainEvent_GetEventType_Call) Run(run func()) *IDomainEvent_GetEventType_Call {
@@ -283,7 +283,8 @@ func (_c *IDomainEvent_WithAggregate_Call) RunAndReturn(run func(uuid.UUID, int6
 func NewIDomainEvent(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *IDomainEvent {
+},
+) *IDomainEvent {
 	mock := &IDomainEvent{}
 	mock.Mock.Test(t)
 

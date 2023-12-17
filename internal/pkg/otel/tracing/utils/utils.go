@@ -6,11 +6,10 @@ import (
 	"reflect"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/grpcErrors"
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/problemDetails"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/grpcerrors"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants/telemetrytags"
-	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/errorutils"
 
 	"github.com/ahmetb/go-linq/v3"
 	"go.opentelemetry.io/otel/attribute"
@@ -198,7 +197,7 @@ func GrpcTraceErrFromSpan(span trace.Span, err error) error {
 		)
 
 		if customErrors.IsCustomError(err) {
-			grpcErr := grpcErrors.ParseError(err)
+			grpcErr := grpcerrors.ParseError(err)
 			span.SetAttributes(
 				semconv.RPCGRPCStatusCodeKey.Int(int(grpcErr.GetStatus())),
 			)

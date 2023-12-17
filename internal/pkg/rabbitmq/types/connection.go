@@ -5,7 +5,7 @@ import (
 
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/errorutils"
 
 	"emperror.dev/errors"
 	"github.com/rabbitmq/amqp091-go"

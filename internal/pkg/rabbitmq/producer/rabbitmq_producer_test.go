@@ -6,12 +6,12 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
 	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 
 	uuid "github.com/satori/go.uuid"
@@ -21,8 +21,8 @@ import (
 func Test_Publish_Message(t *testing.T) {
 	testUtils.SkipCI(t)
 
-	eventSerializer := serializer.NewDefaultEventSerializer(
-		json.NewDefaultSerializer(),
+	eventSerializer := json.NewDefaultEventJsonSerializer(
+		json.NewDefaultJsonSerializer(),
 	)
 
 	ctx := context.Background()
@@ -42,23 +42,21 @@ func Test_Publish_Message(t *testing.T) {
 	}
 	defer tp.Shutdown(ctx)
 
-	//conn, err := types.NewRabbitMQConnection(&config.RabbitmqOptions{
+	//options := &config.RabbitmqOptions{
 	//	RabbitmqHostOptions: &config.RabbitmqHostOptions{
 	//		UserName: "guest",
 	//		Password: "guest",
 	//		HostName: "localhost",
 	//		Port:     5672,
 	//	},
-	//})
-	//require.NoError(t, err)
+	//}
+
+	rabbitmqHostOption, err := rabbitmq.NewRabbitMQTestContainers(defaultLogger.GetLogger()).
+		PopulateContainerOptions(ctx, t)
+	require.NoError(t, err)
 
 	options := &config.RabbitmqOptions{
-		RabbitmqHostOptions: &config.RabbitmqHostOptions{
-			UserName: "guest",
-			Password: "guest",
-			HostName: "localhost",
-			Port:     5672,
-		},
+		RabbitmqHostOptions: rabbitmqHostOption,
 	}
 
 	conn, err := types.NewRabbitMQConnection(options)

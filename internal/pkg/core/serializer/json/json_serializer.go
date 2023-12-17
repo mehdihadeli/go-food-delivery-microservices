@@ -3,7 +3,7 @@ package json
 import (
 	"log"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/contratcs"
 
 	"github.com/TylerBrock/colorjson"
 	"github.com/goccy/go-json"
@@ -12,7 +12,7 @@ import (
 
 type jsonSerializer struct{}
 
-func NewDefaultSerializer() serializer.Serializer {
+func NewDefaultJsonSerializer() contratcs.Serializer {
 	return &jsonSerializer{}
 }
 

@@ -80,14 +80,14 @@ func (_m *IEvent) GetEventType() string {
 	return r0
 }
 
-// IEvent_GetEventType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEventType'
+// IEvent_GetEventType_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEventTypeName'
 type IEvent_GetEventType_Call struct {
 	*mock.Call
 }
 
 // GetEventType is a helper method to define mock.On call
 func (_e *IEvent_Expecter) GetEventType() *IEvent_GetEventType_Call {
-	return &IEvent_GetEventType_Call{Call: _e.mock.On("GetEventType")}
+	return &IEvent_GetEventType_Call{Call: _e.mock.On("GetEventTypeName")}
 }
 
 func (_c *IEvent_GetEventType_Call) Run(run func()) *IEvent_GetEventType_Call {
@@ -153,7 +153,8 @@ func (_c *IEvent_GetOccurredOn_Call) RunAndReturn(run func() time.Time) *IEvent_
 func NewIEvent(t interface {
 	mock.TestingT
 	Cleanup(func())
-}) *IEvent {
+},
+) *IEvent {
 	mock := &IEvent{}
 	mock.Mock.Test(t)
 

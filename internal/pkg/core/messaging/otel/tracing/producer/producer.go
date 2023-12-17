@@ -111,7 +111,7 @@ func getTraceOptions(
 		semconv.MessageIDKey.String(message.GeMessageId()),
 		semconv.MessagingMessageConversationID(correlationId),
 		attribute.Key(tracing.MessageType).
-			String(message.GetEventTypeName()),
+			String(message.GetMessageTypeName()),
 		attribute.Key(tracing.MessageName).
 			String(messageHeader.GetMessageName(*meta)),
 		attribute.Key(tracing.Payload).String(payload),

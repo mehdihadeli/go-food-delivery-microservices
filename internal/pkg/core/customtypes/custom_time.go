@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
 
 	"github.com/araddon/dateparse"
 )

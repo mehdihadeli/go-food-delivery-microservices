@@ -2,7 +2,6 @@ package producer
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	messageHeader "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/messageheader"
@@ -11,12 +10,11 @@ import (
 	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/utils"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/contratcs"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 
 	"emperror.dev/errors"
 	"github.com/rabbitmq/amqp091-go"
@@ -29,7 +27,7 @@ type rabbitMQProducer struct {
 	logger                  logger.Logger
 	rabbitmqOptions         *config.RabbitmqOptions
 	connection              types.IConnection
-	eventSerializer         serializer.EventSerializer
+	messageSerializer       contratcs.MessageSerializer
 	producersConfigurations map[string]*configurations.RabbitMQProducerConfiguration
 	isProducedNotifications []func(message types2.IMessage)
 }
@@ -39,14 +37,14 @@ func NewRabbitMQProducer(
 	connection types.IConnection,
 	rabbitmqProducersConfiguration map[string]*configurations.RabbitMQProducerConfiguration,
 	logger logger.Logger,
-	eventSerializer serializer.EventSerializer,
+	eventSerializer contratcs.MessageSerializer,
 	isProducedNotifications ...func(message types2.IMessage),
 ) (producer.Producer, error) {
 	p := &rabbitMQProducer{
 		logger:                  logger,
 		rabbitmqOptions:         cfg,
 		connection:              connection,
-		eventSerializer:         eventSerializer,
+		messageSerializer:       eventSerializer,
 		producersConfigurations: rabbitmqProducersConfiguration,
 	}
 
@@ -80,15 +78,6 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 	meta metadata.Metadata,
 	topicOrExchangeName string,
 ) error {
-	if message.IsMessage() == false {
-		return errors.New(
-			fmt.Sprintf(
-				"message %s is not a message type or message property is nil",
-				utils.GetMessageBaseReflectType(message),
-			),
-		)
-	}
-
 	producerConfiguration := r.getProducerConfigurationByMessage(message)
 
 	if producerConfiguration == nil {
@@ -125,7 +114,7 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		},
 	}
 
-	serializedObj, err := r.eventSerializer.Serialize(message)
+	serializedObj, err := r.messageSerializer.Serialize(message)
 	if err != nil {
 		return err
 	}
@@ -177,7 +166,7 @@ func (r *rabbitMQProducer) PublishMessageWithTopicName(
 		MessageId:       message.GeMessageId(),
 		Timestamp:       time.Now(),
 		Headers:         metadata.MetadataToMap(meta),
-		Type:            message.GetEventTypeName(), // typeMapper.GetTypeName(message) - just message type name not full type name because in other side package name for type could be different
+		Type:            message.GetMessageTypeName(), // typeMapper.GetTypeName(message) - just message type name not full type name because in other side package name for type could be different
 		ContentType:     serializedObj.ContentType,
 		Body:            serializedObj.Data,
 		DeliveryMode:    producerConfiguration.DeliveryMode,
@@ -224,13 +213,9 @@ func (r *rabbitMQProducer) getMetadata(
 ) metadata.Metadata {
 	meta = metadata.FromMetadata(meta)
 
-	if message.GetEventTypeName() == "" {
-		message.SetEventTypeName(
-			typeMapper.GetTypeName(message),
-		) // just message type name not full type name because in other side package name for type could be different)
-	}
-	messageHeader.SetMessageType(meta, message.GetEventTypeName())
-	messageHeader.SetMessageContentType(meta, r.eventSerializer.ContentType())
+	// just message type name not full type name because in other side package name for type could be different
+	messageHeader.SetMessageType(meta, message.GetMessageTypeName())
+	messageHeader.SetMessageContentType(meta, r.messageSerializer.ContentType())
 
 	if messageHeader.GetMessageId(meta) == "" {
 		messageHeader.SetMessageId(meta, message.GeMessageId())

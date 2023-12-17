@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/custom_echo/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/customecho/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 
 	"emperror.dev/errors"

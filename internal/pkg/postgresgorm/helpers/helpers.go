@@ -5,6 +5,8 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/constants"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/contracts"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/scopes"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
 
 	"emperror.dev/errors"
 	"gorm.io/gorm"
@@ -39,8 +41,34 @@ func GetTxFromContextIfExists(ctx context.Context) *gorm.DB {
 }
 
 func SetTxToContext(ctx context.Context, tx *gorm.DB) *contracts.GormContext {
-	ctx = context.WithValue(ctx, constants.TxKey, tx)
-	gormContext := &contracts.GormContext{Tx: tx, Context: ctx}
+	newCtx := context.WithValue(ctx, constants.TxKey, tx)
+	gormContext := &contracts.GormContext{Tx: tx, Context: newCtx}
+	ctx = gormContext
 
 	return gormContext
+}
+
+// Ref: https://dev.to/rafaelgfirmino/pagination-using-gorm-scopes-3k5f
+
+func Paginate[TDataModel any, TEntity any](
+	ctx context.Context,
+	listQuery *utils.ListQuery,
+	db *gorm.DB,
+) (*utils.ListResult[TEntity], error) {
+	var (
+		items     []TEntity
+		totalRows int64
+	)
+
+	// https://gorm.io/docs/advanced_query.html#Smart-Select-Fields
+	if err := db.Scopes(scopes.FilterPaginate[TDataModel](ctx, listQuery)).Find(&items).Error; err != nil {
+		return nil, errors.WrapIf(err, "error in finding products.")
+	}
+
+	return utils.NewListResult[TEntity](
+		items,
+		listQuery.GetSize(),
+		listQuery.GetPage(),
+		totalRows,
+	), nil
 }

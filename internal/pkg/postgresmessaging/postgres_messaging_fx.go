@@ -12,7 +12,7 @@ var Module = fx.Module(
 	"postgresmessagingfx",
 	fx.Provide(
 		messagepersistence.NewPostgresMessagePersistenceDBContext,
-		messagepersistence.NewMessagePersistenceRepository,
+		messagepersistence.NewPostgresMessageService,
 	),
 	fx.Invoke(migrateMessaging),
 )

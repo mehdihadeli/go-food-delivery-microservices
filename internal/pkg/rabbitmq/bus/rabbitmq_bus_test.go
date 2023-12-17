@@ -8,14 +8,16 @@ import (
 	messageConsumer "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/consumer"
 	pipeline2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/pipeline"
 	types3 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
-	defaultLogger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
+	defaultlogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
 	consumerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/factory"
+	producerfactory "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer"
 	producerConfigurations "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
 	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
 
@@ -26,30 +28,52 @@ import (
 
 func Test_AddRabbitMQ(t *testing.T) {
 	testUtils.SkipCI(t)
+	ctx := context.Background()
 
 	fakeConsumer2 := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
 	fakeConsumer3 := consumer.NewRabbitMQFakeTestConsumerHandler[*ProducerConsumerMessage]()
 
-	serializer := serializer.NewDefaultEventSerializer(
-		json.NewDefaultSerializer(),
+	serializer := json.NewDefaultEventJsonSerializer(
+		json.NewDefaultJsonSerializer(),
 	)
 
-	rabbitmqOptions := &config.RabbitmqOptions{
-		RabbitmqHostOptions: &config.RabbitmqHostOptions{
-			UserName: "guest",
-			Password: "guest",
-			HostName: "localhost",
-			Port:     5672,
-		},
-	}
-	conn, err := types.NewRabbitMQConnection(rabbitmqOptions)
+	//rabbitmqOptions := &config.RabbitmqOptions{
+	//	RabbitmqHostOptions: &config.RabbitmqHostOptions{
+	//		UserName: "guest",
+	//		Password: "guest",
+	//		HostName: "localhost",
+	//		Port:     5672,
+	//	},
+	//}
+
+	rabbitmqHostOption, err := rabbitmq.NewRabbitMQTestContainers(defaultlogger.GetLogger()).
+		PopulateContainerOptions(ctx, t)
 	require.NoError(t, err)
 
-	b, err := NewRabbitmqBus(
-		rabbitmqOptions,
-		serializer,
-		defaultLogger2.GetLogger(),
+	options := &config.RabbitmqOptions{
+		RabbitmqHostOptions: rabbitmqHostOption,
+	}
+
+	conn, err := types.NewRabbitMQConnection(options)
+	require.NoError(t, err)
+
+	consumerFactory := factory.NewConsumerFactory(
+		options,
 		conn,
+		serializer,
+		defaultlogger.GetLogger(),
+	)
+	producerFactory := producerfactory.NewProducerFactory(
+		options,
+		conn,
+		serializer,
+		defaultlogger.GetLogger(),
+	)
+
+	b, err := NewRabbitmqBus(
+		defaultlogger.GetLogger(),
+		consumerFactory,
+		producerFactory,
 		func(builder configurations.RabbitMQConfigurationBuilder) {
 			builder.AddProducer(
 				ProducerConsumerMessage{},
@@ -90,7 +114,6 @@ func Test_AddRabbitMQ(t *testing.T) {
 	err = b.ConnectConsumerHandler(&ProducerConsumerMessage{}, fakeConsumer3)
 	require.NoError(t, err)
 
-	ctx := context.Background()
 	err = b.Start(ctx)
 	require.NoError(t, err)
 
@@ -176,7 +199,7 @@ func (p *Pipeline1) Handle(
 		consumerContext.Message().GeMessageId(),
 	)
 
-	err := next()
+	err := next(ctx)
 	if err != nil {
 		return err
 	}

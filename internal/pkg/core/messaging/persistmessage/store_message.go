@@ -25,7 +25,7 @@ type StoreMessage struct {
 	ID            uuid.UUID `gorm:"primaryKey"`
 	DataType      string
 	Data          string
-	Created       time.Time
+	CreatedAt     time.Time `gorm:"default:current_timestamp"`
 	RetryCount    int
 	MessageStatus MessageStatus
 	DeliveryType  MessageDeliveryType
@@ -41,7 +41,7 @@ func NewStoreMessage(
 		ID:            id,
 		DataType:      dataType,
 		Data:          data,
-		Created:       time.Now(),
+		CreatedAt:     time.Now(),
 		MessageStatus: Stored,
 		RetryCount:    0,
 		DeliveryType:  deliveryType,

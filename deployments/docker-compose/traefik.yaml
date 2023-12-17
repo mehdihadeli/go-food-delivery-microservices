@@ -141,9 +141,9 @@
 
   <meta name="browser-stats-url" content="https://api.github.com/_private/browser/stats">
 
-  <meta name="browser-http_errors-url" content="https://api.github.com/_private/browser/http_errors">
+  <meta name="browser-httperrors-url" content="https://api.github.com/_private/browser/httperrors">
 
-  <meta name="browser-optimizely-client-http_errors-url" content="https://api.github.com/_private/browser/optimizely_client/http_errors">
+  <meta name="browser-optimizely-client-httperrors-url" content="https://api.github.com/_private/browser/optimizely_client/httperrors">
 
   <link rel="mask-icon" href="https://github.githubassets.com/pinned-octocat.svg" color="#000000">
   <link rel="alternate icon" class="js-site-favicon" type="image/png" href="https://github.githubassets.com/favicons/favicon.png">
