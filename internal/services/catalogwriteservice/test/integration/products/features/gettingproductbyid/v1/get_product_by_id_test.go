@@ -106,7 +106,7 @@ var _ = Describe("Get Product by ID Feature", func() {
 							"Should return a product with the correct ID",
 							func() {
 								Expect(result.Product).NotTo(BeNil())
-								Expect(result.Product.ProductId).To(Equal(id))
+								Expect(result.Product.Id).To(Equal(id))
 							},
 						)
 					},

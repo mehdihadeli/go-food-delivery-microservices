@@ -8,6 +8,8 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/gormdbcontext"
+	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/datamodels"
 	dtosv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1/fxparams"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creatingproduct/v1/dtos"
@@ -49,7 +51,11 @@ func (c *createProductHandler) Handle(
 
 	var createProductResult *dtos.CreateProductResponseDto
 
-	result, err := c.CatalogsDBContext.AddProduct(ctx, product)
+	result, err := gormdbcontext.AddModel[*datamodel.ProductDataModel, *models.Product](
+		ctx,
+		c.CatalogsDBContext,
+		product,
+	)
 	if err != nil {
 		return nil, err
 	}

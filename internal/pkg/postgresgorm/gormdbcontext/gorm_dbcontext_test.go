@@ -1,7 +1,7 @@
 //go:build unit
 // +build unit
 
-package dbcontext
+package gormdbcontext
 
 import (
 	"context"
@@ -15,14 +15,12 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/zap"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
 	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/gormdbcontext"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/contracts"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/scopes"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/configurations/mappings"
-	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/datamodels"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 
 	"emperror.dev/errors"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/goccy/go-json"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/fx"
@@ -30,27 +28,60 @@ import (
 	"gorm.io/gorm"
 )
 
+// ProductDataModel data model
+type ProductDataModel struct {
+	Id          uuid.UUID `gorm:"primaryKey"`
+	Name        string
+	Description string
+	Price       float64
+	CreatedAt   time.Time `gorm:"default:current_timestamp"`
+	UpdatedAt   time.Time
+	// for soft delete - https://gorm.io/docs/delete.html#Soft-Delete
+	gorm.DeletedAt
+}
+
+// TableName overrides the table name used by ProductDataModel to `products` - https://gorm.io/docs/conventions.html#TableName
+func (p *ProductDataModel) TableName() string {
+	return "products"
+}
+
+func (p *ProductDataModel) String() string {
+	j, _ := json.Marshal(p)
+
+	return string(j)
+}
+
+// Product model
+type Product struct {
+	Id          uuid.UUID
+	Name        string
+	Description string
+	Price       float64
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
 // Define the suite
-type DBContextTestSuite struct {
+type GormDBContextTestSuite struct {
 	suite.Suite
-	items      []*datamodel.ProductDataModel
-	dbContext  *CatalogsGormDBContext
+	items      []*ProductDataModel
+	dbContext  contracts.IGormDBContext
 	app        *fxtest.App
 	dbFilePath string
 }
 
 // In order for 'go test' to run this suite, we need to create
 // a normal test function and pass our suite to suite.Run
-func TestDBContextTestSuite(t *testing.T) {
-	suite.Run(t, new(DBContextTestSuite))
+func TestGormDBContext(t *testing.T) {
+	suite.Run(t, new(GormDBContextTestSuite))
 }
 
-func (s *DBContextTestSuite) Test_FindProductByID() {
+func (s *GormDBContextTestSuite) Test_FindProductByID() {
 	s.Require().NotNil(s.dbContext)
 
 	id := s.items[0].Id
 
-	p, err := gormdbcontext.FindModelByID[*datamodel.ProductDataModel, *models.Product](
+	p, err := FindModelByID[*ProductDataModel, *Product](
 		context.Background(),
 		s.dbContext,
 		id,
@@ -61,25 +92,26 @@ func (s *DBContextTestSuite) Test_FindProductByID() {
 	s.Assert().Equal(p.Id, id)
 }
 
-func (s *DBContextTestSuite) Test_ExistsProductByID() {
+func (s *GormDBContextTestSuite) Test_ExistsProductByID() {
 	s.Require().NotNil(s.dbContext)
 
 	id := s.items[0].Id
 
-	exist := gormdbcontext.Exists[*datamodel.ProductDataModel](
+	exist := Exists[*ProductDataModel](
 		context.Background(),
 		s.dbContext,
 		id,
 	)
+
 	s.Require().True(exist)
 }
 
-func (s *DBContextTestSuite) Test_NoneExistsProductByID() {
+func (s *GormDBContextTestSuite) Test_NoneExistsProductByID() {
 	s.Require().NotNil(s.dbContext)
 
 	id := uuid.NewV4()
 
-	exist := gormdbcontext.Exists[*datamodel.ProductDataModel](
+	exist := Exists[*ProductDataModel](
 		context.Background(),
 		s.dbContext,
 		id,
@@ -88,19 +120,19 @@ func (s *DBContextTestSuite) Test_NoneExistsProductByID() {
 	s.Require().False(exist)
 }
 
-func (s *DBContextTestSuite) Test_DeleteProductByID() {
+func (s *GormDBContextTestSuite) Test_DeleteProductByID() {
 	s.Require().NotNil(s.dbContext)
 
 	id := s.items[0].Id
 
-	err := gormdbcontext.DeleteDataModelByID[*datamodel.ProductDataModel](
+	err := DeleteDataModelByID[*ProductDataModel](
 		context.Background(),
 		s.dbContext,
 		id,
 	)
 	s.Require().NoError(err)
 
-	p, err := gormdbcontext.FindModelByID[*datamodel.ProductDataModel, *models.Product](
+	p, err := FindModelByID[*ProductDataModel, *Product](
 		context.Background(),
 		s.dbContext,
 		id,
@@ -109,7 +141,7 @@ func (s *DBContextTestSuite) Test_DeleteProductByID() {
 	s.Require().Nil(p)
 
 	// https://gorm.io/docs/delete.html#Find-soft-deleted-records
-	var softDeletedProduct *datamodel.ProductDataModel
+	var softDeletedProduct *ProductDataModel
 	s.dbContext.DB().Scopes(scopes.FilterAllItemsWithSoftDeleted).First(&softDeletedProduct, id)
 	s.Require().NotNil(softDeletedProduct)
 
@@ -117,31 +149,27 @@ func (s *DBContextTestSuite) Test_DeleteProductByID() {
 	var allCount int64
 
 	// https://gorm.io/docs/advanced_query.html#Count
-	s.dbContext.DB().Model(&datamodel.ProductDataModel{}).Scopes(scopes.FilterAllItemsWithSoftDeleted).Count(&allCount)
+	s.dbContext.DB().Model(&ProductDataModel{}).Scopes(scopes.FilterAllItemsWithSoftDeleted).Count(&allCount)
 	s.Equal(allCount, int64(2))
 
-	s.dbContext.DB().Model(&datamodel.ProductDataModel{}).Scopes(scopes.SoftDeleted).Count(&deletedCount)
+	s.dbContext.DB().Model(&ProductDataModel{}).Scopes(scopes.SoftDeleted).Count(&deletedCount)
 	s.Equal(deletedCount, int64(1))
 }
 
-func (s *DBContextTestSuite) Test_CreateProduct() {
+func (s *GormDBContextTestSuite) Test_CreateProduct() {
 	s.Require().NotNil(s.dbContext)
 
-	item := &models.Product{
+	item := &Product{
 		Id:          uuid.NewV4(),
 		Name:        gofakeit.Name(),
 		Description: gofakeit.AdjectiveDescriptive(),
 		Price:       gofakeit.Price(100, 1000),
 	}
 
-	res, err := gormdbcontext.AddModel[*datamodel.ProductDataModel, *models.Product](
-		context.Background(),
-		s.dbContext,
-		item,
-	)
+	res, err := AddModel[*ProductDataModel, *Product](context.Background(), s.dbContext, item)
 	s.Require().NoError(err)
 
-	p, err := gormdbcontext.FindModelByID[*datamodel.ProductDataModel, *models.Product](
+	p, err := FindModelByID[*ProductDataModel, *Product](
 		context.Background(),
 		s.dbContext,
 		item.Id,
@@ -153,12 +181,12 @@ func (s *DBContextTestSuite) Test_CreateProduct() {
 	s.Assert().Equal(p.Id, res.Id)
 }
 
-func (s *DBContextTestSuite) Test_UpdateProduct() {
+func (s *GormDBContextTestSuite) Test_UpdateProduct() {
 	s.Require().NotNil(s.dbContext)
 
 	id := s.items[0].Id
 
-	p, err := gormdbcontext.FindModelByID[*datamodel.ProductDataModel, *models.Product](
+	p, err := FindModelByID[*ProductDataModel, *Product](
 		context.Background(),
 		s.dbContext,
 		id,
@@ -169,14 +197,10 @@ func (s *DBContextTestSuite) Test_UpdateProduct() {
 	item := p
 	item.Name = newName
 
-	res, err := gormdbcontext.UpdateModel[*datamodel.ProductDataModel, *models.Product](
-		context.Background(),
-		s.dbContext,
-		item,
-	)
+	res, err := UpdateModel[*ProductDataModel, *Product](context.Background(), s.dbContext, item)
 	s.Require().NoError(err)
 
-	p2, err := gormdbcontext.FindModelByID[*datamodel.ProductDataModel, *models.Product](
+	p2, err := FindModelByID[*ProductDataModel, *Product](
 		context.Background(),
 		s.dbContext,
 		id,
@@ -189,11 +213,11 @@ func (s *DBContextTestSuite) Test_UpdateProduct() {
 
 // TestSuite Hooks
 
-func (s *DBContextTestSuite) SetupTest() {
-	err := mappings.ConfigureProductsMappings()
+func (s *GormDBContextTestSuite) SetupTest() {
+	err := ConfigureProductsMappings()
 	s.Require().NoError(err)
 
-	var gormDBContext *CatalogsGormDBContext
+	var gormDBContext contracts.IGormDBContext
 	var gormOptions *gormPostgres.GormOptions
 
 	app := fxtest.New(
@@ -202,6 +226,7 @@ func (s *DBContextTestSuite) SetupTest() {
 		zap.Module,
 		fxlog.FxLogger,
 		gormPostgres.Module,
+		fx.Provide(NewGormDBContext),
 		fx.Decorate(
 			func(cfg *gormPostgres.GormOptions) (*gormPostgres.GormOptions, error) {
 				// using sql-lite with a database file
@@ -210,7 +235,6 @@ func (s *DBContextTestSuite) SetupTest() {
 				return cfg, nil
 			},
 		),
-		fx.Provide(NewCatalogsDBContext),
 		fx.Populate(&gormDBContext),
 		fx.Populate(&gormOptions),
 	).RequireStart()
@@ -222,7 +246,7 @@ func (s *DBContextTestSuite) SetupTest() {
 	s.initDB()
 }
 
-func (s *DBContextTestSuite) TearDownTest() {
+func (s *GormDBContextTestSuite) TearDownTest() {
 	err := s.cleanupDB()
 	s.Require().NoError(err)
 
@@ -231,7 +255,7 @@ func (s *DBContextTestSuite) TearDownTest() {
 	s.app.RequireStop()
 }
 
-func (s *DBContextTestSuite) initDB() {
+func (s *GormDBContextTestSuite) initDB() {
 	err := migrateGorm(s.dbContext.DB())
 	s.Require().NoError(err)
 
@@ -241,7 +265,7 @@ func (s *DBContextTestSuite) initDB() {
 	s.items = products
 }
 
-func (s *DBContextTestSuite) cleanupDB() error {
+func (s *GormDBContextTestSuite) cleanupDB() error {
 	sqldb, _ := s.dbContext.DB().DB()
 	e := sqldb.Close()
 	s.Require().NoError(e)
@@ -253,7 +277,7 @@ func (s *DBContextTestSuite) cleanupDB() error {
 }
 
 func migrateGorm(db *gorm.DB) error {
-	err := db.AutoMigrate(&datamodel.ProductDataModel{})
+	err := db.AutoMigrate(&ProductDataModel{})
 	if err != nil {
 		return err
 	}
@@ -261,8 +285,8 @@ func migrateGorm(db *gorm.DB) error {
 	return nil
 }
 
-func seedData(gormDB *gorm.DB) ([]*datamodel.ProductDataModel, error) {
-	products := []*datamodel.ProductDataModel{
+func seedData(gormDB *gorm.DB) ([]*ProductDataModel, error) {
+	products := []*ProductDataModel{
 		{
 			Id:          uuid.NewV4(),
 			Name:        gofakeit.Name(),
@@ -286,4 +310,18 @@ func seedData(gormDB *gorm.DB) ([]*datamodel.ProductDataModel, error) {
 	}
 
 	return products, nil
+}
+
+func ConfigureProductsMappings() error {
+	err := mapper.CreateMap[*ProductDataModel, *Product]()
+	if err != nil {
+		return err
+	}
+
+	err = mapper.CreateMap[*Product, *ProductDataModel]()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

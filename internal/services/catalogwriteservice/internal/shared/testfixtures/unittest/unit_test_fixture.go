@@ -13,10 +13,10 @@ import (
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/external/gromlog"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers/gormextensions"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/configurations/mappings"
-	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/models"
+	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/datamodels"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/data/dbcontext"
 
 	"emperror.dev/errors"
@@ -64,11 +64,11 @@ func NewUnitTestSharedFixture(t *testing.T) *UnitTestSharedFixture {
 func (c *UnitTestSharedFixture) BeginTx() {
 	c.Log.Info("starting transaction")
 	// seems when we `Begin` a transaction on gorm.DB (with SQLLite in-memory) our previous gormDB before transaction will remove and the new gormDB with tx will go on the memory
-	tx := c.CatalogDBContext.Begin()
-	gormContext := helpers.SetTxToContext(c.Ctx, tx)
+	tx := c.CatalogDBContext.DB().Begin()
+	gormContext := gormextensions.SetTxToContext(c.Ctx, tx)
 	c.Ctx = gormContext
 
-	//// works on both transaction and none-transactional dbcontext
+	//// works on both transaction and none-transactional gormdbcontext
 	//var productData []*datamodel.ProductDataModel
 	//var productData2 []*datamodel.ProductDataModel
 	//
@@ -77,7 +77,7 @@ func (c *UnitTestSharedFixture) BeginTx() {
 }
 
 func (c *UnitTestSharedFixture) CommitTx() {
-	tx := helpers.GetTxFromContextIfExists(c.Ctx)
+	tx := gormextensions.GetTxFromContextIfExists(c.Ctx)
 	if tx != nil {
 		c.Log.Info("committing transaction")
 		tx.Commit()
@@ -132,6 +132,22 @@ func (c *UnitTestSharedFixture) setupDB() {
 	c.initDB(dbContext)
 }
 
+func (c *UnitTestSharedFixture) createSQLLiteDBContext() *dbcontext.CatalogsGormDBContext {
+	// https://gorm.io/docs/connecting_to_the_database.html#SQLite
+	// https://github.com/glebarez/sqlite
+	// https://www.connectionstrings.com/sqlite/
+	gormSQLLiteDB, err := gorm.Open(
+		sqlite.Open(c.dbFilePath),
+		&gorm.Config{
+			Logger: gromlog.NewGormCustomLogger(defaultLogger.GetLogger()),
+		})
+	c.Require().NoError(err)
+
+	dbContext := dbcontext.NewCatalogsDBContext(gormSQLLiteDB)
+
+	return dbContext
+}
+
 func (c *UnitTestSharedFixture) initDB(dbContext *dbcontext.CatalogsGormDBContext) {
 	// migrations for our database
 	err := migrateGorm(dbContext)
@@ -145,7 +161,7 @@ func (c *UnitTestSharedFixture) initDB(dbContext *dbcontext.CatalogsGormDBContex
 }
 
 func (c *UnitTestSharedFixture) cleanupDB() error {
-	sqldb, _ := c.CatalogDBContext.DB.DB()
+	sqldb, _ := c.CatalogDBContext.DB().DB()
 	e := sqldb.Close()
 	c.Require().NoError(e)
 
@@ -155,24 +171,8 @@ func (c *UnitTestSharedFixture) cleanupDB() error {
 	return err
 }
 
-func (c *UnitTestSharedFixture) createSQLLiteDBContext() *dbcontext.CatalogsGormDBContext {
-	// https://gorm.io/docs/connecting_to_the_database.html#SQLite
-	// https://github.com/glebarez/sqlite
-	// https://www.connectionstrings.com/sqlite/
-	gormSQLLiteDB, err := gorm.Open(
-		sqlite.Open(c.dbFilePath),
-		&gorm.Config{
-			Logger: gromlog.NewGormCustomLogger(defaultLogger.GetLogger()),
-		})
-	c.Require().NoError(err)
-
-	dbContext := dbcontext.NewCatalogsDBContext(gormSQLLiteDB, c.Log)
-
-	return dbContext
-}
-
 func migrateGorm(dbContext *dbcontext.CatalogsGormDBContext) error {
-	err := dbContext.DB.AutoMigrate(&datamodel.ProductDataModel{})
+	err := dbContext.DB().AutoMigrate(&datamodel.ProductDataModel{})
 	if err != nil {
 		return err
 	}
@@ -201,7 +201,7 @@ func seedDataManually(
 	}
 
 	// seed data
-	err := dbContext.DB.CreateInBatches(products, len(products)).Error
+	err := dbContext.DB().CreateInBatches(products, len(products)).Error
 	if err != nil {
 		return nil, errors.Wrap(err, "error in seed database")
 	}

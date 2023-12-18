@@ -8,6 +8,7 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/grpcerrors"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
+	problemdetails "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/problemdetails"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/constants/telemetrytags"
 	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/errorutils"
 
@@ -29,7 +30,7 @@ func HttpTraceStatusFromSpan(span trace.Span, err error) error {
 	isError := err != nil
 
 	if customErrors.IsCustomError(err) {
-		httpError := problemDetails.ParseError(err)
+		httpError := problemdetails.ParseError(err)
 
 		return HttpTraceStatusFromSpanWithCode(
 			span,

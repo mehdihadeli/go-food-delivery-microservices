@@ -8,11 +8,11 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/cqrs"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers"
+	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers/gormextensions"
 	reflectionHelper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/reflectionhelper"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
-	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/models"
+	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/datamodels"
 	dto "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1/fxparams"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/searchingproduct/v1/dtos"
@@ -81,7 +81,7 @@ func (c *searchProductsHandler) prepareSearchDBQuery(
 		typeMapper.GetTypeFromGeneric[*datamodel.ProductDataModel](),
 	)
 
-	dbQuery := c.CatalogsDBContext.DB
+	dbQuery := c.CatalogsDBContext.DB()
 
 	for _, field := range fields {
 		if field.Type.Kind() != reflect.String {

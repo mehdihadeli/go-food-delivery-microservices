@@ -1,4 +1,4 @@
-package typeMapper
+package typemapper
 
 // https://stackoverflow.com/a/34722791/581476
 // https://stackoverflow.com/questions/7850140/how-do-you-create-a-new-instance-of-a-struct-from-its-type-at-run-time-in-go
@@ -184,20 +184,6 @@ func GetTypeName(input interface{}) string {
 	return fmt.Sprintf("*%s", t.Elem().Name())
 }
 
-// GetNonePointerTypeName returns the name of the type without its package name and its pointer
-func GetNonePointerTypeName(input interface{}) string {
-	if input == nil {
-		return ""
-	}
-
-	t := reflect.TypeOf(input)
-	if t.Kind() != reflect.Ptr {
-		return t.Name()
-	}
-
-	return t.Elem().Name()
-}
-
 func GetSnakeTypeName(input interface{}) string {
 	if input == nil {
 		return ""
@@ -211,6 +197,19 @@ func GetSnakeTypeName(input interface{}) string {
 	return strcase.ToSnake(t.Elem().Name())
 }
 
+func GetKebabTypeName(input interface{}) string {
+	if input == nil {
+		return ""
+	}
+
+	t := reflect.TypeOf(input)
+	if t.Kind() != reflect.Ptr {
+		return t.Name()
+	}
+
+	return strcase.ToKebab(t.Elem().Name())
+}
+
 func GetTypeNameByT[T any]() string {
 	t := reflect.TypeOf((*T)(nil)).Elem()
 	if t.Kind() != reflect.Ptr {
@@ -220,7 +219,17 @@ func GetTypeNameByT[T any]() string {
 	return fmt.Sprintf("*%s", t.Elem().Name())
 }
 
-func GetNonPointerTypeName(input interface{}) string {
+func GetNonePointerTypeNameByT[T any]() string {
+	t := reflect.TypeOf((*T)(nil)).Elem()
+	if t.Kind() != reflect.Ptr {
+		return t.Name()
+	}
+
+	return t.Elem().Name()
+}
+
+// GetNonePointerTypeName returns the name of the type without its package name and its pointer
+func GetNonePointerTypeName(input interface{}) string {
 	if input == nil {
 		return ""
 	}

@@ -10,9 +10,12 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/cqrs"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/gormdbcontext"
+	datamodels "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/datamodels"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1/fxparams"
 	creatingproductv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creatingproduct/v1"
 	creatingproductdtosv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/creatingproduct/v1/dtos"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/testfixtures/unittest"
 
 	"emperror.dev/errors"
@@ -71,7 +74,11 @@ func (c *createProductHandlerUnitTests) Test_Handle_Should_Create_New_Product_Wi
 
 	c.Bus.AssertNumberOfCalls(c.T(), "PublishMessage", 1)
 
-	res, err := c.CatalogDBContext.FindProductByID(c.Ctx, id)
+	res, err := gormdbcontext.FindModelByID[*datamodels.ProductDataModel, *models.Product](
+		c.Ctx,
+		c.CatalogDBContext,
+		id,
+	)
 	c.Require().NoError(err)
 
 	c.Assert().Equal(res.Id, id)

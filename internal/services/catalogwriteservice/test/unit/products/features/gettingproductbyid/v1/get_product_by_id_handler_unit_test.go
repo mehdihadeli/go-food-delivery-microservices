@@ -57,7 +57,7 @@ func (c *getProductByIdHandlerTest) Test_Handle_Should_Return_Correct_Product_By
 	c.Require().NoError(err)
 	c.Assert().NotNil(dto)
 	c.Assert().NotNil(dto.Product)
-	c.Assert().Equal(dto.Product.ProductId, product.Id)
+	c.Assert().Equal(dto.Product.Id, product.Id)
 	c.Assert().Equal(dto.Product.Name, product.Name)
 }
 
@@ -73,7 +73,7 @@ func (c *getProductByIdHandlerTest) Test_Handle_Should_Return_NotFound_Error_For
 	c.ErrorContains(
 		err,
 		fmt.Sprintf(
-			"product with id `%s` not found in the database",
+			"product_data_model with id `%s` not found in the database",
 			id.String(),
 		),
 	)
@@ -93,5 +93,5 @@ func (c *getProductByIdHandlerTest) Test_Handle_Should_Return_Error_For_Error_In
 	c.Nil(dto)
 	c.Require().Error(err)
 	c.True(customErrors.IsInternalServerError(err))
-	c.ErrorContains(err, "error in the mapping Product")
+	c.ErrorContains(err, "error in the mapping product")
 }

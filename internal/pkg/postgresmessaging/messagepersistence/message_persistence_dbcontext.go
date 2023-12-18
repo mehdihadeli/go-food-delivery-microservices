@@ -3,7 +3,7 @@ package messagepersistence
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers/gormextensions"
 
 	"gorm.io/gorm"
 )
@@ -26,7 +26,7 @@ func NewPostgresMessagePersistenceDBContext(
 func (c *PostgresMessagePersistenceDBContext) WithTx(
 	ctx context.Context,
 ) (*PostgresMessagePersistenceDBContext, error) {
-	tx, err := helpers.GetTxFromContext(ctx)
+	tx, err := gormextensions.GetTxFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (c *PostgresMessagePersistenceDBContext) WithTx(
 func (c *PostgresMessagePersistenceDBContext) WithTxIfExists(
 	ctx context.Context,
 ) *PostgresMessagePersistenceDBContext {
-	tx := helpers.GetTxFromContextIfExists(ctx)
+	tx := gormextensions.GetTxFromContextIfExists(ctx)
 	if tx == nil {
 		return c
 	}

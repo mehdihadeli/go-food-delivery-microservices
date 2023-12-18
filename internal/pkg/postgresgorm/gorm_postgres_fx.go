@@ -16,6 +16,7 @@ var Module = fx.Module(
 		provideConfig,
 		NewGorm,
 		NewSQLDB,
+
 		fx.Annotate(
 			NewGormHealthChecker,
 			fx.As(new(contracts.Health)),

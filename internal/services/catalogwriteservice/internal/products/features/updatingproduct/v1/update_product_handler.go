@@ -9,9 +9,12 @@ import (
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/gormdbcontext"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/datamodels"
 	dto "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1/fxparams"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updatingproduct/v1/events/integrationevents"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 
 	"github.com/mehdihadeli/go-mediatr"
 )
@@ -44,7 +47,11 @@ func (c *updateProductHandler) Handle(
 	ctx context.Context,
 	command *UpdateProduct,
 ) (*mediatr.Unit, error) {
-	product, err := c.CatalogsDBContext.FindProductByID(ctx, command.ProductID)
+	product, err := gormdbcontext.FindModelByID[*datamodels.ProductDataModel, *models.Product](
+		ctx,
+		c.CatalogsDBContext,
+		command.ProductID,
+	)
 	if err != nil {
 		return nil, customErrors.NewApplicationErrorWrapWithCode(
 			err,
@@ -61,7 +68,11 @@ func (c *updateProductHandler) Handle(
 	product.Description = command.Description
 	product.UpdatedAt = command.UpdatedAt
 
-	updatedProduct, err := c.CatalogsDBContext.UpdateProduct(ctx, product)
+	updatedProduct, err := gormdbcontext.UpdateModel[*datamodels.ProductDataModel, *models.Product](
+		ctx,
+		c.CatalogsDBContext,
+		product,
+	)
 	if err != nil {
 		return nil, customErrors.NewApplicationErrorWrap(
 			err,

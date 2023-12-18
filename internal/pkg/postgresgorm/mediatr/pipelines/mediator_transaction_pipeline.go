@@ -5,7 +5,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/cqrs"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/helpers/gormextensions"
 	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/typemapper"
 
 	"github.com/mehdihadeli/go-mediatr"
@@ -49,7 +49,7 @@ func (m *mediatorTransactionPipeline) Handle(
 		requestName,
 	)
 
-	gormContext := helpers.SetTxToContext(ctx, tx)
+	gormContext := gormextensions.SetTxToContext(ctx, tx)
 	ctx = gormContext
 
 	defer func() {

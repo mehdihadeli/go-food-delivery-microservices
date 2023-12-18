@@ -10,6 +10,8 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/cqrs"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/gormdbcontext"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/datamodels"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1/fxparams"
 	updatingoroductsv1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/updatingproduct/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/testfixtures/unittest"
@@ -71,8 +73,9 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Update_Product_With_V
 
 	c.Require().NoError(err)
 
-	updatedProduct, err := c.CatalogDBContext.FindProductByID(
+	updatedProduct, err := gormdbcontext.FindDataModelByID[*datamodels.ProductDataModel](
 		c.Ctx,
+		c.CatalogDBContext,
 		updateProductCommand.ProductID,
 	)
 	c.Require().NoError(err)

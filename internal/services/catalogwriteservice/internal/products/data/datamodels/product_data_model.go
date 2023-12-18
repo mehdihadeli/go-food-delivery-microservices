@@ -1,4 +1,4 @@
-package models
+package datamodels
 
 import (
 	"time"

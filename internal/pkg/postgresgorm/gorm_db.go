@@ -90,7 +90,9 @@ func createSQLLiteDB(dbFilePath string) (*gorm.DB, error) {
 	return gormSQLLiteDB, err
 }
 
-func NewSQLDB(orm *gorm.DB) (*sql.DB, error) { return orm.DB() }
+func NewSQLDB(orm *gorm.DB) (*sql.DB, error) {
+	return orm.DB()
+}
 
 func createPostgresDB(cfg *GormOptions) error {
 	var db *sql.DB

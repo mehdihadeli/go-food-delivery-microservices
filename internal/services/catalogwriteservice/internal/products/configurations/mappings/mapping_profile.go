@@ -2,7 +2,7 @@ package mappings
 
 import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/models"
+	datamodel "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/datamodels"
 	dtoV1 "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/models"
 	productsService "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/shared/grpc/genproto"
@@ -37,7 +37,7 @@ func ConfigureProductsMappings() error {
 				return nil
 			}
 			return &productsService.Product{
-				ProductId:   product.ProductId.String(),
+				ProductId:   product.Id.String(),
 				Name:        product.Name,
 				Description: product.Description,
 				Price:       product.Price,

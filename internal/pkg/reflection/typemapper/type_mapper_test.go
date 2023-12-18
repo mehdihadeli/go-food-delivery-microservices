@@ -1,87 +1,141 @@
-package typeMapper
+//go:build unit
+// +build unit
+
+package typemapper
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestTypes(t *testing.T) {
-	s := Test{A: 10}
-	s2 := &Test{A: 10}
+func Test_GetTypeNameByT(t *testing.T) {
+	pointerTypeName := GetTypeNameByT[*Test]()
+	nonePointerTypeName := GetTypeNameByT[Test]()
 
-	q2 := TypeByName("*typeMapper.Test")
-	q22 := InstanceByTypeName("*typeMapper.Test").(*Test)
-	q222 := InstancePointerByTypeName("*typeMapper.Test").(*Test)
-	q3 := TypeByNameAndImplementedInterface[ITest]("*typeMapper.Test")
-	q4 := EmptyInstanceByTypeNameAndImplementedInterface[ITest]("*typeMapper.Test")
+	require.Equal(t, pointerTypeName, "*Test")
+	require.Equal(t, nonePointerTypeName, "Test")
+}
 
-	c1 := GetTypeFromGeneric[Test]()
-	c2 := GetTypeFromGeneric[*Test]()
-	c3 := GetTypeFromGeneric[ITest]()
+func Test_GetNonePointerTypeNameByT(t *testing.T) {
+	pointerTypeName := GetNonePointerTypeNameByT[*Test]()
+	nonePointerTypeName := GetNonePointerTypeNameByT[Test]()
 
-	d1 := GetReflectType(Test{})
-	d2 := GetReflectType(&Test{})
-	d3 := GetReflectType((*ITest)(nil))
+	require.Equal(t, pointerTypeName, "Test")
+	require.Equal(t, nonePointerTypeName, "Test")
+}
 
-	q := TypeByName("typeMapper.Test")
-	q1 := InstanceByTypeName("typeMapper.Test").(Test)
-	q11 := InstancePointerByTypeName("typeMapper.Test").(*Test)
+func Test_TypeByName(t *testing.T) {
+	s1 := TypeByName("*typeMapper.Test")
+	s2 := TypeByName("typeMapper.Test")
+	s3 := TypeByName("*Test")
+	s4 := TypeByName("Test")
 
-	y := TypeByName("*Test")
-	y1 := InstanceByTypeName("*Test").(*Test)
-	y2 := InstancePointerByTypeName("*Test").(*Test)
+	assert.NotNil(t, s1)
+	assert.NotNil(t, s2)
+	assert.NotNil(t, s3)
+	assert.NotNil(t, s4)
+}
 
-	z := TypeByName("Test")
-	z1 := InstanceByTypeName("Test").(Test)
-	z2 := InstancePointerByTypeName("Test").(*Test)
+func Test_GetTypeName(t *testing.T) {
+	t1 := Test{A: 10}
+	t2 := &Test{A: 10}
 
-	r := GenericInstanceByT[*Test]()
-	r2 := GenericInstanceByT[Test]()
+	typeName1 := GetTypeName(t1)
+	typeName2 := GetTypeName(t2)
 
-	typeName := GetFullTypeName(s)
-	typeName2 := GetFullTypeName(s2)
-	typeName3 := GetTypeName(s2)
-	typeName4 := GetTypeName(s)
+	assert.Equal(t, "Test", typeName1)
+	assert.Equal(t, "*Test", typeName2)
+}
 
+func Test_GetFullTypeName(t *testing.T) {
+	t1 := Test{A: 10}
+	t2 := &Test{A: 10}
+
+	typeName1 := GetFullTypeName(t1)
+	typeName2 := GetFullTypeName(t2)
+
+	assert.Equal(t, "typeMapper.Test", typeName1)
+	assert.Equal(t, "*typeMapper.Test", typeName2)
+}
+
+func Test_InstanceByTypeName(t *testing.T) {
+	s1 := InstanceByTypeName("typeMapper.Test").(Test)
+	s1.A = 100
+	assert.NotNil(t, s1)
+	assert.NotZero(t, s1.A)
+
+	s2 := InstanceByTypeName("*typeMapper.Test").(*Test)
+	s2.A = 100
+	assert.NotNil(t, s2)
+	assert.NotZero(t, s2.A)
+
+	s3 := InstanceByTypeName("*Test").(*Test)
+	assert.NotNil(t, s3)
+
+	s4 := InstanceByTypeName("Test").(Test)
+	assert.NotNil(t, s4)
+}
+
+func Test_InstancePointerByTypeName(t *testing.T) {
+	s1 := InstancePointerByTypeName("*typeMapper.Test").(*Test)
+	s2 := InstancePointerByTypeName("typeMapper.Test").(*Test)
+	s3 := InstancePointerByTypeName("*Test").(*Test)
+	s4 := InstancePointerByTypeName("Test").(*Test)
+
+	assert.NotNil(t, s1)
+	assert.NotNil(t, s2)
+	assert.NotNil(t, s3)
+	assert.NotNil(t, s4)
+}
+
+func Test_GetTypeFromGeneric(t *testing.T) {
+	s1 := GetTypeFromGeneric[Test]()
+	s2 := GetTypeFromGeneric[*Test]()
+	s3 := GetTypeFromGeneric[ITest]()
+
+	assert.NotNil(t, s1)
+	assert.NotNil(t, s2)
+	assert.NotNil(t, s3)
+}
+
+func Test_GenericInstanceByT(t *testing.T) {
+	s1 := GenericInstanceByT[*Test]()
+	s2 := GenericInstanceByT[Test]()
+
+	assert.NotNil(t, s1)
+	assert.NotNil(t, s2)
+}
+
+func Test_TypeByNameAndImplementedInterface(t *testing.T) {
+	s1 := TypeByNameAndImplementedInterface[ITest]("*typeMapper.Test")
+
+	assert.NotNil(t, s1)
+}
+
+func Test_EmptyInstanceByTypeNameAndImplementedInterface(t *testing.T) {
+	s1 := EmptyInstanceByTypeNameAndImplementedInterface[ITest]("*typeMapper.Test")
+
+	assert.NotNil(t, s1)
+}
+
+func Test_GetReflectType(t *testing.T) {
+	s1 := GetReflectType(Test{})
+	s2 := GetReflectType(&Test{})
+	s3 := GetReflectType((*ITest)(nil))
+
+	assert.NotNil(t, s1)
+	assert.NotNil(t, s2)
+	assert.NotNil(t, s3)
+}
+
+func Test_GetPackageName(t *testing.T) {
 	pkName := GetPackageName(&Test{})
 	pkName2 := GetPackageName(Test{})
 
-	assert.Equal(t, "typeMapper", pkName)
-	assert.Equal(t, "typeMapper", pkName2)
-
-	assert.Equal(t, "typeMapper.Test", typeName)
-	assert.Equal(t, "*typeMapper.Test", typeName2)
-	assert.Equal(t, "*Test", typeName3)
-	assert.Equal(t, "Test", typeName4)
-
-	q1.A = 100
-	q22.A = 100
-
-	assert.NotNil(t, d1)
-	assert.NotNil(t, d2)
-	assert.NotNil(t, d3)
-	assert.NotNil(t, c1)
-	assert.NotNil(t, c2)
-	assert.NotNil(t, c3)
-	assert.NotNil(t, q)
-	assert.NotNil(t, q1)
-	assert.NotNil(t, q11)
-	assert.NotNil(t, q2)
-	assert.NotNil(t, q22)
-	assert.NotNil(t, q222)
-	assert.NotNil(t, q3)
-	assert.NotNil(t, q4)
-	assert.NotNil(t, r)
-	assert.NotNil(t, r2)
-	assert.NotNil(t, y)
-	assert.NotNil(t, y1)
-	assert.NotNil(t, y2)
-	assert.NotNil(t, z)
-	assert.NotNil(t, z1)
-	assert.NotNil(t, z2)
-	assert.NotZero(t, q1.A)
-	assert.NotZero(t, q22.A)
+	assert.Equal(t, "typemapper", pkName)
+	assert.Equal(t, "typemapper", pkName2)
 }
 
 type Test struct {

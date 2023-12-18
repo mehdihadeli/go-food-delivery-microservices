@@ -7,6 +7,8 @@ import (
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/cqrs"
 	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/gormdbcontext"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/data/datamodels"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/dtos/v1/fxparams"
 	integrationEvents "github.com/mehdihadeli/go-ecommerce-microservices/internal/services/catalogwriteservice/internal/products/features/deletingproduct/v1/events/integrationevents"
 
@@ -40,7 +42,7 @@ func (c *deleteProductHandler) Handle(
 	ctx context.Context,
 	command *DeleteProduct,
 ) (*mediatr.Unit, error) {
-	err := c.CatalogsDBContext.DeleteProductByID(ctx, command.ProductID)
+	err := gormdbcontext.DeleteDataModelByID[*datamodels.ProductDataModel](ctx, c.CatalogsDBContext, command.ProductID)
 	if err != nil {
 		return nil, err
 	}

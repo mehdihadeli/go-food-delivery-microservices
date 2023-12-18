@@ -1,4 +1,4 @@
-package typeMapper
+package typemapper
 
 import "unsafe"
 
