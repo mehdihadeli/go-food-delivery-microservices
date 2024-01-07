@@ -14,7 +14,7 @@ type gormDBContext struct {
 	db *gorm.DB
 }
 
-func NewGormDBContext(db *gorm.DB) contracts.IGormDBContext {
+func NewGormDBContext(db *gorm.DB) contracts.GormDBContext {
 	c := &gormDBContext{db: db}
 
 	return c
@@ -27,7 +27,7 @@ func (c *gormDBContext) DB() *gorm.DB {
 // WithTx creates a transactional DBContext with getting tx-gorm from the ctx. This will throw an error if the transaction does not exist.
 func (c *gormDBContext) WithTx(
 	ctx context.Context,
-) (contracts.IGormDBContext, error) {
+) (contracts.GormDBContext, error) {
 	tx, err := gormextensions.GetTxFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (c *gormDBContext) WithTx(
 // WithTxIfExists creates a transactional DBContext with getting tx-gorm from the ctx. not throw an error if the transaction is not existing and returns an existing database.
 func (c *gormDBContext) WithTxIfExists(
 	ctx context.Context,
-) contracts.IGormDBContext {
+) contracts.GormDBContext {
 	tx := gormextensions.GetTxFromContextIfExists(ctx)
 	if tx == nil {
 		return c

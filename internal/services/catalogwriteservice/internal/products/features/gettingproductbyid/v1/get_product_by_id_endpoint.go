@@ -50,14 +50,9 @@ func (ep *getProductByIdEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		query, err := NewGetProductById(request.ProductId)
+		query, err := NewGetProductByIdWithValidation(request.ProductId)
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(
-				err,
-				"query validation failed",
-			)
-
-			return validationErr
+			return err
 		}
 
 		queryResult, err := mediatr.Send[*GetProductById, *dtos.GetProductByIdResponseDto](

@@ -101,7 +101,7 @@ func Test_Get_Field_Value_For_Exported_Fields_And_Addressable_Struct(t *testing.
 
 	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(p).Elem()
-	name := GetFieldValue(v.FieldByName("Name")).Interface()
+	name := GetFieldValue(v.FieldByName("ShortTypeName")).Interface()
 	age := GetFieldValue(v.FieldByName("Age")).Interface()
 
 	assert.Equal(t, "John", name)
@@ -125,7 +125,7 @@ func Test_Get_Field_Value_For_Exported_Fields_And_UnAddressable_Struct(t *testin
 
 	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(&p).Elem()
-	name := GetFieldValue(v.FieldByName("Name")).Interface()
+	name := GetFieldValue(v.FieldByName("ShortTypeName")).Interface()
 	age := GetFieldValue(v.FieldByName("Age")).Interface()
 
 	assert.Equal(t, "John", name)
@@ -149,7 +149,7 @@ func Test_Set_Field_For_Exported_Fields_And_Addressable_Struct(t *testing.T) {
 
 	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(p).Elem()
-	name := GetFieldValue(v.FieldByName("Name"))
+	name := GetFieldValue(v.FieldByName("ShortTypeName"))
 	age := GetFieldValue(v.FieldByName("Age"))
 
 	SetFieldValue(name, "John")
@@ -179,7 +179,7 @@ func Test_Set_Field_For_Exported_Fields_And_UnAddressable_Struct(t *testing.T) {
 
 	// field by name only work on struct not pointer type so we should get Elem()
 	v := reflect.ValueOf(&p).Elem()
-	name := GetFieldValue(v.FieldByName("Name"))
+	name := GetFieldValue(v.FieldByName("ShortTypeName"))
 	age := GetFieldValue(v.FieldByName("Age"))
 
 	SetFieldValue(name, "John")
@@ -206,14 +206,14 @@ func Test_Set_Field_For_UnExported_Fields_And_UnAddressable_Struct(t *testing.T)
 
 func Test_Get_Unexported_Field_From_Method_And_Addressable_Struct(t *testing.T) {
 	p := &PersonPrivate{name: "John", age: 20}
-	name := GetFieldValueFromMethodAndObject(p, "Name")
+	name := GetFieldValueFromMethodAndObject(p, "ShortTypeName")
 
 	assert.Equal(t, "John", name.Interface())
 }
 
 func Test_Get_Unexported_Field_From_Method_And_UnAddressable_Struct(t *testing.T) {
 	p := PersonPrivate{name: "John", age: 20}
-	name := GetFieldValueFromMethodAndObject(p, "Name")
+	name := GetFieldValueFromMethodAndObject(p, "ShortTypeName")
 
 	assert.Equal(t, "John", name.Interface())
 }
@@ -224,7 +224,7 @@ func Test_Convert_NoPointer_Type_To_Pointer_Type_With_Addr(t *testing.T) {
 	p := PersonPrivate{name: "John", age: 20}
 	v := reflect.ValueOf(&p).Elem()
 	pointerType := v.Addr()
-	name := pointerType.MethodByName("Name").Call(nil)[0].Interface()
+	name := pointerType.MethodByName("ShortTypeName").Call(nil)[0].Interface()
 	age := pointerType.MethodByName("Age").Call(nil)[0].Interface()
 
 	assert.Equal(t, "John", name)

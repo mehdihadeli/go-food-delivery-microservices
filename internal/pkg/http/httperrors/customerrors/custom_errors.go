@@ -20,7 +20,7 @@ import (
 type customError struct {
 	statusCode int
 	message    string
-	err        error
+	error
 }
 
 type CustomError interface {
@@ -28,7 +28,7 @@ type CustomError interface {
 	contracts.Wrapper
 	contracts.Causer
 	contracts.Formatter
-	IsCustomError() bool
+	isCustomError()
 	Status() int
 	Message() string
 }
@@ -36,20 +36,19 @@ type CustomError interface {
 func NewCustomError(err error, code int, message string) CustomError {
 	m := &customError{
 		statusCode: code,
-		err:        err,
+		error:      err,
 		message:    message,
 	}
 
 	return m
 }
 
-func (e *customError) IsCustomError() bool {
-	return true
+func (e *customError) isCustomError() {
 }
 
 func (e *customError) Error() string {
-	if e.err != nil {
-		return e.message + ": " + e.err.Error()
+	if e.error != nil {
+		return e.error.Error()
 	}
 
 	return e.message
@@ -64,19 +63,25 @@ func (e *customError) Status() int {
 }
 
 func (e *customError) Cause() error {
-	return e.err
+	return e.error
 }
 
 func (e *customError) Unwrap() error {
-	return e.err
+	return e.error
 }
 
 func (e *customError) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			fmt.Fprintf(s, "%+v\n", e.Cause())
-			io.WriteString(s, e.message)
+			//%s	error messages separated by a colon and a space (": ")
+			//%q	double-quoted error messages separated by a colon and a space (": ")
+			//%v	one error message per line
+			//%+v	one error message per line and stack trace (if any)
+
+			// if we have a call-stacked error, +v shows callstack for this error
+			fmt.Fprintf(s, "%+v", e.Cause())
+			// io.WriteString(s, e.message)
 			return
 		}
 		fallthrough
@@ -104,8 +109,9 @@ func IsCustomError(err error) bool {
 		return true
 	}
 
+	// us, ok := errors.Cause(err).(ConflictError)
 	if errors.As(err, &customErr) {
-		return customErr.IsCustomError()
+		return true
 	}
 
 	return false

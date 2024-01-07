@@ -16,7 +16,7 @@ type AppOptions struct {
 }
 
 func NewAppOptions(environment environment.Environment) (*AppOptions, error) {
-	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[AppOptions]())
+	optionName := strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[AppOptions]())
 	cfg, err := config.BindConfigKey[*AppOptions](optionName, environment)
 	if err != nil {
 		return nil, err

@@ -39,7 +39,7 @@ func (h *RabbitmqHostOptions) HttpEndPoint() string {
 }
 
 func ProvideConfig(environment environment.Environment) (*RabbitmqOptions, error) {
-	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[RabbitmqOptions]())
+	optionName := strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[RabbitmqOptions]())
 	cfg, err := config.BindConfigKey[*RabbitmqOptions](optionName, environment)
 
 	return cfg, err

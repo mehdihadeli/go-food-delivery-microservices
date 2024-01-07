@@ -14,23 +14,23 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type postgresMessageService struct {
+type postgresMessagePersistenceService struct {
 	messagingDBContext *PostgresMessagePersistenceDBContext
 	messageSerializer  contratcs.MessageSerializer
 	logger             logger.Logger
 }
 
-func (m *postgresMessageService) Process(messageID string, ctx context.Context) error {
+func (m *postgresMessagePersistenceService) Process(messageID string, ctx context.Context) error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (m *postgresMessageService) ProcessAll(ctx context.Context) error {
+func (m *postgresMessagePersistenceService) ProcessAll(ctx context.Context) error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (m *postgresMessageService) AddPublishMessage(
+func (m *postgresMessagePersistenceService) AddPublishMessage(
 	messageEnvelope types.MessageEnvelopeTMessage,
 	ctx context.Context,
 ) error {
@@ -38,12 +38,15 @@ func (m *postgresMessageService) AddPublishMessage(
 	panic("implement me")
 }
 
-func (m *postgresMessageService) AddReceivedMessage(messageEnvelope types.MessageEnvelope, ctx context.Context) error {
+func (m *postgresMessagePersistenceService) AddReceivedMessage(
+	messageEnvelope types.MessageEnvelope,
+	ctx context.Context,
+) error {
 	// TODO implement me
 	panic("implement me")
 }
 
-func (m *postgresMessageService) AddMessageCore(
+func (m *postgresMessagePersistenceService) AddMessageCore(
 	ctx context.Context,
 	messageEnvelope types.MessageEnvelope,
 	deliveryType persistmessage.MessageDeliveryType,
@@ -96,14 +99,14 @@ func (m *postgresMessageService) AddMessageCore(
 func NewPostgresMessageService(
 	postgresMessagePersistenceDBContext *PostgresMessagePersistenceDBContext,
 	l logger.Logger,
-) persistmessage.MessageService {
-	return &postgresMessageService{
+) persistmessage.MessagePersistenceService {
+	return &postgresMessagePersistenceService{
 		messagingDBContext: postgresMessagePersistenceDBContext,
 		logger:             l,
 	}
 }
 
-func (m *postgresMessageService) Add(
+func (m *postgresMessagePersistenceService) Add(
 	ctx context.Context,
 	storeMessage *persistmessage.StoreMessage,
 ) error {
@@ -123,7 +126,7 @@ func (m *postgresMessageService) Add(
 	return nil
 }
 
-func (m *postgresMessageService) Update(
+func (m *postgresMessagePersistenceService) Update(
 	ctx context.Context,
 	storeMessage *persistmessage.StoreMessage,
 ) error {
@@ -143,7 +146,7 @@ func (m *postgresMessageService) Update(
 	return nil
 }
 
-func (m *postgresMessageService) ChangeState(
+func (m *postgresMessagePersistenceService) ChangeState(
 	ctx context.Context,
 	messageID uuid.UUID,
 	status persistmessage.MessageStatus,
@@ -165,7 +168,7 @@ func (m *postgresMessageService) ChangeState(
 	return err
 }
 
-func (m *postgresMessageService) GetAllActive(
+func (m *postgresMessagePersistenceService) GetAllActive(
 	ctx context.Context,
 ) ([]*persistmessage.StoreMessage, error) {
 	var storeMessages []*persistmessage.StoreMessage
@@ -183,7 +186,7 @@ func (m *postgresMessageService) GetAllActive(
 	return storeMessages, nil
 }
 
-func (m *postgresMessageService) GetByFilter(
+func (m *postgresMessagePersistenceService) GetByFilter(
 	ctx context.Context,
 	predicate func(*persistmessage.StoreMessage) bool,
 ) ([]*persistmessage.StoreMessage, error) {
@@ -199,7 +202,7 @@ func (m *postgresMessageService) GetByFilter(
 	return storeMessages, nil
 }
 
-func (m *postgresMessageService) GetById(
+func (m *postgresMessagePersistenceService) GetById(
 	ctx context.Context,
 	id uuid.UUID,
 ) (*persistmessage.StoreMessage, error) {
@@ -226,7 +229,7 @@ func (m *postgresMessageService) GetById(
 	return storeMessage, nil
 }
 
-func (m *postgresMessageService) Remove(
+func (m *postgresMessagePersistenceService) Remove(
 	ctx context.Context,
 	storeMessage *persistmessage.StoreMessage,
 ) (bool, error) {
@@ -261,7 +264,7 @@ func (m *postgresMessageService) Remove(
 	return true, nil
 }
 
-func (m *postgresMessageService) CleanupMessages(
+func (m *postgresMessagePersistenceService) CleanupMessages(
 	ctx context.Context,
 ) error {
 	predicate := func(sm *persistmessage.StoreMessage) bool {

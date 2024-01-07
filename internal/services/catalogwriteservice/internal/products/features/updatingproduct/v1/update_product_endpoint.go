@@ -51,19 +51,14 @@ func (ep *updateProductEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		command, err := NewUpdateProduct(
+		command, err := NewUpdateProductWithValidation(
 			request.ProductID,
 			request.Name,
 			request.Description,
 			request.Price,
 		)
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(
-				err,
-				"command validation failed",
-			)
-
-			return validationErr
+			return err
 		}
 
 		_, err = mediatr.Send[*UpdateProduct, *mediatr.Unit](

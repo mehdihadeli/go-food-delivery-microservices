@@ -160,7 +160,7 @@ func NewProblemDetailFromCodeAndDetail(
 }
 
 func Map[E error](problem ProblemDetailFunc[E]) {
-	errorType := typeMapper.GetTypeFromGeneric[E]()
+	errorType := typeMapper.GetGenericTypeByT[E]()
 	if errorType.Kind() == reflect.Interface {
 		types := typeMapper.TypesImplementedInterface[E]()
 		for _, t := range types {

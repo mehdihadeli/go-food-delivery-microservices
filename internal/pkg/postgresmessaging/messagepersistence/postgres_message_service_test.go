@@ -11,6 +11,7 @@ import (
 
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environment"
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/messaging/persistmessage"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/defaultlogger"
@@ -32,7 +33,7 @@ type postgresMessageServiceTest struct {
 	suite.Suite
 	DB                  *gorm.DB
 	logger              logger.Logger
-	messagingRepository persistmessage.MessageService
+	messagingRepository persistmessage.MessagePersistenceService
 	dbContext           *PostgresMessagePersistenceDBContext
 	storeMessages       []*persistmessage.StoreMessage
 	ctx                 context.Context
@@ -75,6 +76,7 @@ func (c *postgresMessageServiceTest) SetupTest() {
 		config.ModuleFunc(environment.Test),
 		zap.Module,
 		fxlog.FxLogger,
+		core.Module,
 		postgresgorm.Module,
 		fx.Decorate(
 			func(cfg *postgresgorm.GormOptions) (*postgresgorm.GormOptions, error) {
@@ -105,27 +107,6 @@ func (c *postgresMessageServiceTest) TearDownTest() {
 	c.app.RequireStop()
 }
 
-func (c *postgresMessageServiceTest) initDB() {
-	err := migrateGorm(c.dbContext.DB)
-	c.Require().NoError(err)
-
-	storeMessages, err := seedData(c.dbContext.DB)
-	c.Require().NoError(err)
-
-	c.storeMessages = storeMessages
-}
-
-func (c *postgresMessageServiceTest) cleanupDB() error {
-	sqldb, _ := c.dbContext.DB.DB()
-	e := sqldb.Close()
-	c.Require().NoError(e)
-
-	// removing sql-lite file
-	err := os.Remove(s.dbFilePath)
-
-	return err
-}
-
 //func (c *postgresMessageServiceTest) SetupTest() {
 //	ctx := context.Background()
 //	c.ctx = ctx
@@ -141,7 +122,7 @@ func (c *postgresMessageServiceTest) cleanupDB() error {
 
 func (c *postgresMessageServiceTest) BeginTx() {
 	c.logger.Info("starting transaction")
-	tx := c.dbContext.Begin()
+	tx := c.dbContext.DB().Begin()
 	gormContext := gormextensions.SetTxToContext(c.ctx, tx)
 	c.ctx = gormContext
 }
@@ -177,6 +158,27 @@ func (c *postgresMessageServiceTest) Test_Add() {
 
 	c.Assert().NotNil(m)
 	c.Assert().Equal(message.ID, m.ID)
+}
+
+func (c *postgresMessageServiceTest) initDB() {
+	err := migrateGorm(c.dbContext.DB())
+	c.Require().NoError(err)
+
+	storeMessages, err := seedData(c.dbContext.DB())
+	c.Require().NoError(err)
+
+	c.storeMessages = storeMessages
+}
+
+func (c *postgresMessageServiceTest) cleanupDB() error {
+	sqldb, _ := c.dbContext.DB().DB()
+	e := sqldb.Close()
+	c.Require().NoError(e)
+
+	// removing sql-lite file
+	err := os.Remove(c.dbFilePath)
+
+	return err
 }
 
 func migrateGorm(db *gorm.DB) error {

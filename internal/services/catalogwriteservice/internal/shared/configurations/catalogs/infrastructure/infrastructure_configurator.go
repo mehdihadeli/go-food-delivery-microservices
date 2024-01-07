@@ -8,7 +8,8 @@ import (
 	metricspipelines "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/metrics/mediatr/pipelines"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
 	tracingpipelines "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/mediatr/pipelines"
-	postgrespipelines "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/mediatr/pipelines"
+	postgrespipelines "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgresgorm/pipelines"
+	validationpieline "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/validation/pipeline"
 
 	"github.com/mehdihadeli/go-mediatr"
 	"gorm.io/gorm"
@@ -31,6 +32,7 @@ func (ic *InfrastructureConfigurator) ConfigInfrastructures() {
 		func(l logger.Logger, tracer tracing.AppTracer, metrics metrics.AppMetrics, db *gorm.DB) error {
 			err := mediatr.RegisterRequestPipelineBehaviors(
 				loggingpipelines.NewMediatorLoggingPipeline(l),
+				validationpieline.NewMediatorValidationPipeline(l),
 				tracingpipelines.NewMediatorTracingPipeline(
 					tracer,
 					tracingpipelines.WithLogger(l),

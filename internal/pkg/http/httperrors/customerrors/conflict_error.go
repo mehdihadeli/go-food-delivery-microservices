@@ -6,22 +6,34 @@ import (
 	"emperror.dev/errors"
 )
 
-func NewConflictError(message string) error {
-	ce := &conflictError{
-		CustomError: NewCustomError(nil, http.StatusConflict, message),
-	}
-	stackErr := errors.WithStackIf(ce)
+func NewConflictError(message string) ConflictError {
+	// `NewPlain` doesn't add stack-trace at all
+	conflictErrMessage := errors.NewPlain("conflict error")
+	// `WrapIf` add stack-trace if not added before
+	stackErr := errors.WrapIf(conflictErrMessage, message)
 
-	return stackErr
+	conflictError := &conflictError{
+		CustomError: NewCustomError(stackErr, http.StatusConflict, message),
+	}
+
+	return conflictError
 }
 
-func NewConflictErrorWrap(err error, message string) error {
-	ce := &conflictError{
-		CustomError: NewCustomError(err, http.StatusConflict, message),
+func NewConflictErrorWrap(err error, message string) ConflictError {
+	if err == nil {
+		return NewConflictError(message)
 	}
-	stackErr := errors.WithStackIf(ce)
 
-	return stackErr
+	// `WithMessage` doesn't add stack-trace at all
+	conflictErrMessage := errors.WithMessage(err, "conflict error")
+	// `WrapIf` add stack-trace if not added before
+	stackErr := errors.WrapIf(conflictErrMessage, message)
+
+	conflictError := &conflictError{
+		CustomError: NewCustomError(stackErr, http.StatusConflict, message),
+	}
+
+	return conflictError
 }
 
 type conflictError struct {
@@ -30,17 +42,24 @@ type conflictError struct {
 
 type ConflictError interface {
 	CustomError
+	isConflictError()
 }
 
-func (c *conflictError) isConflictError() bool {
-	return true
+func (c *conflictError) isConflictError() {
 }
 
 func IsConflictError(err error) bool {
-	var conflictError *conflictError
-	// us, ok := grpc_errors.Cause(err).(ConflictError)
+	var conflictError ConflictError
+
+	// https://github.com/golang/go/blob/master/src/net/error_windows.go#L10C2-L12C3
+	// this doesn't work for a nested notfound error, and we should use errors.As for traversing errors in all levels
+	if _, ok := err.(ConflictError); ok {
+		return true
+	}
+
+	// us, ok := errors.Cause(err).(ConflictError)
 	if errors.As(err, &conflictError) {
-		return conflictError.isConflictError()
+		return true
 	}
 
 	return false

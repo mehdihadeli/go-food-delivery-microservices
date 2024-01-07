@@ -112,7 +112,7 @@ func TypeByNameAndImplementedInterface[TInterface interface{}](
 	typeName string,
 ) reflect.Type {
 	// https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
-	implementedInterface := GetTypeFromGeneric[TInterface]()
+	implementedInterface := GetGenericTypeByT[TInterface]()
 	if types, ok := types[typeName]; ok {
 		for _, t := range types {
 			if t.Implements(implementedInterface) {
@@ -128,7 +128,7 @@ func TypesImplementedInterfaceWithFilterTypes[TInterface interface{}](
 	types []reflect.Type,
 ) []reflect.Type {
 	// https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
-	implementedInterface := GetTypeFromGeneric[TInterface]()
+	implementedInterface := GetGenericTypeByT[TInterface]()
 
 	var res []reflect.Type
 	for _, t := range types {
@@ -142,7 +142,7 @@ func TypesImplementedInterfaceWithFilterTypes[TInterface interface{}](
 
 func TypesImplementedInterface[TInterface interface{}]() []reflect.Type {
 	// https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
-	implementedInterface := GetTypeFromGeneric[TInterface]()
+	implementedInterface := GetGenericTypeByT[TInterface]()
 
 	var res []reflect.Type
 	for _, t := range types {
@@ -163,6 +163,12 @@ func GetFullTypeName(input interface{}) string {
 	}
 
 	t := reflect.TypeOf(input)
+	return t.String()
+}
+
+func GetGenericFullTypeNameByT[T any]() string {
+	t := reflect.TypeOf((*T)(nil)).Elem()
+
 	return t.String()
 }
 
@@ -210,7 +216,7 @@ func GetKebabTypeName(input interface{}) string {
 	return strcase.ToKebab(t.Elem().Name())
 }
 
-func GetTypeNameByT[T any]() string {
+func GetGenericTypeNameByT[T any]() string {
 	t := reflect.TypeOf((*T)(nil)).Elem()
 	if t.Kind() != reflect.Ptr {
 		return t.Name()
@@ -219,7 +225,7 @@ func GetTypeNameByT[T any]() string {
 	return fmt.Sprintf("*%s", t.Elem().Name())
 }
 
-func GetNonePointerTypeNameByT[T any]() string {
+func GetGenericNonePointerTypeNameByT[T any]() string {
 	t := reflect.TypeOf((*T)(nil)).Elem()
 	if t.Kind() != reflect.Ptr {
 		return t.Name()
@@ -282,7 +288,7 @@ func TypesByPackageName(pkgPath string, name string) []reflect.Type {
 	return nil
 }
 
-func GetTypeFromGeneric[T interface{}]() reflect.Type {
+func GetGenericTypeByT[T interface{}]() reflect.Type {
 	res := reflect.TypeOf((*T)(nil)).Elem()
 	return res
 }
@@ -315,7 +321,7 @@ func GetBaseReflectType(value interface{}) reflect.Type {
 
 func GenericInstanceByT[T any]() T {
 	// https://stackoverflow.com/questions/7132848/how-to-get-the-reflect-type-of-an-interface
-	typ := GetTypeFromGeneric[T]()
+	typ := GetGenericTypeByT[T]()
 	return getInstanceFromType(typ).(T)
 }
 
@@ -381,7 +387,7 @@ func getInstanceFromType(typ reflect.Type) interface{} {
 	// return reflect.New(typ).Elem().Interface()
 }
 
-func GetImplementInterfaceTypes[T any]() map[string][]reflect.Type {
+func GetGenericImplementInterfaceTypesT[T any]() map[string][]reflect.Type {
 	result := make(map[string][]reflect.Type)
 
 	// Get the interface type
@@ -405,4 +411,15 @@ func GetImplementInterfaceTypes[T any]() map[string][]reflect.Type {
 	}
 
 	return result
+}
+
+func ImplementedInterfaceT[T any](obj interface{}) bool {
+	// Get the interface type
+	interfaceType := reflect.TypeOf((*T)(nil)).Elem()
+
+	typ := GetReflectType(obj)
+
+	implemented := typ.Implements(interfaceType)
+
+	return implemented
 }

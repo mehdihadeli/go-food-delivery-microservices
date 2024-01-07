@@ -11,24 +11,24 @@ import (
 )
 
 func Test_GetTypeNameByT(t *testing.T) {
-	pointerTypeName := GetTypeNameByT[*Test]()
-	nonePointerTypeName := GetTypeNameByT[Test]()
+	pointerTypeName := GetGenericTypeNameByT[*Test]()
+	nonePointerTypeName := GetGenericTypeNameByT[Test]()
 
 	require.Equal(t, pointerTypeName, "*Test")
 	require.Equal(t, nonePointerTypeName, "Test")
 }
 
 func Test_GetNonePointerTypeNameByT(t *testing.T) {
-	pointerTypeName := GetNonePointerTypeNameByT[*Test]()
-	nonePointerTypeName := GetNonePointerTypeNameByT[Test]()
+	pointerTypeName := GetGenericNonePointerTypeNameByT[*Test]()
+	nonePointerTypeName := GetGenericNonePointerTypeNameByT[Test]()
 
 	require.Equal(t, pointerTypeName, "Test")
 	require.Equal(t, nonePointerTypeName, "Test")
 }
 
 func Test_TypeByName(t *testing.T) {
-	s1 := TypeByName("*typeMapper.Test")
-	s2 := TypeByName("typeMapper.Test")
+	s1 := TypeByName("*typemapper.Test")
+	s2 := TypeByName("typemapper.Test")
 	s3 := TypeByName("*Test")
 	s4 := TypeByName("Test")
 
@@ -55,18 +55,22 @@ func Test_GetFullTypeName(t *testing.T) {
 
 	typeName1 := GetFullTypeName(t1)
 	typeName2 := GetFullTypeName(t2)
+	typeName3 := GetGenericFullTypeNameByT[*Test]()
+	typeName4 := GetGenericFullTypeNameByT[Test]()
 
-	assert.Equal(t, "typeMapper.Test", typeName1)
-	assert.Equal(t, "*typeMapper.Test", typeName2)
+	assert.Equal(t, "typemapper.Test", typeName1)
+	assert.Equal(t, "*typemapper.Test", typeName2)
+	assert.Equal(t, "*typemapper.Test", typeName3)
+	assert.Equal(t, "typemapper.Test", typeName4)
 }
 
 func Test_InstanceByTypeName(t *testing.T) {
-	s1 := InstanceByTypeName("typeMapper.Test").(Test)
+	s1 := InstanceByTypeName("typemapper.Test").(Test)
 	s1.A = 100
 	assert.NotNil(t, s1)
 	assert.NotZero(t, s1.A)
 
-	s2 := InstanceByTypeName("*typeMapper.Test").(*Test)
+	s2 := InstanceByTypeName("*typemapper.Test").(*Test)
 	s2.A = 100
 	assert.NotNil(t, s2)
 	assert.NotZero(t, s2.A)
@@ -79,8 +83,8 @@ func Test_InstanceByTypeName(t *testing.T) {
 }
 
 func Test_InstancePointerByTypeName(t *testing.T) {
-	s1 := InstancePointerByTypeName("*typeMapper.Test").(*Test)
-	s2 := InstancePointerByTypeName("typeMapper.Test").(*Test)
+	s1 := InstancePointerByTypeName("*typemapper.Test").(*Test)
+	s2 := InstancePointerByTypeName("typemapper.Test").(*Test)
 	s3 := InstancePointerByTypeName("*Test").(*Test)
 	s4 := InstancePointerByTypeName("Test").(*Test)
 
@@ -91,9 +95,9 @@ func Test_InstancePointerByTypeName(t *testing.T) {
 }
 
 func Test_GetTypeFromGeneric(t *testing.T) {
-	s1 := GetTypeFromGeneric[Test]()
-	s2 := GetTypeFromGeneric[*Test]()
-	s3 := GetTypeFromGeneric[ITest]()
+	s1 := GetGenericTypeByT[Test]()
+	s2 := GetGenericTypeByT[*Test]()
+	s3 := GetGenericTypeByT[ITest]()
 
 	assert.NotNil(t, s1)
 	assert.NotNil(t, s2)
@@ -109,13 +113,13 @@ func Test_GenericInstanceByT(t *testing.T) {
 }
 
 func Test_TypeByNameAndImplementedInterface(t *testing.T) {
-	s1 := TypeByNameAndImplementedInterface[ITest]("*typeMapper.Test")
+	s1 := TypeByNameAndImplementedInterface[ITest]("*typemapper.Test")
 
 	assert.NotNil(t, s1)
 }
 
 func Test_EmptyInstanceByTypeNameAndImplementedInterface(t *testing.T) {
-	s1 := EmptyInstanceByTypeNameAndImplementedInterface[ITest]("*typeMapper.Test")
+	s1 := EmptyInstanceByTypeNameAndImplementedInterface[ITest]("*typemapper.Test")
 
 	assert.NotNil(t, s1)
 }

@@ -1,4 +1,4 @@
-package postgrespipelines
+package pipelines
 
 import (
 	"context"

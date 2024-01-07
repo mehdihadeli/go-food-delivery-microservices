@@ -41,7 +41,7 @@ func ProvideTracingConfig(
 	environment environment.Environment,
 ) (*TracingOptions, error) {
 	optionName := strcase.ToLowerCamel(
-		typeMapper.GetTypeNameByT[TracingOptions](),
+		typeMapper.GetGenericTypeNameByT[TracingOptions](),
 	)
 
 	return config.BindConfigKey[*TracingOptions](optionName, environment)

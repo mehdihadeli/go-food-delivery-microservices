@@ -8,7 +8,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[PostgresPgxOptions]())
+var optionName = strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[PostgresPgxOptions]())
 
 type PostgresPgxOptions struct {
 	Host     string `mapstructure:"host"`

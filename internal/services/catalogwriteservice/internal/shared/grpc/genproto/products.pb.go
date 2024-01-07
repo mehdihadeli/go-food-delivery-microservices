@@ -28,7 +28,7 @@ type Product struct {
 	unknownFields protoimpl.UnknownFields
 
 	ProductId   string                 `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
-	Name        string                 `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
+	Name        string                 `protobuf:"bytes,2,opt,name=ShortTypeName,proto3" json:"ShortTypeName,omitempty"`
 	Description string                 `protobuf:"bytes,3,opt,name=Description,proto3" json:"Description,omitempty"`
 	Price       float64                `protobuf:"fixed64,4,opt,name=Price,proto3" json:"Price,omitempty"`
 	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=CreatedAt,proto3" json:"CreatedAt,omitempty"`
@@ -114,7 +114,7 @@ type CreateProductReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name        string  `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
+	Name        string  `protobuf:"bytes,1,opt,name=ShortTypeName,proto3" json:"ShortTypeName,omitempty"`
 	Description string  `protobuf:"bytes,2,opt,name=Description,proto3" json:"Description,omitempty"`
 	Price       float64 `protobuf:"fixed64,3,opt,name=Price,proto3" json:"Price,omitempty"`
 }
@@ -225,7 +225,7 @@ type UpdateProductReq struct {
 	unknownFields protoimpl.UnknownFields
 
 	ProductId   string  `protobuf:"bytes,1,opt,name=Id,proto3" json:"Id,omitempty"`
-	Name        string  `protobuf:"bytes,2,opt,name=Name,proto3" json:"Name,omitempty"`
+	Name        string  `protobuf:"bytes,2,opt,name=ShortTypeName,proto3" json:"ShortTypeName,omitempty"`
 	Description string  `protobuf:"bytes,3,opt,name=Description,proto3" json:"Description,omitempty"`
 	Price       float64 `protobuf:"fixed64,4,opt,name=Price,proto3" json:"Price,omitempty"`
 }
@@ -519,6 +519,7 @@ var (
 		(*timestamppb.Timestamp)(nil), // 7: google.protobuf.Timestamp
 	}
 )
+
 var file_catalog_write_service_products_proto_depIdxs = []int32{
 	7, // 0: products_service.Product.CreatedAt:type_name -> google.protobuf.Timestamp
 	7, // 1: products_service.Product.UpdatedAt:type_name -> google.protobuf.Timestamp

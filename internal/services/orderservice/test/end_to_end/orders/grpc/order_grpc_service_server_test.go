@@ -62,7 +62,7 @@ package grpc
 //				Quantity:    uint64(gofakeit.Number(1, 10)),
 //				Description: gofakeit.AdjectiveDescriptive(),
 //				Price:       gofakeit.Price(100, 10000),
-//				Title:       gofakeit.Name(),
+//				Title:       gofakeit.ShortTypeName(),
 //			},
 //		},
 //	}

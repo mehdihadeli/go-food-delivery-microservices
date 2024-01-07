@@ -9,7 +9,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[LogOptions]())
+var optionName = strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[LogOptions]())
 
 type LogOptions struct {
 	LogLevel      string         `mapstructure:"level"`

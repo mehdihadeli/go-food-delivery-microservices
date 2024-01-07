@@ -1,6 +1,8 @@
 package v1
 
 import (
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
 	uuid "github.com/satori/go.uuid"
@@ -10,14 +12,19 @@ type DeleteProduct struct {
 	ProductID uuid.UUID
 }
 
-func NewDeleteProduct(productID uuid.UUID) (*DeleteProduct, error) {
+// NewDeleteProduct delete a product
+func NewDeleteProduct(productID uuid.UUID) *DeleteProduct {
 	command := &DeleteProduct{ProductID: productID}
-	err := command.Validate()
-	if err != nil {
-		return nil, err
-	}
 
-	return command, nil
+	return command
+}
+
+// NewDeleteProductWithValidation delete a product with inline validation - for defensive programming and ensuring validation even without using middleware
+func NewDeleteProductWithValidation(productID uuid.UUID) (*DeleteProduct, error) {
+	command := NewDeleteProduct(productID)
+	err := command.Validate()
+
+	return command, err
 }
 
 // IsTxRequest for enabling transactions on the mediatr pipeline
@@ -25,10 +32,15 @@ func (c *DeleteProduct) IsTxRequest() bool {
 	return true
 }
 
-func (p *DeleteProduct) Validate() error {
-	return validation.ValidateStruct(
-		p,
-		validation.Field(&p.ProductID, validation.Required),
-		validation.Field(&p.ProductID, is.UUIDv4),
+func (c *DeleteProduct) Validate() error {
+	err := validation.ValidateStruct(
+		c,
+		validation.Field(&c.ProductID, validation.Required),
+		validation.Field(&c.ProductID, is.UUIDv4),
 	)
+	if err != nil {
+		return customErrors.NewValidationErrorWrap(err, "validation error")
+	}
+
+	return nil
 }

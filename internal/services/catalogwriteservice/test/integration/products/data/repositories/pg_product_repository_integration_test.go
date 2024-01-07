@@ -125,7 +125,7 @@ var _ = Describe("Product Repository Suite", func() {
 		When("UpdateProduct function of ProductRepository executed", func() {
 			BeforeEach(func() {
 				// Update the name of the existing product
-				existingProduct.Name = "Updated Product Name"
+				existingProduct.Name = "Updated Product ShortTypeName"
 				_, err = integrationFixture.ProductRepository.UpdateProduct(ctx, existingProduct)
 			})
 
@@ -141,7 +141,7 @@ var _ = Describe("Product Repository Suite", func() {
 				)
 				Expect(err).To(BeNil())
 				Expect(updatedProduct).NotTo(BeNil())
-				Expect(updatedProduct.Name).To(Equal("Updated Product Name"))
+				Expect(updatedProduct.Name).To(Equal("Updated Product ShortTypeName"))
 				// You can add more assertions to validate other properties of the updated product
 			})
 		})

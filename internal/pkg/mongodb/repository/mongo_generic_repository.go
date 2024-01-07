@@ -65,8 +65,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Add(
 	ctx context.Context,
 	entity TEntity,
 ) error {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
@@ -112,8 +112,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetById(
 	ctx context.Context,
 	id uuid.UUID,
 ) (TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	if modelType == dataModelType {
@@ -163,8 +163,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetAll(
 	ctx context.Context,
 	listQuery *utils.ListQuery,
 ) (*utils.ListResult[TEntity], error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	if modelType == dataModelType {
@@ -196,13 +196,13 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Search(
 	searchTerm string,
 	listQuery *utils.ListQuery,
 ) (*utils.ListResult[TEntity], error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	if modelType == dataModelType {
 		fields := reflectionHelper.GetAllFields(
-			typeMapper.GetTypeFromGeneric[TEntity](),
+			typeMapper.GetGenericTypeByT[TEntity](),
 		)
 		var a bson.A
 		for _, field := range fields {
@@ -231,7 +231,7 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Search(
 		}
 		return result, nil
 	} else {
-		fields := reflectionHelper.GetAllFields(typeMapper.GetTypeFromGeneric[TDataModel]())
+		fields := reflectionHelper.GetAllFields(typeMapper.GetGenericTypeByT[TDataModel]())
 		var a bson.A
 		for _, field := range fields {
 			if field.Type.Kind() != reflect.String {
@@ -259,8 +259,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetByFilter(
 	ctx context.Context,
 	filters map[string]interface{},
 ) ([]TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	// we could use also bson.D{} for filtering, it is also a map
@@ -313,8 +313,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) FirstOrDefault(
 	ctx context.Context,
 	filters map[string]interface{},
 ) (TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	if modelType == dataModelType {
@@ -351,8 +351,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Update(
 	ctx context.Context,
 	entity TEntity,
 ) error {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 	ops := options.FindOneAndUpdate()
 	ops.SetReturnDocument(options.After)
@@ -434,8 +434,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) SkipTake(
 	skip int,
 	take int,
 ) ([]TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 	l := int64(take)
 	s := int64(skip)

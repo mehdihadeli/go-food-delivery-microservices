@@ -3,6 +3,8 @@ package v1
 import (
 	"time"
 
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	uuid "github.com/satori/go.uuid"
 )
@@ -20,7 +22,7 @@ func NewUpdateProduct(
 	name string,
 	description string,
 	price float64,
-) (*UpdateProduct, error) {
+) *UpdateProduct {
 	command := &UpdateProduct{
 		ProductID:   productID,
 		Name:        name,
@@ -28,12 +30,20 @@ func NewUpdateProduct(
 		Price:       price,
 		UpdatedAt:   time.Now(),
 	}
-	err := command.Validate()
-	if err != nil {
-		return nil, err
-	}
 
-	return command, nil
+	return command
+}
+
+func NewUpdateProductWithValidation(
+	productID uuid.UUID,
+	name string,
+	description string,
+	price float64,
+) (*UpdateProduct, error) {
+	command := NewUpdateProduct(productID, name, description, price)
+	err := command.Validate()
+
+	return command, err
 }
 
 // IsTxRequest for enabling transactions on the mediatr pipeline
@@ -41,21 +51,26 @@ func (c *UpdateProduct) IsTxRequest() bool {
 	return true
 }
 
-func (p *UpdateProduct) Validate() error {
-	return validation.ValidateStruct(
-		p,
-		validation.Field(&p.ProductID, validation.Required),
+func (c *UpdateProduct) Validate() error {
+	err := validation.ValidateStruct(
+		c,
+		validation.Field(&c.ProductID, validation.Required),
 		validation.Field(
-			&p.Name,
+			&c.Name,
 			validation.Required,
 			validation.Length(0, 255),
 		),
 		validation.Field(
-			&p.Description,
+			&c.Description,
 			validation.Required,
 			validation.Length(0, 5000),
 		),
-		validation.Field(&p.Price, validation.Required, validation.Min(0.0)),
-		validation.Field(&p.UpdatedAt, validation.Required),
+		validation.Field(&c.Price, validation.Required, validation.Min(0.0)),
+		validation.Field(&c.UpdatedAt, validation.Required),
 	)
+	if err != nil {
+		return customErrors.NewValidationErrorWrap(err, "validation error")
+	}
+
+	return nil
 }

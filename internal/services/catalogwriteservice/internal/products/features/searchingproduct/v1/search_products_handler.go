@@ -78,7 +78,7 @@ func (c *searchProductsHandler) prepareSearchDBQuery(
 	query *SearchProducts,
 ) *gorm.DB {
 	fields := reflectionHelper.GetAllFields(
-		typeMapper.GetTypeFromGeneric[*datamodel.ProductDataModel](),
+		typeMapper.GetGenericTypeByT[*datamodel.ProductDataModel](),
 	)
 
 	dbQuery := c.CatalogsDBContext.DB()

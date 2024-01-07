@@ -48,8 +48,8 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Add(
 	ctx context.Context,
 	entity TEntity,
 ) error {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 
 	if modelType == dataModelType {
 		err := r.db.WithContext(ctx).Create(entity).Error
@@ -95,8 +95,8 @@ func (r *gormGenericRepository[TDataModel, TEntity]) GetById(
 	ctx context.Context,
 	id uuid.UUID,
 ) (TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 
 	if modelType == dataModelType {
 		var model TEntity
@@ -161,7 +161,7 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Search(
 	listQuery *utils.ListQuery,
 ) (*utils.ListResult[TEntity], error) {
 	fields := reflectionHelper.GetAllFields(
-		typeMapper.GetTypeFromGeneric[TDataModel](),
+		typeMapper.GetGenericTypeByT[TDataModel](),
 	)
 	query := r.db
 
@@ -192,8 +192,8 @@ func (r *gormGenericRepository[TDataModel, TEntity]) GetByFilter(
 	ctx context.Context,
 	filters map[string]interface{},
 ) ([]TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	if modelType == dataModelType {
 		var models []TEntity
 		err := r.db.WithContext(ctx).Where(filters).Find(&models).Error
@@ -233,8 +233,8 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Update(
 	ctx context.Context,
 	entity TEntity,
 ) error {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	if modelType == dataModelType {
 		err := r.db.WithContext(ctx).Save(entity).Error
 		if err != nil {
@@ -295,8 +295,8 @@ func (r *gormGenericRepository[TDataModel, TEntity]) SkipTake(
 	skip int,
 	take int,
 ) ([]TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	if modelType == dataModelType {
 		var models []TEntity
 		err := r.db.WithContext(ctx).
@@ -335,8 +335,8 @@ func (r *gormGenericRepository[TDataModel, TEntity]) Find(
 	ctx context.Context,
 	specification specification.Specification,
 ) ([]TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	if modelType == dataModelType {
 		var models []TEntity
 		err := r.db.WithContext(ctx).

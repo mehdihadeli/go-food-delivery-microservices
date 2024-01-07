@@ -8,7 +8,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[ElasticOptions]())
+var optionName = strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[ElasticOptions]())
 
 type ElasticOptions struct {
 	URL string `mapstructure:"url"`

@@ -50,6 +50,6 @@ type Subscription struct {
 }
 
 func ProvideConfig(environment environment.Environment) (*EventStoreDbOptions, error) {
-	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[EventStoreDbOptions]())
+	optionName := strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[EventStoreDbOptions]())
 	return config.BindConfigKey[*EventStoreDbOptions](optionName, environment)
 }

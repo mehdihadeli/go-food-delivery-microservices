@@ -81,7 +81,7 @@ var _ = Describe("Update Product Feature", func() {
 			BeforeEach(func() {
 				command, err = v1.NewUpdateProduct(
 					existingProduct.Id,
-					"Updated Product Name",
+					"Updated Product ShortTypeName",
 					existingProduct.Description,
 					existingProduct.Price,
 				)
@@ -139,7 +139,7 @@ var _ = Describe("Update Product Feature", func() {
 				id = uuid.NewV4()
 				command, err = v1.NewUpdateProduct(
 					id,
-					"Updated Product Name",
+					"Updated Product ShortTypeName",
 					"Updated Product Description",
 					100,
 				)
@@ -193,7 +193,7 @@ var _ = Describe("Update Product Feature", func() {
 				BeforeEach(func() {
 					command, err = v1.NewUpdateProduct(
 						existingProduct.Id,
-						"Updated Product Name",
+						"Updated Product ShortTypeName",
 						existingProduct.Description,
 						existingProduct.Price,
 					)

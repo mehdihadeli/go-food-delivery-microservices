@@ -1,48 +1,68 @@
 package customErrors
 
 import (
+	"net/http"
+
 	"emperror.dev/errors"
 )
 
-func NewValidationError(message string) error {
-	bad := NewBadRequestError(message)
-	customErr := GetCustomError(bad)
-	ue := &validationError{
-		BadRequestError: customErr.(BadRequestError),
-	}
-	stackErr := errors.WithStackIf(ue)
+func NewValidationError(message string) ValidationError {
+	// `NewPlain` doesn't add stack-trace at all
+	validationErrMessage := errors.NewPlain("validation error")
+	// `WrapIf` add stack-trace if not added before
+	stackErr := errors.WrapIf(validationErrMessage, message)
 
-	return stackErr
+	validationError := &validationError{
+		CustomError: NewCustomError(stackErr, http.StatusBadRequest, message),
+	}
+
+	return validationError
 }
 
-func NewValidationErrorWrap(err error, message string) error {
-	bad := NewBadRequestErrorWrap(err, message)
-	customErr := GetCustomError(bad)
-	ue := &validationError{
-		BadRequestError: customErr.(BadRequestError),
+func NewValidationErrorWrap(err error, message string) ValidationError {
+	if err == nil {
+		return NewValidationError(message)
 	}
-	stackErr := errors.WithStackIf(ue)
 
-	return stackErr
+	// `WithMessage` doesn't add stack-trace at all
+	validationErrMessage := errors.WithMessage(err, "validation error")
+	// `WrapIf` add stack-trace if not added before
+	stackErr := errors.WrapIf(validationErrMessage, message)
+
+	validationError := &validationError{
+		CustomError: NewCustomError(stackErr, http.StatusBadRequest, message),
+	}
+
+	return validationError
 }
 
 type validationError struct {
-	BadRequestError
+	CustomError
 }
 
 type ValidationError interface {
 	BadRequestError
+	isValidationError()
 }
 
-func (v *validationError) isValidationError() bool {
-	return true
+func (v *validationError) isValidationError() {
+}
+
+func (v *validationError) isBadRequestError() {
 }
 
 func IsValidationError(err error) bool {
-	var validationError *validationError
-	// us, ok := grpc_errors.Cause(err).(ValidationError)
+	var validationError ValidationError
+
+	// https://github.com/golang/go/blob/master/src/net/error_windows.go#L10C2-L12C3
+	// this doesn't work for a nested validation error, and we should use errors.As for traversing errors in all levels
+	if _, ok := err.(ValidationError); ok {
+		return true
+	}
+
+	// us, ok := errors.Cause(err).(ValidationError)
 	if errors.As(err, &validationError) {
-		return validationError.isValidationError()
+		return true
 	}
 
 	return false

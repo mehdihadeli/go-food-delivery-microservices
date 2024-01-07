@@ -35,7 +35,7 @@ func ProvideMetricsConfig(
 	environment environment.Environment,
 ) (*MetricsOptions, error) {
 	optionName := strcase.ToLowerCamel(
-		typeMapper.GetTypeNameByT[MetricsOptions](),
+		typeMapper.GetGenericTypeNameByT[MetricsOptions](),
 	)
 
 	return config.BindConfigKey[*MetricsOptions](optionName, environment)

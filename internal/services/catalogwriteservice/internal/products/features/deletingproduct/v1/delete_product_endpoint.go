@@ -50,14 +50,9 @@ func (ep *deleteProductEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		command, err := NewDeleteProduct(request.ProductID)
+		command, err := NewDeleteProductWithValidation(request.ProductID)
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(
-				err,
-				"command validation failed",
-			)
-
-			return validationErr
+			return err
 		}
 
 		_, err = mediatr.Send[*DeleteProduct, *mediatr.Unit](

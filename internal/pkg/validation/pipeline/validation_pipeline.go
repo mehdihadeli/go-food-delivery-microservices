@@ -3,7 +3,6 @@ package pipeline
 import (
 	"context"
 
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/validation"
 
@@ -27,9 +26,7 @@ func (m mediatorValidationPipeline) Handle(
 	if ok {
 		err := v.Validate()
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(err, "validation failed")
-
-			return nil, validationErr
+			return nil, err
 		}
 	}
 

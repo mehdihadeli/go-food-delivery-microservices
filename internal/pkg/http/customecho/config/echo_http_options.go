@@ -11,7 +11,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[EchoHttpOptions]())
+var optionName = strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[EchoHttpOptions]())
 
 type EchoHttpOptions struct {
 	Port                string   `mapstructure:"port"                validate:"required" env:"TcpPort"`
@@ -21,7 +21,7 @@ type EchoHttpOptions struct {
 	IgnoreLogUrls       []string `mapstructure:"ignoreLogUrls"`
 	Timeout             int      `mapstructure:"timeout"                                 env:"Timeout"`
 	Host                string   `mapstructure:"host"                                    env:"Host"`
-	Name                string   `mapstructure:"name"                                    env:"Name"`
+	Name                string   `mapstructure:"name"                                    env:"ShortTypeName"`
 }
 
 func (c *EchoHttpOptions) Address() string {

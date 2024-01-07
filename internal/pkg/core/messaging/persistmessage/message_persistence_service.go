@@ -8,7 +8,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type MessageService interface {
+type MessagePersistenceService interface {
 	Add(ctx context.Context, storeMessage *StoreMessage) error
 	Update(ctx context.Context, storeMessage *StoreMessage) error
 	ChangeState(
@@ -27,11 +27,15 @@ type MessageService interface {
 	Process(messageID string, ctx context.Context) error
 	ProcessAll(ctx context.Context) error
 	AddPublishMessage(
-		messageEnvelope types.MessageEnvelopeTMessage,
+		messageEnvelope types.MessageEnvelope,
 		ctx context.Context,
 	) error
 	AddReceivedMessage(
 		messageEnvelope types.MessageEnvelope,
 		ctx context.Context,
 	) error
+	//AddInternalMessage(
+	//	internalCommand InternalMessage,
+	//	ctx context.Context,
+	//) error
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[RedisOptions]())
+var optionName = strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[RedisOptions]())
 
 type RedisOptions struct {
 	Host          string `mapstructure:"host"`

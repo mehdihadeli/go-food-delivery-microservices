@@ -11,7 +11,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-var optionName = strcase.ToLowerCamel(typeMapper.GetTypeNameByT[GormOptions]())
+var optionName = strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[GormOptions]())
 
 type GormOptions struct {
 	UseInMemory   bool   `mapstructure:"useInMemory"`

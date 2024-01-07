@@ -65,7 +65,7 @@ type Product struct {
 type GormDBContextTestSuite struct {
 	suite.Suite
 	items      []*ProductDataModel
-	dbContext  contracts.IGormDBContext
+	dbContext  contracts.GormDBContext
 	app        *fxtest.App
 	dbFilePath string
 }
@@ -217,7 +217,7 @@ func (s *GormDBContextTestSuite) SetupTest() {
 	err := ConfigureProductsMappings()
 	s.Require().NoError(err)
 
-	var gormDBContext contracts.IGormDBContext
+	var gormDBContext contracts.GormDBContext
 	var gormOptions *gormPostgres.GormOptions
 
 	app := fxtest.New(

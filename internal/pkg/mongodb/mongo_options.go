@@ -22,7 +22,7 @@ func provideConfig(
 	environment environment.Environment,
 ) (*MongoDbOptions, error) {
 	optionName := strcase.ToLowerCamel(
-		typeMapper.GetTypeNameByT[MongoDbOptions](),
+		typeMapper.GetGenericTypeNameByT[MongoDbOptions](),
 	)
 	return config.BindConfigKey[*MongoDbOptions](optionName, environment)
 }

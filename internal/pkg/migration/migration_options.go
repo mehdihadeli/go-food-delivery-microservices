@@ -28,7 +28,7 @@ type MigrationOptions struct {
 }
 
 func ProvideConfig(environment environment.Environment) (*MigrationOptions, error) {
-	optionName := strcase.ToLowerCamel(typeMapper.GetTypeNameByT[MigrationOptions]())
+	optionName := strcase.ToLowerCamel(typeMapper.GetGenericTypeNameByT[MigrationOptions]())
 
 	return config.BindConfigKey[*MigrationOptions](optionName, environment)
 }

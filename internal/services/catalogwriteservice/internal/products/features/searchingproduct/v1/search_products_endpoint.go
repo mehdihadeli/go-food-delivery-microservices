@@ -61,17 +61,12 @@ func (ep *searchProductsEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		query, err := NewSearchProducts(
+		query, err := NewSearchProductsWithValidation(
 			request.SearchText,
 			request.ListQuery,
 		)
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(
-				err,
-				"query validation failed",
-			)
-
-			return validationErr
+			return err
 		}
 
 		queryResult, err := mediatr.Send[*SearchProducts, *dtos.SearchProductsResponseDto](

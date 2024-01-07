@@ -50,18 +50,13 @@ func (ep *createProductEndpoint) handler() echo.HandlerFunc {
 			return badRequestErr
 		}
 
-		command, err := NewCreateProduct(
+		command, err := NewCreateProductWithValidation(
 			request.Name,
 			request.Description,
 			request.Price,
 		)
 		if err != nil {
-			validationErr := customErrors.NewValidationErrorWrap(
-				err,
-				"command validation failed",
-			)
-
-			return validationErr
+			return err
 		}
 
 		result, err := mediatr.Send[*CreateProduct, *dtos.CreateProductResponseDto](

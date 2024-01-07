@@ -148,7 +148,7 @@ func (m *messagingMetricsPipeline) Handle(
 //
 //	switch {
 //	case strings.Contains(typeMapper.GetPackageName(request), "command") || strings.Contains(typeMapper.GetPackageName(request), "commands"):
-//		requestNameAttribute = app.CommandName
+//		requestNameAttribute = app.ShortTypeName
 //		requestAttribute = app.Command
 //		requestResultName = app.CommandResultName
 //		requestResult = app.CommandResult

@@ -42,7 +42,7 @@ func StartConsumerSpan(
 	opts := getTraceOptions(meta, payload, consumerTracingOptions)
 
 	// https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/trace/semantic_conventions/messaging.md#span-name
-	// SpanName = Destination Name + Operation Name
+	// SpanName = Destination ShortTypeName + Operation ShortTypeName
 	ctx, span := tracing.MessagingTracer.Start(
 		parentSpanContext,
 		fmt.Sprintf("%s %s", consumerTracingOptions.Destination, "receive"),

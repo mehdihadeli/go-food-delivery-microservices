@@ -17,7 +17,7 @@ import (
 
 func Exists[TDataModel interface{}](
 	ctx context.Context,
-	dbContext contracts.IGormDBContext,
+	dbContext contracts.GormDBContext,
 	id uuid.UUID,
 ) bool {
 	var count int64
@@ -31,7 +31,7 @@ func Exists[TDataModel interface{}](
 
 func FindModelByID[TDataModel interface{}, TModel interface{}](
 	ctx context.Context,
-	dbContext contracts.IGormDBContext,
+	dbContext contracts.GormDBContext,
 	id uuid.UUID,
 ) (TModel, error) {
 	var dataModel TDataModel
@@ -44,8 +44,8 @@ func FindModelByID[TDataModel interface{}, TModel interface{}](
 	// result := c.WithContext(ctx).First(&TDataModel{Id: id})
 	// result := c.WithContext(ctx).Scopes(scopes.FilterByID(id)).First(&dataModel)
 
-	modelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TModel]())
-	dataModelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TDataModel]())
+	modelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TModel]())
+	dataModelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TDataModel]())
 
 	result := dbContext.DB().WithContext(ctx).First(&dataModel, id)
 	if result.Error != nil {
@@ -74,7 +74,7 @@ func FindModelByID[TDataModel interface{}, TModel interface{}](
 
 func FindDataModelByID[TDataModel interface{}](
 	ctx context.Context,
-	dbContext contracts.IGormDBContext,
+	dbContext contracts.GormDBContext,
 	id uuid.UUID,
 ) (TDataModel, error) {
 	var dataModel TDataModel
@@ -87,7 +87,7 @@ func FindDataModelByID[TDataModel interface{}](
 	// result := c.WithContext(ctx).First(&TDataModel{Id: id})
 	// result := c.WithContext(ctx).Scopes(scopes.FilterByID(id)).First(&dataModel)
 
-	dataModelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TDataModel]())
+	dataModelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TDataModel]())
 
 	result := dbContext.DB().WithContext(ctx).First(&dataModel, id)
 	if result.Error != nil {
@@ -109,12 +109,12 @@ func FindDataModelByID[TDataModel interface{}](
 // DeleteDataModelByID delete the data-model inner a tx if exists
 func DeleteDataModelByID[TDataModel interface{}](
 	ctx context.Context,
-	dbContext contracts.IGormDBContext,
+	dbContext contracts.GormDBContext,
 	id uuid.UUID,
 ) error {
 	txDBContext := dbContext.WithTxIfExists(ctx)
 
-	dataModelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TDataModel]())
+	dataModelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TDataModel]())
 
 	exists := Exists[TDataModel](ctx, dbContext, id)
 	if !exists {
@@ -149,13 +149,13 @@ func DeleteDataModelByID[TDataModel interface{}](
 // AddModel add the model inner a tx if exists
 func AddModel[TDataModel interface{}, TModel interface{}](
 	ctx context.Context,
-	dbContext contracts.IGormDBContext,
+	dbContext contracts.GormDBContext,
 	model TModel,
 ) (TModel, error) {
 	txDBContext := dbContext.WithTxIfExists(ctx)
 
-	dataModelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TDataModel]())
-	modelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TModel]())
+	dataModelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TDataModel]())
+	modelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TModel]())
 
 	dataModel, err := mapper.Map[TDataModel](model)
 	if err != nil {
@@ -190,12 +190,12 @@ func AddModel[TDataModel interface{}, TModel interface{}](
 // AddDataModel add the data-model inner a tx if exists
 func AddDataModel[TDataModel interface{}](
 	ctx context.Context,
-	dbContext contracts.IGormDBContext,
+	dbContext contracts.GormDBContext,
 	dataModel TDataModel,
 ) (TDataModel, error) {
 	txDBContext := dbContext.WithTxIfExists(ctx)
 
-	dataModelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TDataModel]())
+	dataModelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TDataModel]())
 
 	// https://gorm.io/docs/create.html
 	result := txDBContext.DB().WithContext(ctx).Create(dataModel)
@@ -214,13 +214,13 @@ func AddDataModel[TDataModel interface{}](
 // UpdateModel update the model inner a tx if exists
 func UpdateModel[TDataModel interface{}, TModel interface{}](
 	ctx context.Context,
-	dbContext contracts.IGormDBContext,
+	dbContext contracts.GormDBContext,
 	model TModel,
 ) (TModel, error) {
 	txDBContext := dbContext.WithTxIfExists(ctx)
 
-	dataModelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TDataModel]())
-	modelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TModel]())
+	dataModelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TDataModel]())
+	modelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TModel]())
 
 	dataModel, err := mapper.Map[TDataModel](model)
 	if err != nil {
@@ -255,12 +255,12 @@ func UpdateModel[TDataModel interface{}, TModel interface{}](
 // UpdateDataModel update the data-model inner a tx if exists
 func UpdateDataModel[TDataModel interface{}](
 	ctx context.Context,
-	dbContext contracts.IGormDBContext,
+	dbContext contracts.GormDBContext,
 	dataModel TDataModel,
 ) (TDataModel, error) {
 	txDBContext := dbContext.WithTxIfExists(ctx)
 
-	dataModelName := strcase.ToSnake(typeMapper.GetNonePointerTypeNameByT[TDataModel]())
+	dataModelName := strcase.ToSnake(typeMapper.GetGenericNonePointerTypeNameByT[TDataModel]())
 
 	// https://gorm.io/docs/update.html
 	result := txDBContext.DB().WithContext(ctx).Updates(dataModel)

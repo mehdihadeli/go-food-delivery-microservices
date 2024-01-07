@@ -3,6 +3,9 @@ package v1
 import (
 	"time"
 
+	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/cqrs"
+	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/httperrors/customerrors"
+
 	validation "github.com/go-ozzo/ozzo-validation"
 	uuid "github.com/satori/go.uuid"
 )
@@ -11,6 +14,7 @@ import (
 // https://github.com/go-playground/validator
 
 type CreateProduct struct {
+	cqrs.Command
 	ProductID   uuid.UUID
 	Name        string
 	Description string
@@ -18,33 +22,42 @@ type CreateProduct struct {
 	CreatedAt   time.Time
 }
 
+// NewCreateProduct Create a new product
 func NewCreateProduct(
 	name string,
 	description string,
 	price float64,
-) (*CreateProduct, error) {
+) *CreateProduct {
 	command := &CreateProduct{
+		Command:     cqrs.NewCommandByT[CreateProduct](),
 		ProductID:   uuid.NewV4(),
 		Name:        name,
 		Description: description,
 		Price:       price,
 		CreatedAt:   time.Now(),
 	}
-	err := command.Validate()
-	if err != nil {
-		return nil, err
-	}
 
-	return command, nil
+	return command
 }
 
-// IsTxRequest for enabling transactions on the mediatr pipeline
+// NewCreateProductWithValidation Create a new product with inline validation - for defensive programming and ensuring validation even without using middleware
+func NewCreateProductWithValidation(
+	name string,
+	description string,
+	price float64,
+) (*CreateProduct, error) {
+	command := NewCreateProduct(name, description, price)
+	err := command.Validate()
+
+	return command, err
+}
+
 func (c *CreateProduct) IsTxRequest() bool {
 	return true
 }
 
 func (c *CreateProduct) Validate() error {
-	return validation.ValidateStruct(
+	err := validation.ValidateStruct(
 		c,
 		validation.Field(&c.ProductID, validation.Required),
 		validation.Field(
@@ -64,4 +77,9 @@ func (c *CreateProduct) Validate() error {
 		),
 		validation.Field(&c.CreatedAt, validation.Required),
 	)
+	if err != nil {
+		return customErrors.NewValidationErrorWrap(err, "validation error")
+	}
+
+	return nil
 }
