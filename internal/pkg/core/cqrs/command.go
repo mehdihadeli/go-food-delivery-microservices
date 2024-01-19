@@ -2,16 +2,21 @@ package cqrs
 
 type command struct {
 	TypeInfo
+	Request
 }
 
 type Command interface {
 	isCommand()
 
+	Request
 	TypeInfo
 }
 
 func NewCommandByT[T any]() Command {
-	c := &command{TypeInfo: NewTypeInfoT[T]()}
+	c := &command{
+		TypeInfo: NewTypeInfoT[T](),
+		Request:  NewRequest(),
+	}
 
 	return c
 }

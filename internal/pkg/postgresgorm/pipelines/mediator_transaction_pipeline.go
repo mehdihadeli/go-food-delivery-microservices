@@ -34,8 +34,8 @@ func (m *mediatorTransactionPipeline) Handle(
 ) (interface{}, error) {
 	requestName := typeMapper.GetSnakeTypeName(request)
 
-	txRequest, ok := request.(cqrs.ITxRequest)
-	if !ok || !txRequest.IsTxRequest() {
+	txRequest, ok := request.(cqrs.TxRequest)
+	if !ok || !txRequest.isTxRequest() {
 		return next(ctx)
 	}
 

@@ -34,7 +34,7 @@ func (c *deleteProductHandler) RegisterHandler() error {
 }
 
 // IsTxRequest for enabling transactions on the mediatr pipeline
-func (c *deleteProductHandler) IsTxRequest() bool {
+func (c *deleteProductHandler) isTxRequest() bool {
 	return true
 }
 

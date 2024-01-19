@@ -52,7 +52,7 @@ func NewCreateProductWithValidation(
 	return command, err
 }
 
-func (c *CreateProduct) IsTxRequest() bool {
+func (c *CreateProduct) isTxRequest() bool {
 	return true
 }
 

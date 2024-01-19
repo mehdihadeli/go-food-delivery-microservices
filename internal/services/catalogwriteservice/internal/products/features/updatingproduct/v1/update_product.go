@@ -47,7 +47,7 @@ func NewUpdateProductWithValidation(
 }
 
 // IsTxRequest for enabling transactions on the mediatr pipeline
-func (c *UpdateProduct) IsTxRequest() bool {
+func (c *UpdateProduct) isTxRequest() bool {
 	return true
 }
 

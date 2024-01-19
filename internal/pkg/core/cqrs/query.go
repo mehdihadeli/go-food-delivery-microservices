@@ -2,15 +2,21 @@ package cqrs
 
 type query struct {
 	TypeInfo
+	Request
 }
 
 type Query interface {
-	TypeInfo
 	isQuery()
+
+	Request
+	TypeInfo
 }
 
 func NewQueryByT[T any]() Query {
-	return &query{TypeInfo: NewTypeInfoT[T]()}
+	return &query{
+		TypeInfo: NewTypeInfoT[T](),
+		Request:  NewRequest(),
+	}
 }
 
 func (q *query) isQuery() {

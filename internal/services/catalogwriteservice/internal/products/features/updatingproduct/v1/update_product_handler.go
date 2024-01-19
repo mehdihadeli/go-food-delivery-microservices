@@ -39,7 +39,7 @@ func (c *updateProductHandler) RegisterHandler() error {
 }
 
 // IsTxRequest for enabling transactions on the mediatr pipeline
-func (c *updateProductHandler) IsTxRequest() bool {
+func (c *updateProductHandler) isTxRequest() bool {
 	return true
 }
 
