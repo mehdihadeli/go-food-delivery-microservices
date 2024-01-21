@@ -1,5 +1,0 @@
-#https://github.com/fdaines/arch-go
-cyclesRules:
-  - package: "**.cmd"
-    shouldNotContainCycles: true
-    
