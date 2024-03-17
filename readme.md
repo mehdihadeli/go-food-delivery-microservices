@@ -102,7 +102,7 @@ In this project I used [vertical slice architecture](https://jimmybogard.com/ver
 
 ![](./assets/vsa2.png)
 
-Also here I used [CQRS](https://www.eventecommerce.com/cqrs-pattern) to decompose my features into very small parts that make our application:
+Also here I used [CQRS](https://www.eventstore.com/cqrs-pattern) to decompose my features into very small parts that make our application:
 
 - maximize performance, scalability, and simplicity.
 - adding new features to this mechanism is very easy without any breaking changes in another part of our codes. New features only add code, we're not changing shared code and worrying about side effects.
