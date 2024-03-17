@@ -6,37 +6,37 @@
 
 [![Gitpod](https://img.shields.io/static/v1?style=for-the-badge&message=Open%20in%20Gitpod&color=222222&logo=Gitpod&logoColor=FFAE33&label=)](https://gitpod.io/#https://github.com/mehdihadeli/go-food-delivery-microservicess)
 
-> A practical food delivery microservices, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture** and **Dependency Injection**. For communication between independent services, We use asynchronous messaging with using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
+> `Go Food Delivery Microservices` is a fictional food delivery microservices, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture** and **Dependency Injection**. For communication between independent services, We use asynchronous messaging using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
 
 **You can use this project as a template to build your Backend project in the Go language on top of this project.**
 
-💡 This application is not `business oriented` and my focus is mostly on technical part, I just want to implement a sample with using different technologies, software architecture design, principles and all the thing we need for creating a microservices app.
+💡 This application is not `business-oriented` and my focus is mostly on the technical part, I just want to implement a sample using different technologies, software architecture design, principles, and all the things we need for creating a microservices app.
 
-🚀 This Application is `in-progress` and I will add new features and technologies over time.
+🚀 This Application is `in progress` and I will add new features and technologies over time.
 
-For your simplest golang projects, you can use my `go-vertical-slice-template` project:
+For your simplest Golang projects, you can use my `go-vertical-slice-template` project:
 
 - [https://github.com/mehdihadeli/go-vertical-slice-template](https://github.com/mehdihadeli/go-vertical-slice-template)
 
-For more advance projects, with two `microservices` and `modular monolith architecture`, check the C# version:
+For more advanced projects, with two `microservices` and `modular monolith architecture`, check the C# version:
 
 - [https://github.com/mehdihadeli/food-delivery-microservices](https://github.com/mehdihadeli/food-delivery-microservices)
 - [https://github.com/mehdihadeli/food-delivery-modular-monolith](https://github.com/mehdihadeli/food-delivery-modular-monolith)
 
 ## Features
 
-- ✅ Using `Vertical Slice Architecture` as a high level architecture
+- ✅ Using `Vertical Slice Architecture` as a high-level architecture
 - ✅ Using `Event Driven Architecture` on top of RabbitMQ Message Broker with a custom [Event Bus](pkg/messaging/bus/)
-- ✅ Using `Data Centric Architecture` based on CRUD in [Catalogs Read Service](services/catalogs/read_service/)
+- ✅ Using `Data-Centric Architecture` based on CRUD in [Catalogs Read Service](services/catalogs/read_service/)
 - ✅ Using `Event Sourcing` in `Audit Based` services like [Orders Service](services/orders/)
 - ✅ Using `CQRS Pattern` and `Mediator Pattern`on top of [Go-MediatR](https://github.com/mehdihadeli/Go-MediatR) library
 - ✅ Using `Dependency Injection` and `Inversion of Control`on top of [uber-go/fx](https://github.com/uber-go/fx) library
 - ✅ Using RESTFul api with [Echo](https://github.com/labstack/echo) framework and using swagger with [swaggo/swag](https://github.com/swaggo/swag) library
 - ✅ Using gRpc for internal service communication
 - ✅ Using [go-playground/validator](https://github.com/go-playground/validator) and [go-ozzo/ozzo-validation](https://github.com/go-ozzo/ozzo-validation) for validating input data in the REST and gRpc
-- ✅ Using `Postgres` and `EventStoreDB` for write databases with fully supports transactions(ACID)
+- ✅ Using `Postgres` and `EventStoreDB` to write databases with fully supported transactions(ACID)
 - ✅ Using `MongoDB` and `Elastic Search` for read databases (NOSQL)
-- ✅ Using `OpenTelemetry` for collection `Distributed Tracing` with using Jaeger and Zipkin
+- ✅ Using `OpenTelemetry` for collection `Distributed Tracing` using Jaeger and Zipkin
 - ✅ Using `OpenTelemetry` for collection `Metrics` with using Prometheus and Grafana
 - ✅ Using `Unit Test` for testing small units with mocking dependent classes and using [Mockery](https://github.com/vektra/mockery) for mocking dependencies
 - ✅ Using `End2End Test` and `Integration Test` for testing features with all of their real dependencies using docker containers (cleanup tests) and [testcontainers-go](https://github.com/testcontainers/testcontainers-go) library
@@ -81,7 +81,7 @@ For more advance projects, with two `microservices` and `modular monolith archit
 
 ## Project Layout and Structure
 
-Each microservices are based on these projects structure:
+Each microservices are based on these project structures:
 
 - [Standard Go Project Layout](https://github.com/golang-standards/project-layout)
 
@@ -94,7 +94,7 @@ Each microservices are based on these projects structure:
 In this project I used [vertical slice architecture](https://jimmybogard.com/vertical-slice-architecture/) or [Restructuring to a Vertical Slice Architecture](https://codeopinion.com/restructuring-to-a-vertical-slice-architecture/) also I used [feature folder structure](http://www.kamilgrzybek.com/design/feature-folders/) in this project.
 
 - We treat each request as a distinct use case or slice, encapsulating and grouping all concerns from front-end to back.
-- When We adding or changing a feature in an application in n-tire architecture, we are typically touching many different "layers" in an application. we are changing the user interface, adding fields to models, modifying validation, and so on. Instead of coupling across a layer, we couple vertically along a slice and each change affects only one slice.
+- When We add or change a feature in an application in n-tire architecture, we are typically touching many different "layers" in an application. we are changing the user interface, adding fields to models, modifying validation, and so on. Instead of coupling across a layer, we couple vertically along a slice and each change affects only one slice.
 - We `Minimize coupling` `between slices`, and `maximize coupling` `in a slice`.
 - With this approach, each of our vertical slices can decide for itself how to best fulfill the request. New features only add code, we're not changing shared code and worrying about side effects. For implementing vertical slice architecture using cqrs pattern is a good match.
 
@@ -102,26 +102,26 @@ In this project I used [vertical slice architecture](https://jimmybogard.com/ver
 
 ![](./assets/vsa2.png)
 
-Also here I used [CQRS](https://www.eventecommerce.com/cqrs-pattern) for decompose my features to very small parts that makes our application:
+Also here I used [CQRS](https://www.eventecommerce.com/cqrs-pattern) to decompose my features into very small parts that make our application:
 
-- maximize performance, scalability and simplicity.
-- adding new feature to this mechanism is very easy without any breaking change in other part of our codes. New features only add code, we're not changing shared code and worrying about side effects.
-- easy to maintain and any changes only affect on one command or query (or a slice) and avoid any breaking changes on other parts
-- it gives us better separation of concerns and cross cutting concern (with help of MediatR behavior pipelines) in our code instead of a big service class for doing a lot of things.
+- maximize performance, scalability, and simplicity.
+- adding new features to this mechanism is very easy without any breaking changes in another part of our codes. New features only add code, we're not changing shared code and worrying about side effects.
+- easy to maintain and any changes only affect one command or query (or a slice) and avoid any breaking changes on other parts
+- it gives us a better separation of concerns and cross-cutting concerns (with the help of MediatR behavior pipelines) in our code instead of a big service class for doing a lot of things.
 
-With using [CQRS](https://event-driven.io/en/cqrs_facts_and_myths_explained/), our code will be more aligned with [SOLID principles](https://en.wikipedia.org/wiki/SOLID), especially with:
+By using [CQRS](https://event-driven.io/en/cqrs_facts_and_myths_explained/), our code will be more aligned with [SOLID principles](https://en.wikipedia.org/wiki/SOLID), especially with:
 
 - [Single Responsibility](https://en.wikipedia.org/wiki/Single-responsibility_principle) rule - because logic responsible for a given operation is enclosed in its own type.
-- [Open-Closed](https://en.wikipedia.org/wiki/Open%E2%80%93closed_principle) rule - because to add new operation you don’t need to edit any of the existing types, instead you need to add a new file with a new type representing that operation.
+- [Open-Closed](https://en.wikipedia.org/wiki/Open%E2%80%93closed_principle) rule - because to add a new operation you don’t need to edit any of the existing types, instead you need to add a new file with a new type representing that operation.
 
-Here instead of some [Technical Splitting](http://www.kamilgrzybek.com/design/feature-folders/) for example a folder or layer for our `services`, `controllers` and `data models` which increase dependencies between our technical splitting and also jump between layers or folders, We cut each business functionality into some vertical slices, and inner each of these slices we have [Technical Folders Structure](http://www.kamilgrzybek.com/design/feature-folders/) specific to that feature (command, handlers, infrastructure, repository, controllers, data models, ...).
+Here instead of some [Technical Splitting](http://www.kamilgrzybek.com/design/feature-folders/) for example a folder or layer for our `services`, `controllers`, and `data models` which increase dependencies between our technical splitting and also jump between layers or folders, We cut each business functionality into some vertical slices, and inner each of these slices we have [Technical Folders Structure](http://www.kamilgrzybek.com/design/feature-folders/) specific to that feature (command, handlers, infrastructure, repository, controllers, data models, ...).
 
 Usually, when we work on a given functionality we need some technical things for example:
 
 - API endpoint (Controller)
 - Request Input (Dto)
 - Request Output (Dto)
-- Some class to handle Request, For example Command and Command Handler or Query and Query Handler
+- Some class to handle Request, For example, Command and Command Handler or Query and Query Handler
 - Data Model
 
 Now we could have all of these things beside each other and it decrease jumping and dependencies between some layers or folders.
@@ -135,13 +135,13 @@ TODO
 
 ## Formatting
 
-In this app I use [Conventional Commit](https://www.conventionalcommits.org/en/) and for enforcing its rule I use [conventional-changelog/commitlint](https://github.com/conventional-changelog/commitlint) and [typicode/husky](https://github.com/typicode/husky) with a pre-commit hook. For read more about its setup see [commitlint docs](https://github.com/conventional-changelog/commitlint#getting-started) and [this article](https://betterprogramming.pub/how-to-lint-commit-messages-with-husky-and-commitlint-b51d20a5e514) and [this article](https://www.code4it.dev/blog/conventional-commit-with-githooks).
+In this app, I use [Conventional Commit](https://www.conventionalcommits.org/en/) and for enforcing its rule I use [conventional-changelog/commitlint](https://github.com/conventional-changelog/commitlint) and [typicode/husky](https://github.com/typicode/husky) with a pre-commit hook. To read more about its setup see [commitlint docs](https://github.com/conventional-changelog/commitlint#getting-started) and [this article](https://betterprogramming.pub/how-to-lint-commit-messages-with-husky-and-commitlint-b51d20a5e514) and [this article](https://www.code4it.dev/blog/conventional-commit-with-githooks).
 
 For applying [golangci-lint](https://github.com/golangci/golangci-lint) in IDE level I use [intellij-plugin-golangci-lint](https://github.com/xxpxxxxp/intellij-plugin-golangci-lint) plugin.
 
 For formatting, I used [mvdan/gofumpt](https://github.com/mvdan/gofumpt), [goimports-reviser](https://github.com/incu6us/goimports-reviser), [golines](https://github.com/segmentio/golines) and [golangci-lint](https://golangci-lint.run/usage/integrations/#goland) in my GoLand and for each package, there is a guide for how to set it up in your IDE, for example. [here](https://github.com/incu6us/goimports-reviser#configuration) is the configuration for goimports-reviser. 
 
-Also you can control this formatting with `husky` automaticly before any commit by installing [husky](https://github.com/typicode/husky) in your dev environemt:
+Also, you can control this formatting with `husky` automatically before any commit by installing [husky](https://github.com/typicode/husky) in your dev environment:
 
 1. Install Tools:
 ``` bash
@@ -205,9 +205,9 @@ npm run prepare
 
 ## Live Reloading In Development
 
-For live reloading in dev mode I use [air](https://github.com/cosmtrek/air) library. for guid about using this tools you can [read this article](https://mainawycliffe.dev/blog/live-reloading-golang-using-air/).
+For live reloading in dev mode I use [air](https://github.com/cosmtrek/air) library. for a guide about using these tools, you can [read this article](https://mainawycliffe.dev/blog/live-reloading-golang-using-air/).
 
-For running each microservice in `live reload mode`, inner each service folder type bellow command after [installing air](https://github.com/cosmtrek/air?ref=content.mainawycliffe.dev#via-go-install):
+For running each microservice in `live reload mode`, inner each service folder type the bellow command after [installing air](https://github.com/cosmtrek/air?ref=content.mainawycliffe.dev#via-go-install):
 
 ```bash
 air
@@ -215,7 +215,7 @@ air
 
 ## Contribution
 
-The application is in development status. You are feel free to submit pull request or create the issue according [Contribution Guid](./CONTRIBUTION.md).
+The application is in development status. You are feel free to submit a pull request or create the issue according to [Contribution Guid](./CONTRIBUTION.md).
 
 ## License
 
