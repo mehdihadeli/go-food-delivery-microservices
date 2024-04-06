@@ -5,5 +5,6 @@ set -e
 
 readonly service="$1"
 
+# https://github.com/swaggo/swag/issues/817
 swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/app/main.go  -d "./internal/services/$service/" -o "./internal/services/$service/docs"
 swag init --parseDependency --parseInternal --parseDepth 1  -g ./cmd/app/main.go  -d "./internal/services/$service/" -o "./api/openapi/$service/"
