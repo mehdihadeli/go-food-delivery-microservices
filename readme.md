@@ -6,9 +6,9 @@
 
 [![Gitpod](https://img.shields.io/static/v1?style=for-the-badge&message=Open%20in%20Gitpod&color=222222&logo=Gitpod&logoColor=FFAE33&label=)](https://gitpod.io/#https://github.com/mehdihadeli/go-food-delivery-microservicess)
 
-> `Go Food Delivery Microservices` is a fictional food delivery microservices, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture** and **Dependency Injection**. For communication between independent services, We use asynchronous messaging using RabbitMQ, and sometimes we use synchronous communication for real-time communications with using REST and gRPC calls.
+> `Go Food Delivery Microservices` is an imaginary and practical food delivery microservices, built with Golang and different software architecture and technologies like **Microservices Architecture**, **Vertical Slice Architecture** , **CQRS Pattern**, **Domain Driven Design (DDD)**, **Event Sourcing**, **Event Driven Architecture** and **Dependency Injection**. For communication between independent services, We use asynchronous messaging using RabbitMQ, and sometimes we use synchronous communication for real-time communications using REST and gRPC calls.
 
-**You can use this project as a template to build your Backend project in the Go language on top of this project.**
+**You can use this project as a template to build your backend microservice project in the Go language**
 
 💡 This application is not `business-oriented` and my focus is mostly on the technical part, I just want to implement a sample using different technologies, software architecture design, principles, and all the things we need for creating a microservices app.
 
