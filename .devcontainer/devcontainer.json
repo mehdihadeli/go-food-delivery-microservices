@@ -1,13 +1,10 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
-// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
-// https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/setting-up-your-dotnet-project-for-codespaces
-// https://github.com/microsoft/vscode-remote-try-dotnet
-// https://dev.to/this-is-learning/set-up-github-codespaces-for-a-net-8-application-5999
+// README at: https://github.com/devcontainers/templates/tree/main/src/go
 // https://audacioustux.notion.site/Getting-Started-with-Devcontainer-c727dbf9d56f4d6b9b0ef87b3111693f
 {
   "name": "Go Food Delivery Microservices",
   // use existing dev container templates. More info: https://containers.dev/guide/dockerfile, https://containers.dev/templates
-  //"image": "mcr.microsoft.com/devcontainers/dotnet:1-7.0",
+  //"image": "mcr.microsoft.com/devcontainers/go:latest",
   // use a Dockerfile file. More info: https://containers.dev/guide/dockerfile#dockerfile
   // "build": {
   //   // Path is relative to the devcontainer.json file.
@@ -21,8 +18,8 @@
   "features": {
     // https://github.com/devcontainers/features/tree/main/src/go
     "ghcr.io/devcontainers/features/go:1": {
-		"version": "1.21"
-	},
+		"version": "1.22"
+    },
     // https://github.com/devcontainers/features/tree/main/src/github-cli
     "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "2"
@@ -59,7 +56,6 @@
         "editor.suggest.snippetsPreventQuickSuggestions": false,
         "explorer.autoReveal": true,
         "resmon.show.cpufreq": false,
-        "dotnet.server.startTimeout": 60000,
         "omnisharp.projectLoadTimeout": 60,
         "workbench.colorTheme": "Visual Studio Light",
         "workbench.iconTheme": "material-icon-theme",
@@ -83,10 +79,9 @@
         "go.formatTool": "gofumpt"
       },
       "extensions": [
-	    "golang.Go",
-	    "esbenp.prettier-vscode",
+	"golang.Go",
+	"esbenp.prettier-vscode",
         "streetsidesoftware.code-spell-checker",
-        "ms-dotnettools.csdevkit",
         "mutantdino.resourcemonitor",
         "humao.rest-client",
         "dzhavat.bracket-pair-toggler",
@@ -102,7 +97,7 @@
     }
   },
   "hostRequirements": {
-    "cpus": 2,
+    "cpus": 4,
     "memory": "8gb",
     "storage": "32gb"
   },
