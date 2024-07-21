@@ -36,9 +36,9 @@
     // "ghcr.io/devcontainers/features/terraform:1": {},
     // https://github.com/devcontainers/features/tree/main/src/docker-in-docker
     // https://devopscube.com/run-docker-in-docker/
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "dockerDashComposeVersion": "v2"
-    },
+    //"ghcr.io/devcontainers/features/docker-in-docker:2": {
+    //  "dockerDashComposeVersion": "v2"
+    //},
     "ghcr.io/devcontainers/features/git:1": {},
     // https://github.com/devcontainers/features/tree/main/src/common-utils
     "ghcr.io/devcontainers/features/common-utils:2": {
@@ -67,9 +67,32 @@
         "terminal.integrated.defaultProfile.linux": "zsh",
         "powershell.cwd": "~",
         "terminal.external.windowsExec": "%LOCALAPPDATA%\\Microsoft\\WindowsApps\\pwsh.exe",
-        "gopls": {
-          "ui.semanticTokens": true
-        },
+	"go.buildTags": "",
+	"go.toolsEnvVars": {
+	    "CGO_ENABLED": "0"
+	},
+	"go.useLanguageServer": true,
+	"go.testEnvVars": {
+	    "CGO_ENABLED": "1"
+	},
+	"go.testFlags": [
+	    "-v",
+	    "-race"
+	],
+	"go.testTimeout": "10s",
+	"go.coverOnSingleTest": true,
+	"go.coverOnSingleTestFile": true,
+	"go.coverOnTestPackage": true,
+	"go.lintOnSave": "package",
+	"[go]": {
+	    "editor.codeActionsOnSave": {
+		"source.organizeImports": "always"
+	    }
+	},
+	"gopls": {
+	    "usePlaceholders": false,
+	    "staticcheck": true
+	},
         "go.lintTool": "golangci-lint",
         "go.lintFlags": ["--fast"],
         "go.lintOnSave": "package",
@@ -82,11 +105,14 @@
 	"golang.Go",
 	"esbenp.prettier-vscode",
         "streetsidesoftware.code-spell-checker",
+	"vscode-icons-team.vscode-icons",
+	"redhat.vscode-yaml", // Kubernetes, 
         "mutantdino.resourcemonitor",
         "humao.rest-client",
         "dzhavat.bracket-pair-toggler",
         "ms-azuretools.vscode-docker",
         "vivaxy.vscode-conventional-commits",
+	"IBM.output-colorizer", // Colorize your output/test logs
         "emmanuelbeziat.vscode-great-icons",
         "ms-vscode.vs-keybindings",
         "GitHub.vscode-github-actions",
