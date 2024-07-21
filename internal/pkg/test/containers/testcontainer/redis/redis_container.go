@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	redis2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/redis"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
 	"github.com/docker/go-connections/nat"
@@ -38,7 +38,7 @@ func NewRedisTestContainers(l logger.Logger) contracts.RedisContainer {
 	}
 }
 
-func (g *redisTestContainers) CreatingContainerOptions(
+func (g *redisTestContainers) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.RedisContainerOptions,
@@ -66,7 +66,10 @@ func (g *redisTestContainers) CreatingContainerOptions(
 	})
 
 	// get a free random host hostPort
-	hostPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Port))
+	hostPort, err := dbContainer.MappedPort(
+		ctx,
+		nat.Port(g.defaultOptions.Port),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +82,7 @@ func (g *redisTestContainers) CreatingContainerOptions(
 
 	isConnectable := isConnectable(ctx, g.logger, g.defaultOptions)
 	if !isConnectable {
-		return g.CreatingContainerOptions(context.Background(), t, options...)
+		return g.PopulateContainerOptions(context.Background(), t, options...)
 	}
 
 	g.container = dbContainer
@@ -91,21 +94,6 @@ func (g *redisTestContainers) CreatingContainerOptions(
 		PoolSize: g.defaultOptions.PoolSize,
 	}
 	return reidsOptions, nil
-}
-
-func (g *redisTestContainers) Start(
-	ctx context.Context,
-	t *testing.T,
-	options ...*contracts.RedisContainerOptions,
-) (redis.UniversalClient, error) {
-	redisOptions, err := g.CreatingContainerOptions(ctx, t, options...)
-
-	db := redis2.NewRedisClient(redisOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }
 
 func (g *redisTestContainers) Cleanup(ctx context.Context) error {
@@ -136,7 +124,11 @@ func (g *redisTestContainers) getRunOptions(
 	}
 
 	containerReq := testcontainers.ContainerRequest{
-		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
+		Image: fmt.Sprintf(
+			"%s:%s",
+			g.defaultOptions.ImageName,
+			g.defaultOptions.Tag,
+		),
 		ExposedPorts: []string{g.defaultOptions.Port},
 		WaitingFor: wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).
 			WithPollInterval(2 * time.Second),
@@ -147,7 +139,11 @@ func (g *redisTestContainers) getRunOptions(
 	return containerReq
 }
 
-func isConnectable(ctx context.Context, logger logger.Logger, options *contracts.RedisContainerOptions) bool {
+func isConnectable(
+	ctx context.Context,
+	logger logger.Logger,
+	options *contracts.RedisContainerOptions,
+) bool {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%d", options.Host, options.HostPort),
 	})
@@ -158,13 +154,18 @@ func isConnectable(ctx context.Context, logger logger.Logger, options *contracts
 	if err != nil {
 		// we should not use `t.Error` or `t.Errorf` for logging errors because it will `fail` our test at the end and, we just should use logs without error like log.Error (not log.Fatal)
 		logger.Errorf(
-			"Error in creating redis connection with %s:%d", options.Host, options.HostPort)
+			"Error in creating redis connection with %s:%d",
+			options.Host,
+			options.HostPort,
+		)
 
 		return false
 	}
 
 	logger.Infof(
-		"Opened redis connection on host: %s:%d", options.Host, options.HostPort,
+		"Opened redis connection on host: %s:%d",
+		options.Host,
+		options.HostPort,
 	)
 
 	return true

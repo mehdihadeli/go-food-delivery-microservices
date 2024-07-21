@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	gormPostgres "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/postgresgorm"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
 	"github.com/docker/docker/api/types/container"
@@ -43,7 +43,7 @@ func NewGormTestContainers(l logger.Logger) contracts.GormContainer {
 	}
 }
 
-func (g *gormTestContainers) CreatingContainerOptions(
+func (g *gormTestContainers) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
@@ -85,7 +85,7 @@ func (g *gormTestContainers) CreatingContainerOptions(
 
 	isConnectable := isConnectable(ctx, g.logger, g.defaultOptions)
 	if !isConnectable {
-		return g.CreatingContainerOptions(context.Background(), t, options...)
+		return g.PopulateContainerOptions(context.Background(), t, options...)
 	}
 
 	g.container = dbContainer
@@ -106,7 +106,7 @@ func (g *gormTestContainers) Start(
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
 ) (*gorm.DB, error) {
-	gormOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	gormOptions, err := g.PopulateContainerOptions(ctx, t, options...)
 	if err != nil {
 		return nil, err
 	}

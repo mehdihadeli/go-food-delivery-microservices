@@ -4,9 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
-
-	"github.com/EventStore/EventStore-Client-Go/esdb"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/eventstroredb/config"
 )
 
 type EventstoreDBContainerOptions struct {
@@ -21,15 +19,11 @@ type EventstoreDBContainerOptions struct {
 }
 
 type EventstoreDBContainer interface {
-	CreatingContainerOptions(
+	PopulateContainerOptions(
 		ctx context.Context,
 		t *testing.T,
 		options ...*EventstoreDBContainerOptions,
 	) (*config.EventStoreDbOptions, error)
-
-	Start(ctx context.Context,
-		t *testing.T,
-		options ...*EventstoreDBContainerOptions) (*esdb.Client, error)
 
 	Cleanup(ctx context.Context) error
 }

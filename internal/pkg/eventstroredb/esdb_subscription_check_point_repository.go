@@ -6,10 +6,10 @@ import (
 	"io"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/events"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/events"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	typeMapper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/typemapper"
 
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
@@ -71,7 +71,7 @@ func (e *esdbSubscriptionCheckpointRepository) Load(
 		return 0, errors.WrapIf(err, "stream.Recv")
 	}
 
-	deserialized, _, err := e.esdbSerilizer.Deserialize(event)
+	deserialized, _, err := e.esdbSerilizer.DeserializeObject(event)
 	if err != nil {
 		return 0, err
 	}
@@ -98,7 +98,7 @@ func (e *esdbSubscriptionCheckpointRepository) Store(
 		Event:          events.NewEvent(typeMapper.GetTypeName(&CheckpointStored{})),
 	}
 	streamName := getCheckpointStreamName(subscriptionId)
-	eventData, err := e.esdbSerilizer.Serialize(checkpoint, nil)
+	eventData, err := e.esdbSerilizer.SerializeObject(checkpoint, nil)
 	if err != nil {
 		return errors.WrapIf(err, "esdbSerilizer.Serialize")
 	}

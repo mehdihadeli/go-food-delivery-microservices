@@ -1,5 +1,5 @@
 {
-  "name": "go-ecommerce-microservices",
+  "name": "go-food-delivery-microservices",
   "version": "1.0.0",
   "description": "",
   "scripts": {
@@ -7,14 +7,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mehdihadeli/go-ecommerce-microservices.git"
+    "url": "git+https://github.com/mehdihadeli/go-food-delivery-microservices.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mehdihadeli/go-ecommerce-microservices/issues"
+    "url": "https://github.com/mehdihadeli/go-food-delivery-microservices/issues"
   },
-  "homepage": "https://github.com/mehdihadeli/go-ecommerce-microservices#readme",
+  "homepage": "https://github.com/mehdihadeli/go-food-delivery-microservices#readme",
   "devDependencies": {
     "@commitlint/cli": "^17.6.7",
     "@commitlint/config-conventional": "^17.6.7",

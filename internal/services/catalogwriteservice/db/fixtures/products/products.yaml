@@ -1,0 +1,8 @@
+{{range $Product := $.Products}}
+- product_id: {{$Product.ProductId}}
+  name: {{$Product.Name}}
+  price: 100
+  description: {{$Product.Description}}
+  created_at: 2022-01-01
+  updated_at: 2022-01-01
+{{end}}

@@ -1,0 +1,23 @@
+#https://taskfile.dev/#/installation
+
+version: "3"
+tasks:
+  mock:
+    desc: Generate interfaces mocks
+    cmds:
+      - mockery --output mocks --all
+
+  integration:
+    desc: Run integration tests
+    cmds:
+      - go test -v -tags=integration ./...
+
+  e2e:
+    desc: Run integration tests
+    cmds:
+      - go test -v -tags=e2e ./...
+
+  unit:
+    desc: Run unit tests
+    cmds:
+      - go test -v -tags=unit ./...

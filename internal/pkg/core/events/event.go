@@ -3,13 +3,17 @@ package events
 import (
 	"time"
 
+	typeMapper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/typemapper"
+
 	uuid "github.com/satori/go.uuid"
 )
 
 type IEvent interface {
 	GetEventId() uuid.UUID
-	GetEventType() string
 	GetOccurredOn() time.Time
+	// GetEventTypeName get short type name of the event - we use event short type name instead of full type name because this event in other receiver packages could have different package name
+	GetEventTypeName() string
+	GetEventFullTypeName() string
 }
 
 type Event struct {
@@ -36,4 +40,20 @@ func (e *Event) GetEventType() string {
 
 func (e *Event) GetOccurredOn() time.Time {
 	return e.OccurredOn
+}
+
+func (e *Event) GetEventTypeName() string {
+	return typeMapper.GetTypeName(e)
+}
+
+func (e *Event) GetEventFullTypeName() string {
+	return typeMapper.GetFullTypeName(e)
+}
+
+func IsEvent(obj interface{}) bool {
+	if _, ok := obj.(IEvent); ok {
+		return true
+	}
+
+	return false
 }

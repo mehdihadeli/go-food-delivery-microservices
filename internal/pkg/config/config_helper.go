@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/config/environment"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/constants"
+	typeMapper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/typemapper"
 
 	"emperror.dev/errors"
 	"github.com/caarlos0/env/v8"
@@ -15,35 +16,21 @@ import (
 	"github.com/spf13/viper"
 )
 
-func BindConfig[T any](environments ...environemnt.Environment) (T, error) {
+func BindConfig[T any](environments ...environment.Environment) (T, error) {
 	return BindConfigKey[T]("", environments...)
 }
 
-func BindConfigKey[T any](configKey string, environments ...environemnt.Environment) (T, error) {
+func BindConfigKey[T any](
+	configKey string,
+	environments ...environment.Environment,
+) (T, error) {
 	var configPath string
 
-	environment := environemnt.Environment("")
+	currentEnv := environment.Environment("")
 	if len(environments) > 0 {
-		environment = environments[0]
+		currentEnv = environments[0]
 	} else {
-		environment = constants.Dev
-	}
-
-	// https://articles.wesionary.team/environment-variable-configuration-in-your-golang-project-using-viper-4e8289ef664d
-	// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
-	// load `config path` from environment variable or viper internal registry
-	configPathFromEnv := viper.GetString(constants.ConfigPath)
-	if configPathFromEnv != "" {
-		configPath = configPathFromEnv
-	} else {
-		// https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
-		// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
-		d, err := getConfigRootPath()
-		if err != nil {
-			return *new(T), err
-		}
-
-		configPath = d
+		currentEnv = constants.Dev
 	}
 
 	cfg := typeMapper.GenericInstanceByT[T]()
@@ -52,8 +39,31 @@ func BindConfigKey[T any](configKey string, environments ...environemnt.Environm
 	// https://github.com/mcuadros/go-defaults
 	defaults.SetDefaults(cfg)
 
+	// https://articles.wesionary.team/environment-variable-configuration-in-your-golang-project-using-viper-4e8289ef664d
+	// when we `Set` a viper with string value, we should get it from viper with `viper.GetString`, elsewhere we get empty string
+	// load `config path` from env variable or viper internal registry
+	configPathFromEnv := viper.GetString(constants.ConfigPath)
+
+	if configPathFromEnv != "" {
+		configPath = configPathFromEnv
+	} else {
+		// https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
+		// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
+		appRootPath := viper.GetString(constants.AppRootPath)
+		if appRootPath == "" {
+			appRootPath = environment.GetProjectRootWorkingDirectory()
+		}
+
+		d, err := searchForConfigFileDir(appRootPath, currentEnv)
+		if err != nil {
+			return *new(T), err
+		}
+
+		configPath = d
+	}
+
 	// https://github.com/spf13/viper/issues/390#issuecomment-718756752
-	viper.SetConfigName(fmt.Sprintf("config.%s", environment))
+	viper.SetConfigName(fmt.Sprintf("config.%s", currentEnv))
 	viper.AddConfigPath(configPath)
 	viper.SetConfigType(constants.Json)
 
@@ -62,6 +72,7 @@ func BindConfigKey[T any](configKey string, environments ...environemnt.Environm
 	}
 
 	if len(configKey) == 0 {
+		// load configs from config file to config object
 		if err := viper.Unmarshal(cfg); err != nil {
 			return *new(T), errors.WrapIf(err, "viper.Unmarshal")
 		}
@@ -81,23 +92,61 @@ func BindConfigKey[T any](configKey string, environments ...environemnt.Environm
 	return cfg, nil
 }
 
-func getConfigRootPath() (string, error) {
-	// Get the current working directory
-	// Getwd gives us the current working directory that we are running our app with `go run` command. in goland we can specify this working directory for the project
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", err
+// searchForConfigFileDir searches for the first directory within the specified root directory and its subdirectories
+// that contains a file named "config.%s.json" where "%s" is replaced with the provided environment string.
+// It returns the path of the first directory that contains the config file or an error if no such directory is found.
+//
+// Parameters:
+//
+//	rootDir:      The root directory to start the search from.
+//	environment:  The environment string to replace "%s" in the config file name.
+//
+// Returns:
+//
+//	string: The path of the directory containing the config file, or an empty string if not found.
+//	error:  An error indicating any issues encountered during the search.
+func searchForConfigFileDir(
+	rootDir string,
+	env environment.Environment,
+) (string, error) {
+	var result string
+
+	// Walk the directory tree starting from rootDir
+	err := filepath.Walk(
+		rootDir,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			// Check if the file is named "config.%s.json" (replace %s with the env)
+			if !info.IsDir() &&
+				strings.EqualFold(
+					info.Name(),
+					fmt.Sprintf("config.%s.json", env),
+				) ||
+				strings.EqualFold(
+					info.Name(),
+					fmt.Sprintf("config.%s.yaml", env),
+				) ||
+				strings.EqualFold(
+					info.Name(),
+					fmt.Sprintf("config.%s.yml", env),
+				) {
+				// Get the directory name containing the config file
+				dir := filepath.Dir(path)
+				result = dir
+
+				return filepath.SkipDir // Skip further traversal
+			}
+
+			return nil
+		},
+	)
+
+	if result != "" {
+		return result, nil
 	}
-	fmt.Println(fmt.Sprintf("Current working directory is: %s", wd))
 
-	// Get the absolute path of the executed project directory
-	absCurrentDir, err := filepath.Abs(wd)
-	if err != nil {
-		return "", err
-	}
-
-	// Get the path to the "config" folder within the project directory
-	configPath := filepath.Join(absCurrentDir, "config")
-
-	return configPath, nil
+	return "", errors.WrapIf(err, "No directory with config file found")
 }

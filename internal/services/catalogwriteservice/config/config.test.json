@@ -1,0 +1,89 @@
+{
+  "appOptions": {
+    "serviceName": "catalogwriteservice",
+    "deliveryType": "http"
+  },
+  "grpcOptions": {
+    "name": "catalogwriteservice",
+    "port": ":3301",
+    "host": "localhost",
+    "development": true
+  },
+  "echoHttpOptions": {
+    "name": "catalogwriteservice",
+    "port": ":6001",
+    "development": true,
+    "timeout": 30,
+    "basePath": "/api/v1",
+    "host": "http://localhost",
+    "productsPath": "products",
+    "debugHeaders": true,
+    "httpClientDebug": true,
+    "debugErrorsResponse": true,
+    "ignoreLogUrls": [
+      "metrics"
+    ]
+  },
+  "logOptions": {
+    "level": "debug",
+    "logType": 0,
+    "callerEnabled": false
+  },
+  "gormOptions": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "dbName": "catalogs_service",
+    "sslMode": false
+  },
+  "rabbitmqOptions": {
+    "autoStart": false,
+    "reconnecting": false,
+    "rabbitmqHostOptions": {
+      "userName": "guest",
+      "password": "guest",
+      "hostName": "localhost",
+      "port": 5672,
+      "httpPort": 15672
+    }
+  },
+  "tracingOptions": {
+    "enable": true,
+    "serviceName": "catalogs-write-service",
+    "instrumentationName": "io.opentelemetry.traces.catalogs-write-service",
+    "id": 1,
+    "useStdout": false,
+    "alwaysOnSampler": true,
+    "jaegerExporterOptions": {
+      "otlpEndpoint": "localhost:4320",
+      "enabled": true
+    },
+    "zipkinExporterOptions": {
+      "url": "http://localhost:9411/api/v2/spans"
+    },
+    "otlpProviders": [
+      {
+        "name": "uptrace",
+        "enabled": false,
+        "otlpEndpoint": "otlp.uptrace.dev:4317",
+        "otlpHeaders": {}
+      }
+    ]
+  },
+  "metricsOptions": {
+    "metricsRoutePath": "metrics",
+    "serviceName": "catalogs-write-service",
+    "instrumentationName": "io.opentelemetry.metrics.catalogs-write-service"
+  },
+  "migrationOptions": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "dbName": "catalogs_service",
+    "sslMode": false,
+    "migrationsDir": "db/migrations/goose-migrate",
+    "skipMigration": false
+  }
+}

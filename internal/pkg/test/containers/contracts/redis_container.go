@@ -4,9 +4,7 @@ import (
 	"context"
 	"testing"
 
-	redis2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/redis"
-
-	"github.com/redis/go-redis/v9"
+	redis2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/redis"
 )
 
 type RedisContainerOptions struct {
@@ -21,12 +19,7 @@ type RedisContainerOptions struct {
 }
 
 type RedisContainer interface {
-	Start(
-		ctx context.Context,
-		t *testing.T,
-		options ...*RedisContainerOptions,
-	) (redis.UniversalClient, error)
-	CreatingContainerOptions(
+	PopulateContainerOptions(
 		ctx context.Context,
 		t *testing.T,
 		options ...*RedisContainerOptions,

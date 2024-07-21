@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/domain"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/metadata"
 
 	uuid "github.com/satori/go.uuid"
 )

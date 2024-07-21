@@ -1,0 +1,1 @@
+CREATE EXTENSION "uuid-ossp";

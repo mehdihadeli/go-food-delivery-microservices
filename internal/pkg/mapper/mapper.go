@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"reflect"
 
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-	reflectionHelper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/reflection_helper"
+	defaultLogger "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/defaultlogger"
+	reflectionHelper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/reflectionhelper"
 
 	"emperror.dev/errors"
 	"github.com/ahmetb/go-linq/v3"
@@ -80,9 +80,16 @@ func CreateMap[TSrc any, TDst any]() error {
 		return ErrUnsupportedMap
 	}
 
-	if srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Struct {
-		pointerStructTypeKey := mappingsEntry{SourceType: srcType, DestinationType: desType}
-		nonePointerStructTypeKey := mappingsEntry{SourceType: srcType.Elem(), DestinationType: desType.Elem()}
+	if srcType.Kind() == reflect.Ptr &&
+		srcType.Elem().Kind() == reflect.Struct {
+		pointerStructTypeKey := mappingsEntry{
+			SourceType:      srcType,
+			DestinationType: desType,
+		}
+		nonePointerStructTypeKey := mappingsEntry{
+			SourceType:      srcType.Elem(),
+			DestinationType: desType.Elem(),
+		}
 		if _, ok := maps[nonePointerStructTypeKey]; ok {
 			return ErrMapAlreadyExists
 		}
@@ -108,11 +115,13 @@ func CreateMap[TSrc any, TDst any]() error {
 		maps[pointerStructTypeKey] = nil
 	}
 
-	if srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Struct {
+	if srcType.Kind() == reflect.Ptr &&
+		srcType.Elem().Kind() == reflect.Struct {
 		srcType = srcType.Elem()
 	}
 
-	if desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Struct {
+	if desType.Kind() == reflect.Ptr &&
+		desType.Elem().Kind() == reflect.Struct {
 		desType = desType.Elem()
 	}
 
@@ -163,14 +172,16 @@ func Map[TDes any, TSrc any](src TSrc) (TDes, error) {
 	desIsArray := false
 	srcIsArray := false
 
-	if srcType.Kind() == reflect.Array || (srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Array) ||
+	if srcType.Kind() == reflect.Array ||
+		(srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Array) ||
 		srcType.Kind() == reflect.Slice ||
 		(srcType.Kind() == reflect.Ptr && srcType.Elem().Kind() == reflect.Slice) {
 		srcType = srcType.Elem()
 		srcIsArray = true
 	}
 
-	if desType.Kind() == reflect.Array || (desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Array) ||
+	if desType.Kind() == reflect.Array ||
+		(desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Array) ||
 		desType.Kind() == reflect.Slice ||
 		(desType.Kind() == reflect.Ptr && desType.Elem().Kind() == reflect.Slice) {
 		desType = desType.Elem()
@@ -209,7 +220,7 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 	// check for provided types kind.
 	// if not struct - skip.
 	if srcType.Kind() != reflect.Struct {
-		defaultLogger.Logger.Errorf(
+		defaultLogger.GetLogger().Errorf(
 			"expected reflect.Struct kind for type %s, but got %s",
 			srcType.String(),
 			srcType.Kind().String(),
@@ -217,7 +228,7 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 	}
 
 	if destType.Kind() != reflect.Struct {
-		defaultLogger.Logger.Errorf(
+		defaultLogger.GetLogger().Errorf(
 			"expected reflect.Struct kind for type %s, but got %s",
 			destType.String(),
 			destType.Kind().String(),
@@ -234,7 +245,10 @@ func configProfile(srcType reflect.Type, destType reflect.Type) {
 
 	for srcKey, srcTag := range srcMeta.keysToTags {
 		if _, ok := destMeta.keysToTags[strcase.ToCamel(srcKey)]; ok {
-			profile = append(profile, [2]string{srcKey, strcase.ToCamel(srcKey)})
+			profile = append(
+				profile,
+				[2]string{srcKey, strcase.ToCamel(srcKey)},
+			)
 		}
 
 		// case src key equals dest key
@@ -319,7 +333,7 @@ func mapStructs[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 	// if types or their slices were not registered - abort
 	profile, ok := profiles[getProfileKey(src.Type(), dest.Type())]
 	if !ok {
-		defaultLogger.Logger.Errorf(
+		defaultLogger.GetLogger().Errorf(
 			"no conversion specified for types %s and %s",
 			src.Type().String(),
 			dest.Type().String(),
@@ -337,7 +351,9 @@ func mapStructs[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 			// var destinationFieldValue reflect.Value
 			if !sourceField.CanInterface() {
 				if mapperConfig.MapUnexportedFields {
-					sourceFiledValue = reflectionHelper.GetFieldValue(sourceField)
+					sourceFiledValue = reflectionHelper.GetFieldValue(
+						sourceField,
+					)
 				} else {
 					// for getting pointer for non-pointer struct we can use reflect.Addr() for calling pointer receivers properties
 					sourceFiledValue = reflectionHelper.GetFieldValueFromMethodAndReflectValue(src.Addr(), strcase.ToCamel(keys[SrcKeyIndex]))
@@ -404,7 +420,10 @@ func mapMaps[TDes any, TSrc any](src reflect.Value, dest reflect.Value) {
 	}
 }
 
-func processValues[TDes any, TSrc any](src reflect.Value, dest reflect.Value) error {
+func processValues[TDes any, TSrc any](
+	src reflect.Value,
+	dest reflect.Value,
+) error {
 	// if src of dest is an interface - get underlying type
 	if src.Kind() == reflect.Interface {
 		src = src.Elem()

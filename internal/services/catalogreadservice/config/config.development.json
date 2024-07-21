@@ -1,0 +1,112 @@
+{
+  "appOptions": {
+    "serviceName": "catalogreadservice",
+    "deliveryType": "http"
+  },
+  "grpcOptions": {
+    "name": "catalogreadservice",
+    "port": ":6004",
+    "host": "localhost",
+    "development": true
+  },
+  "echoHttpOptions": {
+    "name": "catalogreadservice",
+    "port": ":7001",
+    "development": true,
+    "timeout": 30,
+    "basePath": "/api/v1",
+    "host": "http://localhost",
+    "productsPath": "products",
+    "debugHeaders": true,
+    "httpClientDebug": true,
+    "debugErrorsResponse": true,
+    "ignoreLogUrls": [
+      "metrics"
+    ]
+  },
+  "logOptions": {
+    "level": "debug",
+    "logType": 0,
+    "callerEnabled": false
+  },
+  "rabbitmqOptions": {
+    "autoStart": true,
+    "reconnecting": true,
+    "rabbitmqHostOptions": {
+      "userName": "guest",
+      "password": "guest",
+      "hostName": "localhost",
+      "port": 5672,
+      "httpPort": 15672
+    }
+  },
+  "redisOptions": {
+    "host": "localhost",
+    "port": 6379,
+    "password": "",
+    "database": 0,
+    "poolSize": 300
+  },
+  "mongoDbOptions": {
+    "host": "localhost",
+    "port": 27017,
+    "user": "admin",
+    "password": "admin",
+    "database": "catalogs_service",
+    "useAuth": true
+  },
+  "tracingOptions": {
+    "enable": true,
+    "serviceName": "catalogs-read-service",
+    "instrumentationName": "io.opentelemetry.traces.catalogs-read-service",
+    "id": 1,
+    "useStdout": false,
+    "alwaysOnSampler": true,
+    "jaegerExporterOptions": {
+      "otlpEndpoint": "localhost:4320",
+      "enabled": true
+    },
+    "tempoExporterOptions": {
+      "otlpEndpoint": "localhost:4322",
+      "enabled": true
+    },
+    "zipkinExporterOptions": {
+      "url": "http://localhost:9411/api/v2/spans"
+    },
+    "otlpProviders": [
+      {
+        "name": "uptrace",
+        "enabled": false,
+        "otlpEndpoint": "otlp.uptrace.dev:4317",
+        "otlpHeaders": {
+          "uptrace-dsn": "https://<token>@uptrace.dev/<project_id>"
+        }
+      },
+      {
+        "name": "elastic-apm",
+        "enabled": false,
+        "otlpEndpoint": "host.docker.internal:4317",
+        "otlpHeaders": {
+          "Authorization": "Bearer ${ELASTIC_APM_SECRET_TOKEN}"
+        }
+      }
+    ]
+  },
+  "metricsOptions": {
+    "metricsRoutePath": "/metrics",
+    "serviceName": "catalogs-read-service",
+    "instrumentationName": "io.opentelemetry.metrics.catalogs-write-service"
+  },
+  "elasticOptions": {
+    "url": "http://localhost:9200",
+    "sniff": false,
+    "gzip": true,
+    "explain": true,
+    "fetchSource": true,
+    "version": true,
+    "pretty": true
+  },
+  "elasticIndexes": {
+    "products": "products"
+  }
+}

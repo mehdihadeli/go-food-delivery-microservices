@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	bun2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/bun"
+	bun2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/bun"
 
 	"emperror.dev/errors"
 	"github.com/uptrace/bun"
@@ -37,7 +37,7 @@ func NewBunDB(cfg *bun2.BunConfig) (*bun.DB, error) {
 	//pgconn := pgdriver.NewConnector(
 	//	pgdriver.WithNetwork("tcp"),
 	//	pgdriver.WithAddr("localhost:5437"),
-	//	pgdriver.WithTLSConfig(&tls.Config{InsecureSkipVerify: true}),
+	//	pgdriver.WithTLSConfig(&tls.config{InsecureSkipVerify: true}),
 	//	pgdriver.WithUser("test"),
 	//	pgdriver.WithPassword("test"),
 	//	pgdriver.WithDatabase("test"),

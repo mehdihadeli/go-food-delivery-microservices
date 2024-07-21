@@ -3,12 +3,12 @@ package messaging
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/utils"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/hypothesis"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/messaging/consumer"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/bus"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/types"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/utils"
+	typeMapper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/typemapper"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/hypothesis"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/messaging/consumer"
 )
 
 func ShouldProduced[T types.IMessage](

@@ -7,6 +7,8 @@ set -e
 
 # `go install package@version` command works directly when we specified exact version, elsewhere it needs a `go.mod` and specifying corresponding version for each package
 
+go install github.com/samlitowitz/goimportcycle/cmd/goimportcycle@latest
+
 # https://github.com/incu6us/goimports-reviser
 go install -v github.com/incu6us/goimports-reviser/v3@latest
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+	testUtils "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/utils"
 
 	"github.com/goccy/go-reflect"
 	"github.com/stretchr/testify/assert"

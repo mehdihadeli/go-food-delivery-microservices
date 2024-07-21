@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -33,6 +34,10 @@ func NewRedisClient(cfg *RedisOptions) *redis.Client {
 		MinIdleConns:    minIdleConns,
 		PoolTimeout:     poolTimeout,
 	})
+
+	if cfg.EnableTracing {
+		_ = redisotel.InstrumentTracing(universalClient)
+	}
 
 	return universalClient
 }

@@ -3,9 +3,9 @@ package utils
 import (
 	"reflect"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/events"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/domain"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/events"
+	typeMapper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/typemapper"
 
 	"github.com/ahmetb/go-linq/v3"
 )

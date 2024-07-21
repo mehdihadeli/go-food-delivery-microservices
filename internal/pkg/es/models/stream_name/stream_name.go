@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models"
 
 	"github.com/goccy/go-reflect"
 	uuid "github.com/satori/go.uuid"

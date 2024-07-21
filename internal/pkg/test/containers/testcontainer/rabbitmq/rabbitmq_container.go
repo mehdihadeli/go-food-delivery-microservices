@@ -6,14 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
 	"github.com/docker/docker/api/types/container"
@@ -51,7 +46,7 @@ func NewRabbitMQTestContainers(l logger.Logger) contracts.RabbitMQContainer {
 	}
 }
 
-func (g *rabbitmqTestContainers) CreatingContainerOptions(
+func (g *rabbitmqTestContainers) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.RabbitMQContainerOptions,
@@ -60,7 +55,6 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 	// https://dev.to/remast/go-integration-tests-using-testcontainers-9o5
 	containerReq := g.getRunOptions(options...)
 
-	// TODO: Using Parallel Container
 	dbContainer, err := testcontainers.GenericContainer(
 		ctx,
 		testcontainers.GenericContainerRequest{
@@ -109,7 +103,7 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 
 	isConnectable := IsConnectable(g.logger, g.defaultOptions)
 	if !isConnectable {
-		return g.CreatingContainerOptions(context.Background(), t, options...)
+		return g.PopulateContainerOptions(context.Background(), t, options...)
 	}
 
 	g.container = dbContainer
@@ -124,45 +118,6 @@ func (g *rabbitmqTestContainers) CreatingContainerOptions(
 	}
 
 	return option, nil
-}
-
-func (g *rabbitmqTestContainers) Start(
-	ctx context.Context,
-	t *testing.T,
-	serializer serializer.EventSerializer,
-	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
-	options ...*contracts.RabbitMQContainerOptions,
-) (bus.Bus, error) {
-	rabbitHostOptions, err := g.CreatingContainerOptions(ctx, t, options...)
-	if err != nil {
-		return nil, err
-	}
-
-	g.logger.Infof(
-		"rabbitmq connection is on host: %s",
-		rabbitHostOptions.AmqpEndPoint(),
-	)
-
-	rabbitmqConfig := &config.RabbitmqOptions{
-		RabbitmqHostOptions: rabbitHostOptions,
-	}
-	conn, err := types.NewRabbitMQConnection(rabbitmqConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	mqBus, err := bus2.NewRabbitmqBus(
-		rabbitmqConfig,
-		serializer,
-		g.logger,
-		conn,
-		rabbitmqBuilderFunc,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return mqBus, nil
 }
 
 func (g *rabbitmqTestContainers) Cleanup(ctx context.Context) error {
@@ -258,6 +213,7 @@ func IsConnectable(
 		options.Password,
 	)
 	_, err = rmqc.ListExchanges()
+
 	if err != nil {
 		logger.Errorf(
 			"Error in creating rabbitmq connection with http host: %s",

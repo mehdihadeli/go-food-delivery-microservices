@@ -3,7 +3,7 @@ package es
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/contracts"
 )
 
 type inMemorySubscriptionCheckpointRepository struct {

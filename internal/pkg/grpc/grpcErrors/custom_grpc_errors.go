@@ -1,9 +1,9 @@
-package grpcErrors
+package grpcerrors
 
 import (
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/constants"
 
 	"google.golang.org/grpc/codes"
 )

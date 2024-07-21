@@ -1,0 +1,383 @@
+# Ref:https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/examples/demo/docker-compose.yaml
+# https://github.com/open-telemetry/opentelemetry-demo/blob/main/docker-compose.yml
+# https://www.youtube.com/watch?v=EeU-k659lpw
+
+version: "3.8"
+name: go-food-delivery-microservices
+
+services:
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    pull_policy: if_not_present
+    restart: unless-stopped
+    ports:
+      - ${RABBITMQ_HOST_PORT:-5672}:${RABBITMQ_PORT:-5672}
+      - ${RABBITMQ_HOST_API_PORT:-15672}:${RABBITMQ_API_PORT:-15672}
+      # volumes:
+      #   - rabbitmq:/var/lib/rabbitmq
+    networks:
+      - food-delivery
+
+  # containers monitoring
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    restart: unless-stopped
+    ports:
+      - "9091:8080"
+    # network_mode: host
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    networks:
+      - food-delivery
+
+  # prometheus dashboard: http://localhost:9090
+  # prometheus internal metrics: http://localhost:9090/metrics
+  # https://prometheus.io/docs/prometheus/latest/getting_started/
+  # https://prometheus.io/docs/guides/go-application/
+  prometheus:
+    image: prom/prometheus:latest
+    pull_policy: if_not_present
+    container_name: prometheus
+    restart: unless-stopped
+    user: root
+    ports:
+      - ${PROMETHEUS_HOST_PORT:-9090}:${PROMETHEUS_PORT:-9090}
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - food-delivery
+
+  otelcol:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-col
+    pull_policy: if_not_present
+    deploy:
+      resources:
+        limits:
+          memory: 125M
+    restart: unless-stopped
+    command: [ "--config=/etc/otelcol-config.yml", "--config=/etc/otelcol-observability.yml", "--config=/etc/otelcol-config-extras.yml" ]
+    volumes:
+      - ./otelcollector/otelcol-config.yml:/etc/otelcol-config.yml
+      - ./otelcollector/otelcol-observability.yml:/etc/otelcol-observability.yml
+      - ./otelcollector/otelcol-config-extras.yml:/etc/otelcol-config-extras.yml
+    ports:
+      - "4317:4317"   # OTLP over gRPC receiver
+      - "4318:4318"   # OTLP over HTTP receiver
+      - "8889:8889"   # Prometheus exporter metrics
+      - "8888:8888"   # Prometheus metrics exposed by the collector
+      - "13133:13133" # health_check extension
+      - "55679:55679" # zpages extension
+      - "1888:1888"   # pprof extension
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+      jaeger:
+        condition: service_healthy
+
+  # node_exporter will use for gathering metrics on the system level with its own /metrics endpoint like cpu, ram, ...
+  # https://prometheus.io/docs/guides/node-exporter/
+  node_exporter:
+    container_name: node_exporter
+    pull_policy: if_not_present
+    restart: unless-stopped
+    image: prom/node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - food-delivery
+
+  grafana:
+    image: grafana/grafana
+    pull_policy: if_not_present
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/grafana.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./monitoring/grafana-bootstrap.ini:/etc/grafana/grafana.ini
+    ports:
+      - ${GRAFANA_HOST_PORT:-3000}:${GRAFANA_PORT:-3000}
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+    healthcheck:
+      interval: 5s
+      retries: 10
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+    networks:
+      - food-delivery
+
+  # https://grafana.com/docs/tempo/latest/getting-started/
+  # https://github.com/grafana/tempo/blob/main/example/docker-compose/local/docker-compose.yaml
+  # https://github.com/Domoryonok/tracing_demo/blob/master/grafana/docker-compose.yaml
+  # https://grafana.com/docs/grafana/latest/datasources/jaeger/
+  # https://grafana.com/docs/tempo/latest/operations/architecture/
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./otelcollector/tempo.yaml:/etc/tempo.yaml
+      - ./tempo-data:/tmp/tempo
+    ports:
+      - "3200:3200"   # tempo UI
+      - "4322:4317"   # otlp grpc
+      - "9411"        # zipkin - export zipkin traces to tempo
+      - "14268"       # jaeger - export jaeger traces to tempo
+    healthcheck:
+      interval: 5s
+      retries: 10
+      test: wget --no-verbose --tries=1 --spider http://localhost:3200/status || exit 1
+    networks:
+      - food-delivery
+
+  postgres:
+    image: postgres:latest
+    pull_policy: if_not_present
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - ${POSTGRES_HOST_PORT:-5432}:${POSTGRES_PORT:-5432}
+    #https://docs.docker.com/compose/environment-variables/env-file/#parameter-expansion
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    networks:
+      - food-delivery
+
+  # https://developer.redis.com/howtos/quick-start
+  # redis-stack is a image with redis modules enabled like JSON module
+  redis:
+    image: redis/redis-stack:latest
+    pull_policy: if_not_present
+    restart: unless-stopped
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - food-delivery
+
+  mongo:
+    image: mongo
+    pull_policy: if_not_present
+    container_name: mongo
+    restart: unless-stopped
+    # https://docs.docker.com/compose/environment-variables/env-file/#parameter-expansion
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASS:-admin}
+    ports:
+      - ${MONGO_HOST_PORT:-27017}:${MONGO_PORT:-27017}
+    networks:
+      - food-delivery
+
+  # https://www.jaegertracing.io/docs/1.38/apis/#opentelemetry-protocol-stable
+  # https://deploy-preview-1892--opentelemetry.netlify.app/blog/2022/jaeger-native-otlp/
+  # https://www.jaegertracing.io/docs/1.49/deployment/
+  # https://www.jaegertracing.io/docs/1.49/getting-started/
+  # https://opentelemetry.io/docs/instrumentation/go/exporters/
+  # https://opentelemetry.io/docs/specs/otlp/
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    pull_policy: if_not_present
+    restart: unless-stopped
+    command:
+      - "--memory.max-traces"
+      - "10000"
+      - "--query.base-path"
+      - "/jaeger/ui"
+      - "--prometheus.server-url"
+      - "http://${PROMETHEUS_ADDR}"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+      # Store metrics in PROMETHEUS storage instead of in-memory storage
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http:${PROMETHEUS_ADDR}
+    #      # Jaeger uses Elasticsearch as span storage instead of in-memory storage
+    #      - SPAN_STORAGE_TYPE=elasticsearch
+    #      - ES_SERVER_URLS=http://elastic_search:${ELASTIC_PORT:-9200}
+    #      - ES_VERSION=8
+    ports:
+      - "16686:16686" # Jaeger UI port
+      - "4320:4317" # OTLP gRPC default port - for prevent duplicate expose this port that will expose also by `otel-collector` we not expose it on `4317` - `4320` could use by the app through otlptracegrpc
+      - "4321:4318" # OTLP Http default port - for prevent duplicate expose this port that will expose also by `otel-collector` we not expose it on `4318` - `4321` could use by the app through otlptracehttp
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:16686" ]
+      interval: 10s
+      retries: 3
+      timeout: 10s
+    networks:
+      - food-delivery
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    pull_policy: if_not_present
+    restart: unless-stopped
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - food-delivery
+
+  # https://developers.eventstore.com/server/v21.10/installation.html#insecure-single-node
+  # https://hub.docker.com/r/eventstore/eventstore/tags
+  # https://stackoverflow.com/questions/65272764/ports-are-not-available-listen-tcp-0-0-0-0-50070-bind-an-attempt-was-made-to
+  # EVENTSTORE_MEM_DB=true, it tells the EventStoreDB container to use an in-memory database, which means that any data stored in EventStoreDB will not be persisted between container restarts. Once the container is stopped or restarted, all data will be lost.
+  eventstore:
+    image: eventstore/eventstore:latest
+    pull_policy: if_not_present
+    container_name: eventstore
+    restart: unless-stopped
+    environment:
+      - EVENTSTORE_CLUSTER_SIZE=1
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=false
+      - EVENTSTORE_EXT_TCP_PORT=1113
+      - EVENTSTORE_HTTP_PORT=2113
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+      - EVENTSTORE_MEM_DB=true
+    ports:
+      - ${EVENTSTORE_TCP_HOST_PORT:-1113}:${EVENTSTORE_TCP_PORT:-1113}
+      - ${EVENTSTORE_HOST_PORT:-2113}:${EVENTSTORE_PORT:-2113}
+    volumes:
+      - type: volume
+        source: eventstore-volume-data
+        target: /var/lib/eventstore
+      - type: volume
+        source: eventstore-volume-logs
+        target: /var/log/eventstore
+    networks:
+      - food-delivery
+
+  #  # https://stackoverflow.com/questions/67791781/how-to-configure-apm-server-to-docker-compose-file
+  #  # https://www.elastic.co/guide/en/apm/guide/current/open-telemetry.html
+  #  apm-server:
+  #    image: docker.elastic.co/apm/apm-server:latest
+  #    cap_add: ["CHOWN", "DAC_OVERRIDE", "SETGID", "SETUID"]
+  #    cap_drop: ["ALL"]
+  #    ports:
+  #      - 8200:8200
+  #    command: >
+  #      apm-server -e
+  #        -E apm-server.rum.enabled=true
+  #        -E setup.kibana.host=kibana:5601
+  #        -E setup.template.settings.index.number_of_replicas=0
+  #        -E apm-server.kibana.enabled=true
+  #        -E apm-server.kibana.host=kibana:5601
+  #        -E output.elasticsearch.hosts=["elasticsearch:9200"]
+
+  # elasticsearch:
+  #   container_name: elastic_search
+  #   restart: unless-stopped
+  #   image: elasticsearch:8.5.2
+  #   environment:
+  #     - discovery.type=single-node
+  #     - bootstrap.memory_lock=true
+  #     - xpack.monitoring.enabled=true
+  #     - xpack.watcher.enabled=false
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - elastic-data:/usr/share/elasticsearch/data
+  #   ports:
+  #     - ${ELASTIC_HOST_PORT:-9200}:${ELASTIC_PORT:-9200}
+  #     - 9300:9300
+  #   networks:
+  #     - food-delivery
+
+  # kibana:
+  #   image: kibana:8.5.2
+  #   container_name: kibana
+  #   restart: unless-stopped
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elastic_search:9200
+  #   ports:
+  #     - ${KIBANA_HOST_PORT:-5601}:${KIBANA_PORT:-5601}
+  #   networks:
+  #     - food-delivery
+  #   depends_on:
+  #     - elasticsearch
+
+  # zookeeper:
+  #   image: confluentinc/cp-zookeeper:7.0.1
+  #   hostname: zookeeper
+  #   container_name: zookeeper
+  #   restart: unless-stopped
+  #   ports:
+  #     - "2181:2181"
+  #   environment:
+  #     ZOOKEEPER_CLIENT_PORT: 2181
+  #     ZOOKEEPER_TICK_TIME: 2000
+  #   networks:
+  #     - food-delivery
+
+  # kafka:
+  #   image: confluentinc/cp-kafka:7.0.1
+  #   hostname: kafka
+  #   container_name: kafka
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - zookeeper
+  #   ports:
+  #     - "9092:9092"
+  #   environment:
+  #     KAFKA_BROKER_ID: 1
+  #     KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #     ADVERTISED_HOST_NAME: kafka
+  #     KAFKA_ADVERTISED_HOSTNAME: 127.0.0.1
+  #   networks:
+  #     - food-delivery
+
+  # kafka-ui:
+  #   image: provectuslabs/kafka-ui
+  #   container_name: kafka-ui
+  #   ports:
+  #     - "8080:8080"
+  #   restart: always
+  #   environment:
+  #     - KAFKA_CLUSTERS_0_NAME=local
+  #     - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+  #     - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+
+  # kafdrop:
+  #   image: obsidiandynamics/kafdrop
+  #   container_name: kafdrop
+  #   ports:
+  #       - '9000:9000'
+  #   environment:
+  #       - 'KAFKA_BROKERCONNECT=<host:port,host:port>'
+  #       - 'JVM_OPTS=-Xms32M -Xmx64M'
+  #       - SERVER_SERVLET_CONTEXTPATH=/
+
+volumes:
+  eventstore-volume-data:
+  eventstore-volume-logs:
+  elastic-data:
+
+networks:
+  food-delivery:
+    name: food-delivery

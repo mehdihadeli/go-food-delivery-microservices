@@ -3,9 +3,9 @@ package types
 import (
 	"fmt"
 
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+	defaultLogger "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/defaultlogger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
+	errorUtils "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/utils/errorutils"
 
 	"emperror.dev/errors"
 	"github.com/rabbitmq/amqp091-go"
@@ -131,13 +131,17 @@ func (c *internalConnection) handleReconnecting() {
 		select {
 		case err := <-c.errConnectionChan:
 			if err != nil {
-				defaultLogger.Logger.Info("Rabbitmq Connection Reconnecting started")
+				defaultLogger.GetLogger().
+					Info("Rabbitmq Connection Reconnecting started")
 				err := c.connect()
 				if err != nil {
-					defaultLogger.Logger.Error(fmt.Sprintf("Error in reconnecting, %s", err))
+					defaultLogger.GetLogger().
+						Error(fmt.Sprintf("Error in reconnecting, %s", err))
 					continue
 				}
-				defaultLogger.Logger.Info("Rabbitmq Connection Reconnected")
+
+				defaultLogger.GetLogger().
+					Info("Rabbitmq Connection Reconnected")
 				c.isConnected = true
 				c.reconnectedChan <- struct{}{}
 				continue

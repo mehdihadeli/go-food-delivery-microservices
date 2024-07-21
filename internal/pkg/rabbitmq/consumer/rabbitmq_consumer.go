@@ -6,18 +6,19 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	consumeTracing "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/otel/tracing/consumer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/pipeline"
-	messagingTypes "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/configurations"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/rabbitmqErrors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
-	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/consumer"
+	consumertracing "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/otel/tracing/consumer"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/pipeline"
+	messagingTypes "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/types"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/utils"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/metadata"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/serializer"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer/configurations"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/rabbitmqErrors"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/types"
+	errorutils "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/utils/errorutils"
 
 	"emperror.dev/errors"
 	"github.com/ahmetb/go-linq/v3"
@@ -44,8 +45,9 @@ type rabbitMQConsumer struct {
 	handlerDefault          consumer.ConsumerHandler
 	channel                 *amqp091.Channel
 	deliveryRoutines        chan struct{} // chan should init before using channel
-	eventSerializer         serializer.EventSerializer
+	messageSerializer       serializer.MessageSerializer
 	logger                  logger.Logger
+	rabbitmqOptions         *config.RabbitmqOptions
 	ErrChan                 chan error
 	handlers                []consumer.ConsumerHandler
 	pipelines               []pipeline.ConsumerPipeline
@@ -54,9 +56,10 @@ type rabbitMQConsumer struct {
 
 // NewRabbitMQConsumer create a new generic RabbitMQ consumer
 func NewRabbitMQConsumer(
+	rabbitmqOptions *config.RabbitmqOptions,
 	connection types.IConnection,
 	consumerConfiguration *configurations.RabbitMQConsumerConfiguration,
-	eventSerializer serializer.EventSerializer,
+	messageSerializer serializer.MessageSerializer,
 	logger logger.Logger,
 	isConsumedNotifications ...func(message messagingTypes.IMessage),
 ) (consumer.Consumer, error) {
@@ -65,12 +68,18 @@ func NewRabbitMQConsumer(
 	}
 
 	if consumerConfiguration.ConsumerMessageType == nil {
-		return nil, errors.New("consumer ConsumerMessageType property is required")
+		return nil, errors.New(
+			"consumer ConsumerMessageType property is required",
+		)
 	}
 
-	deliveryRoutines := make(chan struct{}, consumerConfiguration.ConcurrencyLimit)
+	deliveryRoutines := make(
+		chan struct{},
+		consumerConfiguration.ConcurrencyLimit,
+	)
 	cons := &rabbitMQConsumer{
-		eventSerializer:         eventSerializer,
+		messageSerializer:       messageSerializer,
+		rabbitmqOptions:         rabbitmqOptions,
 		logger:                  logger,
 		rabbitmqConsumerOptions: consumerConfiguration,
 		deliveryRoutines:        deliveryRoutines,
@@ -254,7 +263,7 @@ func (r *rabbitMQConsumer) GetName() string {
 
 func (r *rabbitMQConsumer) reConsumeOnDropConnection(ctx context.Context) {
 	go func() {
-		defer errorUtils.HandlePanic()
+		defer errorutils.HandlePanic()
 		for {
 			select {
 			case reconnect := <-r.connection.ReconnectedChannel():
@@ -262,10 +271,15 @@ func (r *rabbitMQConsumer) reConsumeOnDropConnection(ctx context.Context) {
 					r.logger.Info("reconsume_on_drop_connection started")
 					err := r.Start(ctx)
 					if err != nil {
-						r.logger.Error("reconsume_on_drop_connection finished with error: %v", err)
+						r.logger.Error(
+							"reconsume_on_drop_connection finished with error: %v",
+							err,
+						)
 						continue
 					}
-					r.logger.Info("reconsume_on_drop_connection finished successfully")
+					r.logger.Info(
+						"reconsume_on_drop_connection finished successfully",
+					)
 					return
 				}
 			}
@@ -273,7 +287,10 @@ func (r *rabbitMQConsumer) reConsumeOnDropConnection(ctx context.Context) {
 	}()
 }
 
-func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.Delivery) {
+func (r *rabbitMQConsumer) handleReceived(
+	ctx context.Context,
+	delivery amqp091.Delivery,
+) {
 	// for ensuring our handlers execute completely after shutdown
 	r.deliveryRoutines <- struct{}{}
 
@@ -284,7 +301,7 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 		meta = metadata.MapToMetadata(delivery.Headers)
 	}
 
-	consumerTraceOption := &consumeTracing.ConsumerTracingOptions{
+	consumerTraceOption := &consumertracing.ConsumerTracingOptions{
 		MessagingSystem: "rabbitmq",
 		DestinationKind: "queue",
 		Destination:     r.rabbitmqConsumerOptions.QueueOptions.Name,
@@ -292,7 +309,7 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 			semconv.MessagingRabbitmqDestinationRoutingKey(delivery.RoutingKey),
 		},
 	}
-	ctx, beforeConsumeSpan := consumeTracing.StartConsumerSpan(
+	ctx, beforeConsumeSpan := consumertracing.StartConsumerSpan(
 		ctx,
 		&meta,
 		string(delivery.Body),
@@ -301,7 +318,9 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 
 	consumeContext, err := r.createConsumeContext(delivery)
 	if err != nil {
-		r.logger.Error(consumeTracing.FinishConsumerSpan(beforeConsumeSpan, err))
+		r.logger.Error(
+			consumertracing.FinishConsumerSpan(beforeConsumeSpan, err),
+		)
 		return
 	}
 
@@ -314,11 +333,11 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 			if err := delivery.Ack(false); err != nil {
 				r.logger.Error(
 					"error sending ACK to RabbitMQ consumer: %v",
-					consumeTracing.FinishConsumerSpan(beforeConsumeSpan, err),
+					consumertracing.FinishConsumerSpan(beforeConsumeSpan, err),
 				)
 				return
 			}
-			_ = consumeTracing.FinishConsumerSpan(beforeConsumeSpan, nil)
+			_ = consumertracing.FinishConsumerSpan(beforeConsumeSpan, nil)
 			if len(r.isConsumedNotifications) > 0 {
 				for _, notification := range r.isConsumedNotifications {
 					if notification != nil {
@@ -332,11 +351,11 @@ func (r *rabbitMQConsumer) handleReceived(ctx context.Context, delivery amqp091.
 			if err := delivery.Nack(false, true); err != nil {
 				r.logger.Error(
 					"error in sending Nack to RabbitMQ consumer: %v",
-					consumeTracing.FinishConsumerSpan(beforeConsumeSpan, err),
+					consumertracing.FinishConsumerSpan(beforeConsumeSpan, err),
 				)
 				return
 			}
-			_ = consumeTracing.FinishConsumerSpan(beforeConsumeSpan, nil)
+			_ = consumertracing.FinishConsumerSpan(beforeConsumeSpan, nil)
 		}
 	}
 
@@ -379,7 +398,7 @@ func (r *rabbitMQConsumer) runHandlersWithRetry(
 
 		if r.pipelines != nil && len(r.pipelines) > 0 {
 			reversPipes := r.reversOrder(r.pipelines)
-			lastHandler = func() error {
+			lastHandler = func(ctx context.Context) error {
 				handler := handler.(consumer.ConsumerHandler)
 				return handler.Handle(ctx, messageConsumeContext)
 			}
@@ -389,10 +408,14 @@ func (r *rabbitMQConsumer) runHandlersWithRetry(
 					pipeValue := pipe
 					nexValue := next
 
-					var handlerFunc pipeline.ConsumerHandlerFunc = func() error {
+					var handlerFunc pipeline.ConsumerHandlerFunc = func(ctx context.Context) error {
 						genericContext, ok := messageConsumeContext.(messagingTypes.MessageConsumeContext)
 						if ok {
-							return pipeValue.Handle(ctx, genericContext, nexValue)
+							return pipeValue.Handle(
+								ctx,
+								genericContext,
+								nexValue,
+							)
 						}
 						return pipeValue.Handle(
 							ctx,
@@ -404,9 +427,12 @@ func (r *rabbitMQConsumer) runHandlersWithRetry(
 				})
 
 			v := aggregateResult.(pipeline.ConsumerHandlerFunc)
-			err := v()
+			err := v(ctx)
 			if err != nil {
-				return errors.Wrap(err, "error handling consumer handlers pipeline")
+				return errors.Wrap(
+					err,
+					"error handling consumer handlers pipeline",
+				)
 			}
 			return nil
 		} else {
@@ -424,21 +450,11 @@ func (r *rabbitMQConsumer) runHandlersWithRetry(
 func (r *rabbitMQConsumer) createConsumeContext(
 	delivery amqp091.Delivery,
 ) (messagingTypes.MessageConsumeContext, error) {
-	message := r.deserializeData(delivery.ContentType, delivery.Type, delivery.Body)
-	if reflect.ValueOf(message).IsZero() || reflect.ValueOf(message).IsNil() {
-		return *new(messagingTypes.MessageConsumeContext), errors.New(
-			"error in deserialization of payload",
-		)
-	}
-	m, ok := message.(messagingTypes.IMessage)
-	if !ok || m.IsMessage() == false {
-		return nil, errors.New(
-			fmt.Sprintf(
-				"message %s is not a message type or message property is nil",
-				utils.GetMessageBaseReflectType(message),
-			),
-		)
-	}
+	message := r.deserializeData(
+		delivery.ContentType,
+		delivery.Type,
+		delivery.Body,
+	)
 
 	var meta metadata.Metadata
 	if delivery.Headers != nil {
@@ -446,7 +462,7 @@ func (r *rabbitMQConsumer) createConsumeContext(
 	}
 
 	consumeContext := messagingTypes.NewMessageConsumeContext(
-		message.(messagingTypes.IMessage),
+		message,
 		meta,
 		delivery.ContentType,
 		delivery.Type,
@@ -462,7 +478,7 @@ func (r *rabbitMQConsumer) deserializeData(
 	contentType string,
 	eventType string,
 	body []byte,
-) interface{} {
+) messagingTypes.IMessage {
 	if contentType == "" {
 		contentType = "application/json"
 	}
@@ -474,15 +490,18 @@ func (r *rabbitMQConsumer) deserializeData(
 
 	if contentType == "application/json" {
 		// r.rabbitmqConsumerOptions.ConsumerMessageType --> actual type
-		// deserialize, err := r.eventSerializer.DeserializeType(body, r.rabbitmqConsumerOptions.ConsumerMessageType, contentType)
-		deserialize, err := r.eventSerializer.DeserializeMessage(
+		// deserialize, err := r.messageSerializer.DeserializeType(body, r.rabbitmqConsumerOptions.ConsumerMessageType, contentType)
+		deserialize, err := r.messageSerializer.Deserialize(
 			body,
 			eventType,
 			contentType,
 		) // or this to explicit type deserialization
 		if err != nil {
 			r.logger.Errorf(
-				fmt.Sprintf("error in deserilizng of type '%s' in the consumer", eventType),
+				fmt.Sprintf(
+					"error in deserilizng of type '%s' in the consumer",
+					eventType,
+				),
 			)
 			return nil
 		}

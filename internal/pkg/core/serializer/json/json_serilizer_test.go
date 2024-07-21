@@ -1,3 +1,6 @@
+//go:build unit
+// +build unit
+
 package json
 
 import (
@@ -12,7 +15,7 @@ type person struct {
 	Age  int
 }
 
-var currentSerializer = NewDefaultSerializer()
+var currentSerializer = NewDefaultJsonSerializer()
 
 func Test_Deserialize_Unstructured_Data_Into_Empty_Interface(t *testing.T) {
 	// https://www.sohamkamani.com/golang/json/#decoding-json-to-maps---unstructured-data
@@ -41,7 +44,7 @@ func Test_Deserialize_Unstructured_Data_Into_Empty_Interface(t *testing.T) {
 
 	assert.True(t, reflect.TypeOf(jsonMap).Kind() == reflect.Map)
 	assert.True(t, reflect.TypeOf(jsonMap) == reflect.TypeOf(map[string]interface{}(nil)))
-	assert.True(t, jsonMap.(map[string]interface{})["Name"] == "John")
+	assert.True(t, jsonMap.(map[string]interface{})["ShortTypeName"] == "John")
 	assert.True(t, jsonMap.(map[string]interface{})["Age"] == float64(30))
 }
 
@@ -72,7 +75,7 @@ func Test_Deserialize_Unstructured_Data_Into_Map(t *testing.T) {
 
 	assert.True(t, reflect.TypeOf(jsonMap).Kind() == reflect.Map)
 	assert.True(t, reflect.TypeOf(jsonMap) == reflect.TypeOf(map[string]interface{}(nil)))
-	assert.True(t, jsonMap["Name"] == "John")
+	assert.True(t, jsonMap["ShortTypeName"] == "John")
 	assert.True(t, jsonMap["Age"] == float64(30))
 }
 
@@ -169,6 +172,6 @@ func Test_Decode_To_Map(t *testing.T) {
 		panic(err)
 	}
 
-	assert.True(t, jsonMap["Name"] == "John")
+	assert.True(t, jsonMap["ShortTypeName"] == "John")
 	assert.True(t, jsonMap["Age"] == float64(30))
 }

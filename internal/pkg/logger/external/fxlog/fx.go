@@ -3,7 +3,7 @@ package fxlog
 import (
 	"strings"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -139,7 +139,7 @@ func (l *FxCustomLogger) LogEvent(event fxevent.Event) {
 				logger.Fields{"error": e.Err},
 			)
 		} else {
-			l.Debugw("initialized custom fxevent.Logger", logger.Fields{"function": e.ConstructorName})
+			l.Debugw("initialized custom fxevent.logger", logger.Fields{"function": e.ConstructorName})
 		}
 	}
 }

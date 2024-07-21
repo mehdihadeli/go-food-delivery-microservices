@@ -1,0 +1,114 @@
+#https://taskfile.dev/#/installation
+#https://github.com/go-task/task/issues/1115
+version: "3"
+
+tasks:
+  install-tools:
+    desc: Install necessary tools
+    cmds:
+      - sh ./scripts/install-tools.sh
+
+  run-catalogs-write-service:
+    desc: Run catalog write service
+    cmds:
+      - sh ./scripts/run.sh catalogwriteservice
+
+  run-catalog-read-service:
+    desc: Run catalog read service
+    cmds:
+      - sh ./scripts/run.sh catalogreadservice
+
+  run-order-service:
+    desc: Run order service
+    cmds:
+      - sh ./scripts/run.sh orderservice
+
+  build:
+    desc: Build project components
+    cmds:
+      - sh ./scripts/build.sh pkg
+      - sh ./scripts/build.sh catalogwriteservice
+      - sh ./scripts/build.sh catalogreadservice
+      - sh ./scripts/build.sh orderservice
+
+  install-dependencies:
+    desc: Install project dependencies
+    cmds:
+      - sh ./scripts/install-dependencies.sh pkg
+      - sh ./scripts/install-dependencies.sh catalogwriteservice
+      - sh ./scripts/install-dependencies.sh catalogreadservice
+      - sh ./scripts/install-dependencies.sh orderservice
+
+  docker-compose-infra-up:
+    desc: Start infrastructure using docker-compose
+    cmds:
+      - docker-compose -f deployments/docker-compose/docker-compose.infrastructure.yaml up --build -d
+
+  docker-compose-infra-down:
+    desc: Stop infrastructure using docker-compose
+    cmds:
+      - docker-compose -f deployments/docker-compose/docker-compose.infrastructure.yaml down
+
+  openapi:
+    desc: Generate OpenAPI documentation
+    cmds:
+      - sh ./scripts/openapi.sh catalogwriteservice
+      - sh ./scripts/openapi.sh catalogreadservice
+      - sh ./scripts/openapi.sh orderservice
+
+  proto:
+    desc: Generate protobuf files
+    cmds:
+      - sh ./scripts/proto.sh catalogwriteservice
+      - sh ./scripts/proto.sh orderservice
+
+  unit-test:
+    desc: Run unit tests
+    cmds:
+      - sh ./scripts/test.sh catalogwriteservice unit
+      - sh ./scripts/test.sh catalogreadservice unit
+      - sh ./scripts/test.sh orderservice unit
+
+  integration-test:
+    desc: Run integration tests
+    cmds:
+      - sh ./scripts/test.sh catalogwriteservice integration
+      - sh ./scripts/test.sh catalogreadservice integration
+      - sh ./scripts/test.sh orderservice integration
+
+  e2e-test:
+    desc: Run end-to-end tests
+    cmds:
+      - sh ./scripts/test.sh catalogwriteservice e2e
+      - sh ./scripts/test.sh catalogreadservice e2e
+      - sh ./scripts/test.sh orderservice e2e
+
+  format:
+    desc: Format codebase
+    cmds:
+      - sh ./scripts/format.sh catalogwriteservice
+      - sh ./scripts/format.sh catalogreadservice
+      - sh ./scripts/format.sh orderservice
+      - sh ./scripts/format.sh pkg
+
+  lint:
+    desc: Run linters
+    cmds:
+      - sh ./scripts/lint.sh catalogwriteservice
+      - sh ./scripts/lint.sh catalogreadservice
+      - sh ./scripts/lint.sh orderservice
+      - sh ./scripts/lint.sh pkg
+
+  pkg-mocks:
+    desc: Generate package mocks
+    cmds:
+      - cd internal/pkg/es && mockery --output mocks --all
+      - cd internal/pkg/core/serializer && mockery --output mocks --all
+      - cd internal/pkg/core/messaging && mockery --output mocks --all
+
+  services-mocks:
+    desc: Generate service mocks
+    cmds:
+      - cd internal/services/catalogwriteservice && mockery --output mocks --all
+      - cd internal/services/catalogreadservice && mockery --output mocks --all
+      - cd internal/services/orderservice && mockery --output mocks --all

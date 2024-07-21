@@ -1,0 +1,54 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
+# Ref: https://github.com/open-telemetry/opentelemetry-demo/blob/main/src/otelcollector/otelcol-observability.yml
+# https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/examples/demo/otel-collector-config.yaml
+# https://www.youtube.com/watch?v=EeU-k659lpw
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+        cors:
+          allowed_origins:
+            - "http://*"
+            - "https://*"
+
+exporters:
+  logging:
+
+processors:
+  batch:
+  transform:
+    metric_statements:
+      - context: metric
+        statements:
+          # FIXME: remove this when this is issue is resolved: https://github.com/open-telemetry/opentelemetry-java/issues/4834
+          - set(description, "") where name == "queueSize"
+          # FIXME: remove this when the following 2 issues are resolved
+          # Java: https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/9478
+          # Go: https://github.com/open-telemetry/opentelemetry-go-contrib/issues/4301
+          - set(description, "") where name == "rpc.server.duration"
+
+connectors:
+  spanmetrics:
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, zipkin, otlp]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, prometheus]

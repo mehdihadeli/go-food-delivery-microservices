@@ -4,16 +4,15 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
-	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	config2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
-	testUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/utils"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/config/environment"
+	types2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/types"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/serializer/json"
+	defaultLogger "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/defaultlogger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/types"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
+	testUtils "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/utils"
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
@@ -22,43 +21,56 @@ import (
 func Test_Publish_Message(t *testing.T) {
 	testUtils.SkipCI(t)
 
-	defaultLogger.SetupDefaultLogger()
-	eventSerializer := serializer.NewDefaultEventSerializer(json.NewDefaultSerializer())
+	eventSerializer := json.NewDefaultMessageJsonSerializer(
+		json.NewDefaultJsonSerializer(),
+	)
 
 	ctx := context.Background()
 	tp, err := tracing.NewOtelTracing(
-		&config2.OpenTelemetryOptions{
+		&tracing.TracingOptions{
 			ServiceName:     "test",
 			Enabled:         true,
 			AlwaysOnSampler: true,
-			JaegerExporterOptions: &config2.JaegerExporterOptions{
-				AgentHost: "localhost",
-				AgentPort: "6831",
+			ZipkinExporterOptions: &tracing.ZipkinExporterOptions{
+				Url: "http://localhost:9411/api/v2/spans",
 			},
 		},
-		environemnt.Development,
+		environment.Development,
 	)
 	if err != nil {
 		return
 	}
-	defer tp.TracerProvider.Shutdown(ctx)
+	defer tp.Shutdown(ctx)
 
-	conn, err := types.NewRabbitMQConnection(&config.RabbitmqOptions{
-		RabbitmqHostOptions: &config.RabbitmqHostOptions{
-			UserName: "guest",
-			Password: "guest",
-			HostName: "localhost",
-			Port:     5672,
-		},
-	})
+	//options := &config.RabbitmqOptions{
+	//	RabbitmqHostOptions: &config.RabbitmqHostOptions{
+	//		UserName: "guest",
+	//		Password: "guest",
+	//		HostName: "localhost",
+	//		Port:     5672,
+	//	},
+	//}
+
+	rabbitmqHostOption, err := rabbitmq.NewRabbitMQTestContainers(defaultLogger.GetLogger()).
+		PopulateContainerOptions(ctx, t)
 	require.NoError(t, err)
 
-	rabbitmqProducer, err := NewRabbitMQProducer(
+	options := &config.RabbitmqOptions{
+		RabbitmqHostOptions: rabbitmqHostOption,
+	}
+
+	conn, err := types.NewRabbitMQConnection(options)
+	require.NoError(t, err)
+
+	producerFactory := NewProducerFactory(
+		options,
 		conn,
-		nil,
-		defaultLogger.Logger,
 		eventSerializer,
+		defaultLogger.GetLogger(),
 	)
+
+	rabbitmqProducer, err := producerFactory.CreateProducer(nil)
+
 	require.NoError(t, err)
 
 	err = rabbitmqProducer.PublishMessage(ctx, NewProducerMessage("test"), nil)

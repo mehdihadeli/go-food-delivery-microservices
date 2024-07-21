@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/health/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 
-	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 )
@@ -15,7 +14,11 @@ import (
 var (
 	// Module provided to fxlog
 	// https://uber-go.github.io/fx/modules.html
-	Module = fx.Module("redisfx", redisProviders, redisInvokes) //nolint:gochecknoglobals
+	Module = fx.Module(
+		"redisfx",
+		redisProviders,
+		redisInvokes,
+	) //nolint:gochecknoglobals
 
 	redisProviders = fx.Options(fx.Provide( //nolint:gochecknoglobals
 		NewRedisClient,
@@ -29,16 +32,21 @@ var (
 		//),
 		fx.Annotate(
 			NewRedisHealthChecker,
-			fx.As(new(health.Health)),
+			fx.As(new(contracts.Health)),
 			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
 		),
 		provideConfig))
 
-	redisInvokes = fx.Options(fx.Invoke(registerHooks), //nolint:gochecknoglobals
-		fx.Invoke(EnableTracing))
+	redisInvokes = fx.Options(
+		fx.Invoke(registerHooks),
+	) //nolint:gochecknoglobals
 )
 
-func registerHooks(lc fx.Lifecycle, client redis.UniversalClient, logger logger.Logger) {
+func registerHooks(
+	lc fx.Lifecycle,
+	client redis.UniversalClient,
+	logger logger.Logger,
+) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			return client.Ping(ctx).Err()
@@ -53,8 +61,4 @@ func registerHooks(lc fx.Lifecycle, client redis.UniversalClient, logger logger.
 			return nil
 		},
 	})
-}
-
-func EnableTracing(redis *redis.Client) error {
-	return redisotel.InstrumentTracing(redis)
 }

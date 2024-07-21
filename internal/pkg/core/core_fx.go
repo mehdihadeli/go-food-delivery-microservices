@@ -1,9 +1,7 @@
 package core
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer/json"
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/serializer/json"
 
 	"go.uber.org/fx"
 )
@@ -13,9 +11,9 @@ import (
 var Module = fx.Module(
 	"corefx",
 	fx.Provide(
-		json.NewDefaultSerializer,
-		serializer.NewDefaultEventSerializer,
-		serializer.NewDefaultMetadataSerializer,
+		json.NewDefaultJsonSerializer,
+		json.NewDefaultEventJsonSerializer,
+		json.NewDefaultMessageJsonSerializer,
+		json.NewDefaultMetadataJsonSerializer,
 	),
-	fx.Invoke(defaultLogger.SetupDefaultLogger),
 )

@@ -7,10 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-	errors2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/errors"
-	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/domain"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/metadata"
+	errors2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/errors"
+	expectedStreamVersion "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/stream_version"
 
 	"emperror.dev/errors"
 	"github.com/ahmetb/go-linq/v3"

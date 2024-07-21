@@ -3,7 +3,7 @@ package errors
 import (
 	"fmt"
 
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
+	customErrors "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/httperrors/customerrors"
 
 	"emperror.dev/errors"
 	uuid "github.com/satori/go.uuid"

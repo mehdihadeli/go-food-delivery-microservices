@@ -3,8 +3,8 @@ package es
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/projection"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/contracts/projection"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models"
 
 	"emperror.dev/errors"
 )

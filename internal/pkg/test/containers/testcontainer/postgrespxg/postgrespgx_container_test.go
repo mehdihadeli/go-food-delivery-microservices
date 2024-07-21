@@ -4,16 +4,16 @@ import (
 	"context"
 	"testing"
 
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	defaultLogger "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/defaultlogger"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func Test_Custom_PostgresPgx_Container(t *testing.T) {
-	defaultLogger.SetupDefaultLogger()
-
-	gorm, err := NewPostgresPgxContainers(defaultLogger.Logger).Start(context.Background(), t)
+	gorm, err := NewPostgresPgxContainers(
+		defaultLogger.GetLogger(),
+	).Start(context.Background(), t)
 	require.NoError(t, err)
 
 	assert.NotNil(t, gorm)

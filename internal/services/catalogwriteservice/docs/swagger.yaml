@@ -1,0 +1,228 @@
+definitions:
+  github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_dto_v1.ProductDto:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+      productId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  ? github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_creating_product_v1_dtos.CreateProductRequestDto
+  : properties:
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  ? github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_creating_product_v1_dtos.CreateProductResponseDto
+  : properties:
+      productId:
+        type: string
+    type: object
+  ? github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_getting_product_by_id_v1_dtos.GetProductByIdResponseDto
+  : properties:
+      product:
+        $ref: '#/definitions/github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_dto_v1.ProductDto'
+    type: object
+  ? github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_getting_products_v1_dtos.GetProductsResponseDto
+  : properties:
+      products:
+        $ref: '#/definitions/utils.ListResult-github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_dto_v1_ProductDto'
+    type: object
+  ? github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_searching_product_v1_dtos.SearchProductsResponseDto
+  : properties:
+      products:
+        $ref: '#/definitions/utils.ListResult-github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_dto_v1_ProductDto'
+    type: object
+  ? github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_updating_product_v1_dtos.UpdateProductRequestDto
+  : properties:
+      description:
+        type: string
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  utils.FilterModel:
+    properties:
+      comparison:
+        type: string
+      field:
+        type: string
+      value:
+        type: string
+    type: object
+  utils.ListQuery:
+    properties:
+      filters:
+        items:
+          $ref: '#/definitions/utils.FilterModel'
+        type: array
+      orderBy:
+        type: string
+      page:
+        type: integer
+      size:
+        type: integer
+    type: object
+  ? utils.ListResult-github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_dto_v1_ProductDto
+  : properties:
+      items:
+        items:
+          $ref: '#/definitions/github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_dto_v1.ProductDto'
+        type: array
+      page:
+        type: integer
+      size:
+        type: integer
+      totalItems:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+info:
+  contact:
+    name: Mehdi Hadeli
+    url: https://github.com/mehdihadeli
+  description: Catalogs Write-Service Api.
+  title: Catalogs Write-Service Api
+  version: "1.0"
+paths:
+  /api/v1/products:
+    get:
+      consumes:
+      - application/json
+      description: Get all products
+      parameters:
+      - in: query
+        name: orderBy
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_getting_products_v1_dtos.GetProductsResponseDto'
+      summary: Get all product
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Create new product item
+      parameters:
+      - description: Product data
+        in: body
+        name: CreateProductRequestDto
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_creating_product_v1_dtos.CreateProductRequestDto'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_creating_product_v1_dtos.CreateProductResponseDto'
+      summary: Create product
+      tags:
+      - Products
+  /api/v1/products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete existing product
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Delete product
+      tags:
+      - Products
+    get:
+      consumes:
+      - application/json
+      description: Get product by id
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_getting_product_by_id_v1_dtos.GetProductByIdResponseDto'
+      summary: Get product by id
+      tags:
+      - Products
+    put:
+      consumes:
+      - application/json
+      description: Update existing product
+      parameters:
+      - description: Product data
+        in: body
+        name: UpdateProductRequestDto
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_updating_product_v1_dtos.UpdateProductRequestDto'
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Update product
+      tags:
+      - Products
+  /api/v1/products/search:
+    get:
+      consumes:
+      - application/json
+      description: Search products
+      parameters:
+      - in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mehdihadeli_go-food-delivery-microservices_internal_services_catalogwriteservice_internal_products_features_searching_product_v1_dtos.SearchProductsResponseDto'
+      summary: Search products
+      tags:
+      - Products
+swagger: "2.0"

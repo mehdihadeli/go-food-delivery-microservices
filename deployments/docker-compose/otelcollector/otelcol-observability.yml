@@ -1,0 +1,49 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
+
+exporters:
+  otlp:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+  prometheus:
+    endpoint: "otelcol:9464"
+    resource_to_telemetry_conversion:
+      enabled: true
+    enable_open_metrics: true
+
+  #  #https://www.elastic.co/guide/en/apm/guide/current/open-telemetry-direct.html#open-telemetry-proxy-apm
+  #  otlp/elastic:
+  #    # Elastic APM server https endpoint without the "https://" prefix
+  #    endpoint: "http://elastic-apm-server:8200"
+  #    headers:
+  #      # Elastic APM Server secret token
+  #      Authorization: "Bearer ${ELASTIC_APM_SECRET_TOKEN}"
+
+  #  # https://uptrace:dev/opentelemetry/prometheus-metrics:html#prometheus-receiver
+  #  otlp/uptrace:
+  #    endpoint: otlp.uptrace.dev:4317
+  #    headers:
+  #      # Copy your project DSN here
+  #      uptrace-dsn: 'https://<token>@uptrace.dev/<project_id>
+
+
+  logging:
+
+  zipkin:
+    endpoint: "http://zipkin-all-in-one:9411/api/v2/spans"
+    format: proto
+
+  otlp:
+    endpoint: "jaeger-all-in-one:4317"
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      exporters: [otlp, logging, spanmetrics]
+    metrics:
+      exporters: [prometheus, logging]
+

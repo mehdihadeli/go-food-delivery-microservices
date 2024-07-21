@@ -5,10 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
 )
 
 type RabbitMQContainerOptions struct {
@@ -25,7 +22,13 @@ type RabbitMQContainerOptions struct {
 }
 
 func (h *RabbitMQContainerOptions) AmqpEndPoint() string {
-	return fmt.Sprintf("amqp://%s:%s@%s:%d", h.UserName, h.Password, h.Host, h.HostPort)
+	return fmt.Sprintf(
+		"amqp://%s:%s@%s:%d",
+		h.UserName,
+		h.Password,
+		h.Host,
+		h.HostPort,
+	)
 }
 
 func (h *RabbitMQContainerOptions) HttpEndPoint() string {
@@ -33,13 +36,7 @@ func (h *RabbitMQContainerOptions) HttpEndPoint() string {
 }
 
 type RabbitMQContainer interface {
-	Start(ctx context.Context,
-		t *testing.T,
-		serializer serializer.EventSerializer,
-		rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
-		options ...*RabbitMQContainerOptions) (bus.Bus, error)
-
-	CreatingContainerOptions(
+	PopulateContainerOptions(
 		ctx context.Context,
 		t *testing.T,
 		options ...*RabbitMQContainerOptions,

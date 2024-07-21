@@ -7,9 +7,9 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/migration"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/migration/contracts"
 
 	"emperror.dev/errors"
 	"github.com/golang-migrate/migrate/v4"

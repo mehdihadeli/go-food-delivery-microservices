@@ -3,6 +3,8 @@ package tracing
 import (
 	"context"
 
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/utils"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -22,7 +24,7 @@ func (c *appTracer) Start(
 ) (context.Context, trace.Span) {
 	parentSpan := trace.SpanFromContext(ctx)
 	if parentSpan != nil {
-		ContextWithParentSpan(ctx, parentSpan)
+		utils.ContextWithParentSpan(ctx, parentSpan)
 	}
 
 	return c.Tracer.Start(ctx, spanName, opts...)

@@ -3,7 +3,7 @@ package es
 import (
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/projection"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/contracts/projection"
 
 	"go.uber.org/fx"
 )
