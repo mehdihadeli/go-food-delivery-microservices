@@ -6,5 +6,5 @@ set -eax
 echo "Installing Nerd Fonts..."
 ./setup-fonts.sh
 
-echo "Installing tools for Go development..."
-./../../scripts/install-tools.sh
+# echo "Installing tools for Go development..."
+# ./../../scripts/install-tools.sh
