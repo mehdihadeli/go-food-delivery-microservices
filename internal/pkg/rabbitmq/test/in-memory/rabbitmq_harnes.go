@@ -3,15 +3,15 @@ package in_memory
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	consumer2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/consumer"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/types"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/metadata"
 )
 
 type RabbitmqInMemoryHarnesses struct {
 	publishedMessage []types.IMessage
 	consumedMessage  []types.IMessage
-	consumerHandlers map[types.IMessage][]consumer.ConsumerHandler
+	consumerHandlers map[types.IMessage][]consumer2.ConsumerHandler
 }
 
 func NewRabbitmqInMemoryHarnesses() *RabbitmqInMemoryHarnesses {
@@ -53,7 +53,7 @@ func (r *RabbitmqInMemoryHarnesses) Stop(ctx context.Context) error {
 
 func (r *RabbitmqInMemoryHarnesses) ConnectConsumerHandler(
 	messageType types.IMessage,
-	consumerHandler consumer.ConsumerHandler,
+	consumerHandler consumer2.ConsumerHandler,
 ) error {
 	r.consumerHandlers[messageType] = append(r.consumerHandlers[messageType], consumerHandler)
 	return nil
@@ -61,7 +61,7 @@ func (r *RabbitmqInMemoryHarnesses) ConnectConsumerHandler(
 
 func (r *RabbitmqInMemoryHarnesses) ConnectConsumer(
 	messageType types.IMessage,
-	consumer consumer.Consumer,
+	consumer consumer2.Consumer,
 ) error {
 	return nil
 }

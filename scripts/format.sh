@@ -26,11 +26,12 @@ golines -m 120 -w --ignore-generated .
 # https://github.com/incu6us/goimports-reviser
 # https://github.com/incu6us/goimports-reviser/issues/118
 # https://github.com/incu6us/goimports-reviser/issues/88
+# https://github.com/incu6us/goimports-reviser/issues/104
 # will do `gofmt` internally if we use -format
 # -rm-unused, -set-alias have some errors ---> goimports-reviser -rm-unused -set-alias -format -recursive ./...
-# goimports-reviser -company-prefixes "github.com/mehdihadeli" -project-name "github.com/mehdihadeli/go-ecommerce-microservices" -imports-order "std,general,company,project" -recursive ./...
+# goimports-reviser -company-prefixes "github.com/mehdihadeli" -project-name "github.com/mehdihadeli/go-food-delivery-microservices" -rm-unused -set-alias -imports-order "std,general,company,project,blanked,dotted" -recursive ./...
 
-gci write --skip-generated -s standard -s "prefix(github.com/mehdihadeli/go-ecommerce-microservices)" -s default -s blank -s dot --custom-order  .
+gci write --skip-generated -s standard -s "prefix(github.com/mehdihadeli/go-food-delivery-microservices)" -s default -s blank -s dot --custom-order  .
 
 # https://golang.org/cmd/gofmt/
 # gofmt -w .

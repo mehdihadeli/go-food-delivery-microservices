@@ -4,17 +4,33 @@ import (
 	"context"
 	"testing"
 
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/config/environment"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/external/fxlog"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/zap"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/mongodb"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
 )
 
 func Test_Custom_Mongo_Container(t *testing.T) {
-	defaultLogger.SetupDefaultLogger()
+	ctx := context.Background()
 
-	mongo, err := NewMongoTestContainers(defaultLogger.Logger).Start(context.Background(), t)
-	require.NoError(t, err)
+	var mongoClient *mongo.Client
 
-	assert.NotNil(t, mongo)
+	fxtest.New(t,
+		config.ModuleFunc(environment.Test),
+		zap.Module,
+		fxlog.FxLogger,
+		core.Module,
+		mongodb.Module,
+		fx.Decorate(MongoContainerOptionsDecorator(t, ctx)),
+		fx.Populate(&mongoClient),
+	).RequireStart()
+
+	assert.NotNil(t, mongoClient)
 }

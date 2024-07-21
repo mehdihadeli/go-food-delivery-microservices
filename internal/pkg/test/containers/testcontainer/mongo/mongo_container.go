@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/mongodb"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
 	"github.com/docker/docker/api/types/container"
@@ -48,7 +48,7 @@ func NewMongoTestContainers(l logger.Logger) contracts.MongoContainer {
 	}
 }
 
-func (g *mongoTestContainers) CreatingContainerOptions(
+func (g *mongoTestContainers) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.MongoContainerOptions,
@@ -76,7 +76,10 @@ func (g *mongoTestContainers) CreatingContainerOptions(
 	})
 
 	// get a free random host hostPort
-	hostPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Port))
+	hostPort, err := dbContainer.MappedPort(
+		ctx,
+		nat.Port(g.defaultOptions.Port),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +92,7 @@ func (g *mongoTestContainers) CreatingContainerOptions(
 
 	isConnectable := isConnectable(ctx, g.logger, g.defaultOptions)
 	if !isConnectable {
-		return g.CreatingContainerOptions(context.Background(), t, options...)
+		return g.PopulateContainerOptions(context.Background(), t, options...)
 	}
 
 	g.container = dbContainer
@@ -104,24 +107,6 @@ func (g *mongoTestContainers) CreatingContainerOptions(
 	}
 
 	return option, nil
-}
-
-func (g *mongoTestContainers) Start(
-	ctx context.Context,
-	t *testing.T,
-	options ...*contracts.MongoContainerOptions,
-) (*mongo.Client, error) {
-	mongoOptions, err := g.CreatingContainerOptions(ctx, t, options...)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := mongodb.NewMongoDB(mongoOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }
 
 func (g *mongoTestContainers) Cleanup(ctx context.Context) error {
@@ -158,10 +143,15 @@ func (g *mongoTestContainers) getRunOptions(
 	}
 
 	containerReq := testcontainers.ContainerRequest{
-		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
+		Image: fmt.Sprintf(
+			"%s:%s",
+			g.defaultOptions.ImageName,
+			g.defaultOptions.Tag,
+		),
 		ExposedPorts: []string{g.defaultOptions.Port},
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).WithPollInterval(2 * time.Second),
-		Hostname:     g.defaultOptions.Host,
+		WaitingFor: wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).
+			WithPollInterval(2 * time.Second),
+		Hostname: g.defaultOptions.Host,
 		HostConfigModifier: func(hostConfig *container.HostConfig) {
 			hostConfig.AutoRemove = true
 		},
@@ -174,7 +164,11 @@ func (g *mongoTestContainers) getRunOptions(
 	return containerReq
 }
 
-func isConnectable(ctx context.Context, logger logger.Logger, mongoOptions *contracts.MongoContainerOptions) bool {
+func isConnectable(
+	ctx context.Context,
+	logger logger.Logger,
+	mongoOptions *contracts.MongoContainerOptions,
+) bool {
 	uriAddress := fmt.Sprintf(
 		"mongodb://%s:%s@%s:%d",
 		mongoOptions.UserName,
@@ -187,7 +181,12 @@ func isConnectable(ctx context.Context, logger logger.Logger, mongoOptions *cont
 		SetMaxConnIdleTime(maxConnIdleTime).
 		SetMinPoolSize(minPoolSize).
 		SetMaxPoolSize(maxPoolSize)
-	opt = opt.SetAuth(options.Credential{Username: mongoOptions.UserName, Password: mongoOptions.Password})
+	opt = opt.SetAuth(
+		options.Credential{
+			Username: mongoOptions.UserName,
+			Password: mongoOptions.Password,
+		},
+	)
 
 	mongoClient, err := mongo.Connect(ctx, opt)
 
@@ -206,7 +205,10 @@ func isConnectable(ctx context.Context, logger logger.Logger, mongoOptions *cont
 		return false
 	}
 	logger.Infof(
-		"Opened mongodb connection on host: %s:%d", mongoOptions.Host, mongoOptions.HostPort)
+		"Opened mongodb connection on host: %s:%d",
+		mongoOptions.Host,
+		mongoOptions.HostPort,
+	)
 
 	return true
 }

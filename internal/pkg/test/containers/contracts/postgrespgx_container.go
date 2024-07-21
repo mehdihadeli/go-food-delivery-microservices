@@ -4,12 +4,11 @@ import (
 	"context"
 	"testing"
 
-	postgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/postgres_pgx"
+	postgres "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/postgrespgx"
 )
 
 type PostgresPgxContainer interface {
-	Start(ctx context.Context, t *testing.T, options ...*PostgresContainerOptions) (*postgres.Pgx, error)
-	CreatingContainerOptions(
+	PopulateContainerOptions(
 		ctx context.Context,
 		t *testing.T,
 		options ...*PostgresContainerOptions,

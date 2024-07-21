@@ -7,12 +7,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/mongodb"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type mongoDockerTest struct {
@@ -35,7 +34,7 @@ func NewMongoDockerTest() contracts.MongoContainer {
 	}
 }
 
-func (g *mongoDockerTest) CreatingContainerOptions(
+func (g *mongoDockerTest) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.MongoContainerOptions,
@@ -48,13 +47,16 @@ func (g *mongoDockerTest) CreatingContainerOptions(
 	runOptions := g.getRunOptions(options...)
 
 	// pull mongodb docker image for version 5.0
-	resource, err := pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
-		// set AutoRemove to true so that stopped container goes away by itself
-		config.AutoRemove = true
-		config.RestartPolicy = docker.RestartPolicy{
-			Name: "no",
-		}
-	})
+	resource, err := pool.RunWithOptions(
+		runOptions,
+		func(config *docker.HostConfig) {
+			// set AutoRemove to true so that stopped container goes away by itself
+			config.AutoRemove = true
+			config.RestartPolicy = docker.RestartPolicy{
+				Name: "no",
+			}
+		},
+	)
 	if err != nil {
 		log.Fatalf("Could not start resource (Mongo Container): %s", err)
 	}
@@ -64,7 +66,9 @@ func (g *mongoDockerTest) CreatingContainerOptions(
 	) // Tell docker to hard kill the container in 120 seconds exponential backoff-retry, because the application_exceptions in the container might not be ready to accept connections yet
 
 	g.resource = resource
-	port, _ := strconv.Atoi(resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Port)))
+	port, _ := strconv.Atoi(
+		resource.GetPort(fmt.Sprintf("%s/tcp", g.defaultOptions.Port)),
+	)
 	g.defaultOptions.HostPort = port
 
 	t.Cleanup(func() { _ = resource.Close() })
@@ -89,24 +93,6 @@ func (g *mongoDockerTest) CreatingContainerOptions(
 	}
 
 	return mongoOptions, nil
-}
-
-func (g *mongoDockerTest) Start(
-	ctx context.Context,
-	t *testing.T,
-	options ...*contracts.MongoContainerOptions,
-) (*mongo.Client, error) {
-	mongoOptions, err := g.CreatingContainerOptions(ctx, t, options...)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := mongodb.NewMongoDB(mongoOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }
 
 func (g *mongoDockerTest) Cleanup(ctx context.Context) error {

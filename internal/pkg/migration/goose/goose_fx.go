@@ -1,7 +1,7 @@
 package goose
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/migration"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/migration"
 
 	"go.uber.org/fx"
 )

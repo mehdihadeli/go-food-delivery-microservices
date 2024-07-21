@@ -3,7 +3,7 @@ package mongodb
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/utils"
 
 	"emperror.dev/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -31,28 +31,31 @@ func Paginate[T any](
 	limit := int64(listQuery.GetLimit())
 	skip := int64(listQuery.GetOffset())
 
-	cursor, err := collection.Find(ctx, filter, &options.FindOptions{
-		Limit: &limit,
-		Skip:  &skip,
-	})
+	cursor, err := collection.Find(
+		ctx,
+		filter,
+		&options.FindOptions{
+			Limit: &limit,
+			Skip:  &skip,
+		})
 	if err != nil {
-		return nil, errors.WrapIf(err, "Find")
-	}
-	defer cursor.Close(ctx) // nolint: errcheck
-
-	products := make([]T, 0, listQuery.GetSize())
-
-	for cursor.Next(ctx) {
-		var prod T
-		if err := cursor.Decode(&prod); err != nil {
-			return nil, errors.WrapIf(err, "Find")
-		}
-		products = append(products, prod)
+		return nil, err
 	}
 
-	if err := cursor.Err(); err != nil {
-		return nil, errors.WrapIf(err, "cursor.Err")
+	defer cursor.Close(ctx)
+
+	var items []T
+
+	// https://www.mongodb.com/docs/drivers/go/current/fundamentals/crud/read-operations/cursor/#retrieve-all-documents
+	err = cursor.All(ctx, &items)
+	if err != nil {
+		return nil, err
 	}
 
-	return utils.NewListResult[T](products, listQuery.GetSize(), listQuery.GetPage(), count), nil
+	return utils.NewListResult[T](
+		items,
+		listQuery.GetSize(),
+		listQuery.GetPage(),
+		count,
+	), nil
 }

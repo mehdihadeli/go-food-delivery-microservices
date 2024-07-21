@@ -5,8 +5,8 @@ import (
 	"log"
 	"testing"
 
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+	gormPostgres "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/postgresgorm"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
 	"github.com/orlangure/gnomock"
@@ -34,7 +34,7 @@ func NewGnoMockGormContainer() contracts.GormContainer {
 	}
 }
 
-func (g *gnoMockGormContainer) CreatingContainerOptions(
+func (g *gnoMockGormContainer) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
@@ -70,7 +70,7 @@ func (g *gnoMockGormContainer) Start(
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
 ) (*gorm.DB, error) {
-	gormOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	gormOptions, err := g.PopulateContainerOptions(ctx, t, options...)
 	if err != nil {
 		return nil, err
 	}

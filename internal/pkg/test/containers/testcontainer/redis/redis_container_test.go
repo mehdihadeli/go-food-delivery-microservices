@@ -4,17 +4,32 @@ import (
 	"context"
 	"testing"
 
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/config"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/config/environment"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/external/fxlog"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/zap"
+	redis2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/redis"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"go.uber.org/fx"
+	"go.uber.org/fx/fxtest"
 )
 
 func Test_Custom_Redis_Container(t *testing.T) {
-	defaultLogger.SetupDefaultLogger()
+	ctx := context.Background()
+	var redisClient redis.UniversalClient
 
-	redis, err := NewRedisTestContainers(defaultLogger.Logger).Start(context.Background(), t)
-	require.NoError(t, err)
+	fxtest.New(t,
+		config.ModuleFunc(environment.Test),
+		zap.Module,
+		fxlog.FxLogger,
+		core.Module,
+		redis2.Module,
+		fx.Decorate(RedisContainerOptionsDecorator(t, ctx)),
+		fx.Populate(&redisClient),
+	).RequireStart()
 
-	assert.NotNil(t, redis)
+	assert.NotNil(t, redisClient)
 }

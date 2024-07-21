@@ -1,8 +1,8 @@
 package empty
 
 import (
-	logger2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/config"
+	logger2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/config"
 
 	"go.uber.org/fx"
 )

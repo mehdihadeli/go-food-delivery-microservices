@@ -1,8 +1,8 @@
 package configurations
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/consumer"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/types"
 )
 
 type RabbitMQConsumerConnector interface {

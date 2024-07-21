@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/config/environment"
 
 	"go.uber.org/fx"
 )
@@ -10,16 +10,16 @@ import (
 // https://uber-go.github.io/fx/modules.html
 var Module = fx.Module(
 	"configfx",
-	fx.Provide(func() environemnt.Environment {
-		return environemnt.ConfigAppEnv()
+	fx.Provide(func() environment.Environment {
+		return environment.ConfigAppEnv()
 	}),
 )
 
-var ModuleFunc = func(e environemnt.Environment) fx.Option {
+var ModuleFunc = func(e environment.Environment) fx.Option {
 	return fx.Module(
 		"configfx",
-		fx.Provide(func() environemnt.Environment {
-			return environemnt.ConfigAppEnv(e)
+		fx.Provide(func() environment.Environment {
+			return environment.ConfigAppEnv(e)
 		}),
 	)
 }

@@ -1,0 +1,91 @@
+{
+  "appOptions": {
+    "serviceName": "test",
+    "deliveryType": "http"
+  },
+  "grpcOptions": {
+    "name": "test",
+    "port": ":6003",
+    "host": "localhost",
+    "development": true
+  },
+  "echoHttpOptions": {
+    "name": "test",
+    "port": ":7000",
+    "development": true,
+    "timeout": 30,
+    "basePath": "/api/v1",
+    "host": "http://localhost",
+    "productsPath": "products",
+    "debugHeaders": true,
+    "httpClientDebug": true,
+    "debugErrorsResponse": true,
+    "ignoreLogUrls": [
+      "metrics"
+    ]
+  },
+  "logOptions": {
+    "level": "debug",
+    "logType": 0,
+    "callerEnabled": false
+  },
+  "gormOptions": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "dbName": "catalogs_service",
+    "sslMode": false
+  },
+  "rabbitmqOptions": {
+    "autoStart": true,
+    "reconnecting": true,
+    "rabbitmqHostOptions": {
+      "userName": "guest",
+      "password": "guest",
+      "hostName": "localhost",
+      "port": 5672,
+      "httpPort": 15672
+    }
+  },
+  "tracingOptions": {
+    "enable": true,
+    "serviceName": "test",
+    "instrumentationName": "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test",
+    "id": 1,
+    "useStdout": false,
+    "alwaysOnSampler": true,
+    "jaegerExporterOptions": {
+      "otlpEndpoint": "localhost:4317"
+    },
+    "zipkinExporterOptions": {
+      "url": "http://localhost:9411/api/v2/spans"
+    }
+  },
+  "metricsOptions": {
+    "host": "localhost",
+    "port": ":3001",
+    "metricsRoutePath": "metrics",
+    "serviceName": "test",
+    "instrumentationName": "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test"
+  },
+  "eventStoreDbOptions": {
+    "host": "localhost",
+    "httpPort": 2113,
+    "tcpPort": 1113,
+    "subscription": {
+      "subscriptionId": "orders-subscription",
+      "prefix": ["order-"]
+    }
+  },
+  "migrationOptions": {
+    "host": "localhost",
+    "port": 5432,
+    "user": "postgres",
+    "password": "postgres",
+    "dbName": "catalogs_service",
+    "sslMode": false,
+    "migrationsDir": "db/migrations/goose-migrate",
+    "skipMigration": false
+  }
+}

@@ -7,14 +7,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/bus"
-	bus2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/bus"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/configurations"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
@@ -29,11 +24,6 @@ type rabbitmqDockerTest struct {
 }
 
 func NewRabbitMQDockerTest(logger logger.Logger) contracts.RabbitMQContainer {
-	pool, err := dockertest.NewPool("")
-	if err != nil {
-		log.Fatalf("Could not connect to docker: %s", err)
-	}
-
 	return &rabbitmqDockerTest{
 		defaultOptions: &contracts.RabbitMQContainerOptions{
 			Ports:       []string{"5672", "15672"},
@@ -46,25 +36,32 @@ func NewRabbitMQDockerTest(logger logger.Logger) contracts.RabbitMQContainer {
 			Name:        "rabbitmq-dockertest",
 		},
 		logger: logger,
-		pool:   pool,
 	}
 }
 
-func (g *rabbitmqDockerTest) CreatingContainerOptions(
+func (g *rabbitmqDockerTest) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.RabbitMQContainerOptions,
 ) (*config.RabbitmqHostOptions, error) {
+	pool, err := dockertest.NewPool("")
+	if err != nil {
+		log.Fatalf("Could not connect to docker: %s", err)
+	}
+
 	runOptions := g.getRunOptions(options...)
 
 	// pull mongodb docker image for version 5.0
-	resource, err := g.pool.RunWithOptions(runOptions, func(config *docker.HostConfig) {
-		// set AutoRemove to true so that stopped container goes away by itself
-		config.AutoRemove = true
-		config.RestartPolicy = docker.RestartPolicy{
-			Name: "no",
-		}
-	})
+	resource, err := pool.RunWithOptions(
+		runOptions,
+		func(config *docker.HostConfig) {
+			// set AutoRemove to true so that stopped container goes away by itself
+			config.AutoRemove = true
+			config.RestartPolicy = docker.RestartPolicy{
+				Name: "no",
+			}
+		},
+	)
 	if err != nil {
 		log.Fatalf("Could not start resource (RabbitMQ Container): %s", err)
 	}
@@ -86,62 +83,29 @@ func (g *rabbitmqDockerTest) CreatingContainerOptions(
 
 	t.Cleanup(func() { _ = resource.Close() })
 
-	isConnectable := isConnectable(g.logger, g.defaultOptions)
-	if !isConnectable {
-		return g.CreatingContainerOptions(context.Background(), t, options...)
-	}
+	//isConnectable := isConnectable(g.logger, g.defaultOptions)
+	//if !isConnectable {
+	//	return g.PopulateContainerOptions(context.Background(), t, options...)
+	//}
 
-	opt := &config.RabbitmqHostOptions{
-		UserName:    g.defaultOptions.UserName,
-		Password:    g.defaultOptions.Password,
-		HostName:    g.defaultOptions.Host,
-		VirtualHost: g.defaultOptions.VirtualHost,
-		Port:        g.defaultOptions.HostPort,
-		HttpPort:    g.defaultOptions.HttpPort,
-	}
-
-	return opt, nil
-}
-
-func (g *rabbitmqDockerTest) Start(
-	ctx context.Context,
-	t *testing.T,
-	serializer serializer.EventSerializer,
-	rabbitmqBuilderFunc configurations.RabbitMQConfigurationBuilderFuc,
-	options ...*contracts.RabbitMQContainerOptions,
-) (bus.Bus, error) {
-	rabbitmqHostOptions, err := g.CreatingContainerOptions(ctx, t, options...)
-	if err != nil {
-		return nil, err
-	}
-
-	var mqBus bus.Bus
-	if err := g.pool.Retry(func() error {
-		config := &config.RabbitmqOptions{
-			RabbitmqHostOptions: rabbitmqHostOptions,
-		}
-		conn, err := types.NewRabbitMQConnection(config)
-		if err != nil {
-			return err
-		}
-
-		mqBus, err = bus2.NewRabbitmqBus(
-			config,
-			serializer,
-			g.logger,
-			conn,
-			rabbitmqBuilderFunc)
-		if err != nil {
-			return err
+	var rabbitmqoptions *config.RabbitmqHostOptions
+	if err = pool.Retry(func() error {
+		rabbitmqoptions = &config.RabbitmqHostOptions{
+			UserName:    g.defaultOptions.UserName,
+			Password:    g.defaultOptions.Password,
+			HostName:    g.defaultOptions.Host,
+			VirtualHost: g.defaultOptions.VirtualHost,
+			Port:        g.defaultOptions.HostPort,
+			HttpPort:    g.defaultOptions.HttpPort,
 		}
 
 		return nil
 	}); err != nil {
-		g.logger.Errorf("Could not connect to docker: %s", err)
+		log.Fatalf("Could not connect to docker: %s", err)
 		return nil, err
 	}
 
-	return mqBus, nil
+	return rabbitmqoptions, nil
 }
 
 func (g *rabbitmqDockerTest) Cleanup(ctx context.Context) error {
@@ -187,12 +151,27 @@ func (g *rabbitmqDockerTest) getRunOptions(
 	return runOptions
 }
 
-func isConnectable(logger logger.Logger, options *contracts.RabbitMQContainerOptions) bool {
+func isConnectable(
+	logger logger.Logger,
+	options *contracts.RabbitMQContainerOptions,
+) bool {
 	conn, err := amqp091.Dial(
-		fmt.Sprintf("amqp://%s:%s@%s:%d", options.UserName, options.Password, options.Host, options.HostPort),
+		fmt.Sprintf(
+			"amqp://%s:%s@%s:%d",
+			options.UserName,
+			options.Password,
+			options.Host,
+			options.HostPort,
+		),
 	)
 	if err != nil {
-		logError(logger, options.UserName, options.Password, options.Host, options.HostPort)
+		logError(
+			logger,
+			options.UserName,
+			options.Password,
+			options.Host,
+			options.HostPort,
+		)
 
 		return false
 	}
@@ -200,24 +179,48 @@ func isConnectable(logger logger.Logger, options *contracts.RabbitMQContainerOpt
 	defer conn.Close()
 
 	if err != nil || (conn != nil && conn.IsClosed()) {
-		logError(logger, options.UserName, options.Password, options.Host, options.HostPort)
+		logError(
+			logger,
+			options.UserName,
+			options.Password,
+			options.Host,
+			options.HostPort,
+		)
 
 		return false
 	}
 	logger.Infof(
 		"Opened rabbitmq connection on host: %s",
-		fmt.Sprintf("amqp://%s:%s@%s:%d", options.UserName, options.Password, options.Host, options.HostPort),
+		fmt.Sprintf(
+			"amqp://%s:%s@%s:%d",
+			options.UserName,
+			options.Password,
+			options.Host,
+			options.HostPort,
+		),
 	)
 
 	return true
 }
 
-func logError(logger logger.Logger, userName string, password string, host string, hostPort int) {
+func logError(
+	logger logger.Logger,
+	userName string,
+	password string,
+	host string,
+	hostPort int,
+) {
 	// we should not use `t.Error` or `t.Errorf` for logging errors because it will `fail` our test at the end and, we just should use logs without error like log.Error (not log.Fatal)
 	logger.Errorf(
 		fmt.Sprintf(
 			"Error in creating rabbitmq connection with %s",
-			fmt.Sprintf("amqp://%s:%s@%s:%d", userName, password, host, hostPort),
+			fmt.Sprintf(
+				"amqp://%s:%s@%s:%d",
+				userName,
+				password,
+				host,
+				hostPort,
+			),
 		),
 	)
 }

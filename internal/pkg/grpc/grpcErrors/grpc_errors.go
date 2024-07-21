@@ -1,11 +1,11 @@
-package grpcErrors
+package grpcerrors
 
 import (
 	"encoding/json"
 	"fmt"
 	"time"
 
-	defaultLogger "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger/default_logger"
+	defaultLogger "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/defaultlogger"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -34,7 +34,12 @@ type GrpcErr interface {
 	ToGrpcResponseErr() error
 }
 
-func NewGrpcError(status codes.Code, title string, detail string, stackTrace string) GrpcErr {
+func NewGrpcError(
+	status codes.Code,
+	title string,
+	detail string,
+	stackTrace string,
+) GrpcErr {
 	grpcErr := &grpcErr{
 		Status:     status,
 		Title:      title,
@@ -107,7 +112,7 @@ func (p *grpcErr) ToGrpcResponseErr() error {
 }
 
 func (p *grpcErr) ToJson() string {
-	defaultLogger.Logger.Error(p.Error())
+	defaultLogger.GetLogger().Error(p.Error())
 	stackTrace := p.GetStackTrace()
 	fmt.Println(stackTrace)
 

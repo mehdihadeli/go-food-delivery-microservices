@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/consumer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/pipeline"
-	types2 "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/types"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/messaging/utils"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/consumer/options"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/rabbitmq/types"
+	consumer2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/consumer"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/pipeline"
+	types2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/types"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/utils"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer/options"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/types"
 )
 
 type RabbitMQConsumerConfiguration struct {
 	Name                string
 	ConsumerMessageType reflect.Type
 	Pipelines           []pipeline.ConsumerPipeline
-	Handlers            []consumer.ConsumerHandler
-	*consumer.ConsumerOptions
+	Handlers            []consumer2.ConsumerHandler
+	*consumer2.ConsumerOptions
 	ConcurrencyLimit int
 	// The prefetch count tells the Rabbit connection how many messages to retrieve from the server per request.
 	PrefetchCount   int
@@ -35,7 +35,7 @@ func NewDefaultRabbitMQConsumerConfiguration(
 	name := fmt.Sprintf("%s_consumer", utils.GetMessageName(messageType))
 
 	return &RabbitMQConsumerConfiguration{
-		ConsumerOptions:  &consumer.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
+		ConsumerOptions:  &consumer2.ConsumerOptions{ExitOnError: false, ConsumerId: ""},
 		ConcurrencyLimit: 1,
 		PrefetchCount:    4, // how many messages we can handle at once
 		NoLocal:          false,

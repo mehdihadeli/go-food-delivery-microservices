@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 
 	gormlogger "gorm.io/gorm/logger"
 )
@@ -20,12 +20,12 @@ type GormCustomLogger struct {
 func NewGormCustomLogger(logger logger.Logger) *GormCustomLogger {
 	//cfg, err := config.ProvideLogConfig()
 	//
-	//var logger logger.Logger
-	//if cfg.LogType == models.Logrus && err != nil {
+	//var logger logger.logger
+	//if cfg.LogType == datamodels.Logrus && err != nil {
 	//	logger = logrous.NewLogrusLogger(cfg, constants.Dev)
 	//} else {
 	//	if err != nil {
-	//		cfg = &config.LogOptions{LogLevel: "info", LogType: models.Zap}
+	//		cfg = &config.LogOptions{LogLevel: "info", LogType: datamodels.Zap}
 	//	}
 	//	logger = zap.NewZapLogger(cfg, constants.Dev)
 	//}

@@ -4,9 +4,7 @@ import (
 	"context"
 	"testing"
 
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-
-	"gorm.io/gorm"
+	gormPostgres "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/postgresgorm"
 )
 
 type PostgresContainerOptions struct {
@@ -22,8 +20,7 @@ type PostgresContainerOptions struct {
 }
 
 type GormContainer interface {
-	Start(ctx context.Context, t *testing.T, options ...*PostgresContainerOptions) (*gorm.DB, error)
-	CreatingContainerOptions(
+	PopulateContainerOptions(
 		ctx context.Context,
 		t *testing.T,
 		options ...*PostgresContainerOptions,

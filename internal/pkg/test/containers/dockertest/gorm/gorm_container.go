@@ -6,13 +6,12 @@ import (
 	"strconv"
 	"testing"
 
-	gormPostgres "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/gorm_postgres"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+	gormPostgres "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/postgresgorm"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/phayes/freeport"
-	"gorm.io/gorm"
 )
 
 type gormDockerTest struct {
@@ -35,11 +34,13 @@ func NewGormDockerTest() contracts.GormContainer {
 	}
 }
 
-func (g *gormDockerTest) CreatingContainerOptions(
+func (g *gormDockerTest) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.PostgresContainerOptions,
 ) (*gormPostgres.GormOptions, error) {
+	t.Helper()
+
 	// https://github.com/ory/dockertest/blob/v3/examples/PostgreSQL.md
 	// https://github.com/bozd4g/fb.testcontainers
 	pool, err := dockertest.NewPool("")
@@ -57,7 +58,10 @@ func (g *gormDockerTest) CreatingContainerOptions(
 			config.RestartPolicy = docker.RestartPolicy{Name: "no"}
 		})
 	if err != nil {
-		log.Fatalf("Could not start resource (Postgresql Test Container): %s", err)
+		log.Fatalf(
+			"Could not start resource (Postgresql Test Container): %s",
+			err,
+		)
 	}
 
 	resource.Expire(
@@ -89,21 +93,6 @@ func (g *gormDockerTest) CreatingContainerOptions(
 	}
 
 	return postgresoptions, nil
-}
-
-func (g *gormDockerTest) Start(
-	ctx context.Context,
-	t *testing.T,
-	options ...*contracts.PostgresContainerOptions,
-) (*gorm.DB, error) {
-	gormOptions, err := g.CreatingContainerOptions(ctx, t, options...)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := gormPostgres.NewGorm(gormOptions)
-
-	return db, nil
 }
 
 func (g *gormDockerTest) Cleanup(ctx context.Context) error {
@@ -154,7 +143,10 @@ func (g *gormDockerTest) getRunOptions(
 		ExposedPorts: []string{g.defaultOptions.Port},
 		PortBindings: map[docker.Port][]docker.PortBinding{
 			docker.Port(g.defaultOptions.Port): {
-				{HostIP: "0.0.0.0", HostPort: strconv.Itoa(g.defaultOptions.HostPort)},
+				{
+					HostIP:   "0.0.0.0",
+					HostPort: strconv.Itoa(g.defaultOptions.HostPort),
+				},
 			},
 		},
 	}

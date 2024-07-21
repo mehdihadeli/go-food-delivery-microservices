@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/test/containers/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/eventstroredb"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/eventstroredb/config"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
@@ -40,7 +40,7 @@ func NewEventstoreDBTestContainers(l logger.Logger) contracts.EventstoreDBContai
 	}
 }
 
-func (g *eventstoredbTestContainers) CreatingContainerOptions(
+func (g *eventstoredbTestContainers) PopulateContainerOptions(
 	ctx context.Context,
 	t *testing.T,
 	options ...*contracts.EventstoreDBContainerOptions,
@@ -101,7 +101,7 @@ func (g *eventstoredbTestContainers) Start(
 	t *testing.T,
 	options ...*contracts.EventstoreDBContainerOptions,
 ) (*esdb.Client, error) {
-	eventstoredbOptions, err := g.CreatingContainerOptions(ctx, t, options...)
+	eventstoredbOptions, err := g.PopulateContainerOptions(ctx, t, options...)
 	if err != nil {
 		return nil, err
 	}

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/health/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/fx"
@@ -26,7 +26,7 @@ var (
 		NewMongoDB,
 		fx.Annotate(
 			NewMongoHealthChecker,
-			fx.As(new(health.Health)),
+			fx.As(new(contracts.Health)),
 			fx.ResultTags(fmt.Sprintf(`group:"%s"`, "healths")),
 		),
 	)
@@ -34,7 +34,11 @@ var (
 	mongoInvokes = fx.Invoke(registerHooks) //nolint:gochecknoglobals
 )
 
-func registerHooks(lc fx.Lifecycle, client *mongo.Client, logger logger.Logger) {
+func registerHooks(
+	lc fx.Lifecycle,
+	client *mongo.Client,
+	logger logger.Logger,
+) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			err := client.Ping(ctx, nil)

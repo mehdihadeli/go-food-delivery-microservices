@@ -3,11 +3,11 @@ package store
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
-	appendResult "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/append_result"
-	readPosition "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_position/read_position"
-	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/metadata"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models"
+	appendResult "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/append_result"
+	readPosition "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/stream_position/read_position"
+	expectedStreamVersion "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/stream_version"
 
 	uuid "github.com/satori/go.uuid"
 )

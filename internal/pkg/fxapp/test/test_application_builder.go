@@ -1,9 +1,9 @@
 package test
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/config/environment"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/fxapp"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/fxapp/contracts"
 
 	"go.uber.org/fx/fxtest"
 )
@@ -16,7 +16,7 @@ type TestApplicationBuilder struct {
 func NewTestApplicationBuilder(tb fxtest.TB) *TestApplicationBuilder {
 	return &TestApplicationBuilder{
 		TB:                 tb,
-		ApplicationBuilder: fxapp.NewApplicationBuilder(environemnt.Test),
+		ApplicationBuilder: fxapp.NewApplicationBuilder(environment.Test),
 	}
 }
 
@@ -27,7 +27,7 @@ func (a *TestApplicationBuilder) Build() contracts.Application {
 		a.GetDecorates(),
 		a.Options(),
 		a.Logger(),
-		environemnt.Test,
+		environment.Test,
 	)
 
 	return app

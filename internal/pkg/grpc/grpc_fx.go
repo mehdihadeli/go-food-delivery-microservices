@@ -3,8 +3,8 @@ package grpc
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/grpc/config"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc/config"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 
 	"go.uber.org/fx"
 )
@@ -12,7 +12,11 @@ import (
 var (
 	// Module provided to fxlog
 	// https://uber-go.github.io/fx/modules.html
-	Module = fx.Module("grpcfx", grpcProviders, grpcInvokes) //nolint:gochecknoglobals
+	Module = fx.Module(
+		"grpcfx",
+		grpcProviders,
+		grpcInvokes,
+	) //nolint:gochecknoglobals
 
 	// - order is not important in provide
 	// - provide can have parameter and will resolve if registered
@@ -23,7 +27,7 @@ var (
 		// https://uber-go.github.io/fx/annotate.html
 		fx.Annotate(
 			NewGrpcServer,
-			fx.ParamTags(``, ``, `optional:"true"`),
+			fx.ParamTags(``, ``),
 		),
 		NewGrpcClient,
 	))
@@ -52,7 +56,10 @@ func registerHooks(
 				// if (ctx.Err() == nil), context not canceled or deadlined
 				if err := grpcServer.RunGrpcServer(nil); err != nil {
 					// do a fatal for going to OnStop process
-					logger.Fatalf("(GrpcServer.RunGrpcServer) error in running server: {%v}", err)
+					logger.Fatalf(
+						"(GrpcServer.RunGrpcServer) error in running server: {%v}",
+						err,
+					)
 				}
 			}()
 			logger.Infof(

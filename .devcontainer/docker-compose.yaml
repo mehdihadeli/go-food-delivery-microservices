@@ -1,0 +1,26 @@
+# https://containers.dev/guide/dockerfile#docker-compose-image
+# https://containers.dev/guide/dockerfile#docker-compose-dockerfile
+services:
+  devcontainer:
+    build:
+      context: .
+    volumes:
+      - ../..:/workspaces:rw,cached
+    init: true
+    command: sleep infinity
+
+# services:
+#   devcontainer:
+#     image: mcr.microsoft.com/devcontainers/dotnet:3.1.0
+#     volumes:
+#       - ../..:/workspaces:cached
+#     network_mode: service:db
+#     command: sleep infinity
+
+#   db:
+#     image: postgres:latest
+#     restart: unless-stopped
+#     environment:
+#       POSTGRES_PASSWORD: postgres
+#       POSTGRES_USER: postgres
+#       POSTGRES_DB: postgres

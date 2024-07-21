@@ -8,6 +8,7 @@ import (
 	"github.com/kamva/mgm/v3"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.opentelemetry.io/contrib/instrumentation/go.mongodb.org/mongo-driver/mongo/otelmongo"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
@@ -21,7 +22,13 @@ const (
 
 // NewMongoDB Create new MongoDB client
 func NewMongoDB(cfg *MongoDbOptions) (*mongo.Client, error) {
-	uriAddress := fmt.Sprintf("mongodb://%s:%s@%s:%d", cfg.User, cfg.Password, cfg.Host, cfg.Port)
+	uriAddress := fmt.Sprintf(
+		"mongodb://%s:%s@%s:%d",
+		cfg.User,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+	)
 	opt := options.Client().ApplyURI(uriAddress).
 		SetConnectTimeout(connectTimeout).
 		SetMaxConnIdleTime(maxConnIdleTime).
@@ -29,13 +36,20 @@ func NewMongoDB(cfg *MongoDbOptions) (*mongo.Client, error) {
 		SetMaxPoolSize(maxPoolSize)
 
 	if cfg.UseAuth {
-		opt = opt.SetAuth(options.Credential{Username: cfg.User, Password: cfg.Password})
+		opt = opt.SetAuth(
+			options.Credential{Username: cfg.User, Password: cfg.Password},
+		)
 	}
 
 	ctx := context.Background()
 	client, err := mongo.Connect(ctx, opt)
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg.EnableTracing {
+		// add tracing
+		opt.Monitor = otelmongo.NewMonitor()
 	}
 
 	// setup  https://github.com/Kamva/mgm

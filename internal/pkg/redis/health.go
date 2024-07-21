@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/health"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/health/contracts"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -12,7 +12,7 @@ type RedisHealthChecker struct {
 	client *redis.Client
 }
 
-func NewRedisHealthChecker(client *redis.Client) health.Health {
+func NewRedisHealthChecker(client *redis.Client) contracts.Health {
 	return &RedisHealthChecker{client}
 }
 

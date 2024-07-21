@@ -4,9 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
-
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/mongodb"
 )
 
 type MongoContainerOptions struct {
@@ -22,12 +20,7 @@ type MongoContainerOptions struct {
 }
 
 type MongoContainer interface {
-	Start(
-		ctx context.Context,
-		t *testing.T,
-		options ...*MongoContainerOptions,
-	) (*mongo.Client, error)
-	CreatingContainerOptions(
+	PopulateContainerOptions(
 		ctx context.Context,
 		t *testing.T,
 		options ...*MongoContainerOptions,

@@ -2,29 +2,29 @@ package health
 
 import (
 	"context"
+
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/health/contracts"
 )
 
-type HealthService interface {
-	CheckHealth(ctx context.Context) Check
-}
-
 type healthService struct {
-	healthParams HealthParams
+	healthParams contracts.HealthParams
 }
 
 func NewHealthService(
-	healthParams HealthParams,
-) HealthService {
+	healthParams contracts.HealthParams,
+) contracts.HealthService {
 	return &healthService{
 		healthParams: healthParams,
 	}
 }
 
-func (service *healthService) CheckHealth(ctx context.Context) Check {
-	checks := make(Check)
+func (service *healthService) CheckHealth(ctx context.Context) contracts.Check {
+	checks := make(contracts.Check)
 
 	for _, health := range service.healthParams.Healths {
-		checks[health.GetHealthName()] = NewStatus(health.CheckHealth(ctx))
+		checks[health.GetHealthName()] = contracts.NewStatus(
+			health.CheckHealth(ctx),
+		)
 	}
 
 	return checks

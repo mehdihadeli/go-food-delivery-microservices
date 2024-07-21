@@ -4,16 +4,16 @@ import (
 	"io"
 	"strings"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/serializer"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
-	appendResult "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/append_result"
-	readPosition "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_position/read_position"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_position/truncatePosition"
-	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
-	esErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/errors"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/domain"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/metadata"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/serializer"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models"
+	appendResult "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/append_result"
+	readPosition "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/stream_position/read_position"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/stream_position/truncatePosition"
+	expectedStreamVersion "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/stream_version"
+	esErrors "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/eventstroredb/errors"
+	typeMapper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/typemapper"
 
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
@@ -139,7 +139,7 @@ func (e *EsdbSerializer) EsdbPositionToStreamReadPosition(
 func (e *EsdbSerializer) ResolvedEventToStreamEvent(
 	resolveEvent *esdb.ResolvedEvent,
 ) (*models.StreamEvent, error) {
-	deserializedEvent, err := e.eventSerializer.DeserializeEvent(
+	deserializedEvent, err := e.eventSerializer.Deserialize(
 		resolveEvent.Event.Data,
 		resolveEvent.Event.EventType,
 		resolveEvent.Event.ContentType,
@@ -160,7 +160,7 @@ func (e *EsdbSerializer) ResolvedEventToStreamEvent(
 
 	return &models.StreamEvent{
 		EventID:  id,
-		Event:    deserializedEvent.(domain.IDomainEvent),
+		Event:    deserializedEvent,
 		Metadata: deserializedMeta,
 		Version:  int64(resolveEvent.Event.EventNumber),
 		Position: e.EsdbPositionToStreamReadPosition(resolveEvent.OriginalEvent().Position).Value(),
@@ -192,7 +192,7 @@ func (e *EsdbSerializer) EsdbWriteResultToAppendEventResult(
 }
 
 func (e *EsdbSerializer) Serialize(
-	data interface{},
+	data domain.IDomainEvent,
 	meta metadata.Metadata,
 ) (*esdb.EventData, error) {
 	serializedData, err := e.eventSerializer.Serialize(data)
@@ -215,14 +215,62 @@ func (e *EsdbSerializer) Serialize(
 	}, nil
 }
 
+func (e *EsdbSerializer) SerializeObject(
+	data interface{},
+	meta metadata.Metadata,
+) (*esdb.EventData, error) {
+	serializedData, err := e.eventSerializer.SerializeObject(data)
+	if err != nil {
+		return nil, err
+	}
+
+	serializedMeta, err := e.metadataSerializer.Serialize(meta)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := uuid.NewV4()
+	return &esdb.EventData{
+		EventID:     id,
+		EventType:   typeMapper.GetTypeName(data),
+		Data:        serializedData.Data,
+		ContentType: esdb.JsonContentType,
+		Metadata:    serializedMeta,
+	}, nil
+}
+
 func (e *EsdbSerializer) Deserialize(
+	resolveEvent *esdb.ResolvedEvent,
+) (domain.IDomainEvent, metadata.Metadata, error) {
+	eventType := resolveEvent.Event.EventType
+	data := resolveEvent.Event.Data
+	userMeta := resolveEvent.Event.UserMetadata
+
+	payload, err := e.eventSerializer.Deserialize(
+		data,
+		eventType,
+		resolveEvent.Event.ContentType,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	meta, err := e.metadataSerializer.Deserialize(userMeta)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return payload, meta, nil
+}
+
+func (e *EsdbSerializer) DeserializeObject(
 	resolveEvent *esdb.ResolvedEvent,
 ) (interface{}, metadata.Metadata, error) {
 	eventType := resolveEvent.Event.EventType
 	data := resolveEvent.Event.Data
 	userMeta := resolveEvent.Event.UserMetadata
 
-	payload, err := e.eventSerializer.DeserializeEvent(
+	payload, err := e.eventSerializer.Deserialize(
 		data,
 		eventType,
 		resolveEvent.Event.ContentType,

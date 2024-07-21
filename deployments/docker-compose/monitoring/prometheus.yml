@@ -1,0 +1,72 @@
+# prometheus dashboard: http://localhost:9090
+# scrap metrics our app(host.docker.internal:7000/metrics) and default internal metrics in prometheus(localhost:9090/metrics) and internal metrics in grafana(localhost:3000/metrics)
+
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  # http://localhost:9090/metrics
+  - job_name: "prometheus"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+    # http://localhost:3000/metrics
+    # localhost doesn't work here because inner prometheus container localhost will infer to localhost inner the container which is different with system localhost. for access to actual system localhost we should use `host.docker.internal`
+    # instead of `localhost` to access node_exporter container inner prometheus container we can use our container network name to access this container because they are in same docker-compose and same default network
+  - job_name: grafana
+    static_configs:
+      - targets: [ "grafana:3000" ]
+
+  # http://localhost:9100/metrics
+  # localhost doesn't work here because inner prometheus container localhost will infer to localhost inner the container which is different with system localhost. for access to actual system localhost we should use `host.docker.internal`
+  # instead of `localhost` to access node_exporter container inner prometheus container we can use our container network name to access this container because they are in same docker-compose and same default network
+  # node_exporter will use for gathering metrics on the system level with its own /metrics endpoint like cpu, ram, ...
+  - job_name: node
+    scrape_interval: 1s
+    static_configs:
+      - targets: [ 'node_exporter:9100' ]
+
+  # http://localhost:7000/metrics
+  # localhost doesn't work here because inner prometheus container localhost will infer to localhost inner the container which is different with system localhost. for access to actual system localhost we should use `host.docker.internal`
+  # instead of `localhost` to access node_exporter container inner prometheus container we can use our container network name to access this container because they are in same docker-compose and same default network
+  - job_name: product_write_service
+    scrape_interval: 1s
+    static_configs:
+      - targets: [ "host.docker.internal:7000" ]
+
+  # http://localhost:7001/metrics
+  # localhost doesn't work here because inner prometheus container localhost will infer to localhost inner the container which is different with system localhost. for access to actual system localhost we should use `host.docker.internal`
+  # instead of `localhost` to access node_exporter container inner prometheus container we can use our container network name to access this container because they are in same docker-compose and same default network
+  - job_name: product_read_service
+    scrape_interval: 1s
+    static_configs:
+      - targets: [ "host.docker.internal:7001" ]
+
+  # http://localhost:8000/metrics
+  # localhost doesn't work here because inner prometheus container localhost will infer to localhost inner the container which is different with system localhost. for access to actual system localhost we should use `host.docker.internal`
+  # instead of `localhost` to access node_exporter container inner prometheus container we can use our container network name to access this container because they are in same docker-compose and same default network
+  - job_name: orderservice
+    scrape_interval: 1s
+    static_configs:
+      - targets: [ "host.docker.internal:8000" ]
+
+  # Example job for cadvisor
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+#  # scrap exported metrics by otel-collector
+#  # OpenTelemetry collector
+#  - job_name: 'otel-collector'
+#    scrape_interval: 10s
+#    static_configs:
+#      - targets: ['otel-collector:8889']
+#      - targets: ['otel-collector:8888']
+
+  # internal metrics by tempo
+  # https://github.com/grafana/tempo/blob/main/example/docker-compose/shared/prometheus.yaml
+  - job_name: 'tempo'
+    static_configs:
+      - targets: [ 'tempo:3200' ]

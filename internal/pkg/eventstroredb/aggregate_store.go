@@ -5,19 +5,19 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/domain"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/metadata"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/store"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models"
-	appendResult "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/append_result"
-	streamName "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_name"
-	readPosition "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_position/read_position"
-	expectedStreamVersion "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/models/stream_version"
-	esErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/eventstroredb/errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/otel/tracing/attribute"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/domain"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/metadata"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/contracts/store"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models"
+	appendResult "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/append_result"
+	streamName "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/stream_name"
+	readPosition "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/stream_position/read_position"
+	expectedStreamVersion "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/models/stream_version"
+	esErrors "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/eventstroredb/errors"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/attribute"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/utils"
+	typeMapper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/typemapper"
 
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
@@ -55,7 +55,9 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(
 	ctx context.Context,
 ) (*appendResult.AppendEventsResult, error) {
 	ctx, span := a.tracer.Start(ctx, "esdbAggregateStore.StoreWithVersion")
-	span.SetAttributes(attribute2.String("AggregateID", aggregate.Id().String()))
+	span.SetAttributes(
+		attribute2.String("AggregateID", aggregate.Id().String()),
+	)
 	defer span.End()
 
 	if len(aggregate.UncommittedEvents()) == 0 {
@@ -97,7 +99,7 @@ func (a *esdbAggregateStore[T]) StoreWithVersion(
 		ctx,
 	)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIff(
 				err,
@@ -130,11 +132,18 @@ func (a *esdbAggregateStore[T]) Store(
 	ctx, span := a.tracer.Start(ctx, "esdbAggregateStore.Store")
 	defer span.End()
 
-	expectedVersion := expectedStreamVersion.FromInt64(aggregate.OriginalVersion())
+	expectedVersion := expectedStreamVersion.FromInt64(
+		aggregate.OriginalVersion(),
+	)
 
-	streamAppendResult, err := a.StoreWithVersion(aggregate, metadata, expectedVersion, ctx)
+	streamAppendResult, err := a.StoreWithVersion(
+		aggregate,
+		metadata,
+		expectedVersion,
+		ctx,
+	)
 	if err != nil {
-		return nil, tracing.TraceErrFromSpan(
+		return nil, utils.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIff(
 				err,
@@ -147,7 +156,10 @@ func (a *esdbAggregateStore[T]) Store(
 	return streamAppendResult, nil
 }
 
-func (a *esdbAggregateStore[T]) Load(ctx context.Context, aggregateId uuid.UUID) (T, error) {
+func (a *esdbAggregateStore[T]) Load(
+	ctx context.Context,
+	aggregateId uuid.UUID,
+) (T, error) {
 	ctx, span := a.tracer.Start(ctx, "esdbAggregateStore.Load")
 	defer span.End()
 
@@ -181,7 +193,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(
 
 	method := reflect.ValueOf(aggregate).MethodByName("NewEmptyAggregate")
 	if !method.IsValid() {
-		return *new(T), tracing.TraceErrFromSpan(
+		return *new(T), utils.TraceErrStatusFromSpan(
 			span,
 			errors.New(
 				"[esdbAggregateStore_LoadWithReadPosition:MethodByName] aggregate does not have a `NewEmptyAggregate` method",
@@ -196,7 +208,7 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(
 
 	streamEvents, err := a.getStreamEvents(streamId, position, ctx)
 	if errors.Is(err, esdb.ErrStreamNotFound) || len(streamEvents) == 0 {
-		return *new(T), tracing.TraceErrFromSpan(
+		return *new(T), utils.TraceErrStatusFromSpan(
 			span,
 			errors.WithMessage(
 				esErrors.NewAggregateNotFoundError(err, aggregateId),
@@ -204,8 +216,9 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(
 			),
 		)
 	}
+
 	if err != nil {
-		return *new(T), tracing.TraceErrFromSpan(
+		return *new(T), utils.TraceErrStatusFromSpan(
 			span,
 			errors.WrapIff(
 				err,
@@ -228,20 +241,25 @@ func (a *esdbAggregateStore[T]) LoadWithReadPosition(
 
 	err = aggregate.LoadFromHistory(domainEvents, meta)
 	if err != nil {
-		return *new(T), tracing.TraceErrFromSpan(span, err)
+		return *new(T), utils.TraceStatusFromSpan(span, err)
 	}
 
-	a.log.Infow(fmt.Sprintf("Loaded aggregate with streamId {%s} and aggregateId {%s}",
-		streamId.String(),
-		aggregateId.String()),
-		logger.Fields{"Aggregate": aggregate, "StreamId": streamId.String()})
+	a.log.Infow(
+		fmt.Sprintf("Loaded aggregate with streamId {%s} and aggregateId {%s}",
+			streamId.String(),
+			aggregateId.String()),
+		logger.Fields{"Aggregate": aggregate, "StreamId": streamId.String()},
+	)
 
 	span.SetAttributes(attribute.Object("Aggregate", aggregate))
 
 	return aggregate, nil
 }
 
-func (a *esdbAggregateStore[T]) Exists(ctx context.Context, aggregateId uuid.UUID) (bool, error) {
+func (a *esdbAggregateStore[T]) Exists(
+	ctx context.Context,
+	aggregateId uuid.UUID,
+) (bool, error) {
 	ctx, span := a.tracer.Start(ctx, "esdbAggregateStore.Exists")
 	span.SetAttributes(attribute2.String("AggregateID", aggregateId.String()))
 	defer span.End()
@@ -261,7 +279,12 @@ func (a *esdbAggregateStore[T]) getStreamEvents(
 	var streamEvents []*models.StreamEvent
 
 	for true {
-		events, err := a.eventStore.ReadEvents(streamId, position, uint64(pageSize), ctx)
+		events, err := a.eventStore.ReadEvents(
+			streamId,
+			position,
+			uint64(pageSize),
+			ctx,
+		)
 		if err != nil {
 			return nil, errors.WrapIff(
 				err,

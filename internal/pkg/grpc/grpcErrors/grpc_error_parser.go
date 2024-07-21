@@ -1,12 +1,12 @@
-package grpcErrors
+package grpcerrors
 
 import (
 	"context"
 	"database/sql"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/constants"
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	errorUtils "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils/error_utils"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/constants"
+	customErrors "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/httperrors/customerrors"
+	errorUtils "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/utils/errorutils"
 
 	"emperror.dev/errors"
 	"github.com/go-playground/validator"
@@ -21,14 +21,26 @@ func ParseError(err error) GrpcErr {
 	var validatorErr validator.ValidationErrors
 	stackTrace := errorUtils.ErrorsWithStack(err)
 
-	if err != nil {
+	if err != nil && customErr != nil {
 		switch {
 		case customErrors.IsDomainError(err, customErr.Status()):
-			return NewDomainGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
+			return NewDomainGrpcError(
+				codes.Code(customErr.Status()),
+				customErr.Error(),
+				stackTrace,
+			)
 		case customErrors.IsApplicationError(err, customErr.Status()):
-			return NewApplicationGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
+			return NewApplicationGrpcError(
+				codes.Code(customErr.Status()),
+				customErr.Error(),
+				stackTrace,
+			)
 		case customErrors.IsApiError(err, customErr.Status()):
-			return NewApiGrpcError(codes.Code(customErr.Status()), customErr.Error(), stackTrace)
+			return NewApiGrpcError(
+				codes.Code(customErr.Status()),
+				customErr.Error(),
+				stackTrace,
+			)
 		case customErrors.IsBadRequestError(err):
 			return NewBadRequestGrpcError(customErr.Error(), stackTrace)
 		case customErrors.IsNotFoundError(err):
@@ -54,14 +66,22 @@ func ParseError(err error) GrpcErr {
 			return NewInternalServerGrpcError(customErr.Error(), stackTrace)
 		case customErrors.IsMarshalingError(err):
 			return NewInternalServerGrpcError(customErr.Error(), stackTrace)
+		default:
+			return NewInternalServerGrpcError(err.Error(), stackTrace)
+		}
+	} else if err != nil && customErr == nil {
+		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			return NewNotFoundErrorGrpcError(err.Error(), stackTrace)
 		case errors.Is(err, context.DeadlineExceeded):
-			return NewGrpcError(codes.DeadlineExceeded, constants.ErrRequestTimeoutTitle, err.Error(), stackTrace)
+			return NewGrpcError(
+				codes.DeadlineExceeded,
+				constants.ErrRequestTimeoutTitle,
+				err.Error(),
+				stackTrace,
+			)
 		case errors.As(err, &validatorErr):
 			return NewValidationGrpcError(validatorErr.Error(), stackTrace)
-		default:
-			return NewInternalServerGrpcError(err.Error(), stackTrace)
 		}
 	}
 

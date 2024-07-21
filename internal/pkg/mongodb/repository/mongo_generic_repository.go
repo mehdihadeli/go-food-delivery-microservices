@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/core/data/specification"
-	customErrors "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/http/http_errors/custom_errors"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mapper"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/mongodb"
-	reflectionHelper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/reflection_helper"
-	typeMapper "github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/reflection/type_mappper"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/utils"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/data"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/data/specification"
+	customErrors "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/httperrors/customerrors"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/mapper"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/mongodb"
+	reflectionHelper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/reflectionhelper"
+	typeMapper "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/reflection/typemapper"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/utils"
 
 	"emperror.dev/errors"
 	"github.com/goccy/go-reflect"
@@ -61,9 +61,12 @@ func NewGenericMongoRepository[TEntity interface{}](
 	}
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) Add(ctx context.Context, entity TEntity) error {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+func (m *mongoGenericRepository[TDataModel, TEntity]) Add(
+	ctx context.Context,
+	entity TEntity,
+) error {
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
@@ -91,7 +94,10 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Add(ctx context.Context, e
 	return nil
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) AddAll(ctx context.Context, entities []TEntity) error {
+func (m *mongoGenericRepository[TDataModel, TEntity]) AddAll(
+	ctx context.Context,
+	entities []TEntity,
+) error {
 	for _, entity := range entities {
 		err := m.Add(ctx, entity)
 		if err != nil {
@@ -102,9 +108,12 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) AddAll(ctx context.Context
 	return nil
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) GetById(ctx context.Context, id uuid.UUID) (TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+func (m *mongoGenericRepository[TDataModel, TEntity]) GetById(
+	ctx context.Context,
+	id uuid.UUID,
+) (TEntity, error) {
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	if modelType == dataModelType {
@@ -118,12 +127,18 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetById(ctx context.Contex
 			if err == mongo.ErrNoDocuments {
 				return *new(TEntity), customErrors.NewNotFoundErrorWrap(
 					err,
-					fmt.Sprintf("can't find the entity with id %s into the database.", id.String()),
+					fmt.Sprintf(
+						"can't find the entity with id %s into the database.",
+						id.String(),
+					),
 				)
 			}
 			return *new(TEntity), errors.WrapIf(
 				err,
-				fmt.Sprintf("can't find the entity with id %s into the database.", id.String()),
+				fmt.Sprintf(
+					"can't find the entity with id %s into the database.",
+					id.String(),
+				),
 			)
 		}
 		return model, nil
@@ -148,12 +163,17 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetAll(
 	ctx context.Context,
 	listQuery *utils.ListQuery,
 ) (*utils.ListResult[TEntity], error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	if modelType == dataModelType {
-		result, err := mongodb.Paginate[TEntity](ctx, listQuery, collection, nil)
+		result, err := mongodb.Paginate[TEntity](
+			ctx,
+			listQuery,
+			collection,
+			nil,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -176,37 +196,49 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Search(
 	searchTerm string,
 	listQuery *utils.ListQuery,
 ) (*utils.ListResult[TEntity], error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	if modelType == dataModelType {
-		fields := reflectionHelper.GetAllFields(typeMapper.GetTypeFromGeneric[TEntity]())
+		fields := reflectionHelper.GetAllFields(
+			typeMapper.GetGenericTypeByT[TEntity](),
+		)
 		var a bson.A
 		for _, field := range fields {
 			if field.Type.Kind() != reflect.String {
 				continue
 			}
 			name := strcase.ToLowerCamel(field.Name)
-			a = append(a, bson.D{{Key: name, Value: primitive.Regex{Pattern: searchTerm, Options: "gi"}}})
+			a = append(
+				a,
+				bson.D{
+					{Key: name, Value: primitive.Regex{Pattern: searchTerm}},
+				},
+			)
 		}
 		filter := bson.D{
 			{Key: "$or", Value: a},
 		}
-		result, err := mongodb.Paginate[TEntity](ctx, listQuery, collection, filter)
+		result, err := mongodb.Paginate[TEntity](
+			ctx,
+			listQuery,
+			collection,
+			filter,
+		)
 		if err != nil {
 			return nil, err
 		}
 		return result, nil
 	} else {
-		fields := reflectionHelper.GetAllFields(typeMapper.GetTypeFromGeneric[TDataModel]())
+		fields := reflectionHelper.GetAllFields(typeMapper.GetGenericTypeByT[TDataModel]())
 		var a bson.A
 		for _, field := range fields {
 			if field.Type.Kind() != reflect.String {
 				continue
 			}
 			name := strcase.ToLowerCamel(field.Name)
-			a = append(a, bson.D{{Key: name, Value: primitive.Regex{Pattern: searchTerm, Options: "gi"}}})
+			a = append(a, bson.D{{Key: name, Value: primitive.Regex{Pattern: searchTerm}}})
 		}
 		filter := bson.D{
 			{Key: "$or", Value: a},
@@ -227,8 +259,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) GetByFilter(
 	ctx context.Context,
 	filters map[string]interface{},
 ) ([]TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	// we could use also bson.D{} for filtering, it is also a map
@@ -281,8 +313,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) FirstOrDefault(
 	ctx context.Context,
 	filters map[string]interface{},
 ) (TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	if modelType == dataModelType {
@@ -315,9 +347,12 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) FirstOrDefault(
 	}
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) Update(ctx context.Context, entity TEntity) error {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+func (m *mongoGenericRepository[TDataModel, TEntity]) Update(
+	ctx context.Context,
+	entity TEntity,
+) error {
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 	ops := options.FindOneAndUpdate()
 	ops.SetReturnDocument(options.After)
@@ -367,7 +402,10 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) Update(ctx context.Context
 	return nil
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) UpdateAll(ctx context.Context, entities []TEntity) error {
+func (m *mongoGenericRepository[TDataModel, TEntity]) UpdateAll(
+	ctx context.Context,
+	entities []TEntity,
+) error {
 	for _, e := range entities {
 		err := m.Update(ctx, e)
 		if err != nil {
@@ -378,7 +416,10 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) UpdateAll(ctx context.Cont
 	return nil
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) Delete(ctx context.Context, id uuid.UUID) error {
+func (m *mongoGenericRepository[TDataModel, TEntity]) Delete(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 
 	if err := collection.FindOneAndDelete(ctx, bson.M{"_id": id.String()}).Err(); err != nil {
@@ -393,8 +434,8 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) SkipTake(
 	skip int,
 	take int,
 ) ([]TEntity, error) {
-	dataModelType := typeMapper.GetTypeFromGeneric[TDataModel]()
-	modelType := typeMapper.GetTypeFromGeneric[TEntity]()
+	dataModelType := typeMapper.GetGenericTypeByT[TDataModel]()
+	modelType := typeMapper.GetGenericTypeByT[TEntity]()
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 	l := int64(take)
 	s := int64(skip)
@@ -436,7 +477,9 @@ func (m *mongoGenericRepository[TDataModel, TEntity]) SkipTake(
 	}
 }
 
-func (m *mongoGenericRepository[TDataModel, TEntity]) Count(ctx context.Context) int64 {
+func (m *mongoGenericRepository[TDataModel, TEntity]) Count(
+	ctx context.Context,
+) int64 {
 	collection := m.db.Database(m.databaseName).Collection(m.collectionName)
 	count, err := collection.CountDocuments(ctx, bson.M{})
 	if err != nil {

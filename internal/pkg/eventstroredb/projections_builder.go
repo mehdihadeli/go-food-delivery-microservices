@@ -1,7 +1,7 @@
 package eventstroredb
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/es/contracts/projection"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/contracts/projection"
 )
 
 type ProjectionsBuilder interface {

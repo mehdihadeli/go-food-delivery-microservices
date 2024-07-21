@@ -1,0 +1,46 @@
+apiVersion: 1
+
+datasources:
+  # showing Prometheus as one of dashboard tabs
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    url: http://prometheus:9090
+    isDefault: true
+    access: proxy
+    editable: true
+    jsonData:
+      httpMethod: GET
+
+  # showing Jaeger as one of dashboard tabs
+  - name: Jaeger
+    type: jaeger
+    url: http://jaeger:16686
+    access: proxy
+    editable: true
+
+  # showing Tempo as one of dashboard tabs
+  # https://github.com/grafana/tempo/blob/main/example/docker-compose/shared/grafana-datasources.yaml#L16
+  - name: Tempo
+    type: tempo
+    access: proxy
+    orgId: 1
+    url: http://tempo:3200
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: false
+    apiVersion: 1
+    uid: tempo
+
+# # showing Loki as one of dashboard tabs
+#  - name: loki
+#    type: loki
+#    uid: my-loki
+#    access: proxy
+#    orgId: 1
+#    url: http://loki:3100
+#    basicAuth: false
+#    isDefault: false
+#    version: 1
+#    editable: true

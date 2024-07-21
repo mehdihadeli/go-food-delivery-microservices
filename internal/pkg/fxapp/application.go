@@ -3,9 +3,9 @@ package fxapp
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/config/environemnt"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/fxapp/contracts"
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/config/environment"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/fxapp/contracts"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 
 	"go.uber.org/fx"
 )
@@ -17,7 +17,7 @@ type application struct {
 	options     []fx.Option
 	logger      logger.Logger
 	fxapp       *fx.App
-	environment environemnt.Environment
+	environment environment.Environment
 }
 
 func NewApplication(
@@ -25,7 +25,7 @@ func NewApplication(
 	decorates []interface{},
 	options []fx.Option,
 	logger logger.Logger,
-	env environemnt.Environment,
+	env environment.Environment,
 ) contracts.Application {
 	return &application{
 		provides:    providers,
@@ -109,6 +109,6 @@ func (a *application) Logger() logger.Logger {
 	return a.logger
 }
 
-func (a *application) Environment() environemnt.Environment {
+func (a *application) Environment() environment.Environment {
 	return a.environment
 }

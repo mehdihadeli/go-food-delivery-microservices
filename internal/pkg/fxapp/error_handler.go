@@ -1,7 +1,7 @@
 package fxapp
 
 import (
-	"github.com/mehdihadeli/go-ecommerce-microservices/internal/pkg/logger"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 )
 
 type FxErrorHandler struct {
