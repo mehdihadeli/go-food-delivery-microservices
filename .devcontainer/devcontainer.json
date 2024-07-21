@@ -18,7 +18,7 @@
   "features": {
     // https://github.com/devcontainers/features/tree/main/src/go
     "ghcr.io/devcontainers/features/go:1": {
-		"version": "1.22"
+	"version": "1.22"
     },
     // https://github.com/devcontainers/features/tree/main/src/github-cli
     "ghcr.io/devcontainers/features/github-cli:1": {
@@ -97,7 +97,7 @@
     }
   },
   "hostRequirements": {
-    "cpus": 4,
+    "cpus": 2,
     "memory": "8gb",
     "storage": "32gb"
   },
