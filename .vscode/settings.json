@@ -5,10 +5,36 @@
   "editor.suggest.snippetsPreventQuickSuggestions": false,
   "explorer.autoReveal": true,
   "resmon.show.cpufreq": false,
-  "dotnet.server.startTimeout": 60000,
   "omnisharp.projectLoadTimeout": 60,
+  "workbench.colorTheme": "Visual Studio Light",
+  "workbench.iconTheme": "vscode-icons",
+  "editor.minimap.enabled": false,
+  "editor.fontFamily": "'MesloLGM Nerd Font', 'Droid Sans Mono', 'monospace', 'Droid Sans Fallback', 'Consolas'",
+  "editor.fontSize": 14,
+  "explorer.confirmDelete": false,
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.defaultProfile.linux": "zsh",
+  "powershell.cwd": "~",
+  "terminal.external.windowsExec": "%LOCALAPPDATA%\\Microsoft\\WindowsApps\\pwsh.exe",
+  "go.buildTags": "",
+  "go.toolsEnvVars": {
+    "CGO_ENABLED": "0"
+  },
+  "go.testEnvVars": {
+    "CGO_ENABLED": "1"
+  },
+  "go.testTimeout": "10s",
+  "go.coverOnSingleTest": true,
+  "go.coverOnSingleTestFile": true,
+  "go.coverOnTestPackage": true,
+  "[go]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    }
+  },
   "gopls": {
-    "ui.semanticTokens": true
+    "usePlaceholders": false,
+    "staticcheck": true
   },
   "go.lintTool": "golangci-lint",
   "go.lintFlags": ["--fast"],
@@ -17,20 +43,7 @@
   "go.toolsManagement.autoUpdate": true,
   "go.useLanguageServer": true,
   "go.formatTool": "gofumpt",
-  "workbench.colorTheme": "Visual Studio Light",
-  "workbench.iconTheme": "material-icon-theme",
-  "editor.minimap.enabled": false,
-  "terminal.integrated.fontFamily": "MesloLGM Nerd Font",
-  "terminal.integrated.defaultProfile.windows": "PowerShell",
-  "terminal.integrated.defaultProfile.linux": "zsh",
-  "powershell.cwd": "~",
-  "terminal.external.windowsExec": "%LOCALAPPDATA%\\Microsoft\\WindowsApps\\pwsh.exe",
-  "explorer.confirmDelete": false,
-  "remote.autoForwardPortsSource": "hybrid",
-  "go.inlayHints.assignVariableTypes": true,
-  "go.inlayHints.compositeLiteralFields": true,
-  "go.inlayHints.compositeLiteralTypes": true,
-  "go.inlayHints.constantValues": true,
-  "go.inlayHints.functionTypeParameters": true,
-  "go.inlayHints.rangeVariableTypes": true
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

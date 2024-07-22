@@ -18,7 +18,7 @@
   "features": {
     // https://github.com/devcontainers/features/tree/main/src/go
     "ghcr.io/devcontainers/features/go:1": {
-	"version": "1.22"
+      "version": "1.22"
     },
     // https://github.com/devcontainers/features/tree/main/src/github-cli
     "ghcr.io/devcontainers/features/github-cli:1": {
@@ -58,7 +58,7 @@
         "resmon.show.cpufreq": false,
         "omnisharp.projectLoadTimeout": 60,
         "workbench.colorTheme": "Visual Studio Light",
-        "workbench.iconTheme": "material-icon-theme",
+        "workbench.iconTheme": "vscode-icons",
         "editor.minimap.enabled": false,
         "editor.fontFamily": "'MesloLGM Nerd Font', 'Droid Sans Mono', 'monospace', 'Droid Sans Fallback', 'Consolas'",
         "editor.fontSize": 14,
@@ -67,52 +67,49 @@
         "terminal.integrated.defaultProfile.linux": "zsh",
         "powershell.cwd": "~",
         "terminal.external.windowsExec": "%LOCALAPPDATA%\\Microsoft\\WindowsApps\\pwsh.exe",
-	"go.buildTags": "",
-	"go.toolsEnvVars": {
-	    "CGO_ENABLED": "0"
-	},
-	"go.useLanguageServer": true,
-	"go.testEnvVars": {
-	    "CGO_ENABLED": "1"
-	},
-	"go.testFlags": [
-	    "-v",
-	    "-race"
-	],
-	"go.testTimeout": "10s",
-	"go.coverOnSingleTest": true,
-	"go.coverOnSingleTestFile": true,
-	"go.coverOnTestPackage": true,
-	"go.lintOnSave": "package",
-	"[go]": {
-	    "editor.codeActionsOnSave": {
-		"source.organizeImports": "always"
-	    }
-	},
-	"gopls": {
-	    "usePlaceholders": false,
-	    "staticcheck": true
-	},
+        "go.buildTags": "",
+        "go.toolsEnvVars": {
+          "CGO_ENABLED": "0"
+        },
+        "go.testEnvVars": {
+          "CGO_ENABLED": "1"
+        },
+        "go.testTimeout": "10s",
+        "go.coverOnSingleTest": true,
+        "go.coverOnSingleTestFile": true,
+        "go.coverOnTestPackage": true,
+        "[go]": {
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "always"
+          }
+        },
+        "gopls": {
+          "usePlaceholders": false,
+          "staticcheck": true
+        },
         "go.lintTool": "golangci-lint",
         "go.lintFlags": ["--fast"],
         "go.lintOnSave": "package",
         "go.testFlags": ["-failfast", "-v"],
         "go.toolsManagement.autoUpdate": true,
         "go.useLanguageServer": true,
-        "go.formatTool": "gofumpt"
+        "go.formatTool": "gofumpt",
+        "[jsonc]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
       },
       "extensions": [
-	"golang.Go",
-	"esbenp.prettier-vscode",
+        "golang.Go",
+        "esbenp.prettier-vscode",
         "streetsidesoftware.code-spell-checker",
-	"vscode-icons-team.vscode-icons",
-	"redhat.vscode-yaml", // Kubernetes, 
+        "vscode-icons-team.vscode-icons",
+        "redhat.vscode-yaml", // Kubernetes,
         "mutantdino.resourcemonitor",
         "humao.rest-client",
         "dzhavat.bracket-pair-toggler",
         "ms-azuretools.vscode-docker",
         "vivaxy.vscode-conventional-commits",
-	"IBM.output-colorizer", // Colorize your output/test logs
+        "IBM.output-colorizer", // Colorize your output/test logs
         "emmanuelbeziat.vscode-great-icons",
         "ms-vscode.vs-keybindings",
         "GitHub.vscode-github-actions",
