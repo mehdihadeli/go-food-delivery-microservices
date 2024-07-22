@@ -9,13 +9,9 @@ import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing"
-	customAttribute "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/attribute"
-	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/features/creating_order/v1/dtos"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/models/orders/aggregate"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/models/orders/value_objects"
-
-	"go.opentelemetry.io/otel/attribute"
 )
 
 type CreateOrderHandler struct {
@@ -37,20 +33,13 @@ func (c *CreateOrderHandler) Handle(
 	ctx context.Context,
 	command *CreateOrder,
 ) (*dtos.CreateOrderResponseDto, error) {
-	ctx, span := c.tracer.Start(ctx, "CreateOrderHandler.Handle")
-	span.SetAttributes(attribute.String("OrderId", command.OrderId.String()))
-	span.SetAttributes(customAttribute.Object("Command", command))
-	defer span.End()
-
 	shopItems, err := mapper.Map[[]*value_objects.ShopItem](command.ShopItems)
 	if err != nil {
-		return nil, utils.TraceErrFromSpan(
-			span,
+		return nil,
 			customErrors.NewApplicationErrorWrap(
 				err,
 				"[CreateOrderHandler_Handle.Map] error in the mapping shopItems",
-			),
-		)
+			)
 	}
 
 	order, err := aggregate.NewOrder(
@@ -62,29 +51,21 @@ func (c *CreateOrderHandler) Handle(
 		command.CreatedAt,
 	)
 	if err != nil {
-		return nil, utils.TraceErrFromSpan(
-			span,
-			customErrors.NewApplicationErrorWrap(
-				err,
-				"[CreateOrderHandler_Handle.NewOrder] error in creating new order",
-			),
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			"[CreateOrderHandler_Handle.NewOrder] error in creating new order",
 		)
 	}
 
 	_, err = c.aggregateStore.Store(order, nil, ctx)
 	if err != nil {
-		return nil, utils.TraceErrFromSpan(
-			span,
-			customErrors.NewApplicationErrorWrap(
-				err,
-				"[CreateOrderHandler_Handle.Store] error in storing order aggregate",
-			),
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			"[CreateOrderHandler_Handle.Store] error in storing order aggregate",
 		)
 	}
 
 	response := &dtos.CreateOrderResponseDto{OrderId: order.Id()}
-
-	span.SetAttributes(customAttribute.Object("CreateOrderResponseDto", response))
 
 	c.log.Infow(
 		fmt.Sprintf("[CreateOrderHandler.Handle] order with id: {%s} created", command.OrderId),

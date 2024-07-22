@@ -6,8 +6,6 @@ import (
 	customErrors "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/httperrors/customerrors"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing"
-	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/attribute"
-	utils2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/utils"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
 	dtosV1 "github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/dtos/v1"
@@ -36,29 +34,19 @@ func (c *GetOrdersHandler) Handle(
 	ctx context.Context,
 	query *GetOrders,
 ) (*dtos.GetOrdersResponseDto, error) {
-	ctx, span := c.tracer.Start(ctx, "GetOrdersHandler.Handle")
-	span.SetAttributes(attribute.Object("Query", query))
-	defer span.End()
-
 	products, err := c.mongoOrderReadRepository.GetAllOrders(ctx, query.ListQuery)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
-			span,
-			customErrors.NewApplicationErrorWrap(
-				err,
-				"[GetOrdersHandler_Handle.GetAllOrders] error in getting orders in the repository",
-			),
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			"[GetOrdersHandler_Handle.GetAllOrders] error in getting orders in the repository",
 		)
 	}
 
 	listResultDto, err := utils.ListResultToListResultDto[*dtosV1.OrderReadDto](products)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
-			span,
-			customErrors.NewApplicationErrorWrap(
-				err,
-				"[GetOrdersHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto",
-			),
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			"[GetOrdersHandler_Handle.ListResultToListResultDto] error in the mapping ListResultToListResultDto",
 		)
 	}
 

@@ -13,7 +13,7 @@ import (
 func Test_Custom_PostgresPgx_Container(t *testing.T) {
 	gorm, err := NewPostgresPgxContainers(
 		defaultLogger.GetLogger(),
-	).Start(context.Background(), t)
+	).PopulateContainerOptions(context.Background(), t)
 	require.NoError(t, err)
 
 	assert.NotNil(t, gorm)

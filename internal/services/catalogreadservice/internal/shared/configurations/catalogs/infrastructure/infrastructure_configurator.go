@@ -8,10 +8,8 @@ import (
 	metricspipelines "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/metrics/mediatr/pipelines"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing"
 	tracingpipelines "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/mediatr/pipelines"
-	postgrespipelines "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/postgresgorm/pipelines"
 
 	"github.com/mehdihadeli/go-mediatr"
-	"gorm.io/gorm"
 )
 
 type InfrastructureConfigurator struct {
@@ -28,7 +26,7 @@ func NewInfrastructureConfigurator(
 
 func (ic *InfrastructureConfigurator) ConfigInfrastructures() {
 	ic.ResolveFunc(
-		func(l logger.Logger, tracer tracing.AppTracer, metrics metrics.AppMetrics, db *gorm.DB) error {
+		func(l logger.Logger, tracer tracing.AppTracer, metrics metrics.AppMetrics) error {
 			err := mediatr.RegisterRequestPipelineBehaviors(
 				loggingpipelines.NewMediatorLoggingPipeline(l),
 				tracingpipelines.NewMediatorTracingPipeline(
@@ -39,7 +37,6 @@ func (ic *InfrastructureConfigurator) ConfigInfrastructures() {
 					metrics,
 					metricspipelines.WithLogger(l),
 				),
-				postgrespipelines.NewMediatorTransactionPipeline(l, db),
 			)
 
 			return err

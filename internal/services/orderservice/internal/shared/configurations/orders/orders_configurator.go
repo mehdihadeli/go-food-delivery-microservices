@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/fxapp/contracts"
-	customEcho "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/customecho"
+	echocontracts "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/customecho/contracts"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/config"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/configurations"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/shared/configurations/orders/infrastructure"
@@ -48,7 +48,7 @@ func (ic *OrdersServiceConfigurator) ConfigureOrders() {
 func (ic *OrdersServiceConfigurator) MapOrdersEndpoints() {
 	// Shared
 	ic.ResolveFunc(
-		func(ordersServer customEcho.EchoHttpServer, cfg *config.Config) error {
+		func(ordersServer echocontracts.EchoHttpServer, cfg *config.Config) error {
 			ordersServer.SetupDefaultMiddlewares()
 
 			// config orders root endpoint

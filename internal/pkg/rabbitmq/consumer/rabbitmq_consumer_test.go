@@ -15,8 +15,7 @@ import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
 	rabbitmqConfigurations "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/configurations"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer/configurations"
-	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer/factory"
-	producerfactory "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/producer"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/producer"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/messaging/consumer"
@@ -54,13 +53,13 @@ func Test_Consumer_With_Fake_Message(t *testing.T) {
 	eventSerializer := json.NewDefaultMessageJsonSerializer(
 		json.NewDefaultJsonSerializer(),
 	)
-	consumerFactory := factory.NewConsumerFactory(
+	consumerFactory := NewConsumerFactory(
 		options,
 		conn,
 		eventSerializer,
 		defaultLogger2.GetLogger(),
 	)
-	producerFactory := producerfactory.NewProducerFactory(
+	producerFactory := producer.NewProducerFactory(
 		options,
 		conn,
 		eventSerializer,

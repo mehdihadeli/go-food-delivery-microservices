@@ -1,4 +1,4 @@
-package factory
+package consumer
 
 import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/messaging/consumer"
@@ -6,7 +6,6 @@ import (
 	serializer "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/serializer"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
-	rabbitmqconsumer "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer"
 	consumerConfigurations "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer/configurations"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer/consumercontracts"
 	types2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/types"
@@ -37,7 +36,7 @@ func (c *consumerFactory) CreateConsumer(
 	consumerConfiguration *consumerConfigurations.RabbitMQConsumerConfiguration,
 	isConsumedNotifications ...func(message types.IMessage),
 ) (consumer.Consumer, error) {
-	return rabbitmqconsumer.NewRabbitMQConsumer(
+	return NewRabbitMQConsumer(
 		c.rabbitmqOptions,
 		c.connection,
 		consumerConfiguration,

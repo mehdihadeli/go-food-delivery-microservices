@@ -12,9 +12,9 @@ import (
 	defaultlogger "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/defaultlogger"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/configurations"
+	rabbitmqconsumer "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer"
 	consumerConfigurations "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer/configurations"
-	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer/factory"
-	producerfactory "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/producer"
+	rabbitmqproducer "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/producer"
 	producerConfigurations "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/producer/configurations"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/types"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/testcontainer/rabbitmq"
@@ -57,13 +57,13 @@ func Test_AddRabbitMQ(t *testing.T) {
 	conn, err := types.NewRabbitMQConnection(options)
 	require.NoError(t, err)
 
-	consumerFactory := factory.NewConsumerFactory(
+	consumerFactory := rabbitmqconsumer.NewConsumerFactory(
 		options,
 		conn,
 		serializer,
 		defaultlogger.GetLogger(),
 	)
-	producerFactory := producerfactory.NewProducerFactory(
+	producerFactory := rabbitmqproducer.NewProducerFactory(
 		options,
 		conn,
 		serializer,

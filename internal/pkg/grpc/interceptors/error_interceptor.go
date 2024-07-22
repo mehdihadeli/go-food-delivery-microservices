@@ -1,11 +1,10 @@
-package grpcError
+package interceptors
 
 import (
 	"context"
 
-	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc/grpcerrors"
-
 	"emperror.dev/errors"
+	grpcerrors "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc/grpcErrors"
 	"google.golang.org/grpc"
 )
 

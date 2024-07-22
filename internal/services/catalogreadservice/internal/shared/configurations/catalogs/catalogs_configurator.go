@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/fxapp/contracts"
-	customEcho "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/customecho"
+	echocontracts "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/customecho/contracts"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/catalogreadservice/config"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/catalogreadservice/internal/products/configurations"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/catalogreadservice/internal/shared/configurations/catalogs/infrastructure"
@@ -46,7 +46,7 @@ func (ic *CatalogsServiceConfigurator) ConfigureCatalogs() {
 func (ic *CatalogsServiceConfigurator) MapCatalogsEndpoints() {
 	// Shared
 	ic.ResolveFunc(
-		func(catalogsServer customEcho.EchoHttpServer, cfg *config.Config) error {
+		func(catalogsServer echocontracts.EchoHttpServer, cfg *config.Config) error {
 			catalogsServer.SetupDefaultMiddlewares()
 
 			// config catalogs root endpoint

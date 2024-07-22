@@ -6,7 +6,7 @@ import (
 	"reflect"
 
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/metadata"
-	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc/grpcerrors"
+	grpcerrors "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc/grpcErrors"
 	customErrors "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/httperrors/customerrors"
 	problemdetails "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/httperrors/problemdetails"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/constants/telemetrytags"

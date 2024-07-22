@@ -53,7 +53,7 @@ func (s *ProductGrpcServiceServer) CreateProduct(
 	span.SetAttributes(attribute.Object("Request", req))
 	s.catalogsMetrics.CreateProductGrpcRequests.Add(ctx, 1, grpcMetricsAttr)
 
-	command, err := createProductCommandV1.NewCreateProduct(
+	command, err := createProductCommandV1.NewCreateProductWithValidation(
 		req.GetName(),
 		req.GetDescription(),
 		req.GetPrice(),
@@ -120,7 +120,7 @@ func (s *ProductGrpcServiceServer) UpdateProduct(
 		return nil, badRequestErr
 	}
 
-	command, err := updateProductCommandV1.NewUpdateProduct(
+	command, err := updateProductCommandV1.NewUpdateProductWithValidation(
 		productUUID,
 		req.GetName(),
 		req.GetDescription(),
@@ -186,7 +186,7 @@ func (s *ProductGrpcServiceServer) GetProductById(
 		return nil, badRequestErr
 	}
 
-	query, err := getProductByIdQueryV1.NewGetProductById(productUUID)
+	query, err := getProductByIdQueryV1.NewGetProductByIdWithValidation(productUUID)
 	if err != nil {
 		validationErr := customErrors.NewValidationErrorWrap(
 			err,

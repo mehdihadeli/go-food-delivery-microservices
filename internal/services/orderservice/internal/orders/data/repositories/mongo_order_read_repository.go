@@ -58,8 +58,8 @@ func (m mongoOrderReadRepository) GetAllOrders(
 
 	result, err := mongodb.Paginate[*read_models.OrderReadModel](ctx, listQuery, collection, nil)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
-			span,
+		return nil, utils2.TraceStatusFromContext(
+			ctx,
 			errors.WrapIf(
 				err,
 				"[mongoOrderReadRepository_GetAllOrders.Paginate] error in the paginate",
@@ -99,8 +99,8 @@ func (m mongoOrderReadRepository) SearchOrders(
 
 	result, err := mongodb.Paginate[*read_models.OrderReadModel](ctx, listQuery, collection, filter)
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
-			span,
+		return nil, utils2.TraceStatusFromContext(
+			ctx,
 			errors.WrapIf(
 				err,
 				"[mongoOrderReadRepository_SearchOrders.Paginate] error in the paginate",
@@ -136,8 +136,8 @@ func (m mongoOrderReadRepository) GetOrderById(
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
 		}
-		return nil, utils2.TraceErrFromSpan(
-			span,
+		return nil, utils2.TraceStatusFromContext(
+			ctx,
 			errors.WrapIf(
 				err,
 				fmt.Sprintf(
@@ -173,8 +173,8 @@ func (m mongoOrderReadRepository) GetOrderByOrderId(
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
 		}
-		return nil, utils2.TraceErrFromSpan(
-			span,
+		return nil, utils2.TraceStatusFromContext(
+			ctx,
 			errors.WrapIf(
 				err,
 				fmt.Sprintf(
@@ -207,8 +207,8 @@ func (m mongoOrderReadRepository) CreateOrder(
 	collection := m.mongoClient.Database(m.mongoOptions.Database).Collection(orderCollection)
 	_, err := collection.InsertOne(ctx, order, &options.InsertOneOptions{})
 	if err != nil {
-		return nil, utils2.TraceErrFromSpan(
-			span,
+		return nil, utils2.TraceStatusFromContext(
+			ctx,
 			errors.WrapIf(
 				err,
 				"[mongoOrderReadRepository_CreateOrder.InsertOne] error in the inserting order into the database.",
@@ -243,8 +243,8 @@ func (m mongoOrderReadRepository) UpdateOrder(
 
 	var updated read_models.OrderReadModel
 	if err := collection.FindOneAndUpdate(ctx, bson.M{"_id": order.OrderId}, bson.M{"$set": order}, ops).Decode(&updated); err != nil {
-		return nil, utils2.TraceErrFromSpan(
-			span,
+		return nil, utils2.TraceStatusFromContext(
+			ctx,
 			errors.WrapIf(
 				err,
 				fmt.Sprintf(
@@ -275,7 +275,7 @@ func (m mongoOrderReadRepository) DeleteOrderByID(ctx context.Context, uuid uuid
 	collection := m.mongoClient.Database(m.mongoOptions.Database).Collection(orderCollection)
 
 	if err := collection.FindOneAndDelete(ctx, bson.M{"_id": uuid.String()}).Err(); err != nil {
-		return utils2.TraceErrFromSpan(span, errors.WrapIf(err, fmt.Sprintf(
+		return utils2.TraceStatusFromContext(ctx, errors.WrapIf(err, fmt.Sprintf(
 			"[mongoOrderReadRepository_DeleteOrderByID.FindOneAndDelete] error in deleting order with id %d from the database.",
 			uuid,
 		)))

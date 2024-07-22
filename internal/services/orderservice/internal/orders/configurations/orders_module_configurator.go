@@ -5,7 +5,7 @@ import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/es/contracts/store"
 	contracts2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/fxapp/contracts"
 	grpcServer "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc"
-	customEcho "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/customecho"
+	echocontracts "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/customecho/contracts"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/configurations/mappings"
@@ -35,7 +35,7 @@ func NewOrdersModuleConfigurator(
 func (c *OrdersModuleConfigurator) ConfigureOrdersModule() {
 	c.ResolveFunc(
 		func(logger logger.Logger,
-			server customEcho.EchoHttpServer,
+			server echocontracts.EchoHttpServer,
 			orderRepository repositories.OrderMongoRepository,
 			orderAggregateStore store.AggregateStore[*aggregate.Order],
 			tracer tracing.AppTracer,

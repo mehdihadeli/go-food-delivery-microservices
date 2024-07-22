@@ -9,7 +9,7 @@ import (
 )
 
 func Test_Gorm_Container(t *testing.T) {
-	gorm, err := NewGnoMockGormContainer().Start(context.Background(), t)
+	gorm, err := NewGnoMockGormContainer().PopulateContainerOptions(context.Background(), t)
 	require.NoError(t, err)
 
 	assert.NotNil(t, gorm)

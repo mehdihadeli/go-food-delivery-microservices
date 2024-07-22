@@ -7,7 +7,7 @@ import (
 
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc/config"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc/handlers/otel"
-	grpcError "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc/interceptors/grpcerror"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/grpc/interceptors"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 
 	"emperror.dev/errors"
@@ -49,12 +49,12 @@ func NewGrpcServer(
 	logger logger.Logger,
 ) GrpcServer {
 	unaryServerInterceptors := []googleGrpc.UnaryServerInterceptor{
-		grpcError.UnaryServerInterceptor(),
+		interceptors.UnaryServerInterceptor(),
 		grpcCtxTags.UnaryServerInterceptor(),
 		grpcRecovery.UnaryServerInterceptor(),
 	}
 	streamServerInterceptors := []googleGrpc.StreamServerInterceptor{
-		grpcError.StreamServerInterceptor(),
+		interceptors.StreamServerInterceptor(),
 	}
 
 	s := googleGrpc.NewServer(

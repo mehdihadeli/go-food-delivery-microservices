@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/fxapp/contracts"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
+	loggingpipelines "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/pipelines"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/metrics"
 	metricspipelines "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/metrics/mediatr/pipelines"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing"

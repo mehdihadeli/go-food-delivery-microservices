@@ -8,13 +8,9 @@ import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/mapper"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing"
-	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/attribute"
-	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/otel/tracing/utils"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/contracts/repositories"
 	dtosV1 "github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/dtos/v1"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/orderservice/internal/orders/features/getting_order_by_id/v1/dtos"
-
-	attribute2 "go.opentelemetry.io/otel/attribute"
 )
 
 type GetOrderByIdHandler struct {
@@ -39,22 +35,14 @@ func (q *GetOrderByIdHandler) Handle(
 	ctx context.Context,
 	query *GetOrderById,
 ) (*dtos.GetOrderByIdResponseDto, error) {
-	ctx, span := q.tracer.Start(ctx, "GetOrderByIdHandler.Handle")
-	span.SetAttributes(attribute2.String("Id", query.Id.String()))
-	span.SetAttributes(attribute.Object("Query", query))
-	defer span.End()
-
 	// get order by order-read id
 	order, err := q.orderMongoRepository.GetOrderById(ctx, query.Id)
 	if err != nil {
-		return nil, utils.TraceErrFromSpan(
-			span,
-			customErrors.NewApplicationErrorWrap(
-				err,
-				fmt.Sprintf(
-					"[GetOrderByIdHandler_Handle.GetProductById] error in getting order with id %s in the mongo repository",
-					query.Id.String(),
-				),
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			fmt.Sprintf(
+				"[GetOrderByIdHandler_Handle.GetProductById] error in getting order with id %s in the mongo repository",
+				query.Id.String(),
 			),
 		)
 	}
@@ -63,14 +51,11 @@ func (q *GetOrderByIdHandler) Handle(
 		// get order by order-write id
 		order, err = q.orderMongoRepository.GetOrderByOrderId(ctx, query.Id)
 		if err != nil {
-			return nil, utils.TraceErrFromSpan(
-				span,
-				customErrors.NewApplicationErrorWrap(
-					err,
-					fmt.Sprintf(
-						"[GetOrderByIdHandler_Handle.GetProductById] error in getting order with orderId %s in the mongo repository",
-						query.Id.String(),
-					),
+			return nil, customErrors.NewApplicationErrorWrap(
+				err,
+				fmt.Sprintf(
+					"[GetOrderByIdHandler_Handle.GetProductById] error in getting order with orderId %s in the mongo repository",
+					query.Id.String(),
 				),
 			)
 		}
@@ -78,12 +63,9 @@ func (q *GetOrderByIdHandler) Handle(
 
 	orderDto, err := mapper.Map[*dtosV1.OrderReadDto](order)
 	if err != nil {
-		return nil, utils.TraceErrFromSpan(
-			span,
-			customErrors.NewApplicationErrorWrap(
-				err,
-				"[GetOrderByIdHandler_Handle.Map] error in the mapping order",
-			),
+		return nil, customErrors.NewApplicationErrorWrap(
+			err,
+			"[GetOrderByIdHandler_Handle.Map] error in the mapping order",
 		)
 	}
 

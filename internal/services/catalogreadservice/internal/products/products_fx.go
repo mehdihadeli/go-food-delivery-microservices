@@ -2,7 +2,7 @@ package products
 
 import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/core/web/route"
-	customEcho "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/customecho"
+	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/http/customecho/contracts"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/services/catalogreadservice/internal/products/data/repositories"
 	getProductByIdV1 "github.com/mehdihadeli/go-food-delivery-microservices/internal/services/catalogreadservice/internal/products/features/get_product_by_id/v1/endpoints"
 	getProductsV1 "github.com/mehdihadeli/go-food-delivery-microservices/internal/services/catalogreadservice/internal/products/features/getting_products/v1/endpoints"
@@ -19,7 +19,7 @@ var Module = fx.Module(
 	fx.Provide(repositories.NewRedisProductRepository),
 	fx.Provide(repositories.NewMongoProductRepository),
 
-	fx.Provide(fx.Annotate(func(catalogsServer customEcho.EchoHttpServer) *echo.Group {
+	fx.Provide(fx.Annotate(func(catalogsServer contracts.EchoHttpServer) *echo.Group {
 		var g *echo.Group
 		catalogsServer.RouteBuilder().RegisterGroupFunc("/api/v1", func(v1 *echo.Group) {
 			group := v1.Group("/products")

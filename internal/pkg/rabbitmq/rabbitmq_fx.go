@@ -11,8 +11,8 @@ import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/bus"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
-	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer/factory"
-	producer2 "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/producer"
+	rabbitmqconsumer "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/consumer"
+	rabbitmqproducer "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/producer"
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/types"
 
 	"go.uber.org/fx"
@@ -43,8 +43,8 @@ var (
 			fx.As(new(bus2.Bus)),
 			fx.As(new(bus.RabbitmqBus)),
 		)),
-		fx.Provide(factory.NewConsumerFactory),
-		fx.Provide(producer2.NewProducerFactory),
+		fx.Provide(rabbitmqconsumer.NewConsumerFactory),
+		fx.Provide(rabbitmqproducer.NewProducerFactory),
 		fx.Provide(fx.Annotate(
 			NewRabbitMQHealthChecker,
 			fx.As(new(contracts.Health)),

@@ -83,7 +83,7 @@ func (m *mongoOrderProjection) onOrderCreated(
 	)
 	_, err = m.mongoOrderRepository.CreateOrder(ctx, orderRead)
 	if err != nil {
-		return utils.TraceErrFromSpan(
+		return utils.TraceStatusFromSpan(
 			span,
 			errors.WrapIf(
 				err,
@@ -94,7 +94,7 @@ func (m *mongoOrderProjection) onOrderCreated(
 
 	orderReadDto, err := mapper.Map[*dtosV1.OrderReadDto](orderRead)
 	if err != nil {
-		return utils.TraceErrFromSpan(
+		return utils.TraceErrStatusFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,
@@ -107,7 +107,7 @@ func (m *mongoOrderProjection) onOrderCreated(
 
 	err = m.rabbitmqProducer.PublishMessage(ctx, orderCreatedEvent, nil)
 	if err != nil {
-		return utils.TraceErrFromSpan(
+		return utils.TraceErrStatusFromSpan(
 			span,
 			customErrors.NewApplicationErrorWrap(
 				err,

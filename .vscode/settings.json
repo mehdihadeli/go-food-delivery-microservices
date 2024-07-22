@@ -7,7 +7,7 @@
   "resmon.show.cpufreq": false,
   "omnisharp.projectLoadTimeout": 60,
   "workbench.colorTheme": "Visual Studio Light",
-  "workbench.iconTheme": "vscode-icons",
+  "workbench.iconTheme": "material-icon-theme",
   "editor.minimap.enabled": false,
   "editor.fontFamily": "'MesloLGM Nerd Font', 'Droid Sans Mono', 'monospace', 'Droid Sans Fallback', 'Consolas'",
   "editor.fontSize": 14,

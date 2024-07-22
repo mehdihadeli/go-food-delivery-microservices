@@ -120,70 +120,16 @@ func provideCatalogsMetrics(
 		return nil, err
 	}
 
-	createProductHttpRequests, err := meter.Float64Counter(
-		fmt.Sprintf("%s_create_product_http_requests_total", appOptions.ServiceName),
-		api.WithDescription("The total number of create product http requests"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	updateProductHttpRequests, err := meter.Float64Counter(
-		fmt.Sprintf("%s_update_product_http_requests_total", appOptions.ServiceName),
-		api.WithDescription("The total number of update product http requests"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	deleteProductHttpRequests, err := meter.Float64Counter(
-		fmt.Sprintf("%s_delete_product_http_requests_total", appOptions.ServiceName),
-		api.WithDescription("The total number of delete product http requests"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	getProductByIdHttpRequests, err := meter.Float64Counter(
-		fmt.Sprintf("%s_get_product_by_id_http_requests_total", appOptions.ServiceName),
-		api.WithDescription("The total number of get product by id http requests"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	getProductsHttpRequests, err := meter.Float64Counter(
-		fmt.Sprintf("%s_get_products_http_requests_total", appOptions.ServiceName),
-		api.WithDescription("The total number of get products http requests"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	searchProductHttpRequests, err := meter.Float64Counter(
-		fmt.Sprintf("%s_search_product_http_requests_total", appOptions.ServiceName),
-		api.WithDescription("The total number of search product http requests"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	return &contracts.CatalogsMetrics{
 		CreateProductRabbitMQMessages: createProductRabbitMQMessages,
 		GetProductByIdGrpcRequests:    getProductByIdGrpcRequests,
 		CreateProductGrpcRequests:     createProductGrpcRequests,
-		CreateProductHttpRequests:     createProductHttpRequests,
 		DeleteProductRabbitMQMessages: deleteProductRabbitMQMessages,
 		DeleteProductGrpcRequests:     deleteProductGrpcRequests,
-		DeleteProductHttpRequests:     deleteProductHttpRequests,
 		ErrorRabbitMQMessages:         errorRabbitMQMessages,
-		GetProductByIdHttpRequests:    getProductByIdHttpRequests,
-		GetProductsHttpRequests:       getProductsHttpRequests,
 		SearchProductGrpcRequests:     searchProductGrpcRequests,
-		SearchProductHttpRequests:     searchProductHttpRequests,
 		SuccessRabbitMQMessages:       successRabbitMQMessages,
 		UpdateProductRabbitMQMessages: updateProductRabbitMQMessages,
 		UpdateProductGrpcRequests:     updateProductGrpcRequests,
-		UpdateProductHttpRequests:     updateProductHttpRequests,
 	}, nil
 }
