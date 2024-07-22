@@ -34,7 +34,7 @@
     "port": 5432,
     "user": "postgres",
     "password": "postgres",
-    "dbName": "catalogs_service",
+    "dbName": "catalogs_write_service",
     "sslMode": false
   },
   "rabbitmqOptions": {
@@ -81,7 +81,7 @@
     "port": 5432,
     "user": "postgres",
     "password": "postgres",
-    "dbName": "catalogs_service",
+    "dbName": "catalogs_write_service",
     "sslMode": false,
     "migrationsDir": "db/migrations/goose-migrate",
     "skipMigration": false

@@ -52,7 +52,7 @@
     "port": 27017,
     "user": "admin",
     "password": "admin",
-    "database": "catalogs_service",
+    "database": "catalogs_read_service",
     "useAuth": true
   },
   "tracingOptions": {
