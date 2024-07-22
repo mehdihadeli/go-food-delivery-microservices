@@ -34,16 +34,14 @@
     // "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
     // // https://github.com/devcontainers/features/tree/main/src/terraform
     // "ghcr.io/devcontainers/features/terraform:1": {},
-    // https://github.com/devcontainers/features/tree/main/src/docker-in-docker
-    // https://devopscube.com/run-docker-in-docker/
-    //"ghcr.io/devcontainers/features/docker-in-docker:2": {
-    //  "dockerDashComposeVersion": "v2"
-    //},
     "ghcr.io/devcontainers/features/git:1": {},
     // https://github.com/devcontainers/features/tree/main/src/common-utils
     "ghcr.io/devcontainers/features/common-utils:2": {
       "configureZshAsDefaultShell": true
-    }
+    },
+    // https://github.com/devcontainers/features/tree/main/src/docker-in-docker
+    // https://devopscube.com/run-docker-in-docker/
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
   // Configure tool-specific properties.
   "customizations": {
