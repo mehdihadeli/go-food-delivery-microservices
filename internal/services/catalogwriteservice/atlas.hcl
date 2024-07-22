@@ -14,7 +14,7 @@ data "external_schema" "gorm" {
 
 env "gorm" {
   src = data.external_schema.gorm.url
-  dev = "postgres://postgres:postgres@localhost:5432/catalogs_service?sslmode=disable"
+  dev = "postgres://postgres:postgres@localhost:5432/catalogs_write_service?sslmode=disable"
   migration {
     dir = "file://db/migrations/atlas"
   }
@@ -27,7 +27,7 @@ env "gorm" {
 
 env "go-migrate" {
   src = "file://db/migrations/go-migrate/schema.sql"
-  dev = "postgres://postgres:postgres@localhost:5432/catalogs_service?sslmode=disable"
+  dev = "postgres://postgres:postgres@localhost:5432/catalogs_write_service?sslmode=disable"
   migration {
     dir    = "file://db/migrations/go-migrate"
     format = golang-migrate

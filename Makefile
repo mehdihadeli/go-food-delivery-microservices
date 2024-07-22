@@ -99,21 +99,21 @@ lint:
 .PHONY: go-migrate
 go-migrate:
 	@./scripts/go-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/go-migrate -c create -n create_product_table
-	@./scripts/go-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/go-migrate -c up -o postgres://postgres:postgres@localhost:5432/catalogs_service?sslmode=disable
-	@./scripts/go-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/go-migrate -c down -o postgres://postgres:postgres@localhost:5432/catalogs_service?sslmode=disable
+	@./scripts/go-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/go-migrate -c up -o postgres://postgres:postgres@localhost:5432/catalogs_write_service?sslmode=disable
+	@./scripts/go-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/go-migrate -c down -o postgres://postgres:postgres@localhost:5432/catalogs_write_service?sslmode=disable
 
 # https://github.com/pressly/goose#usage
 .PHONY: goose-migrate
 goose-migrate:
 	@./scripts/goose-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/goose-migrate -c create -n create_product_table
-	@./scripts/goose-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/goose-migrate -c up -o "user=postgres password=postgres dbname=catalogs_service sslmode=disable"
-	@./scripts/goose-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/goose-migrate -c down -o "user=postgres password=postgres dbname=catalogs_service sslmode=disable"
+	@./scripts/goose-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/goose-migrate -c up -o "user=postgres password=postgres dbname=catalogs_write_service sslmode=disable"
+	@./scripts/goose-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/goose-migrate -c down -o "user=postgres password=postgres dbname=catalogs_write_service sslmode=disable"
 
 # https://atlasgo.io/guides/orms/gorm
 .PHONY: atlas
 atlas:
 	@./scripts/atlas-migrate.sh -c gorm-sync -p "./internal/services/catalogwriteservice"
-	@./scripts/atlas-migrate.sh -c apply -p "./internal/services/catalogwriteservice" -o "postgres://postgres:postgres@localhost:5432/catalogs_service?sslmode=disable"
+	@./scripts/atlas-migrate.sh -c apply -p "./internal/services/catalogwriteservice" -o "postgres://postgres:postgres@localhost:5432/catalogs_write_service?sslmode=disable"
 
 .PHONY: cycle-check
 cycle-check:
