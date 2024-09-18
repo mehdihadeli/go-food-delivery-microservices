@@ -113,7 +113,11 @@
         "GitHub.vscode-github-actions",
         "PKief.material-icon-theme",
         "EditorConfig.EditorConfig",
-        "DavidAnson.vscode-markdownlint"
+        "DavidAnson.vscode-markdownlint",
+        "redhat.vscode-yaml",
+        "kennylong.kubernetes-yaml-formatter",
+        "sonarsource.sonarlint-vscode",
+        "ms-vscode.makefile-tools"
       ]
     }
   },

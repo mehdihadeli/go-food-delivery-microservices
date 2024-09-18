@@ -7,4 +7,5 @@ echo "Installing Nerd Fonts..."
 ./setup-fonts.sh
 
 # echo "Installing tools for Go development..."
-# ./../../scripts/install-tools.sh
+echo "set permission for running scripts"
+./setup-devcontainers.sh

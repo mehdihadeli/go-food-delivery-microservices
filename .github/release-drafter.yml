@@ -15,101 +15,138 @@ template: |
   $CHANGES
   **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
 categories:
-  - title: 🚀 Features
-    labels:
-      - feature
-  - title: ♻️ Enhancement
-    labels:
-      - enhancement
-      - refactor
-  - title: 🐛 Bug Fixes
-    labels:
-      - fix
-      - bug
-  - title: 👷 CI
-    labels:
-      - ci
-  - title: ⚠️ Breaking Changes
-    labels:
-      - breaking-changes
-  - title: ⛔️ Deprecated
-    labels:
-      - deprecated
-  - title: 🗑 Removed
-    labels:
-      - removed
-  - title: 🔐 Security
-    labels:
-      - security
-  - title: 📄 Documentation
-    labels:
-      - docs
-      - documentation
-  - title: 🧩 Dependency Updates
-    labels:
-      - deps
-      - dependencies
-  - title: 🧰 Maintenance
-    label: 'chore'
-  - title: 🧺 Miscellaneous #Everything except ABAP
-    label: misc
-  - title: 🚩 Other changes
-## putting no labels pr to `Other Changes` category with no label - https://github.com/release-drafter/release-drafter/issues/139#issuecomment-480473934
-
+- title: 🚀 Features
+  labels:
+  - feature
+  - feat
+- title: ♻️ Enhancement
+  labels:
+  - enhancement
+  - refactor
+- title: 🐛 Bug Fixes
+  labels:
+  - fix
+  - bug
+- title: 👷 CI
+  labels:
+  - ci
+  - ci-cd
+  - devops
+- title: ⚠️ Breaking Changes
+  labels:
+  - breaking-changes
+  - major
+- title: ⛔️ Deprecated
+  labels:
+  - deprecated
+- title: 🗑 Removed
+  labels:
+  - removed
+- title: 🔐 Security
+  labels:
+  - security
+- title: 🎨 Style & Formatting
+  labels:
+  - style
+- title: 🧪 Test
+  labels:
+  - test
+- title: 📄 Documentation
+  labels:
+  - docs
+  - documentation
+- title: 🧩 Dependency Updates
+  labels:
+  - deps
+  - build
+  - dependencies
+- title: 🧰 Maintenance
+  label: 'chore'
+- title: 🧺 Miscellaneous #Everything except ABAP
+  label: misc
+- title: 🚩 Other changes
+  ## putting no labels pr to `Other Changes` category with no label - https://github.com/release-drafter/release-drafter/issues/139#issuecomment-480473934
 
 # https://www.trywilco.com/post/wilco-ci-cd-github-heroku
 # https://github.com/release-drafter/release-drafter#autolabeler
 # https://github.com/fuxingloh/multi-labeler
-
 # Using regex for defining rules - https://regexr.com/
 # https://stackoverflow.com/questions/58899999/regexp-to-match-conventional-commit-syntax
+# Note: because of escaping logic inside of release drafter our regex should be escaped correctly and drafter wil un-escape it internally
+# - Escaped regex: When writing a regular expression as a string in code, special characters like (, ), and : need to be escaped with a backslash (\) because these characters have special meanings in regex. 
+# - Unescaped regex: If you use a raw regex literal (i.e., surrounded by slashes /.../), the regex engine interprets it directly, and you don’t need to double-escape the special characters.
 autolabeler:
-  - label: 'chore'
+- label: 'chore'
     branch:
-      - '(chore)(\([a-z ]+\))?\/.'
+    - '/^(chore)(\([a-z ]+\))?\/.+/'
     title:
-      - '^(chore)(\([a-z ]+\))?: .'
-  - label: 'bug'
+    - '/^(chore)(\([a-z ]+\))?: .+/'
+- label: 'enhancement'
     branch:
-      - '(fix)(\([a-z ]+\))?\/.'
+    - '/^(refactor)(\([a-z ]+\))?\/.+/'
     title:
-      - '^(fix)(\([a-z ]+\))?: .'
-  - label: 'feature'
+    - '/^(refactor)(\([a-z ]+\))?: .+/'
+- label: 'documentation'
     branch:
-      - '(feat)(\([a-z ]+\))?\/.'
+    - '/^(docs)(\([a-z ]+\))?\/.+/'
     title:
-      - '^(feat)(\([a-z ]+\))?: .'
-  - label: 'ci/cd'
+    - '/^(docs)(\([a-z ]+\))?: .+/'
+- label: 'ci-cd'
     branch:
-      - '(ci)(\([a-z ]+\))?\/.'
+    - '/^(ci)(\([a-z ]+\))?\/.+/'
     title:
-      - '^(ci)(\([a-z ]+\))?: .'
-  - label: 'minor'
+    - '/^(ci)(\([a-z ]+\))?: .+/'
+- label: 'devops'
     branch:
-      - '(feat)(\([a-z ]+\))?\/.'
+    - '/^(ci)(\([a-z ]+\))?\/.+/'
     title:
-      - '^(feat)(\([a-z ]+\))?: .'
-  - label: 'patch'
+    - '/^(ci)(\([a-z ]+\))?: .+/'
+- label: 'test'
     branch:
-      - '(fix)(\([a-z ]+\))?\/.'
-      - '(ci)(\([a-z ]+\))?\/.'
+    - '/^(test)(\([a-z ]+\))?\/.+/'
     title:
-      - '^(fix)(\([a-z ]+\))?: .'
-      - '^(ci)(\([a-z ]+\))?: .'
+    - '/^(test)(\([a-z ]+\))?: .+/'
+- label: 'bug'
+    branch:
+    - '/^(fix)(\([a-z ]+\))?\/.+/'
+    title:
+    - '/^(fix)(\([a-z ]+\))?: .+/'
+- label: 'style'
+    branch:
+    - '/^(style)(\([a-z ]+\))?\/.+/'
+    title:
+    - '/^(style)(\([a-z ]+\))?: .+/'
+- label: 'feature'
+    branch:
+    - '/^(feat)(\([a-z ]+\))?\/.+/'
+    title:
+    - '/^(feat)(\([a-z ]+\))?: .+/'
+- label: 'minor'
+  branch:
+    - '/^(feat)(\([a-z ]+\))?\/.+/'
+  title:
+    - '/^(feat)(\([a-z ]+\))?: .+/'
+- label: 'patch'
+  branch:
+    - '/^(fix)(\([a-z ]+\))?\/.+/'
+    - '/^(ci)(\([a-z ]+\))?\/.+/'
+  title:
+    - '/^(fix)(\([a-z ]+\))?: .+/'
+    - '/^(ci)(\([a-z ]+\))?: .+/'
 
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
 version-resolver:
   major:
     labels:
-      - breaking-changes
+    - breaking-changes
   minor:
     labels:
-      - minor
+    - minor
   patch:
     labels:
-      - patch
+    - patch
   default: patch
 
 exclude-labels:
-  - skip-changelog
+- skip-changelog
