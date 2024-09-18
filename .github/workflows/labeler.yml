@@ -1,40 +1,53 @@
-name: "Pull Request Labeler"
+name: Auto Labeler
 
 on:
   pull_request:
-    types: [ opened, edited, synchronize, ready_for_review ]
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+  # pull_request_target:
 
 jobs:
-  auto-labeling:
+  auto-labeler:
+    name: Auto Labeler
     runs-on: ubuntu-latest
     permissions:
-      # Setting up permissions in the workflow to limit the scope of what it can do. Optional!
-      contents: read
+      # write permission is required for autolabeler
+      # otherwise, read permission is required at least
       pull-requests: write
-      statuses: write
-      checks: write
-      
+      contents: read
+      ## just for multi-labeler
+      # statuses: write
+      # checks: write
+
     steps:
-      - uses: fuxingloh/multi-labeler@v1
-        name: conventional-commits-pull-request-labeler
+      - uses: release-drafter/release-drafter@v6
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}} # optional, default to '${{ github.token }}'
-          config-path: .github/multi-labeler.yml # optional, default to '.github/labeler.yml'
+          config-name: release-drafter.yml
+          disable-releaser: true # releaser mode is disabled.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      #      - uses: release-drafter/release-drafter@v5
-      #        name: release-drafter auto labeler
-      #        with:
-      #          config-name: release-drafter.yml
-      #          disable-releaser: true # only run auto-labeler for PRs
-      #        env:
-      #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - uses: fuxingloh/multi-labeler@v1
+      #   name: conventional-commits-pull-request-labeler
+      #   with:
+      #     github-token: ${{secrets.GITHUB_TOKEN}} # optional, default to '${{ github.token }}'
+      #     config-path: .github/multi-labeler.yml # optional, default to '.github/labeler.yml'
 
-        # https://docs.github.com/en/actions/using-workflows/about-workflows#creating-dependent-jobs
-        # https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow
+      # # https://github.com/actions/labeler
+      # - uses: actions/labeler@v5
+      #   with:
+      #     repo-token: "${{ secrets.GITHUB_TOKEN }}"
+      #     sync-labels: true
+
+      # https://docs.github.com/en/actions/using-workflows/about-workflows#creating-dependent-jobs
+      # https://docs.github.com/en/actions/using-jobs/using-jobs-in-a-workflow
       - name: check-conventional-commits-labels
         uses: docker://agilepathway/pull-request-label-checker:latest
         if: success()
         with:
-          any_of : feature,bug,enhancement,refactor,deprecated,security,documentation,build,ci/cd,chore,performance,formatting,dependencies
+          any_of: feature,bug,enhancement,refactor,deprecated,security,documentation,build,ci/cd,devops,chore,performance,formatting,dependencies,test,major,minor,patch
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-

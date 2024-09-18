@@ -1,0 +1,166 @@
+# https://github.com/actions/labeler
+
+# In some configurations (like Release Drafter), regex is enclosed with slashes (e.g., /build\/.+/), which signifies the start and end of the regular expression.
+# However, in GitHub Actions' labeler.yml, you do not need to wrap your regex patterns in slashes. The tool expects just the regex itself, without the delimiters.
+
+ansible:
+- changed-files:
+  - any-glob-to-any-file:
+    - '.ansible-lint'
+    - 'ansible.cfg'
+    - 'ansible/*'
+    - 'molecule/*'
+
+configuration:
+- changed-files:
+  - any-glob-to-any-file:
+    - '.github/*yml'
+    - '.gitignore'
+    - '.gitattributes'
+    - '.vscode/*'
+    - '.devcontainer/*'
+    - '.editorconfig'
+    - '.yamllint.yml'
+    - '.ansible-lint'
+
+docker:
+- changed-files:
+  - any-glob-to-any-file:
+    - '**/Dockerfile'
+    - '**/docker-compose.yml'
+    - '**/docker-compose.yaml'
+    - '**/docker-compose.test.yml'
+
+github:
+- any:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/*'
+      - '!.github/workflows/'
+
+source:
+- all:
+  - changed-files:
+    - any-glob-to-any-file: 'src/**/*'
+    - all-globs-to-all-files: '!src/docs/*'
+
+policy:
+- changed-files:
+  - any-glob-to-any-file:
+    - '.github/ISSUE_TEMPLATE/*'
+    - '.github/PULL_TEMPLATE/*'
+    - 'LICENSE'
+    - 'SECURITY.md'
+
+terraform:
+- changed-files:
+  - any-glob-to-any-file:
+    - 'terraform/*'
+    - '**/*.tf'
+    - '**/*.lock.hcl'
+
+vscode:
+- changed-files:
+  - any-glob-to-any-file:
+    - '.vscode/*'
+
+feature:
+- head-branch:
+  - '^(feat)(\([a-z ]+\))?\/.'
+  - '^(feature)(\([a-z ]+\))?\/.'
+- changed-files:
+  - any-glob-to-any-file:
+    - src/*
+
+ci-cd:
+- head-branch:
+  - '^(ci)(\([a-z ]+\))?\/.'
+- changed-files:
+  - any-glob-to-any-file:
+    - '.github/workflows/*'
+    - '.github/*'
+
+devops:
+- head-branch:
+  - '^(ci)(\([a-z ]+\))?\/.'
+- changed-files:
+  - any-glob-to-any-file:
+    - 'deployments/*'
+    - '.github/workflows/*'
+    - '.github/*'
+    - 'terraform/*'
+    - '**/*.tf'
+    - '**/*.lock.hcl'
+    - '**/Dockerfile'
+    - '**/docker-compose.yml'
+    - '**/docker-compose.yaml'
+    - '**/docker-compose.test.yml'
+
+style:
+- head-branch:
+  - '^(style)(\([a-z ]+\))?\/.'
+- changed-files:
+  - any-glob-to-any-file:
+    - src/*
+
+documentation:
+- head-branch:
+  - '^(docs)(\([a-z ]+\))?\/.'
+- changed-files:
+  - any-glob-to-any-file:
+    - '**/*.md'
+    - '**/*.rst'
+    - '**/*.txt'
+    - docs/**
+    - guides/*
+
+performance:
+- head-branch:
+  - '^(perf)(\([a-z ]+\))?\/.'
+- changed-files:
+  - any-glob-to-any-file:
+    - src/*
+
+bug:
+- head-branch:
+  - '^(fix)(\([a-z ]+\))?\/.'
+- changed-files:
+  - any-glob-to-any-file:
+    - src/*
+
+enhancement:
+- head-branch:
+  - '^(refactor)(\([a-z ]+\))?\/.'
+- changed-files:
+  - any-glob-to-any-file:
+    - src/*
+
+build:
+- head-branch:
+  - '^(build)(\([a-z ]+\))?\/.'
+
+dependencies:
+- head-branch:
+  - '^(build)(\([a-z ]+\))?\/.'
+
+chore:
+- head-branch:
+  - '^(chore)(\([a-z ]+\))?\/.'
+
+test:
+- head-branch:
+  - '^(test)(\([a-z ]+\))?\/.'
+- changed-files:
+  - any-glob-to-any-file:
+    - 'test/*'
+    - 'molecule/*'
+    - 'docker-compose.test.yml'
+
+minor:
+- head-branch:
+  - '^(feat)(\([a-z ]+\))?\/.'
+
+patch:
+- head-branch:
+  - '^(fix)(\([a-z ]+\))?\/.'
+  - '^(ci)(\([a-z ]+\))?\/.'

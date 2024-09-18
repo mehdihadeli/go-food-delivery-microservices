@@ -45,5 +45,6 @@
   "go.formatTool": "gofumpt",
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }
