@@ -2,5 +2,5 @@
 set -e
 
 echo "Setting up devcontainer environment..."
-chmod +x ./scripts/*.sh
+chmod +x ./../scripts/install-tools.sh
 echo "Permissions set."
