@@ -1,7 +1,7 @@
 # 🍕 Go Food Delivery Microservices
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mehdihadeli/go-food-delivery-microservices/ci.yml?label=CI&logo=github&style=for-the-badge)](https://github.com/mehdihadeli/go-food-delivery-microservices/actions/workflows/ci.yml)
-![Go Version](https://img.shields.io/badge/go%20version-%3E=1.22-61CFDD.svg?&style=for-the-badge)
+![Go Version](https://img.shields.io/badge/go%20version-%3E=1.27-61CFDD.svg?&style=for-the-badge)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?logoColor=white&style=for-the-badge)](http://commitizen.github.io/cz-cli/)
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/mehdihadeli/go-food-delivery-microservices)
@@ -133,6 +133,27 @@ Keeping such a split works great with CQRS. It segregates our operations and sli
 
 TODO
 
+## Task Runner
+
+Every build, test, lint and codegen command is a task in [mise](https://mise.jdx.dev/) — the same tool pins the Go and Node versions used by this repository, so no `Makefile` or global toolchain install is needed.
+
+```bash
+mise install            # install the pinned toolchains (go 1.27.4, node 22)
+mise tasks              # list every task
+mise run build
+mise run lint orderservice
+mise run test orderservice integration
+mise run tidy orderservice       # go mod tidy for one module
+mise run db:up && mise run db:create
+mise run docker:build orderservice v1.2.3
+```
+
+The tasks are thin wrappers around `scripts/*.sh`, and CI calls those same scripts, so a local run and a pipeline run can never drift apart. `format`, `lint` and `test` take the module as an argument — omit it to cover every module. Run `mise run` without arguments to pick a task interactively.
+
+The module list itself lives in one place, `scripts/modules.sh`, so adding a microservice is one word there plus one matrix entry in `.github/workflows/ci.yml`. No task name or path is repeated per service.
+
+> The scripts are bash and mise defaults to `cmd.exe` for inline scripts on Windows, so `mise.toml` points `windows_default_inline_shell_args` at Git Bash. If Git lives outside `C:/Program Files/Git`, override it per machine with `mise settings set windows_default_inline_shell_args '"<path>/bash.exe" -c'`.
+
 ## Formatting
 
 In this app, I use [Conventional Commit](https://www.conventionalcommits.org/en/) and for enforcing its rule I use [conventional-changelog/commitlint](https://github.com/conventional-changelog/commitlint) and [typicode/husky](https://github.com/typicode/husky) with a pre-commit hook. To read more about its setup see [commitlint docs](https://github.com/conventional-changelog/commitlint#getting-started) and [this article](https://betterprogramming.pub/how-to-lint-commit-messages-with-husky-and-commitlint-b51d20a5e514) and [this article](https://www.code4it.dev/blog/conventional-commit-with-githooks).
@@ -145,7 +166,7 @@ Also, you can control this formatting with `husky` automatically before any comm
 
 1. Install Tools:
 ``` bash
-make install-tools
+mise install && mise run install-tools
 ```
 
 2. Install NPM:
@@ -187,8 +208,8 @@ mkdir .husky
 8. Adding hooks for linting and formatting before commit:
 
 ```bash
-npx husky add .husky/pre-commit "make format && git add -A ."
-npx husky add .husky/pre-commit "make lint && git add -A ."
+npx husky add .husky/pre-commit "mise run format && git add -A ."
+npx husky add .husky/pre-commit "mise run lint && git add -A ."
 ```
 
 9. Adding CommitLint to the husky before commit:

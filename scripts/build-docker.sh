@@ -1,10 +1,21 @@
 #!/bin/bash
 
-# In a bash script, set -e is a command that enables the "exit immediately" option. When this option is set, the script will terminate immediately if any command within the script exits with a non-zero status (indicating an error).
+# Builds one microservice image locally with the same Dockerfile the pipeline
+# uses. Build context is the repository root: each service module replaces
+# .../internal/pkg with the local ../../pkg directory.
+#
+#   ./scripts/build-docker.sh <service> [tag]
 set -e
 
 readonly service="$1"
-readonly project_name="$2"
+readonly tag="${2:-dev}"
 
-docker build -t "gcr.io/$project_name/$service" "./internal" -f "./docker/app-prod/Dockerfile" --build-arg "SERVICE=$service"
-docker push "gcr.io/$project_name/$service"
+if [ -z "$service" ]; then
+  echo "usage: $0 <catalogreadservice|catalogwriteservice|orderservice> [tag]" >&2
+  exit 1
+fi
+
+docker build \
+  -t "ghcr.io/mehdihadeli/go-food-delivery-microservices/${service}:${tag}" \
+  -f "./internal/services/${service}/Dockerfile" \
+  .

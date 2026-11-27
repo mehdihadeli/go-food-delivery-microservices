@@ -7,8 +7,7 @@ import (
 
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/rabbitmq/config"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/go-connections/nat"
+	"github.com/moby/moby/api/types/container"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -29,7 +28,7 @@ func CreatingContainerOptions(
 		),
 		ExposedPorts: []string{"5672/tcp", "15672/tcp"},
 		WaitingFor: wait.ForListeningPort(
-			nat.Port("5672/tcp"),
+			"5672/tcp",
 		),
 		HostConfigModifier: func(hostConfig *container.HostConfig) {
 			hostConfig.AutoRemove = true
@@ -61,7 +60,7 @@ func CreatingContainerOptions(
 	// get a free random host port for rabbitmq `Tcp Port`
 	hostPort, err := dbContainer.MappedPort(
 		ctx,
-		nat.Port("5672/tcp"),
+		"5672/tcp",
 	)
 	if err != nil {
 		return nil, err
@@ -71,7 +70,7 @@ func CreatingContainerOptions(
 	// get a free random host port for rabbitmq UI `Http Port`
 	uiHttpPort, err := dbContainer.MappedPort(
 		ctx,
-		nat.Port("15672/tcp"),
+		"15672/tcp",
 	)
 	if err != nil {
 		return nil, err
@@ -87,8 +86,8 @@ func CreatingContainerOptions(
 		Password:    "guest",
 		HostName:    host,
 		VirtualHost: "/",
-		Port:        hostPort.Int(),
-		HttpPort:    uiHttpPort.Int(),
+		Port:        int(hostPort.Num()),
+		HttpPort:    int(uiHttpPort.Num()),
 	}
 
 	return option, nil

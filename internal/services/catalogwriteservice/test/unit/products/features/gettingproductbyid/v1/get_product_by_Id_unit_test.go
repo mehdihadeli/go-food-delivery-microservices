@@ -27,7 +27,7 @@ func TestGetProductByIdUnit(t *testing.T) {
 func (c *getProductByIdUnitTests) Test_New_Get_Product_By_Id_Should_Return_No_Error_For_Valid_Input() {
 	id := uuid.NewV4()
 
-	query, err := getProductByIdQuery.NewGetProductById(id)
+	query, err := getProductByIdQuery.NewGetProductByIdWithValidation(id)
 
 	c.Assert().NotNil(query)
 	c.Assert().Equal(query.ProductID, id)
@@ -35,7 +35,7 @@ func (c *getProductByIdUnitTests) Test_New_Get_Product_By_Id_Should_Return_No_Er
 }
 
 func (c *getProductByIdUnitTests) Test_New_Get_Product_By_Id_Should_Return_Error_For_Invalid_Id() {
-	query, err := getProductByIdQuery.NewGetProductById(uuid.UUID{})
+	query, err := getProductByIdQuery.NewGetProductByIdWithValidation(uuid.UUID{})
 
 	c.Assert().Nil(query)
 	c.Require().Error(err)

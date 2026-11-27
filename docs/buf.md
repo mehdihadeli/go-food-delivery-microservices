@@ -51,13 +51,13 @@ buf check breaking --against-input image.bin
 ### Format
 
 ```bash
-make proto_format
+buf format -w
 ```
 
 ### Generate
 
 ```bash
-make proto
+mise run proto
 ```
 
 ## Tools

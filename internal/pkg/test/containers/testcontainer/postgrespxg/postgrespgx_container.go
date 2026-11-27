@@ -11,10 +11,12 @@ import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
-	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
+
+// portPollInterval is how often the container readiness check probes the port.
+const portPollInterval = 2 * time.Second
 
 // https://github.com/testcontainers/testcontainers-go/issues/1359
 // https://github.com/testcontainers/testcontainers-go/issues/1249
@@ -68,11 +70,12 @@ func (g *postgresPgxTestContainers) PopulateContainerOptions(
 	})
 
 	// get a free random host hostPort
-	hostPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Port))
+	hostPort, err := dbContainer.MappedPort(ctx, g.defaultOptions.Port)
 	if err != nil {
 		return nil, err
 	}
-	g.defaultOptions.HostPort = hostPort.Int()
+
+	g.defaultOptions.HostPort = int(hostPort.Num())
 
 	host, err := dbContainer.Host(ctx)
 	if err != nil {
@@ -148,7 +151,7 @@ func (g *postgresPgxTestContainers) getRunOptions(
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: []string{g.defaultOptions.Port},
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).WithPollInterval(2 * time.Second),
+		WaitingFor:   wait.ForListeningPort(g.defaultOptions.Port).WithPollInterval(portPollInterval),
 		Hostname:     g.defaultOptions.Host,
 		SkipReaper:   true,
 		Env: map[string]string{

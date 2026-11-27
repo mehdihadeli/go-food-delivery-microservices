@@ -22,9 +22,11 @@ func NewDeleteProduct(productID uuid.UUID) *DeleteProduct {
 // NewDeleteProductWithValidation delete a product with inline validation - for defensive programming and ensuring validation even without using middleware
 func NewDeleteProductWithValidation(productID uuid.UUID) (*DeleteProduct, error) {
 	command := NewDeleteProduct(productID)
-	err := command.Validate()
+	if err := command.Validate(); err != nil {
+		return nil, err
+	}
 
-	return command, err
+	return command, nil
 }
 
 // IsTxRequest for enabling transactions on the mediatr pipeline
