@@ -1,38 +1,49 @@
-FROM golang:1.19.0-alpine AS builder
+# syntax=docker/dockerfile:1
 
-# Set Go env
-ENV CGO_ENABLED=0 GOOS=linux
-WORKDIR /services/catalogs/write_service
+# Build context is the repository root because the service module replaces
+# `.../internal/pkg` with the local `../../pkg` directory:
+#
+#   docker build -f internal/services/catalogwriteservice/Dockerfile .
 
-# Install dependencies
-RUN apk --update --no-cache add ca-certificates make protoc
+FROM golang:1.27.4-alpine AS builder
 
-# Download grpc_health_probe
-RUN GRPC_HEALTH_PROBE_VERSION=v0.4.11 && \
-    wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
-    chmod +x /bin/grpc_health_probe
+WORKDIR /src
 
-# Build Go binary
-COPY Makefile go.mod go.sum ./
-RUN go env -w GOPROXY=https://goproxy.io,direct/
-RUN make init && go mod download
-COPY . .
-RUN make proto tidy
+ENV CGO_ENABLED=0 \
+    GOOS=linux \
+    GOFLAGS=-mod=readonly
 
-# Skaffold passes in debug-oriented compiler flags
-ARG SKAFFOLD_GO_GCFLAGS
-RUN go build.sh -gcflags="${SKAFFOLD_GO_GCFLAGS}" -o /services/catalogs_write/catalogs_write .
+COPY internal/pkg/go.mod internal/pkg/go.sum ./internal/pkg/
+COPY internal/services/catalogwriteservice/go.mod internal/services/catalogwriteservice/go.sum ./internal/services/catalogwriteservice/
 
-# Deployment container
-FROM scratch
+RUN --mount=type=cache,target=/go/pkg/mod \
+    cd internal/services/catalogwriteservice && go mod download
 
-WORKDIR /write_service
+COPY internal/pkg ./internal/pkg
+COPY internal/services/catalogwriteservice ./internal/services/catalogwriteservice
 
-# Definition of this variable is used by 'skaffold debug' to identify a golang binary.
-# Default behavior - a failure prints a stack trace for the current goroutine.
-# See https://golang.org/pkg/runtime/
-ENV GOTRACEBACK=single
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    cd internal/services/catalogwriteservice && \
+    go build -trimpath -buildvcs=false -ldflags="-s -w" -o /out/app ./cmd/app && \
+    go build -trimpath -buildvcs=false -ldflags="-s -w" -o /out/migration ./cmd/migration
 
-COPY --from=builder /services/catalogs/write_service /services/catalogs-write
+FROM alpine:3.22 AS runtime
 
-ENTRYPOINT ["/services/catalogs-write"]
+RUN apk add --no-cache ca-certificates tzdata && adduser -D -u 10001 appuser
+
+WORKDIR /app
+
+COPY --from=builder /out/app /app/app
+COPY --from=builder /out/migration /app/migration
+COPY internal/services/catalogwriteservice/config/config.development.json /app/config/config.development.json
+COPY internal/services/catalogwriteservice/db/migrations /app/db/migrations
+
+ENV APP_ENV=development \
+    CONFIG_PATH=/app/config
+
+USER appuser
+
+EXPOSE 7000 6003
+
+ENTRYPOINT ["/app/app"]

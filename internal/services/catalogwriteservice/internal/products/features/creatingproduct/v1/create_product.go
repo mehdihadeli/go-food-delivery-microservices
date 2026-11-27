@@ -47,12 +47,17 @@ func NewCreateProductWithValidation(
 	price float64,
 ) (*CreateProduct, error) {
 	command := NewCreateProduct(name, description, price)
-	err := command.Validate()
+	if err := command.Validate(); err != nil {
+		return nil, err
+	}
 
-	return command, err
+	return command, nil
 }
 
-func (c *CreateProduct) isTxRequest(){
+// IsTxRequest for enabling transactions on the mediatr pipeline
+//
+//nolint:unused // satisfies cqrs.TxRequest, the pipeline reads it via an interface assertion
+func (c *CreateProduct) isTxRequest() {
 }
 
 func (c *CreateProduct) Validate() error {

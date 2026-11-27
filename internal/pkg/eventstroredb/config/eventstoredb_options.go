@@ -41,7 +41,7 @@ func (e *EventStoreDbOptions) TcpEndPoint() string {
 // https://developers.eventstore.com/clients/http-api/v5
 
 func (e *EventStoreDbOptions) HttpEndPoint() string {
-	return fmt.Sprintf("http://%s:%d", e.Host, e.Host)
+	return fmt.Sprintf("http://%s:%d", e.Host, e.HttpPort)
 }
 
 type Subscription struct {

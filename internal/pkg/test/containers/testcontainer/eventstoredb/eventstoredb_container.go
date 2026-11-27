@@ -13,10 +13,12 @@ import (
 
 	"emperror.dev/errors"
 	"github.com/EventStore/EventStore-Client-Go/esdb"
-	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
+
+// portPollInterval is how often the container readiness check probes the port.
+const portPollInterval = 2 * time.Second
 
 type eventstoredbTestContainers struct {
 	container      testcontainers.Container
@@ -66,19 +68,21 @@ func (g *eventstoredbTestContainers) PopulateContainerOptions(
 	})
 
 	// get a free random host port for http and grpc port for eventstoredb
-	httpPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[0]))
+	httpPort, err := dbContainer.MappedPort(ctx, g.defaultOptions.Ports[0])
 	if err != nil {
 		return nil, err
 	}
-	g.defaultOptions.HttpPort = httpPort.Int()
-	g.logger.Infof("eventstoredb http and grpc port is: %d", httpPort.Int())
+
+	g.defaultOptions.HttpPort = int(httpPort.Num())
+	g.logger.Infof("eventstoredb http and grpc port is: %d", httpPort.Num())
 
 	// get a free random host port for tcp port eventstoredb
-	tcpPort, err := dbContainer.MappedPort(ctx, nat.Port(g.defaultOptions.Ports[1]))
+	tcpPort, err := dbContainer.MappedPort(ctx, g.defaultOptions.Ports[1])
 	if err != nil {
 		return nil, err
 	}
-	g.defaultOptions.TcpPort = tcpPort.Int()
+
+	g.defaultOptions.TcpPort = int(tcpPort.Num())
 
 	host, err := dbContainer.Host(ctx)
 	if err != nil {
@@ -137,8 +141,9 @@ func (g *eventstoredbTestContainers) getRunOptions(
 	containerReq := testcontainers.ContainerRequest{
 		Image:        fmt.Sprintf("%s:%s", g.defaultOptions.ImageName, g.defaultOptions.Tag),
 		ExposedPorts: g.defaultOptions.Ports,
-		WaitingFor:   wait.ForListeningPort(nat.Port(g.defaultOptions.Ports[0])).WithPollInterval(2 * time.Second),
-		Hostname:     g.defaultOptions.Host,
+		WaitingFor: wait.ForListeningPort(g.defaultOptions.Ports[0]).
+			WithPollInterval(portPollInterval),
+		Hostname: g.defaultOptions.Host,
 		// we use `EVENTSTORE_IN_MEM` for use eventstoredb in-memory mode in tests
 		Env: map[string]string{
 			"EVENTSTORE_START_STANDARD_PROJECTIONS": "false",

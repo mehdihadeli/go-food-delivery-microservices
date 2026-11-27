@@ -24,10 +24,17 @@ go install mvdan.cc/gofumpt@latest
 # https://github.com/segmentio/golines
 go install github.com/segmentio/golines@latest
 
-# https://golangci-lint.run/usage/install/#install-from-source
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+# https://golangci-lint.run/docs/welcome/install/local/
+# The /v2 module path is required: the unversioned path still resolves to v1,
+# which rejects configuration in the v2 format and refuses to lint a go 1.27
+# module. It is also built from source here so it is compiled by this toolchain,
+# for the same reason - a prebuilt binary is built with an older Go.
+go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
 
 go install github.com/mgechev/revive@latest
+
+# https://github.com/kisielk/errcheck
+go install github.com/kisielk/errcheck@latest
 
 # https://github.com/dominikh/go-tools
 go install honnef.co/go/tools/cmd/staticcheck@latest

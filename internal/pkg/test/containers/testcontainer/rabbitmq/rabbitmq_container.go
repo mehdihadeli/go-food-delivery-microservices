@@ -11,9 +11,8 @@ import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/go-connections/nat"
 	rabbithole "github.com/michaelklishin/rabbit-hole"
+	"github.com/moby/moby/api/types/container"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -76,25 +75,28 @@ func (g *rabbitmqTestContainers) PopulateContainerOptions(
 	// get a free random host port for rabbitmq `Tcp Port`
 	hostPort, err := dbContainer.MappedPort(
 		ctx,
-		nat.Port(g.defaultOptions.Ports[0]),
+		g.defaultOptions.Ports[0],
 	)
 	if err != nil {
 		return nil, err
 	}
-	g.defaultOptions.HostPort = hostPort.Int()
-	g.logger.Infof("rabbitmq host port is: %d", hostPort.Int())
+
+	g.defaultOptions.HostPort = int(hostPort.Num())
+
+	g.logger.Infof("rabbitmq host port is: %d", hostPort.Num())
 
 	// https://github.com/michaelklishin/rabbit-hole/issues/74
 	// get a free random host port for rabbitmq UI `Http Port`
 	uiHttpPort, err := dbContainer.MappedPort(
 		ctx,
-		nat.Port(g.defaultOptions.Ports[1]),
+		g.defaultOptions.Ports[1],
 	)
 	if err != nil {
 		return nil, err
 	}
-	g.defaultOptions.HttpPort = uiHttpPort.Int()
-	g.logger.Infof("rabbitmq ui port is: %d", uiHttpPort.Int())
+
+	g.defaultOptions.HttpPort = int(uiHttpPort.Num())
+	g.logger.Infof("rabbitmq ui port is: %d", uiHttpPort.Num())
 
 	host, err := dbContainer.Host(ctx)
 	if err != nil {
@@ -160,7 +162,7 @@ func (g *rabbitmqTestContainers) getRunOptions(
 		),
 		ExposedPorts: g.defaultOptions.Ports,
 		WaitingFor: wait.ForListeningPort(
-			nat.Port(g.defaultOptions.Ports[0]),
+			g.defaultOptions.Ports[0],
 		),
 		HostConfigModifier: func(hostConfig *container.HostConfig) {
 			hostConfig.AutoRemove = true

@@ -48,7 +48,7 @@ func (c *searchProductsHandlerUnitTests) TearDownTest() {
 }
 
 func (c *searchProductsHandlerUnitTests) Test_Handle_Should_Return_Products_Successfully() {
-	query, err := searchingproductsv1.NewSearchProducts(
+	query, err := searchingproductsv1.NewSearchProductsWithValidation(
 		c.Products[0].Name,
 		utils.NewListQuery(10, 1),
 	)
@@ -62,7 +62,7 @@ func (c *searchProductsHandlerUnitTests) Test_Handle_Should_Return_Products_Succ
 }
 
 func (c *searchProductsHandlerUnitTests) Test_Handle_Should_Return_Error_For_Mapping_List_Result() {
-	query, err := searchingproductsv1.NewSearchProducts(
+	query, err := searchingproductsv1.NewSearchProductsWithValidation(
 		c.Products[0].Name,
 		utils.NewListQuery(10, 1),
 	)

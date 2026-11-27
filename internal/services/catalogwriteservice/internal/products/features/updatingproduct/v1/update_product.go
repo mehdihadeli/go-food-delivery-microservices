@@ -41,9 +41,11 @@ func NewUpdateProductWithValidation(
 	price float64,
 ) (*UpdateProduct, error) {
 	command := NewUpdateProduct(productID, name, description, price)
-	err := command.Validate()
+	if err := command.Validate(); err != nil {
+		return nil, err
+	}
 
-	return command, err
+	return command, nil
 }
 
 // IsTxRequest for enabling transactions on the mediatr pipeline

@@ -28,9 +28,11 @@ func NewGetProductById(productId uuid.UUID) *GetProductById {
 
 func NewGetProductByIdWithValidation(productId uuid.UUID) (*GetProductById, error) {
 	query := NewGetProductById(productId)
-	err := query.Validate()
+	if err := query.Validate(); err != nil {
+		return nil, err
+	}
 
-	return query, err
+	return query, nil
 }
 
 func (p *GetProductById) Validate() error {

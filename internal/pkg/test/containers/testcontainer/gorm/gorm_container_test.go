@@ -12,7 +12,6 @@ import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/logger/zap"
 	gormPostgres "github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/postgresgorm"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -67,10 +66,18 @@ func Test_Builtin_Postgres_Container(t *testing.T) {
 		}
 	})
 
-	host, _ := ct.Host(ctx)
-	port, _ := ct.MappedPort(ctx, nat.Port("5432/tcp"))
+	host, err := ct.Host(ctx)
+	if err != nil {
+		t.Fatalf("failed to get container host: %s", err)
+	}
+
+	port, err := ct.MappedPort(ctx, "5432/tcp")
+	if err != nil {
+		t.Fatalf("failed to get mapped port: %s", err)
+	}
+
 	gormOptions := &gormPostgres.GormOptions{
-		Port:     port.Int(),
+		Port:     int(port.Num()),
 		Host:     host,
 		Password: "postgres",
 		DBName:   "postgres",

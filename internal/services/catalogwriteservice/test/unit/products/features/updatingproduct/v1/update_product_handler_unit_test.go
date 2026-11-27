@@ -59,7 +59,7 @@ func (c *updateProductHandlerUnitTests) TearDownTest() {
 func (c *updateProductHandlerUnitTests) Test_Handle_Should_Update_Product_With_Valid_Data() {
 	existing := c.Products[0]
 
-	updateProductCommand, err := updatingoroductsv1.NewUpdateProduct(
+	updateProductCommand, err := updatingoroductsv1.NewUpdateProductWithValidation(
 		existing.Id,
 		gofakeit.Name(),
 		gofakeit.EmojiDescription(),
@@ -88,7 +88,7 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Update_Product_With_V
 func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_NotFound_Item() {
 	id := uuid.NewV4()
 
-	command, err := updatingoroductsv1.NewUpdateProduct(
+	command, err := updatingoroductsv1.NewUpdateProductWithValidation(
 		id,
 		gofakeit.Name(),
 		gofakeit.EmojiDescription(),
@@ -111,7 +111,7 @@ func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_NotF
 func (c *updateProductHandlerUnitTests) Test_Handle_Should_Return_Error_For_Error_In_Bus() {
 	existing := c.Products[0]
 
-	updateProductCommand, err := updatingoroductsv1.NewUpdateProduct(
+	updateProductCommand, err := updatingoroductsv1.NewUpdateProductWithValidation(
 		existing.Id,
 		gofakeit.Name(),
 		gofakeit.EmojiDescription(),

@@ -11,8 +11,7 @@ import (
 	"github.com/mehdihadeli/go-food-delivery-microservices/internal/pkg/test/containers/contracts"
 
 	"emperror.dev/errors"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/go-connections/nat"
+	"github.com/moby/moby/api/types/container"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -78,12 +77,13 @@ func (g *mongoTestContainers) PopulateContainerOptions(
 	// get a free random host hostPort
 	hostPort, err := dbContainer.MappedPort(
 		ctx,
-		nat.Port(g.defaultOptions.Port),
+		g.defaultOptions.Port,
 	)
 	if err != nil {
 		return nil, err
 	}
-	g.defaultOptions.HostPort = hostPort.Int()
+
+	g.defaultOptions.HostPort = int(hostPort.Num())
 
 	host, err := dbContainer.Host(ctx)
 	if err != nil {
@@ -149,7 +149,7 @@ func (g *mongoTestContainers) getRunOptions(
 			g.defaultOptions.Tag,
 		),
 		ExposedPorts: []string{g.defaultOptions.Port},
-		WaitingFor: wait.ForListeningPort(nat.Port(g.defaultOptions.Port)).
+		WaitingFor: wait.ForListeningPort(g.defaultOptions.Port).
 			WithPollInterval(2 * time.Second),
 		Hostname: g.defaultOptions.Host,
 		HostConfigModifier: func(hostConfig *container.HostConfig) {

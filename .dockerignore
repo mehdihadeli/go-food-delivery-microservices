@@ -1,3 +1,7 @@
+# Build context is the repository root because every service module replaces
+# .../internal/pkg with the local ../../pkg directory. Everything that is not
+# source code for the Go build is excluded so the context stays small.
+
 **/.dockerignore
 **/.env
 **/.git
@@ -20,7 +24,21 @@
 **/secrets.dev.yaml
 **/values.dev.yaml
 **/out/
+**/dist/
 LICENSE
 README.md
+readme.md
 local/data/
 portainer-data/
+
+# Not needed to compile or run a service.
+.github/
+assets/
+deployments/
+docs/
+third_party/
+**/*_test.go
+**/testdata/
+**/.golangci.yml
+**/revive-config.toml
+**/staticcheck.conf

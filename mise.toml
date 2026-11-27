@@ -1,0 +1,363 @@
+# mise is the toolchain manager and task runner for this repository.
+# https://mise.jdx.dev/tasks/
+#
+#   mise tasks                     list every task
+#   mise run <task>                run one task
+#   mise run lint orderservice     one module
+#   mise run lint                  every module
+#   mise run test orderservice e2e
+#
+# Every task is a thin wrapper around a script in ./scripts. The scripts are the
+# contract: CI calls them directly, so a task can never drift from what the
+# pipeline runs.
+#
+# No task is duplicated per microservice. The module list lives in
+# scripts/modules.sh and the tasks walk it, so adding a service is one word
+# there plus one matrix entry in the CI workflow.
+#
+# The scripts are bash, and mise runs inline task scripts with cmd.exe on Windows
+# by default, so the inline shell is redirected to Git Bash below. Ignored on
+# Linux and macOS, where sh -c is already correct.
+#
+# If Git is installed somewhere else, override it per machine with:
+#   mise settings set windows_default_inline_shell_args '"<path>/bash.exe" -c'
+
+min_version = "2025.1.0"
+
+[settings]
+windows_default_inline_shell_args = '"C:/Program Files/Git/bin/bash.exe" -c'
+
+[tools]
+# The go.mod files pin the same version. Installing it here means a fresh
+# checkout only needs `mise install`, and every task runs with the toolchain the
+# modules actually require - a locally installed older Go cannot be picked up by
+# accident. This also matters for golangci-lint, which has no published binary
+# built with this Go version and has to be compiled by this toolchain.
+go = "1.27.4"
+# husky, commitlint and the npx based generators (atlas, openapi-generator).
+node = "22"
+
+# ---------------------------------------------------------------------------
+# Setup
+# ---------------------------------------------------------------------------
+
+[tasks.setup]
+description = "Prepare a fresh checkout: tools, Go modules and git hooks"
+depends = ["install-tools", "install-dependencies"]
+run = ["npm ci", "npm run prepare"]
+
+[tasks.install-tools]
+description = "Install the CLI tools the scripts call (go install, npm, apt)"
+run = "./scripts/install-tools.sh"
+
+[tasks.install-dependencies]
+description = "Download Go modules for every module"
+run = '''
+set -e
+for module in $(bash ./scripts/modules.sh); do
+  ./scripts/install-dependencies.sh "$module"
+done
+'''
+
+[tasks.update-dependencies]
+description = "Update Go modules for every module"
+run = '''
+set -e
+for module in $(bash ./scripts/modules.sh); do
+  ./scripts/update-dependencies.sh "$module"
+done
+'''
+
+# The dependency tasks take a module name instead of existing once per module.
+#
+#   mise run tidy orderservice
+#   mise run deps:upgrade orderservice
+[tasks.tidy]
+description = "Run go mod tidy for one module: mise run tidy <pkg|service>"
+usage = '''
+arg "<module>" help="pkg or a service name"
+'''
+run = '''
+module="${usage_module?}"
+if [ "$module" = "pkg" ]; then dir="internal/pkg"; else dir="internal/services/$module"; fi
+cd "$dir" && go mod tidy
+'''
+
+[tasks."deps:upgrade"]
+description = "Upgrade the dependencies of one module: mise run deps:upgrade <pkg|service>"
+usage = '''
+arg "<module>" help="pkg or a service name"
+'''
+run = './scripts/update-dependencies.sh "${usage_module?}"'
+
+# Discards any local go.mod/go.sum edit and resets the module to the committed
+# dependency graph.
+[tasks."deps:reset"]
+description = "Restore go.mod/go.sum and re-tidy one module: mise run deps:reset <pkg|service>"
+usage = '''
+arg "<module>" help="pkg or a service name"
+'''
+run = '''
+module="${usage_module?}"
+if [ "$module" = "pkg" ]; then dir="internal/pkg"; else dir="internal/services/$module"; fi
+cd "$dir" && git checkout -- go.mod go.sum && go mod tidy
+'''
+
+[tasks."deps:clean-cache"]
+description = "Drop the shared Go module cache"
+run = "go clean -modcache"
+
+# ---------------------------------------------------------------------------
+# Build and run
+# ---------------------------------------------------------------------------
+
+[tasks.build]
+description = "Compile every module, shared package first"
+run = '''
+set -e
+for module in $(bash ./scripts/modules.sh); do
+  ./scripts/build.sh "$module"
+done
+'''
+
+# The same Dockerfile and the same repository-root build context the pipeline
+# uses, so a local image and a published image are built the same way.
+#
+#   mise run docker:build orderservice
+#   mise run docker:build orderservice v1.2.3
+[tasks."docker:build"]
+description = "Build one service image locally: mise run docker:build <service> [tag]"
+usage = '''
+arg "<service>" help="catalogreadservice, catalogwriteservice or orderservice"
+arg "[tag]" help="Image tag" default="dev"
+'''
+run = './scripts/build-docker.sh "${usage_service?}" "${usage_tag?}"'
+
+# Images are never published from a workstation, so this is the local equivalent
+# of the pipeline job rather than a release step.
+[tasks."docker:build:all"]
+description = "Build every service image locally"
+run = '''
+set -e
+for service in $(bash ./scripts/modules.sh services); do
+  ./scripts/build-docker.sh "$service" dev
+done
+'''
+
+[tasks."run:catalogwriteservice"]
+description = "Run catalogwriteservice from source"
+run = "./scripts/run.sh catalogwriteservice"
+
+[tasks."run:catalogreadservice"]
+description = "Run catalogreadservice from source"
+run = "./scripts/run.sh catalogreadservice"
+
+[tasks."run:orderservice"]
+description = "Run orderservice from source"
+run = "./scripts/run.sh orderservice"
+
+# ---------------------------------------------------------------------------
+# Local infrastructure
+# ---------------------------------------------------------------------------
+
+[tasks."infra:up"]
+description = "Start the docker compose infrastructure stack"
+run = "docker compose -f deployments/docker-compose/docker-compose.infrastructure.yaml up --build -d"
+
+[tasks."infra:down"]
+description = "Stop the docker compose infrastructure stack"
+run = "docker compose -f deployments/docker-compose/docker-compose.infrastructure.yaml down"
+
+# Postgres is the compose service, not a hand-started container, so a developer
+# never ends up with two servers competing for port 5432.
+[tasks."db:up"]
+description = "Start the postgres container"
+run = "docker compose -f deployments/docker-compose/docker-compose.infrastructure.yaml up -d postgres"
+
+[tasks."db:down"]
+description = "Stop the postgres container"
+run = "docker compose -f deployments/docker-compose/docker-compose.infrastructure.yaml stop postgres"
+
+# The databases the migrations and the connection strings in this repository
+# expect. Both tasks are idempotent, so they can be re-run safely.
+[tasks."db:create"]
+description = "Create the databases used by the services"
+run = '''
+for db in catalogs_write_service catalogs_read_service orders_service; do
+  docker exec postgres psql -U postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$db'" | grep -q 1 \\
+    || docker exec postgres createdb -U postgres "$db"
+done
+'''
+
+[tasks."db:drop"]
+description = "Drop the databases used by the services"
+run = '''
+for db in catalogs_write_service catalogs_read_service orders_service; do
+  docker exec postgres dropdb -U postgres --if-exists "$db"
+done
+'''
+
+# ---------------------------------------------------------------------------
+# Code generation
+# ---------------------------------------------------------------------------
+
+[tasks.openapi]
+description = "Generate the OpenAPI documents for every service"
+run = [
+  "./scripts/openapi.sh catalogwriteservice",
+  "./scripts/openapi.sh catalogreadservice",
+  "./scripts/openapi.sh orderservice",
+]
+
+[tasks.proto]
+description = "Generate Go code from the protobuf definitions"
+run = [
+  "./scripts/proto.sh catalogwriteservice",
+  "./scripts/proto.sh orderservice",
+]
+
+[tasks."proto:format"]
+description = "Format the protobuf definitions in place"
+run = "buf format -w"
+
+[tasks."mocks:pkg"]
+description = "Regenerate the shared package mocks"
+run = [
+  "cd internal/pkg/es && mockery --output mocks --all",
+  "cd internal/pkg/core/serializer && mockery --output mocks --all",
+  "cd internal/pkg/core/messaging && mockery --output mocks --all",
+]
+
+[tasks."mocks:services"]
+description = "Regenerate the per-service mocks"
+run = '''
+set -e
+for service in $(bash ./scripts/modules.sh services); do
+  (cd "internal/services/$service" && mockery --output mocks --all)
+done
+'''
+
+# ---------------------------------------------------------------------------
+# Quality gates
+#
+# One task per gate, with the module as an optional argument: omit it and the
+# task walks the module list from scripts/modules.sh. CI does not use these
+# tasks, it calls the same scripts/*.sh for one module per matrix entry, so a
+# developer and the pipeline still run identical commands.
+# ---------------------------------------------------------------------------
+
+[tasks.format]
+description = "Format a module, or every module: mise run format [module]"
+usage = '''
+arg "[module]" help="pkg or a service name, omit to format every module"
+'''
+run = '''
+set -e
+modules="${usage_module:-}"
+[ -n "$modules" ] || modules="$(bash ./scripts/modules.sh)"
+for module in $modules; do
+  ./scripts/format.sh "$module"
+done
+'''
+
+# A full audit of each module. Set LINT_EXTRA_TOOLS=0 to skip the standalone
+# revive/staticcheck/errcheck runs, which cannot be limited to a diff.
+#
+#   mise run lint                                  every module
+#   mise run lint orderservice                     one module
+#   mise run lint orderservice --new-from-rev=origin/main
+[tasks.lint]
+description = "Lint a module, or every module: mise run lint [module] [--new-from-rev <rev>]"
+usage = '''
+arg "[module]" help="pkg or a service name, omit to lint every module"
+flag "--new-from-rev <rev>" help="Only report issues introduced since this revision"
+'''
+run = '''
+set -e
+modules="${usage_module:-}"
+[ -n "$modules" ] || modules="$(bash ./scripts/modules.sh)"
+for module in $modules; do
+  ./scripts/lint.sh "$module" ${usage_new_from_rev:+--new-from-rev="$usage_new_from_rev"}
+done
+'''
+
+# ---------------------------------------------------------------------------
+# Tests
+#
+# mise run test <module> <unit|integration|e2e>
+# ---------------------------------------------------------------------------
+
+[tasks.test]
+description = "Run one suite for one module: mise run test <module> <unit|integration|e2e>"
+usage = '''
+arg "<module>" help="pkg or a service name"
+arg "[suite]" help="Test suite to run" default="unit"
+'''
+run = './scripts/test.sh "${usage_module?}" "${usage_suite?}"'
+
+[tasks."test:unit"]
+description = "Run every unit suite"
+run = '''
+set -e
+for service in $(bash ./scripts/modules.sh services); do
+  ./scripts/test.sh "$service" unit
+done
+'''
+
+[tasks."test:integration"]
+description = "Run every integration suite (needs Docker)"
+run = '''
+set -e
+for service in $(bash ./scripts/modules.sh services); do
+  ./scripts/test.sh "$service" integration
+done
+'''
+
+[tasks."test:e2e"]
+description = "Run every end-to-end suite (needs Docker)"
+run = '''
+set -e
+for service in $(bash ./scripts/modules.sh services); do
+  ./scripts/test.sh "$service" e2e
+done
+'''
+
+# ---------------------------------------------------------------------------
+# Migrations
+# ---------------------------------------------------------------------------
+
+[tasks."migrate:go"]
+description = "Create, apply and roll back a golang-migrate migration"
+run = [
+  "./scripts/go-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/go-migrate -c create -n create_product_table",
+  "./scripts/go-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/go-migrate -c up -o postgres://postgres:postgres@localhost:5432/catalogs_write_service?sslmode=disable",
+  "./scripts/go-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/go-migrate -c down -o postgres://postgres:postgres@localhost:5432/catalogs_write_service?sslmode=disable",
+]
+
+[tasks."migrate:goose"]
+description = "Create, apply and roll back a goose migration"
+run = [
+  "./scripts/goose-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/goose-migrate -c create -n create_product_table",
+  "./scripts/goose-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/goose-migrate -c up -o \"user=postgres password=postgres dbname=catalogs_write_service sslmode=disable\"",
+  "./scripts/goose-migrate.sh -p ./internal/services/catalogwriteservice/db/migrations/goose-migrate -c down -o \"user=postgres password=postgres dbname=catalogs_write_service sslmode=disable\"",
+]
+
+[tasks."migrate:atlas"]
+description = "Sync the GORM schema with atlas and apply it"
+run = [
+  "./scripts/atlas-migrate.sh -c gorm-sync -p ./internal/services/catalogwriteservice",
+  "./scripts/atlas-migrate.sh -c apply -p ./internal/services/catalogwriteservice -o postgres://postgres:postgres@localhost:5432/catalogs_write_service?sslmode=disable",
+]
+
+# ---------------------------------------------------------------------------
+# Analysis
+# ---------------------------------------------------------------------------
+
+[tasks."cycle-check"]
+description = "Render the package import cycle graphs"
+run = [
+  "cd internal/pkg && goimportcycle -dot imports.dot dot -Tpng -o cycle/pkg.png imports.dot",
+  "cd internal/services/catalogwriteservice && goimportcycle -dot imports.dot dot -Tpng -o cycle/catalogwriteservice.png imports.dot",
+  "cd internal/services/catalogreadservice && goimportcycle -dot imports.dot dot -Tpng -o cycle/catalogreadservice.png imports.dot",
+  "cd internal/services/orderservice && goimportcycle -dot imports.dot dot -Tpng -o cycle/orderservice.png imports.dot",
+]

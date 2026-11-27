@@ -1,57 +1,11 @@
-linters-settings:
-  dupl:
-    threshold: 120
-  errorlint:
-    errorf: true
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
-  exhaustive:
-    check-generated: false
-    default-signifies-exhaustive: false
-  funlen:
-    lines: 120
-    statements: 50
-  gocognit:
-    min-complexity: 40
-  gocyclo:
-    min-complexity: 15
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport
-      - unnecessaryBlock
-  gofumpt:
-    extra-rules: true
-  gomnd:
-    settings:
-      mnd:
-        checks:
-          - argument
-          - case
-          - condition
-          - operation
-          - return
-  govet:
-    check-shadowing: true
-  misspell:
-    locale: US
-  nestif:
-    min-complexity: 4
-  nolintlint:
-    require-explanation: true
-    require-specific: true
+version: "2"
 
+# The linter list is the previous v1 configuration, migrated with
+# `golangci-lint migrate`: goerr113 became err113, gomnd became mnd,
+# exportloopref/gosimple/stylecheck were folded into staticcheck, and the
+# import/format linters moved to the `formatters` section below.
 linters:
-  disable-all: true
+  default: none
   enable:
     - asciicheck
     - bodyclose
@@ -59,13 +13,12 @@ linters:
     - dogsled
     - dupl
     - durationcheck
+    - err113
     - errcheck
     - errorlint
     - exhaustive
-    - exportloopref
     - forbidigo
     - funlen
-    - gci
     - gochecknoglobals
     - gochecknoinits
     - gocognit
@@ -74,18 +27,13 @@ linters:
     - gocyclo
     - godot
     - godox
-    - goerr113
-    - gofmt
-    - gofumpt
-    - goimports
-    - gomnd
-    - gomodguard
+    - gomodguard_v2
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - makezero
     - misspell
+    - mnd
     - nakedret
     - nestif
     - nlreturn
@@ -97,19 +45,84 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
-    - stylecheck
-    - tparallel
     - thelper
+    - tparallel
     - unconvert
     - unparam
     - unused
-    - wsl
     - whitespace
-
-run:
-  skip-dirs:
-    - docs
-
-issues:
-  # Show only new issues created after git revision: e016c66
-  new-from-rev: e016c66
+    - wsl_v5
+  settings:
+    dupl:
+      threshold: 120
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    errorlint:
+      errorf: true
+    exhaustive:
+      default-signifies-exhaustive: false
+    funlen:
+      lines: 120
+      statements: 50
+    gocognit:
+      min-complexity: 40
+    goconst:
+      min-len: 2
+      min-occurrences: 2
+    gocritic:
+      disabled-checks:
+        - dupImport
+        - unnecessaryBlock
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    gocyclo:
+      min-complexity: 15
+    misspell:
+      locale: US
+    mnd:
+      checks:
+        - argument
+        - case
+        - condition
+        - operation
+        - return
+    nestif:
+      min-complexity: 4
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - docs
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gofumpt:
+      extra:
+        group-params: true
+        clothe-returns: true
+  exclusions:
+    generated: lax
+    paths:
+      - docs
+      - third_party$
+      - builtin$
+      - examples$

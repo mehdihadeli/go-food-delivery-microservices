@@ -50,7 +50,7 @@ func (c *getProductByIdHandlerTest) TearDownTest() {
 func (c *getProductByIdHandlerTest) Test_Handle_Should_Return_Correct_Product_By_ID() {
 	product := c.Products[0]
 
-	query, err := gettingproductbyidv1.NewGetProductById(product.Id)
+	query, err := gettingproductbyidv1.NewGetProductByIdWithValidation(product.Id)
 	c.Require().NoError(err)
 
 	dto, err := c.handler.Handle(c.Ctx, query)
@@ -64,7 +64,7 @@ func (c *getProductByIdHandlerTest) Test_Handle_Should_Return_Correct_Product_By
 func (c *getProductByIdHandlerTest) Test_Handle_Should_Return_NotFound_Error_For_NotFound_Item() {
 	id := uuid.NewV4()
 
-	query, err := gettingproductbyidv1.NewGetProductById(id)
+	query, err := gettingproductbyidv1.NewGetProductByIdWithValidation(id)
 	c.Require().NoError(err)
 
 	dto, err := c.handler.Handle(c.Ctx, query)
@@ -85,7 +85,7 @@ func (c *getProductByIdHandlerTest) Test_Handle_Should_Return_Error_For_Error_In
 
 	product := c.Products[0]
 
-	query, err := gettingproductbyidv1.NewGetProductById(product.Id)
+	query, err := gettingproductbyidv1.NewGetProductByIdWithValidation(product.Id)
 	c.Require().NoError(err)
 
 	dto, err := c.handler.Handle(c.Ctx, query)

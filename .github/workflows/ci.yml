@@ -2,57 +2,404 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
-    paths-ignore: ["*.md", "docs", "deploy", "config", ".github", "scripts"]
-
+    branches: [main]
+    # A vX.Y.Z tag is an image release: it is the version baked into every image
+    # tag. Nothing is published to a Go module proxy or a package registry.
+    tags: ["v*"]
   pull_request:
-    branches: ["main"]
-    paths-ignore: ["*.md", "docs", "deploy", "config", ".github", "scripts"]
+    branches: [main]
+    # A documentation-only pull request cannot change compiled behaviour, but a
+    # workflow edit must always be exercised, so it is excluded from the ignore
+    # list. Pushes are unfiltered on purpose: a release tag must never be skipped.
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "assets/**"
+      - ".github/**"
+      - "!.github/workflows/**"
+
+# A superseded pull request run is wasted work, but branch and release runs must
+# finish so an image is never left half pushed.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Least privilege by default; jobs that need more ask for it explicitly.
+permissions:
+  contents: read
+
+env:
+  # Single source of truth for the toolchain: the go directive of the shared module.
+  GO_VERSION_FILE: internal/pkg/go.mod
+  REGISTRY: ghcr.io
+  # A CI run must never silently rewrite go.mod or go.sum.
+  GOFLAGS: -mod=readonly
 
 jobs:
-  build-test:
+  # The lint gate reports only issues the change introduces. The modules already
+  # carry about 900 pre-existing findings, so a whole-repo run could never be
+  # green and would be ignored; a ratchet keeps new code held to the same rules.
+  lint:
+    name: Lint ${{ matrix.target }}
     runs-on: ubuntu-latest
-    if: |
-      contains(github.event.commits[0].message, '[skip ci]') == false &&
-      contains(github.event.commits[0].message, '[ci skip]') == false
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # These are the same names `mise run lint <target>` passes to scripts/lint.sh,
+        # which resolves the module directory itself. Nothing here repeats a path.
+        target:
+          - pkg
+          - catalogreadservice
+          - catalogwriteservice
+          - orderservice
+    env:
+      GOLANGCI_LINT_VERSION: v2.15.0
+
     steps:
-      - uses: actions/checkout@v3
-
-        # https://github.com/actions/setup-go/issues/326
-        # https://github.com/testcontainers/testcontainers-go/issues/1359
-      - name: Set up Go
-        uses: actions/setup-go@v3
+      - name: Check out repository
+        uses: actions/checkout@v5
+        # The ratchet diffs against the base commit, so history is required.
         with:
-          go-version: 1.22.x
-        id: go
+          fetch-depth: 0
 
-      - name: Cache go modules
-        id: cache
-        uses: actions/cache@preview
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ env.GO_VERSION_FILE }}
+          # The built-in cache keys on a go.mod at the repository root, and this
+          # is a multi-module repository with no root module, so it would find
+          # nothing to hash. The step below caches the download cache instead.
+          cache: false
+
+        # Every module keeps its own go.sum, so the key covers all of them: a
+        # dependency bump in any module invalidates the cache, and a change that
+        # touches none of them restores it.
+      - name: Cache Go module downloads
+        uses: actions/cache@v6
         with:
           path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: go-mod-${{ runner.os }}-${{ hashFiles('internal/pkg/go.sum', 'internal/services/**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            go-mod-${{ runner.os }}-
 
-      - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: make install-dependencies
+        # Every published golangci-lint binary is built with an older Go and
+        # refuses to lint a go 1.27 module, so it is built from source with this
+        # toolchain instead. The binary is cached because that compile is slow.
+      - name: Restore golangci-lint
+        id: golangci-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/go/bin/golangci-lint
+          key: golangci-lint-${{ runner.os }}-${{ env.GOLANGCI_LINT_VERSION }}-${{ hashFiles('internal/pkg/go.mod') }}
 
-        # https://pkg.go.dev/cmd/go#hdr-Compile_packages_and_dependencies
-        # https://pkg.go.dev/cmd/go#hdr-Package_lists_and_patterns
-      - name: Build
-        run: make build
+      - name: Install golangci-lint
+        if: steps.golangci-cache.outputs.cache-hit != 'true'
+        run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${{ env.GOLANGCI_LINT_VERSION }}
 
-        # https://go.dev/doc/articles/race_detector
-        # https://dev.to/s0xzwasd/run-tests-with-race-flag-in-goland-512j
-      - name: Unit Tests
-        run:
-          make unit-test
+        # A restored cache hits the same directory, but the runner PATH is what
+        # scripts/lint.sh resolves the binary through.
+      - name: Add Go bin to PATH
+        shell: bash
+        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
-          # there are some problem with test-container library in the github-actions!! locally all tests will pass
-      - name: Integration Tests
-        run: make integration-test
+      # The same scripts/lint.sh that `mise run lint <target>` uses, so the
+      # pipeline and a developer cannot drift apart. It resolves the module, runs
+      # golangci-lint with the shared root configuration, and forwards the
+      # ratchet flag.
+      # LINT_EXTRA_TOOLS=0 skips the standalone revive/staticcheck/errcheck runs:
+      # they cannot be limited to a diff, so with the existing findings in this
+      # repository they would fail every build.
+      - name: Run lint
+        shell: bash
+        env:
+          LINT_EXTRA_TOOLS: "0"
+          BASE_REF: ${{ github.base_ref }}
+          EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
 
-      - name: End-To-End Tests
-        run: make e2e-test
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags origin "$BASE_REF"
+            rev="$(git merge-base "origin/$BASE_REF" HEAD)"
+          elif [ -n "$EVENT_BEFORE" ] && [[ "$EVENT_BEFORE" != 0000000000000000000000000000000000000000 ]]; then
+            rev="$EVENT_BEFORE"
+          else
+            # New branch or forced push: compare against the parent commit.
+            rev="HEAD~1"
+          fi
+
+          echo "Reporting only issues introduced since $rev"
+          ./scripts/lint.sh "${{ matrix.target }}" --new-from-rev="$rev"
+
+  # One matrix entry per module, so a break in one microservice reports as its
+  # own red job instead of failing a combined run, and the modules compile in
+  # parallel instead of one after another.
+  build-test:
+    name: Build and test ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    env:
+      # Only used by the Codecov step below, which is skipped without it.
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The shared module is a local dependency of every service, so it is
+          # built once here. It is never unit tested: its test/containers
+          # packages hold untagged container tests that need a Docker daemon.
+          - name: shared-module
+            module: internal/pkg
+            unit_tests: false
+          - name: catalogreadservice
+            module: internal/services/catalogreadservice
+            unit_tests: true
+          - name: catalogwriteservice
+            module: internal/services/catalogwriteservice
+            unit_tests: true
+          - name: orderservice
+            module: internal/services/orderservice
+            unit_tests: true
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+        # setup-go's built-in cache keys on a go.mod at the repository root,
+        # which does not exist here, so both Go caches are handled explicitly.
+        # The module cache holds downloaded packages; the build cache holds
+        # compiled packages, which keeps repeat runs from recompiling the
+        # dependency graph.
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ env.GO_VERSION_FILE }}
+          cache: false
+
+      - name: Restore Go module downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/go/pkg/mod
+          key: go-mod-${{ runner.os }}-${{ hashFiles('internal/pkg/go.sum', 'internal/services/**/go.sum') }}
+          restore-keys: |
+            go-mod-${{ runner.os }}-
+
+      - name: Restore Go build cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/go-build
+          key: go-build-${{ matrix.name }}-${{ runner.os }}-${{ hashFiles('internal/pkg/go.sum', 'internal/services/**/go.sum') }}
+          restore-keys: |
+            go-build-${{ matrix.name }}-${{ runner.os }}-
+            go-build-${{ runner.os }}-
+
+      - name: Download dependencies
+        working-directory: ${{ matrix.module }}
+        run: go mod download
+
+        # https://pkg.go.dev/cmd/gofmt
+      - name: Verify formatting
+        working-directory: ${{ matrix.module }}
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            printf 'Unformatted files, run `mise run format`:\n%s\n' "$unformatted" >&2
+            exit 1
+          fi
+
+      - name: Vet and build
+        working-directory: ${{ matrix.module }}
+        run: |
+          go vet ./...
+          go build ./...
+
+        # -p=1 serialises packages: every suite in a module shares one SQLite file
+        # through its test fixture, so parallel packages race on it.
+        # Coverage is written per module and uploaded, which needs no token.
+      - name: Unit tests
+        if: matrix.unit_tests
+        working-directory: ${{ matrix.module }}
+        run: >-
+          go test -tags=unit -timeout=15m -count=1 -p=1
+          -covermode=atomic -coverprofile=coverage.out ./...
+
+      - name: Upload coverage artifact
+        if: always() && matrix.unit_tests
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.name }}
+          path: ${{ matrix.module }}/coverage.out
+          if-no-files-found: ignore
+
+        # Skipped when the repository has no CODECOV_TOKEN secret, so forks and
+        # drafts still run the suite.
+      - name: Upload coverage to Codecov
+        if: matrix.unit_tests && env.CODECOV_TOKEN != ''
+        uses: codecov/codecov-action@v5
+        with:
+          files: ${{ matrix.module }}/coverage.out
+          flags: unit
+          name: ${{ matrix.name }}
+          fail_ci_if_error: true
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # Testcontainers starts its own containers, so the runner's Docker daemon is
+  # the only infrastructure these suites need.
+  integration-test:
+    name: Integration and end-to-end tests ${{ matrix.service }}
+    needs: build-test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - catalogreadservice
+          - catalogwriteservice
+          - orderservice
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ env.GO_VERSION_FILE }}
+          # See the lint job: there is no root go.mod to key the built-in cache
+          # on, so the caches are restored explicitly below.
+          cache: false
+
+      - name: Restore Go module downloads
+        uses: actions/cache@v6
+        with:
+          path: ~/go/pkg/mod
+          key: go-mod-${{ runner.os }}-${{ hashFiles('internal/pkg/go.sum', 'internal/services/**/go.sum') }}
+          restore-keys: |
+            go-mod-${{ runner.os }}-
+
+      - name: Restore Go build cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/go-build
+          key: go-build-${{ matrix.service }}-${{ runner.os }}-${{ hashFiles('internal/pkg/go.sum', 'internal/services/**/go.sum') }}
+          restore-keys: |
+            go-build-${{ matrix.service }}-${{ runner.os }}-
+            go-build-${{ runner.os }}-
+
+      - name: Integration tests
+        run: ./scripts/test.sh ${{ matrix.service }} integration
+
+      - name: End-to-end tests
+        run: ./scripts/test.sh ${{ matrix.service }} e2e
+
+  calculate-version:
+    name: Calculate image version
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    needs: build-test
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      docker_tag: ${{ steps.version.outputs.docker_tag }}
+      environment: ${{ steps.version.outputs.environment }}
+      commit: ${{ steps.version.outputs.commit }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        # The version is derived from tags and the commit count, so history is needed.
+        with:
+          fetch-depth: 0
+
+      - name: Calculate version
+        id: version
+        shell: bash
+        run: bash ./scripts/calculate-version.sh
+
+  # Builds and pushes one image per microservice. Build context is the repository
+  # root because each service module replaces .../internal/pkg with the local
+  # ../../pkg directory.
+  docker-build-push:
+    name: Build and push microservice images
+    needs:
+      - build-test
+      - calculate-version
+      - lint
+    if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/main' && needs['calculate-version'].outputs.environment != 'none')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: catalogreadservice
+            dockerfile: internal/services/catalogreadservice/Dockerfile
+          - name: catalogwriteservice
+            dockerfile: internal/services/catalogwriteservice/Dockerfile
+          - name: orderservice
+            dockerfile: internal/services/orderservice/Dockerfile
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=${{ needs['calculate-version'].outputs.docker_tag }}
+            type=raw,value=latest,enable=${{ needs['calculate-version'].outputs.environment == 'production' }}
+            type=ref,event=branch
+            type=sha,format=short
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # gha caches survive between runs, so only changed layers rebuild.
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  release-drafter:
+    name: Update release draft
+    needs: calculate-version
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Update matching Release Drafter draft
+        uses: release-drafter/release-drafter@v7
+        with:
+          config-name: release-drafter.yml
+          version: ${{ needs['calculate-version'].outputs.version }}
+          name: v${{ needs['calculate-version'].outputs.version }}
+          tag: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || format('v{0}', needs['calculate-version'].outputs.version) }}
+          publish: ${{ startsWith(github.ref, 'refs/tags/v') && needs['calculate-version'].outputs.environment == 'production' }}
+          prerelease: ${{ needs['calculate-version'].outputs.environment != 'production' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
